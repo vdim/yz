@@ -1,4 +1,9 @@
 *.sw*
 *~
+*.log
+*.toc
+*.aux
+*.out
+*.pdf
 lib/
 classes/
