@@ -21,4 +21,10 @@
          (is (= (find-in-sn "f" nest-mom) ru.petrsu.nest.son.Floor))
          (is (= (find-in-sn "s" nest-mom) nil)))
 
+(deftest t-find-in-sn-some-nest
+         ^{:doc "Tests find-in-sn function for nest MOM."}
+         (is (= (find-in-sn-some "r" nest-mom) ru.petrsu.nest.son.Room))
+         (is (= (find-in-sn-some "f" nest-mom) ru.petrsu.nest.son.Floor))
+         (is (= (find-in-sn-some "s" nest-mom) nil)))
+
 
