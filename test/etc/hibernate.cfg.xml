@@ -1,0 +1,68 @@
+<!DOCTYPE hibernate-configuration SYSTEM
+"/home/adim/tsen/oqlite/test/etc/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+        <property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
+	<property name="hibernate.connection.url">jdbc:derby:/home/adim/tsen/nest/db;create=true</property>
+	<property name="hibernate.connection.username">sa</property>
+	<property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
+
+<!--        
+        <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
+        <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost:9002</property>
+	<property name="hibernate.connection.url">jdbc:hsqldb:file:/media/PUB/run_server/test</property>
+        <property name="hibernate.connection.username">sa</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
+-->
+
+<!--        
+        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
+        <property name="hibernate.connection.url">jdbc:mysql://kappa.cs.prv/nest?characterEncoding=UTF-8</property>
+        <property name="hibernate.connection.username">nest</property>
+	<property name="hibernate.connection.password">Kaa7tori</property>
+        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+-->
+        <!-- Use the C3P0 connection pool provider -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">200</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+        <property name="hibernate.c3p0.idle_test_period">3000</property>
+        
+        <!-- Show and print nice SQL on stdout -->
+        <property name="show_sql">false</property>
+        <property name="format_sql">true</property>
+	
+	<!-- Set a maximum "depth" for the outer join fetch tree for single-ended associations -->
+	<!--property name="max_fetch_depth">1</property-->
+        
+        <!-- List of XML mapping files -->
+        <mapping class="ru.petrsu.nest.son.Floor"/>
+        <mapping class="ru.petrsu.nest.son.Building"/>
+        <mapping class="ru.petrsu.nest.son.Room"/>
+	
+	<mapping class="ru.petrsu.nest.son.Occupancy"/>
+        
+        <mapping class="ru.petrsu.nest.son.AbstractOU"/>
+        <mapping class="ru.petrsu.nest.son.SimpleOU"/>
+        <mapping class="ru.petrsu.nest.son.CompositeOU"/>
+        
+        <mapping class="ru.petrsu.nest.son.Device"/>
+	<mapping class="ru.petrsu.nest.son.NetworkInterface"/>
+	<mapping class="ru.petrsu.nest.son.IPv4Interface"/>
+	<mapping class="ru.petrsu.nest.son.LinkInterface"/>
+        <mapping class="ru.petrsu.nest.son.VLANInterface"/>
+	<mapping class="ru.petrsu.nest.son.EthernetInterface"/>
+	<mapping class="ru.petrsu.nest.son.Network"/>
+	<mapping class="ru.petrsu.nest.son.IPNetwork"/>
+	
+        <mapping class="ru.petrsu.nest.son.SON"/>
+        <mapping class="ru.petrsu.nest.son.SonElement"/>
+	
+	<mapping class="ru.petrsu.nest.son.AbstractSonModificationOccurence"/>
+	<mapping class="ru.petrsu.nest.son.SonPropertyModificationOccurence"/>
+	<mapping class="ru.petrsu.nest.son.SonReferenceModificationOccurence"/>
+	
+    </session-factory>
+</hibernate-configuration>
