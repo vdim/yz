@@ -20,3 +20,10 @@
          (is (= (find-by-sn "r" nest-mom) ru.petrsu.nest.son.Room))
          (is (= (find-by-sn "f" nest-mom) ru.petrsu.nest.son.Floor))
          (is (= (find-by-sn "s" nest-mom) nil)))
+
+(deftest t-find-path
+         ^{:doc "Tests find-path function."}
+         (is (= (find-path 2 7 #{1 2 3 4 5 6 7 8 9} (fn [x] `(~(inc x) ~(+ x 3))))
+                '([2 3 6 9] [2 3 6 7] [2 3 4 7] [2 5 8 9] [2 5 6 7] [2 5 6 9])))
+         (is (= (find-path 2 7 #{1 2 3 4 5 6 7 8 9} (fn [x] `(~(inc x) ~(dec x))))
+                '([2 1] [2 3 4 5 6 7 8 9]))))
