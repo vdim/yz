@@ -56,10 +56,10 @@
                 (getBeanInfo cl)
                 (getPropertyDescriptors))))))
 
-(defn adds-related
+(defn- adds-related
   "Adds related classes to last element of :path in map 'm'.
   ('classes' must be set for correct working 'contains?' function.
-  and doesn't contains visited elements."
+  and doesn't contains visited elements)."
   [m classes]
   (let [rels (get-related (last (:path m)) classes)]
     (if (empty? rels)
@@ -82,7 +82,7 @@
           (recur to-t (conj to-f m) (rest vv)))))))
 
   
-(defn get-paths
+(defn- get-paths
   "Returns sequence of maps. Each map contains following keys:
   :path path between \"from\" and \"to\" as classes
   :ppath path between \"from\" and \"to\" as properties"
@@ -102,22 +102,31 @@
                (concat res to-t))))))
 
 
-(defn gen-mom
-  "Generates MOM. There is several possibilities:
-    1. Generates from hibernate configuration xml file 
-      (usual named hibernate.cfg.xml) with mapping.
-      It's usefull in case when you use hibernate as
-      implementation of Criteria API 2.0. 
-    2. Searches classes with annotations javax.persistence.Entity and
-      generates MOM from this list."
-  [hb-name]
-  (let [classes (map #(Class/forName %) (get-classes hb-name))] ; "classes" contains list with Class of name of classes
-    (mget-paths
-;      {:path [ru.petrsu.nest.son.Occupancy] :ppath []}
-      ru.petrsu.nest.son.Device
-      ru.petrsu.nest.son.Building
-      (set classes))))
+(defn- gen-mom
+  "Generates mom from list of classes 
+  (\"classes\" contains list with Class of name mom's classes.)"
+  [classes]
+  (mget-paths
+    ru.petrsu.nest.son.Device
+    ru.petrsu.nest.son.Building
+    (set classes)))
 ;    (for [from classes to classes] 
 ;      [from to])))
 
-(gen-mom "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml")
+
+(defn gen-mom-from-cfg
+  "Generates from hibernate configuration xml file 
+      (usual named hibernate.cfg.xml) with mapping.
+      It's usefull in case when you use hibernate as
+      implementation of Criteria API 2.0."
+  [hb-name]
+  (gen-mom (map #(Class/forName %) (get-classes hb-name))))
+
+
+(defn gen-mom-from-classes
+  "Searches classes with annotations javax.persistence.Entity and
+      generates MOM from this list."
+  [])
+
+
+(gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml")
