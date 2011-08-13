@@ -84,8 +84,8 @@
   
 (defn- get-paths
   "Returns sequence of maps. Each map contains following keys:
-  :path path between \"from\" and \"to\" as classes
-  :ppath path between \"from\" and \"to\" as properties"
+    :path path between \"from\" and \"to\" as classes
+    :ppath path between \"from\" and \"to\" as properties"
   [from to elems]
   (loop [all-paths [{:path [from] :ppath []}] 
          new-elems elems
@@ -101,18 +101,27 @@
                new-paths 
                (concat res to-t))))))
 
+(defn- get-s-paths
+  "Gets maps from get-paths and transforms value of :ppath key to
+  one string. Returns sequence of this strings."
+  [from to classes]
+  (map #(reduce (fn [x1, x2] (str x1 "." x2)) (:ppath %)) 
+       (get-paths from to classes)))
 
-(defn- gen-mom
+
+(defn gen-mom
   "Generates mom from list of classes 
   (\"classes\" contains list with Class of name mom's classes.)"
   [classes]
-  (mget-paths
-    ru.petrsu.nest.son.Device
-    ru.petrsu.nest.son.Building
-    (set classes)))
-;    (for [from classes to classes] 
-;      [from to])))
-
+  (reduce (fn [x1 x2]
+            (assoc x1
+                   x2
+                   (reduce #(assoc 
+                              %1 
+                              %2 
+                              (get-s-paths x2 %2 (set classes)) ) {} classes)))
+          {}
+          classes))
 
 (defn gen-mom-from-cfg
   "Generates from hibernate configuration xml file 
