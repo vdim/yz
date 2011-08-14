@@ -6,7 +6,7 @@
 
 (def 
   ^{:doc "The map of the object model."}
-  mom (hb/gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml")
+  mom (hb/gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml"))
 
 (defn get-class
   "Gets name of class, finds this class and returns instance of java.lang.Class.

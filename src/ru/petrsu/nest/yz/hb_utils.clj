@@ -85,7 +85,7 @@
           (recur to-t (conj to-f m) (rest vv)))))))
 
   
-(defn- get-paths
+(defn get-paths
   "Returns sequence of maps. Each map contains following keys:
     :path path between \"from\" and \"to\" as classes
     :ppath path between \"from\" and \"to\" as properties"
