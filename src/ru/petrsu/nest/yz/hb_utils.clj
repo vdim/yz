@@ -109,23 +109,37 @@
        (get-paths from to classes)))
 
 
+(defn init-map-for-cl
+  "Inits map for specified class. Adds following keys and values:
+    - :sn (short name)
+    - :dp (default property)
+    - :superclass (super class)
+    - :properties (list of properties)"
+  [cl]
+  {:sn ""
+   :dp ""
+   :superclass (:superclass (bean cl))
+   :properties ""})
+
 (defn gen-mom
   "Generates mom from list of classes 
   (\"classes\" contains list with Class of name mom's classes.)"
   [classes]
-  (reduce (fn [x1 x2]
-            (assoc x1
-                   x2
+  (reduce (fn [m cl]
+            (assoc m
+                   cl
                    (reduce #(assoc 
                               %1 
                               %2 
-                              (get-s-paths x2 %2 (set classes)) ) {} classes)))
+                              (get-s-paths cl %2 (set classes)) ) 
+                           (init-map-for-cl cl) 
+                           classes)))
           {}
           classes))
 
 (defn gen-mom-from-cfg
-  "Generates from hibernate configuration xml file 
-      (usual named hibernate.cfg.xml) with mapping.
+  "Generates MOM from hibernate configuration xml file 
+      (usual named hibernate.cfg.xml) with 'mapping' tags.
       It's usefull in case when you use hibernate as
       implementation of Criteria API 2.0."
   [hb-name]
@@ -133,7 +147,7 @@
 
 
 (defn gen-mom-from-classes
-  "Searches classes with annotations javax.persistence.Entity and
+  "Searches classes in classpath with annotations javax.persistence.Entity and
       generates MOM from this list."
   [])
 
