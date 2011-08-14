@@ -2,23 +2,11 @@
   ^{:author Vyacheslav Dimitrov
     :doc "This code contains core functions of the Clojure's implementation of the YZ language.
          The Parsing of queries does due to the fnparse library."}
-  (:use name.choi.joshua.fnparse))
+  (:require [ru.petrsu.nest.yz.hb-utils :as hb]))
 
-; The parsing state data structure. The rest of input string is stored
-; in :remainder, and list of maps (key is token, value is value of token) of tokens is
-; stored in :tokens.
-(defstruct generate-tokens :remainder :tokens)
-
-; Rules of grammar are below. See BNF in the begining of file.
-(def alpha
-  ^{:doc "Sequence of characters."}
-  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
-
-(def id 
-  (complex [id# (rep+ alpha)
-            tokens (get-info :tokens)]
-           id#))
-
+(def 
+  ^{:doc "The map of the object model."}
+  mom (hb/gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml")
 
 (defn get-class
   "Gets name of class, finds this class and returns instance of java.lang.Class.
