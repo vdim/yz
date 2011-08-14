@@ -26,6 +26,7 @@
   (:require [clojure.xml :as cx] 
             [clojure.set :as cs]))
 
+
 (defn- get-classes
   "Returns sequence of name of classes (package+name) from hibernate.cfg.xml.
   Function extracts value from mapping tag and class attribute."
@@ -33,6 +34,7 @@
   (map :class  
     (filter :class 
       (for [attr (:content ((:content (cx/parse hb-name)) 0))] (:attrs attr)))))
+
 
 (defn- check-type
   "Defines whether type of pd (PropertyDescription) is contained in list of classes."
@@ -55,6 +57,7 @@
          (seq (.. java.beans.Introspector
                 (getBeanInfo cl)
                 (getPropertyDescriptors))))))
+
 
 (defn- adds-related
   "Adds related classes to last element of :path in map 'm'.
@@ -101,6 +104,7 @@
                new-paths 
                (concat res to-t))))))
 
+
 (defn- get-s-paths
   "Gets maps from get-paths and transforms value of :ppath key to
   one string. Returns sequence of this strings."
@@ -108,6 +112,17 @@
   (map #(reduce (fn [x1, x2] (str x1 "." x2)) (:ppath %)) 
        (get-paths from to classes)))
 
+
+; TODO: exculde fields with javax.persistence.Transient
+(defn get-fields-name
+  "Returns list of all field's names (including superclass's
+  fields and excluding fields with Transient annotation)."
+  [cl]
+  (loop [cl- cl res ()]
+    (if (nil? cl-)
+      res
+      (recur (:superclass (bean cl-)) 
+             (concat res(map #(.getName %) (.getDeclaredFields cl-)))))))
 
 (defn init-map-for-cl
   "Inits map for specified class. Adds following keys and values:
@@ -119,7 +134,8 @@
   {:sn ""
    :dp ""
    :superclass (:superclass (bean cl))
-   :properties ""})
+   :properties (get-fields-name cl)})
+
 
 (defn gen-mom
   "Generates mom from list of classes 
@@ -136,6 +152,7 @@
                            classes)))
           {}
           classes))
+
 
 (defn gen-mom-from-cfg
   "Generates MOM from hibernate configuration xml file 
