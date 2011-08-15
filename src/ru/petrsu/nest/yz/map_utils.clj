@@ -14,3 +14,22 @@
   returned, otherwise Class instanse is returned."
   [id, mom]
   (some #(let [[k m] %1] (if (= (:sn m) id) k nil)) mom))
+
+
+(defmacro assoc-in* 
+  "Like clojure.core/assoc-in but vector of keys has specified structure: 
+  key* repeats n times and then key-in is."
+  [m key* n key-in v] 
+  `(assoc-in ~m (vec (flatten [(repeat ~n ~key*) ~key-in])) ~v))
+
+
+(defn insert-in
+  "Like assoc-in*, but define whether value of key* is nil, if
+  it is then assoc-in* is called."
+  [m n key* v]
+  (loop [m- m n- n]
+    (if (= n- 0)
+      (if (nil? (key* m-))
+        (assoc-in* m key* (dec n) key* v))
+      (recur (key* m-) (dec n-)))))
+

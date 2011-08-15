@@ -21,3 +21,23 @@
          (is (= (find-by-sn "f" nest-mom) ru.petrsu.nest.son.Floor))
          (is (= (find-by-sn "s" nest-mom) nil)))
 
+
+(def empty-map
+  {:what nil
+   :then nil
+   :nest nil})
+
+(deftest t-assoc-in*
+         ^{:doc "Tests assoc-in* macro."}
+         (is (= (assoc-in* empty-map :nest 0 :what "someval") 
+                {:what "someval" :then nil :nest nil}))
+         (let [m (assoc empty-map :nest empty-map) 
+               mm (assoc-in m [:nest :nest] empty-map)] 
+           (is (= (assoc-in* m :nest 1 :nest "someval") 
+                  {:what nil :then nil :nest {:what nil :then nil :nest "someval"}}))
+           (is (= (assoc-in* m :nest 0 :what "someval") 
+                  {:what "someval" :then nil :nest {:what nil :then nil :nest nil}}))
+           (is (= (assoc-in* m :nest 1 :what "someval") 
+                  {:what nil :then nil :nest {:what "someval" :then nil :nest nil}}))
+           (is (= (assoc-in* mm :nest 2 :what "someval") 
+                  {:what nil :then nil :nest {:what nil :then nil :nest {:what "someval" :then nil :nest nil}}}))))
