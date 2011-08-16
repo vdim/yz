@@ -24,12 +24,13 @@
 
 
 (defn insert-in
-  "Like assoc-in*, but define whether value of key* is nil, if
-  it is then assoc-in* is called."
+  "Like assoc-in*, but defines whether value of key* is nil, if
+  it is then assoc-in* is called, otherwise original m is returned."
   [m n key* v]
   (loop [m- m n- n]
-    (if (= n- 0)
+    (if (<= n- 0)
       (if (nil? (key* m-))
-        (assoc-in* m key* (dec n) key* v))
+        (assoc-in* m key* n key* v)
+        m)
       (recur (key* m-) (dec n-)))))
 
