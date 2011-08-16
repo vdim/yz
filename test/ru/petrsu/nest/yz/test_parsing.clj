@@ -35,13 +35,16 @@
    "building (room (device))"
    "building (room (device (networkinterface)))"
    "building (room.floor (device))"
+   "building (room.floor (device), occupancy)"
+   "building.floor.room (room.floor.building, network (device.building), occupancy)"
+   "building.floor.room (room.floor.building (device.building), occupancy)"
    "room"])
 
 (deftest parse-remainder
          ^{:doc "Checks remainder after parsing for queries in 'qlist' vector.
                 It must be nil for all queries, because qlist contains
                 only correct queries."}
-         (is (nil? (some #(not (nil? %)) (map #(:remainder (parse % mom)) qlist)))))
+         (is (nil? (some #(not (nil? %)) (map #(:remainder (parse+ % mom)) qlist)))))
 
 
 (deftest t-parse
@@ -51,4 +54,4 @@
                    :props nil
                    :pred nil
                    :then nil
-                   :next nil}])))
+                   :nest nil}])))

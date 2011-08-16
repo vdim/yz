@@ -5,8 +5,6 @@
   (:require [clojure.string :as cs]))
 ;            [ru.petrsu.nest.yz.map-utils :as mu]))
 
-(declare found-id)
-
 ; The parsing state data structure. 
 (defstruct q-representation 
            :remainder ; The rest of input string
@@ -17,7 +15,7 @@
            :nest-level ; Nest level, level of query (the number of parentthesis).
            :is-then)  ; Defines whether id is came from '.'.
 
-;; Helper macros and definitions.
+;; Helper macros, definitions and functions.
 
 (defmacro sur-by-ws
   "Surrounds 'rule' by whitespaces like this
@@ -38,13 +36,14 @@
 (defn assoc-in-nest
   "Like assoc-in, but takes into account structure :result.
   Inserts some value 'v' in 'res' map to :nest key."
-  [res nest-level v]
+  [res nest-level l-tag v]
   (if (= nest-level 0)
-    (conj (vec (butlast res)) (assoc (last res) :nest v))
+    (conj (vec (butlast res)) (assoc (last res) l-tag v))
     (conj (vec (butlast res)) 
            (assoc (last res) 
                   :nest 
-                  (assoc-in-nest (:nest (last res)) (dec nest-level) v)))))
+                  (assoc-in-nest (:nest (last res)) (dec nest-level) l-tag v)))))
+
 
 (defn add-value
   "Like assoc-in, but takes into account structure :result.
@@ -52,7 +51,6 @@
   [res nest-level v]
   (if (= nest-level 0)
     (conj res v)
-;    (conj (vec (butlast res)) (conj res v))
     (conj (vec (butlast res)) 
            (assoc (last res) 
                   :nest 
@@ -67,6 +65,47 @@
    :pred nil
    :then nil
    :nest nil}])
+
+
+(defn find-class
+  "Returns class which is correspended 'id' (search is did in 'mom'). 
+  Search is did in the following positions:
+    - as full name of class (package+name)
+    - as name of class 
+    - in 'sn' key of each map of mom.
+    - as abbreviation class's name."
+  [id mom]
+  (some (fn [el] (let [[cl m] el, b (bean cl), l-id (cs/lower-case id)]
+                   (if (or (= l-id (cs/lower-case (:name b))) 
+                           (.startsWith (cs/lower-case (:simpleName b)) l-id)
+                           (= l-id (cs/lower-case (:sn m))))
+                     cl))) 
+        mom))
+
+
+(defn find-prop
+  "Returns true if 'prop' is property of 'cl'"
+  [cl prop mom]
+  (contains? (set (:properties (get mom cl))) prop))
+
+
+(defmacro assoc-in* 
+  "Like clojure.core/assoc-in but vector of keys has specified structure: 
+  key* repeats n times and then key-in is."
+  [m key* n key-in v] 
+  `(assoc-in ~m (vec (flatten [(repeat ~n ~key*) ~key-in])) ~v))
+
+
+(defn found-id
+  "This function is called when id is found in query. Returns new result."
+  [res mom id nl]
+  (if-let [cl (find-class id, mom)]
+    (assoc-in-nest res nl :what cl)
+    (throw (Exception. (str "Not found id: " id)))))
+
+
+
+
 
 
 ;; Rules of grammar are below. See BNF in the begining of file.
@@ -90,7 +129,7 @@
             numq (get-info :numq)
             is-level (get-info :is-then)
 ;            _ (set-info :result (found-id g-res g-mom tl nl numq is-level (reduce str id#)))
-            _ (set-info :result (found-id g-res g-mom (reduce str id#)))
+            _ (set-info :result (found-id g-res g-mom (reduce str id#) nl))
             _ (set-info :is-then false)]
            id#))
 
@@ -113,7 +152,7 @@
   (conc (sur-by-ws (complex [ret (change-level \( :nest-level inc)
                              nl (get-info :nest-level)
                              res (get-info :result)
-                             _ (set-info :result (assoc-in-nest res (dec nl) empty-res))
+                             _ (set-info :result (assoc-in-nest res (dec nl) :nest empty-res))
                              _ (set-info :then-level 0)]
                             ret))
         query 
@@ -128,69 +167,12 @@
 
 (defn parse
   "Parses specified query ('q') on YZ language based on
-  specified ('mom') the map of the object model."
+  specified ('mom') the map of the object model.
+  Returns value of key's :result of structure of result (q-representation structure)."
   [q, mom]
-;  (:result ((query (struct q-representation (seq q) empty-res mom 0 0)) 1)))
-  ((query (struct q-representation (seq q) empty-res mom 0 0 0 false)) 1))
+  (:result ((query (struct q-representation (seq q) empty-res mom 0 0 0 false)) 1)))
 
-
-;; Helper functions are below.
-
-(defn find-class
-  "Returns class which is correspended 'id' (search is did in 'mom'). 
-  Search is did in the following positions:
-    - as full name of class (package+name)
-    - as name of class 
-    - in 'sn' key of each map of mom.
-    - as abbreviation class's name."
-  [id mom]
-  (some (fn [el] (let [[cl m] el, b (bean cl), l-id (cs/lower-case id)]
-                   (if (or (= l-id (cs/lower-case (:name b))) 
-                           (.startsWith (cs/lower-case (:simpleName b)) l-id)
-                           (= l-id (cs/lower-case (:sn m))))
-                     cl))) 
-        mom))
-
-(defn find-prop
-  "Returns true if 'prop' is property of 'cl'"
-  [cl prop mom]
-  (contains? (set (:properties (get mom cl))) prop))
-
-(defn get-proper-m
-  "Returns map from :result compited by :then-level and :nest-level."
-  [res tl nl is-then]
-  (let [last-nest (last (get-in res (repeat nl :nest)))]
-    (if is-then
-      (get-in last-nest (repeat tl :then))
-      last-nest)))
-
-
-(defn found-id
-  "This function is called when id is found in query. Returns new result."
-;  [res mom tl nl numq id is-then]
-  [res mom id]
-  (if-let [cl (find-class id, mom)]
-;    res
-;           m (get-proper-m (last res) tl nl is-then)]
-    [(assoc (res 0) :what cl)]
-    (throw (Exception. (str "Not found id: " id)))))
-
-;(def res [{:what nil :prop 1 :then nil :nest [{:what nil :prop 2 :then nil :nest [{:what nil :prop 4 :then nil :nest nil}]}]}])
-;(def res [{:what nil :prop 1 :then nil :nest [{:what nil :prop 2 :then {:what nil :prop nil :then 3} :nest nil}]}])
-;(def res [{:what nil :prop 1 :then nil :nest nil}])
-
-;(add-value res 2 (empty-res 0))
-
-;(get-proper-m res 0 1 false) 
-;(ru.petrsu.nest.yz.map-utils/insert-in (res 0) 0 :nest res)
-
-
-;(conj (vec (butlast res)) (assoc (last res) :nest "somevalue"))
-;(conj (vec (butlast res2))  (assoc (last res2) :nest (conj (vec (butlast (:nest (last res2)))) (assoc (last (:nest (last res2))) :nest "somevalue"))))
-
-;(def res [{:what nil, :prop 1, :then nil, :nest [{:what nil, :prop 2, :then nil, :nest nil} {:what nil, :prop 3, :nest :nil}]}])
-;(def re2 [{:what nil, :prop 1, :then nil, :nest nil}])
-;(macroexpand-1 '(assoc-in-nest res 1 "somevalue"))
-;(assoc-in-nest res2 0 "somevalue")
-
-
+(defn parse+
+  "Like parse, but returns all structure of result."
+  [q, mom]
+  (parse q, mom))
