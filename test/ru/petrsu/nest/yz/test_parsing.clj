@@ -41,21 +41,6 @@
            (is (= "3" (get-in-nest (assoc-in-nest some-vvv 2 :what "3") 2 :what)))
            (is (= "4" (get-in-nest (assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
 
-(defmacro create-parse-tests
-  "Generates tests from list with queries qlist."
-  [qlist, mom]
-  `(deftest ~(gensym)
-            (for [q# ~qlist] 
-              (is (nil? (:remainder (parse+ q# ~mom)))))))
-
-(defmacro create-parse-tests-2
-  ""
-  [qlist, mom]
-  `(deftest ~(gensym)
-            (dotimes [n# (count ~qlist)] 
-              (let [q# (~qlist n#)]
-                (is (nil? (:remainder (parse+ q# ~mom))))))))
-
 
 (def qlist
   ^{:doc "Defines list of YZ's queries (used Nest's model)."}
@@ -80,7 +65,6 @@
    "building (room.device.forwarding, floor)"
    "building (room.device.forwarding, floor, network.building.floors)"
    "building (room.device.forwarding, floor (network.building.floors))"
-   "building?device"
    "room"])
 
 (deftest parse-remainder
