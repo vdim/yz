@@ -11,7 +11,6 @@
            :result ; vector of maps
            :mom ; The map of the object model some area
            :then-level ; then level, the nubmer of dots.
-           :numq  ; The number of query.
            :nest-level ; Nest level, level of query (the number of parentthesis).
            :is-then)  ; Defines whether id is came from '.'.
 
@@ -46,8 +45,8 @@
 
 
 (defn add-value
-  "Like assoc-in, but takes into account structure :result.
-  Inserts some value 'v' in 'res' map to :nest key."
+  "Conjs some value 'v' to :nest array which has nest-level 
+  of level."
   [res nest-level v]
   (if (= nest-level 0)
     (conj res v)
@@ -55,6 +54,17 @@
            (assoc (last res) 
                   :nest 
                   (add-value (:nest (last res)) (dec nest-level) v)))))
+
+
+(defn get-in-nest
+  "Like get-in, but takes into account structure of :result
+  field of q-representation structure. First :nest key is
+  nest-level times, then k is."
+  [res nest-level k]
+  (loop [res- res nl nest-level]
+    (if (= nl 0)
+      (get (last res-) k)
+      (recur (:nest (last res-)) (dec nl)))))
 
 
 (def empty-res
@@ -127,9 +137,7 @@
             g-mom (get-info :mom)
             tl (get-info :then-level)
             nl (get-info :nest-level)
-            numq (get-info :numq)
             is-level (get-info :is-then)
-;            _ (set-info :result (found-id g-res g-mom tl nl numq is-level (reduce str id#)))
             _ (set-info :result (found-id g-res g-mom (reduce str id#) nl))
             _ (set-info :is-then false)]
            id#))
@@ -140,7 +148,7 @@
   and dot (for property or link and so on)."}
   (alt
        (invisi-conc (change-level \. :then-level inc) (set-info :is-then true))
-       (complex [ret (sur-by-ws (change-level \, :numq inc)) 
+       (complex [ret (sur-by-ws (lit \,)) 
                  res (get-info :result)
                  nl (get-info :nest-level)
                  _ (set-info :result (add-value res nl (empty-res 0)))]
@@ -171,7 +179,7 @@
   specified ('mom') the map of the object model.
   Returns value of key's :result of structure of result (q-representation structure)."
   [q, mom]
-  (:result ((query (struct q-representation (seq q) empty-res mom 0 0 0 false)) 1)))
+  (:result ((query (struct q-representation (seq q) empty-res mom 0 0 false)) 1)))
 
 (defn parse+
   "Like parse, but returns all structure of result."

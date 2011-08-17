@@ -10,6 +10,12 @@
   ^{:doc "Defines the map of the object model (used Nest's model)"}
   (gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml"))
 
+(def some-v
+  ^{:doc "Defines vector with single empty map."}
+  [{:what nil
+   :then nil
+   :nest nil}])
+
 (deftest t-find-class
          ^{:doc "Tests 'find-class' function."}
          (is (= (find-class "ru.petrsu.nest.son.Building", mom) Building))
@@ -23,6 +29,17 @@
          (is (find-prop ru.petrsu.nest.son.Building "name" mom))
          (is (find-prop ru.petrsu.nest.son.Building "floors" mom))
          (is (not (find-prop ru.petrsu.nest.son.Building "rooms" mom))))
+
+(deftest t-get-in-nest
+         ^{:doc "Tests 'get-in-nest' function"}
+         (is (nil? (get-in-nest some-v 0 :what)))
+         (is (= "1" (get-in-nest [(assoc (some-v 0) :what "1")] 0 :what)))
+         (let [some-vv (assoc-in-nest some-v 0 :nest some-v)
+               some-vvv (assoc-in-nest some-vv 1 :nest some-v)
+               some-vvvv (assoc-in-nest some-vvv 2 :nest some-v)]
+           (is (= "2" (get-in-nest (assoc-in-nest some-vv 1 :what "2") 1 :what)))
+           (is (= "3" (get-in-nest (assoc-in-nest some-vvv 2 :what "3") 2 :what)))
+           (is (= "4" (get-in-nest (assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
 
 (def qlist
   ^{:doc "Defines list of YZ's queries (used Nest's model)."}
