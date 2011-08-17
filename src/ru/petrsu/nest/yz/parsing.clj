@@ -199,15 +199,16 @@
 (def query
   (rep+ (alt bid nest-query (conc delimiter bid))))
 
+(defn parse+
+  "Like parse, but returns all structure of result."
+  [q, mom]
+  ((query (struct q-representation (seq q) empty-res mom 0 0 false)) 1))
 
 (defn parse
   "Parses specified query ('q') on YZ language based on
   specified ('mom') the map of the object model.
   Returns value of key's :result of structure of result (q-representation structure)."
   [q, mom]
-  (:result ((query (struct q-representation (seq q) empty-res mom 0 0 false)) 1)))
+  (:result (parse+ q, mom)))
 
-(defn parse+
-  "Like parse, but returns all structure of result."
-  [q, mom]
-  (parse q, mom))
+
