@@ -55,6 +55,15 @@
    "building (room.floor (device), occupancy)"
    "building.floor.room (room.floor.building, network (device.building), occupancy)"
    "building.floor.room (room.floor.building (device.building), occupancy)"
+   "building.name"
+   "building.floors"
+   "building.room.floor.rooms"
+   "building (room.number)"
+   "building (device.forwarding)"
+   "building (room.device.forwarding)"
+   "building (room.device.forwarding, floor)"
+   "building (room.device.forwarding, floor, network.building.floors)"
+   "building (room.device.forwarding, floor (network.building.floors))"
    "room"])
 
 (deftest parse-remainder
@@ -69,18 +78,18 @@
           (is (= (parse "building", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest nil}]))
 
          (is (= (parse "building (room)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest nil}]}]))
 
@@ -88,15 +97,15 @@
          (is (= (parse "building (room (device))", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props nil
-                                   :pred nil
+                                   :preds nil
                                    :then nil
                                    :nest nil}]}]}]))
 
@@ -104,19 +113,19 @@
          (is (= (parse "building (room (device (network)))", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props nil
-                                   :pred nil
+                                   :preds nil
                                    :then nil
                                    :nest [{:what ru.petrsu.nest.son.Network
                                            :props nil
-                                           :pred nil
+                                           :preds nil
                                            :then nil
                                            :nest nil}]}]}]}]))
 
@@ -124,23 +133,23 @@
          (is (= (parse "building (room (device (network (floor))))", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props nil
-                                   :pred nil
+                                   :preds nil
                                    :then nil
                                    :nest [{:what ru.petrsu.nest.son.Network
                                            :props nil
-                                           :pred nil
+                                           :preds nil
                                            :then nil
                                            :nest [{:what ru.petrsu.nest.son.Floor
                                                    :props nil
-                                                   :pred nil
+                                                   :preds nil
                                                    :then nil
                                                    :nest nil}]}]}]}]}]))
 
@@ -148,25 +157,25 @@
          (is (= (parse "building (room (device, floor), network)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props nil
-                                   :pred nil
+                                   :preds nil
                                    :then nil
                                    :nest nil}
                                   {:what ru.petrsu.nest.son.Floor
                                    :props nil
-                                   :pred nil
+                                   :preds nil
                                    :then nil
                                    :nest nil}]} 
                           {:what ru.petrsu.nest.son.Network
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest nil}]}]))
 
@@ -174,16 +183,16 @@
          (is (= (parse "building (room, device)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest nil}
                           {:what ru.petrsu.nest.son.Device
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest nil}]}]))
 
@@ -191,33 +200,33 @@
          (is (= (parse "building (room, occupancy (device (network (floor)), networkinterface))", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest nil}
                           {:what ru.petrsu.nest.son.Occupancy
                            :props nil
-                           :pred nil
+                           :preds nil
                            :then nil
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props nil
-                                   :pred nil
+                                   :preds nil
                                    :then nil
                                    :nest [{:what ru.petrsu.nest.son.Network
                                            :props nil
-                                           :pred nil
+                                           :preds nil
                                            :then nil
                                            :nest [{:what ru.petrsu.nest.son.Floor
                                                    :props nil
-                                                   :pred nil
+                                                   :preds nil
                                                    :then nil
                                                    :nest nil}]}]}
                                   {:what ru.petrsu.nest.son.NetworkInterface
                                    :props nil
-                                   :pred nil
+                                   :preds nil
                                    :then nil
                                    :nest nil}]}]}]))
 
@@ -225,11 +234,48 @@
          (is (= (parse "building, room", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
                    :nest nil}
                   {:what ru.petrsu.nest.son.Room 
                    :props nil
-                   :pred nil
+                   :preds nil
                    :then nil
-                   :nest nil}]))) 
+                   :nest nil}])))
+         
+
+(deftest t-parse-props
+         ^{:doc "Tests parsing queries with properties."}
+         (is (= (parse "building.name", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props "name"
+                   :preds nil
+                   :then nil
+                   :nest nil}]))
+
+
+         (is (= (parse "building.room.floor.rooms", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds nil
+                   :then {:what ru.petrsu.nest.son.Room 
+                          :props nil 
+                          :preds nil 
+                          :then {:what ru.petrsu.nest.son.Floor 
+                                 :props "rooms" 
+                                 :preds nil 
+                                 :then nil}}
+                   :nest nil}]))
+
+
+         (is (= (parse "building.room.number", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds nil
+                   :then {:what ru.petrsu.nest.son.Room 
+                          :props "number" 
+                          :preds nil 
+                          :then nil}
+                   :nest nil}])))
+
+

@@ -27,8 +27,8 @@
   "Generates code for changing 'key-level' due to function 'f'."
   [ch key-level f]
   `(complex [ret# (lit ~ch),
-            then-level# (get-info ~key-level)
-            _# (set-info ~key-level (~f then-level#))]
+            level# (get-info ~key-level)
+            _# (set-info ~key-level (~f level#))]
            ret#))
 
 
@@ -36,7 +36,7 @@
   "Like assoc-in, but takes into account structure :result.
   Inserts some value 'v' in 'res' map to :nest key."
   [res nest-level l-tag v]
-  (if (= nest-level 0)
+  (if (<= nest-level 0)
     (conj (vec (butlast res)) (assoc (last res) l-tag v))
     (conj (vec (butlast res)) 
            (assoc (last res) 
@@ -72,9 +72,16 @@
          The vector is initial result of 'parse' function."}
   [{:what nil
    :props nil
-   :pred nil
+   :preds nil
    :then nil
    :nest nil}])
+
+(def empty-then
+  ^{:doc "Defines then structure"}
+  {:what nil
+   :props nil
+   :preds nil
+   :then nil})
 
 
 (defn find-class
@@ -109,10 +116,28 @@
 
 (defn found-id
   "This function is called when id is found in query. Returns new result."
-  [res mom id nl]
-  (if-let [cl (find-class id, mom)]
-    (assoc-in-nest res nl :what cl)
-    (throw (Exception. (str "Not found id: " id)))))
+  [res mom id nl tl is-then]
+  (let [cl (find-class id, mom)
+        last-then (get-in-nest res nl :then)
+        tl- (- tl 2)
+        what (if last-then 
+               (:what (if (<= tl- 0) 
+                        last-then
+                        (get-in last-then (repeat tl- :then)))) 
+               (get-in-nest res nl :what))]
+    (if (nil? cl)
+      (if is-then
+        (if-let [prop (find-prop what id mom)]
+          (if (>= tl- 0)
+            (assoc-in-nest res nl :then (assoc-in last-then (conj (vec (repeat tl- :then)) :props) id))
+            (assoc-in-nest res nl :props id))
+          (throw (Exception. (str "Not found id: " id))))
+        (throw (Exception. (str "Not found id: " id))))
+      (if is-then
+        (if (nil? last-then)
+          (assoc-in-nest res nl :then (assoc empty-then :what cl))
+          (assoc-in-nest res nl :then (assoc-in last-then (repeat (dec tl) :then) (assoc empty-then :what cl))))
+        (assoc-in-nest res nl :what cl)))))
 
 
 
@@ -137,8 +162,8 @@
             g-mom (get-info :mom)
             tl (get-info :then-level)
             nl (get-info :nest-level)
-            is-level (get-info :is-then)
-            _ (set-info :result (found-id g-res g-mom (reduce str id#) nl))
+            is-then (get-info :is-then)
+            _ (set-info :result (found-id g-res g-mom (reduce str id#) nl tl is-then))
             _ (set-info :is-then false)]
            id#))
 
@@ -151,7 +176,8 @@
        (complex [ret (sur-by-ws (lit \,)) 
                  res (get-info :result)
                  nl (get-info :nest-level)
-                 _ (set-info :result (add-value res nl (empty-res 0)))]
+                 _ (set-info :result (add-value res nl (empty-res 0)))
+                 _ (set-info :then-level 0)]
                 ret)))
 
 
