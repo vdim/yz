@@ -1,6 +1,6 @@
 (ns ru.petrsu.nest.yz.parsing
   ^{:author Vyacheslav Dimitrov
-    :doc "Code for the parsing of queries does due to the fnparse library."}
+    :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse)
   (:require [clojure.string :as cs]))
 ;            [ru.petrsu.nest.yz.map-utils :as mu]))
@@ -77,7 +77,8 @@
   [id mom]
   (some (fn [el] (let [[cl m] el, b (bean cl), l-id (cs/lower-case id)]
                    (if (or (= l-id (cs/lower-case (:name b))) 
-                           (.startsWith (cs/lower-case (:simpleName b)) l-id)
+                           (= l-id (cs/lower-case (:simpleName b)))
+;                           (.startsWith (cs/lower-case (:simpleName b)) l-id)
                            (= l-id (cs/lower-case (:sn m))))
                      cl))) 
         mom))
@@ -136,7 +137,7 @@
 
 (def delimiter
   ^{:doc "Defines delimiter of ids: there are comma (for queries) 
-  and point (for property or link and so on)."}
+  and dot (for property or link and so on)."}
   (alt
        (invisi-conc (change-level \. :then-level inc) (set-info :is-then true))
        (complex [ret (sur-by-ws (change-level \, :numq inc)) 

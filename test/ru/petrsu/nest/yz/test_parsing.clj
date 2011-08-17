@@ -4,7 +4,7 @@
   (:use ru.petrsu.nest.yz.parsing 
         ru.petrsu.nest.yz.hb-utils 
         clojure.contrib.test-is)
-  (:import (ru.petrsu.nest.son Building)))
+  (:import (ru.petrsu.nest.son Building Room Floor)))
 
 (def mom 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
@@ -15,8 +15,8 @@
          (is (= (find-class "ru.petrsu.nest.son.Building", mom) Building))
          (is (= (find-class "ru.petrsu.nest.son.building", mom) Building))
          (is (= (find-class "building", mom) Building))
-         (is (= (find-class "b", mom) Building))
-         (is (= (find-class "build", mom) Building)))
+         (is (= (find-class "room", mom) Room))
+         (is (= (find-class "floor", mom) Floor)))
 
 (deftest t-find-prop
          ^{:doc "Tests 'find-prop' function."}
@@ -54,4 +54,165 @@
                    :props nil
                    :pred nil
                    :then nil
-                   :nest nil}])))
+                   :nest nil}]))
+
+         (is (= (parse "building (room)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest nil}]}]))
+
+
+         (is (= (parse "building (room (device))", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest [{:what ru.petrsu.nest.son.Device
+                                   :props nil
+                                   :pred nil
+                                   :then nil
+                                   :nest nil}]}]}]))
+
+
+         (is (= (parse "building (room (device (network)))", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest [{:what ru.petrsu.nest.son.Device
+                                   :props nil
+                                   :pred nil
+                                   :then nil
+                                   :nest [{:what ru.petrsu.nest.son.Network
+                                           :props nil
+                                           :pred nil
+                                           :then nil
+                                           :nest nil}]}]}]}]))
+
+
+         (is (= (parse "building (room (device (network (floor))))", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest [{:what ru.petrsu.nest.son.Device
+                                   :props nil
+                                   :pred nil
+                                   :then nil
+                                   :nest [{:what ru.petrsu.nest.son.Network
+                                           :props nil
+                                           :pred nil
+                                           :then nil
+                                           :nest [{:what ru.petrsu.nest.son.Floor
+                                                   :props nil
+                                                   :pred nil
+                                                   :then nil
+                                                   :nest nil}]}]}]}]}]))
+
+         
+         (is (= (parse "building (room (device, floor), network)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest [{:what ru.petrsu.nest.son.Device
+                                   :props nil
+                                   :pred nil
+                                   :then nil
+                                   :nest nil}
+                                  {:what ru.petrsu.nest.son.Floor
+                                   :props nil
+                                   :pred nil
+                                   :then nil
+                                   :nest nil}]} 
+                          {:what ru.petrsu.nest.son.Network
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest nil}]}]))
+
+
+         (is (= (parse "building (room, device)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest nil}
+                          {:what ru.petrsu.nest.son.Device
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest nil}]}]))
+
+
+         (is (= (parse "building (room, occupancy (device (network (floor)), networkinterface))", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest nil}
+                          {:what ru.petrsu.nest.son.Occupancy
+                           :props nil
+                           :pred nil
+                           :then nil
+                           :nest [{:what ru.petrsu.nest.son.Device
+                                   :props nil
+                                   :pred nil
+                                   :then nil
+                                   :nest [{:what ru.petrsu.nest.son.Network
+                                           :props nil
+                                           :pred nil
+                                           :then nil
+                                           :nest [{:what ru.petrsu.nest.son.Floor
+                                                   :props nil
+                                                   :pred nil
+                                                   :then nil
+                                                   :nest nil}]}]}
+                                  {:what ru.petrsu.nest.son.NetworkInterface
+                                   :props nil
+                                   :pred nil
+                                   :then nil
+                                   :nest nil}]}]}]))
+
+
+         (is (= (parse "building, room", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest nil}
+                  {:what ru.petrsu.nest.son.Room 
+                   :props nil
+                   :pred nil
+                   :then nil
+                   :nest nil}]))) 
