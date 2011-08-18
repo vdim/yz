@@ -8,7 +8,7 @@
 
 (def mom 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
-  (gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml"))
+  (gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
 
 (def some-v
   ^{:doc "Defines vector with single empty map."}
