@@ -168,5 +168,3 @@
       generates MOM from this list."
   [])
 
-
-(gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml")

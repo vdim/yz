@@ -16,7 +16,7 @@
         <property name="hibernate.c3p0.idle_test_period">3000</property>
         
         <!-- Show and print nice SQL on stdout -->
-        <property name="show_sql">false</property>
+        <property name="show_sql">true</property>
         <property name="format_sql">true</property>
 	
 	<!-- Set a maximum "depth" for the outer join fetch tree for single-ended associations -->
