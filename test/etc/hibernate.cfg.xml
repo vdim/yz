@@ -8,21 +8,6 @@
 	<property name="hibernate.connection.username">sa</property>
 	<property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
 
-<!--        
-        <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
-        <property name="hibernate.connection.url">jdbc:hsqldb:hsql://localhost:9002</property>
-	<property name="hibernate.connection.url">jdbc:hsqldb:file:/media/PUB/run_server/test</property>
-        <property name="hibernate.connection.username">sa</property>
-        <property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
--->
-
-<!--        
-        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://kappa.cs.prv/nest?characterEncoding=UTF-8</property>
-        <property name="hibernate.connection.username">nest</property>
-	<property name="hibernate.connection.password">Kaa7tori</property>
-        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
--->
         <!-- Use the C3P0 connection pool provider -->
         <property name="hibernate.c3p0.min_size">5</property>
         <property name="hibernate.c3p0.max_size">200</property>
