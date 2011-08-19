@@ -1,14 +1,17 @@
 (ns ru.petrsu.nest.yz.core
   ^{:author Vyacheslav Dimitrov
     :doc "This code contains core functions of the Clojure's implementation of the YZ language.
-         The Parsing of queries does due to the fnparse library."}
-  (:require [ru.petrsu.nest.yz.hb-utils :as hb]
-            [ru.petrsu.nest.yz.parsing :as p]))
+         The Parsing of queries does due to the fnparse library.
+         See the code for the parsing queries in the parsing.clj file."}
+  (:require [ru.petrsu.nest.yz.parsing :as p])
+  (:import (javax.persistence.criteria CriteriaQuery)))
 
-(def 
-  ^{:doc "The map of the object model."}
-  mom (hb/gen-mom-from-cfg "/home/adim/tsen/clj/libs/yz/test/etc/hibernate.cfg.xml"))
 
-(defn p
-  []
-  (p/parse "building.room" mom))
+(defn run-query
+  "Returns result of 'query' based on specified map of object model ('mom')
+  and instance of javax.persistence.EntityManager ('em')."
+  [query mom em]
+  (let [parse-res (p/parse query mom)
+        cr (.. em getCriteriaBuilder createTupleQuery)
+        root (. cr (from (:what (parse-res 0)) ))]
+    (.. em (createQuery (doto cr (.multiselect [root]))) getResultList)))
