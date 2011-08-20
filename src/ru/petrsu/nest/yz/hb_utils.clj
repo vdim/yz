@@ -109,8 +109,8 @@
   "Gets maps from get-paths and transforms value of :ppath key to
   one string. Returns sequence of this strings."
   [from to classes]
-  (map #(reduce (fn [x1, x2] (str x1 "." x2)) (:ppath %)) 
-       (get-paths from to classes)))
+;  (map #(reduce (fn [x1, x2] (str x1 "." x2)) (:ppath %)) 
+  (map :ppath (get-paths from to classes)))
 
 
 ; TODO: exculde fields with javax.persistence.Transient
