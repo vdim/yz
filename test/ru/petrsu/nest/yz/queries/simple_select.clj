@@ -7,32 +7,42 @@
   (:import (ru.petrsu.nest.son SON Building Room Floor)))
 
 
+;; Define model
+
 (def son (doto (SON.)
            (.addBuilding (doto (Building.) (.addFloor (Floor.)) (.addFloor (Floor.)))) 
            (.addBuilding (doto (Building.) (.addFloor (Floor.))))))
 
-(def em (tc/create-em [son]))
+
+;; Define entity manager.
+
+(declare *em*)
+(defn setup [f]
+    (binding [*em* (tc/create-em [son])] (f) 
+      (.close *em*)))
+
+(use-fixtures :once setup)
+
+
+;; Define tests
 
 (deftest select-buildings
-         ^{:doc "Selects all Building objects."}
-         (let [q (run-query "building" tc/mom em)]
+         ^{:doc "Selects all Building objects.
+                Result should be (for our son) like this: [{#<Building Building> [], #<Building Building> []}]"}
+         (let [q (run-query "building" tc/mom *em*)]
            (is (= 1 (count q)))
            (is (= 2 (count (q 0))))
-           (is (= 1 (count (.toArray (nth (q 0) 0)))))))
+           (is (every? empty? (vals (q 0))))
+           (is (every? #(instance? Building %) (keys (q 0))))))
 
 (deftest select-floors
-         ^{:doc "Selects all Floor objects."}
-         (let [q (run-query "floor" tc/mom em)]
+         ^{:doc "Selects all Floor objects.
+                Result should be like this: 
+                [{#<Floor Floor 2> [], #<Floor Floor 1> [], 
+                #<Floor Floor 3> [], #<Floor Floor 2> [], #<Floor Floor 1> []}]"}
+         (let [q (run-query "floor" tc/mom *em*)]
            (is (= 1 (count q)))
            (is (= 3 (count (q 0))))
-           (is (= 1 (count (.toArray (nth (q 0) 0)))))))
-
-(deftest select-floors-and-building
-         ^{:doc "Selects all Floor and Building objects."}
-         (let [q (run-query "floor, building" tc/mom em)]
-           (is (= 2 (count q)))
-           (is (= 3 (count (q 0))))
-           (is (= 2 (count (q 1))))
-           (is (= 1 (count (.toArray (nth (q 1) 0)))))
-           (is (= 1 (count (.toArray (nth (q 0) 0)))))))
+           (is (every? empty? (vals (q 0))))
+           (is (every? #(instance? Floor %) (keys (q 0))))))
 
