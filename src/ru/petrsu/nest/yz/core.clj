@@ -10,7 +10,7 @@
   (:import (javax.persistence.criteria CriteriaQuery)))
 
 
-(defn select-elems
+(defn- select-elems
   "Returns from storage objects which have 'cl' class."
   [cl em]
   (let [cr (.. em getCriteriaBuilder createTupleQuery)
@@ -58,11 +58,28 @@
       (recur (:then then-) (get-objs-by-path objs- (:what then-) mom)))))
 
 
+(declare process-nests)
+(defn- process-nest
+  "Processes one element from vector from :nest value of query structure."
+  [nest objs mom]
+  (reduce #(assoc %1 %2 (process-nests (:nest nest) %2 mom)) 
+          {}
+          (process-then (:then nest) (get-objs-by-path objs (:what nest) mom) mom)))
+
+
+(defn- process-nests
+  "Processes :nest value of query structure"
+  [nests obj mom]
+  (vec (map #(process-nest % [obj] mom) nests)))
+
+
 (defn- do-query
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [em mom q]
-  (process-then (:then q) (select-elems (:what q) em) mom))
+  (reduce #(assoc %1 %2 (process-nests (:nest q) %2 mom)) 
+          {}
+          (process-then (:then q) (select-elems (:what q) em) mom)))
 
 
 (defn run-query
