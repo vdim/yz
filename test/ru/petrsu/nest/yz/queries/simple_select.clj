@@ -10,8 +10,10 @@
 ;; Define model
 
 (def son (doto (SON.)
-           (.addBuilding (doto (Building.) (.addFloor (Floor.)) (.addFloor (Floor.)))) 
-           (.addBuilding (doto (Building.) (.addFloor (Floor.))))))
+           (.addBuilding (doto (Building.) (.setName "building1") 
+                           (.addFloor (Floor.)) (.addFloor (Floor.)))) 
+           (.addBuilding (doto (Building.) (.setName "building2") 
+                           (.addFloor (Floor.))))))
 
 
 ;; Define entity manager.
@@ -43,3 +45,15 @@
 (deftest select-rooms
          ^{:doc "Selects all Room objects. Result should be empty."}
          (is (tc/check-query (run-query "room" tc/mom *em*) [[]])))
+
+(deftest select-b-names
+         ^{:doc "Selects building's names"}
+         (is (tc/qstruct? (run-query "building.name" tc/mom *em*)
+                          [[String []]])))
+
+(deftest select-f-numbers
+         ^{:doc "Selects floor's numbers."}
+         (is (tc/qstruct? (run-query "floor.number" tc/mom *em*)
+                          [[Integer []]])))
+
+

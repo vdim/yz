@@ -41,7 +41,7 @@
   (= structure (transform-q query)))
 
 
-(defn transform-first-q
+(defn- transform-first-q
   "Transforms each first element of each nested query."
   [q]
   (if (vector? q)
@@ -50,5 +50,11 @@
             (class %)) 
          q)
     (class q)))
+
+(defn qstruct?
+  "Defines whether structure of the specified query correspends to
+  the specified query."
+  [query, structure]
+  (= structure (transform-first-q query)))
 
 

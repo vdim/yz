@@ -44,10 +44,10 @@
 
 (deftest select-floors-and-building
          ^{:doc "Selects all Building and its Floor objects."}
-         (is (= (tc/transform-first-q (run-query "building (floor)" tc/mom *em*))
+         (is (tc/qstruct? (run-query "building (floor)" tc/mom *em*)
                 [[Building [[Floor []]]]])))
 
 (deftest select-floors-and-rooms
          ^{:doc "Selects all Building and its Room objects."}
-         (is (= (tc/transform-first-q (run-query "building (room)" tc/mom *em*))
-                [[Building [[Room []]]]])))
+         (is (tc/qstruct? (run-query "building (room)" tc/mom *em*)
+                          [[Building [[Room []]]]])))
