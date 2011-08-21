@@ -17,9 +17,10 @@
 ;; Define entity manager.
 
 (declare *em*)
-(defn setup [f]
-    (binding [*em* (tc/create-em [son])] (f) 
-      (.close *em*)))
+(defn setup 
+  "This fixture defines entity manager and after all tests closes it."
+  [f]
+  (binding [*em* (tc/create-em [son])] (f) (.close *em*)))
 
 (use-fixtures :once setup)
 
@@ -28,21 +29,17 @@
 
 (deftest select-buildings
          ^{:doc "Selects all Building objects.
-                Result should be (for our son) like this: [{#<Building Building> [], #<Building Building> []}]"}
-         (let [q (run-query "building" tc/mom *em*)]
-           (is (= 1 (count q)))
-           (is (= 2 (count (q 0))))
-           (is (every? empty? (vals (q 0))))
-           (is (every? #(instance? Building %) (keys (q 0))))))
+                Result should be (for our son) like this: [[#<Building Building> [], #<Building Building> []]]"}
+         (is (tc/check-query (run-query "building" tc/mom *em*) 
+                             [[Building [], Building []]])))
 
 (deftest select-floors
          ^{:doc "Selects all Floor objects.
                 Result should be like this: 
-                [{#<Floor Floor 2> [], #<Floor Floor 1> [], 
-                #<Floor Floor 3> [], #<Floor Floor 2> [], #<Floor Floor 1> []}]"}
-         (let [q (run-query "floor" tc/mom *em*)]
-           (is (= 1 (count q)))
-           (is (= 3 (count (q 0))))
-           (is (every? empty? (vals (q 0))))
-           (is (every? #(instance? Floor %) (keys (q 0))))))
+                [#<Floor Floor 0> [], #<Floor Floor 0> [], #<Floor Floor 0> []]]"}
+         (is (tc/check-query (run-query "floor" tc/mom *em*) 
+                             [[Floor [], Floor[], Floor[]]])))
 
+(deftest select-rooms
+         ^{:doc "Selects all Room objects. Result should be empty."}
+         (is (tc/check-query (run-query "room" tc/mom *em*) [[]])))

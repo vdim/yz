@@ -32,8 +32,10 @@
 ;; Define entity manager.
 
 (declare *em*)
-(defn setup [f]
-    (binding [*em* (tc/create-em [son])] (f) (.close *em*)))
+(defn setup 
+  "This fixture defines entity manager and after all tests closes it."
+  [f]
+  (binding [*em* (tc/create-em [son])] (f) (.close *em*)))
 
 (use-fixtures :once setup)
 
@@ -42,33 +44,10 @@
 
 (deftest select-floors-and-building
          ^{:doc "Selects all Building and its Floor objects."}
-         (let [q (run-query "building (floor)" tc/mom *em*)]
-           (is (= 1 (count q)))
-           (is (= 2 (count (q 0))))
-           (let [f-b1 (get (q 0) b1), ; f-b1 is floors of b1 building
-                 f-b2 (get (q 0) b2)] ; f-b2 is floors of b2 building
-             (is (not (nil? f-b1)))
-             (is (= 1 (count f-b1)))
-             (is (= 2 (count (f-b1 0)))) ; Check the number of floors for object b1.
-             (is (every? #(instance? Floor %) (keys (f-b1 0))))  ; Check class of floors for object b1.
-             (is (not (nil? f-b2)))
-             (is (= 1 (count f-b2)))
-             (is (= 1 (count (f-b2 0)))) ; Check the number of floors for object b2.
-             (is (every? #(instance? Floor %) (keys (f-b2 0)))))))  ; Check class of floors for object b1.
+         (is (= (tc/transform-first-q (run-query "building (floor)" tc/mom *em*))
+                [[Building [[Floor []]]]])))
 
 (deftest select-floors-and-rooms
          ^{:doc "Selects all Building and its Room objects."}
-         (let [q (run-query "building (room)" tc/mom *em*)]
-           (is (= 1 (count q)))
-           (is (= 2 (count (q 0))))
-           (let [r-b1 (get (q 0) b1), ; r-b1 is rooms of b1 building
-                 r-b2 (get (q 0) b2)] ; r-b2 is rooms of b2 building
-             (is (not (nil? r-b1)))
-             (is (= 1 (count r-b1)))
-             (is (= 4 (count (r-b1 0)))) ; Check the number of rooms for object b1.
-             (is (every? #(instance? Room %) (keys (r-b1 0))))  ; Check class of rooms for object b1.
-             (is (not (nil? r-b2)))
-             (is (= 1 (count r-b2)))
-             (is (= 2 (count (r-b2 0)))) ; Check the number of rooms for object b2.
-             (is (every? #(instance? Room %) (keys (r-b2 0)))))))  ; Check class of rooms for object b1.
-
+         (is (= (tc/transform-first-q (run-query "building (room)" tc/mom *em*))
+                [[Building [[Room []]]]])))

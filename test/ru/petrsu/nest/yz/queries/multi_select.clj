@@ -27,14 +27,24 @@
 
 ;; Define tests
 
-(deftest select-floors-and-building
+(deftest select-floors-and-buildings
          ^{:doc "Selects all Floor and Building objects."}
-         (let [q (run-query "floor, building" tc/mom *em*)]
-           (is (= 2 (count q)))
-           (is (= 3 (count (q 0))))
-           (is (= 2 (count (q 1))))
-           (is (every? empty? (vals (q 0))))
-           (is (every? empty? (vals (q 1))))
-           (is (every? #(instance? Floor %) (keys (q 0))))
-           (is (every? #(instance? Building %) (keys (q 1))))))
+         (is (tc/check-query (run-query "floor, building" tc/mom *em*) 
+                             [[Floor [], Floor [], Floor[]], [Building [], Building []]])))
+
+(deftest select-buildings-and-floors
+         ^{:doc "Selects all Building and Floor objects."}
+         (is (tc/check-query (run-query "building, floor" tc/mom *em*) 
+                             [[Building [], Building []], [Floor [], Floor [], Floor []]])))
+
+(deftest select-buildings-and-rooms
+         ^{:doc "Selects all Building and Room objects."}
+         (is (tc/check-query (run-query "building, room" tc/mom *em*) 
+                             [[Building [], Building []], []])))
+
+(deftest select-floors-and-rooms
+         ^{:doc "Selects all Floor and Room objects."}
+         (is (tc/check-query (run-query "floor, room" tc/mom *em*) 
+                             [[Floor [], Floor [], Floor[]], []])))
+
 

@@ -24,3 +24,31 @@
              (.. em getTransaction commit))]
      em)))
 
+
+(defn- transform-q
+  "Transforms query result to corresponding structure."
+  [q-seq]
+  (map #(if (vector? %)
+          (transform-q %)
+          (class %)) 
+       q-seq))
+
+
+(defn check-query
+  "Checks correspondence specified result of query to
+  specified structure."
+  [query, structure]
+  (= structure (transform-q query)))
+
+
+(defn transform-first-q
+  "Transforms each first element of each nested query."
+  [q]
+  (if (vector? q)
+    (map #(if (vector? %)
+            [(transform-first-q (first %)) (transform-first-q (second %))]
+            (class %)) 
+         q)
+    (class q)))
+
+
