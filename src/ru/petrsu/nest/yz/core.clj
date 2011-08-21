@@ -18,10 +18,15 @@
     (map #(.get % 0) (.. em (createQuery (doto cr (.multiselect [root]))) getResultList))))
 
 
-(defn- get-fv
+(defn get-fv
   "Returns value of field."
   [o, field-name]
-  (.get (doto (.getDeclaredField (class o) field-name) (.setAccessible true)) o))
+  (loop [cl (class o)]
+    (if (nil? cl)
+      (throw (NoSuchFieldException. ))
+      (if (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+        (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+        (recur (:superclass (bean cl)))))))
 
 
 (defn- get-objs
@@ -50,19 +55,27 @@
 
 
 (defn- process-then
-  "Processes :then value of query structure."
+  "Processes :then value of query structure.
+  Returns sequence of objects."
   [then, objs, mom]
   (loop [then- then objs- objs]
     (if (or (nil? then-) (every? nil? objs-))
       objs-
       (recur (:then then-) (get-objs-by-path objs- (:what then-) mom)))))
 
+(defn get-key
+  "Returns key for result map."
+  [obj, nest]
+  (if-let [prop (:props nest)]
+    (get-fv obj prop)
+    obj))
+
 (declare process-nests)
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
   [nest objs mom]
-  `(reduce #(assoc %1 %2 (process-nests (:nest ~nest) %2 ~mom)) 
-          {}
+  `(reduce #(conj %1 (get-key %2 ~nest) (process-nests (:nest ~nest) %2 ~mom))             
+          []
           (process-then (:then ~nest) ~objs ~mom)))
 
 (defn- process-nest
