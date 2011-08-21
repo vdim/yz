@@ -8,4 +8,10 @@
             <property name="hibernate.ejb.cfgfile" value="/hibernate.cfg.xml"/>
         </properties>
     </persistence-unit>
+    <persistence-unit name="nest">
+        <properties>
+		<property name="hibernate.ejb.cfgfile" value="/META-INF/hibernate.cfg.xml"/>
+        </properties>
+    </persistence-unit>
+
 </persistence>
