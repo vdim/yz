@@ -45,10 +45,10 @@
   "Transforms each first element of each nested query."
   [q]
   (if (vector? q)
-    (map #(if (vector? %)
-            [(transform-first-q (first %)) (transform-first-q (second %))]
-            (class %)) 
-         q)
+    (vec (map #(if (vector? %)
+                 [(transform-first-q (first %)) (transform-first-q (second %))]
+                 (class %)) 
+              q))
     (class q)))
 
 (defn qstruct?

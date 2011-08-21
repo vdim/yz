@@ -56,4 +56,9 @@
          (is (tc/qstruct? (run-query "floor.number" tc/mom *em*)
                           [[Integer []]])))
 
+(deftest select-f-names
+         ^{:doc "Selects floor's names"}
+         (is (tc/qstruct? (run-query "floor.name" tc/mom *em*)
+                          [[nil []]])))
+
 

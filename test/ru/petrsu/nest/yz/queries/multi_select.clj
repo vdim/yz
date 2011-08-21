@@ -47,4 +47,14 @@
          (is (tc/check-query (run-query "floor, room" tc/mom *em*) 
                              [[Floor [], Floor [], Floor[]], []])))
 
+(deftest select-b-f-r
+         ^{:doc "Selects all Building, Floor and Room objects."}
+         (is (tc/qstruct? (run-query "building, floor, room" tc/mom *em*) 
+                             [[Building []], [Floor []], [nil nil]])))
+
+(deftest select-b-r
+         ^{:doc "Selects all Building and Floor objects."}
+         (is (tc/qstruct? (run-query "building, floor" tc/mom *em*) 
+                             [[Building []], [Floor []]])))
+
 
