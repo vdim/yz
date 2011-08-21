@@ -57,15 +57,18 @@
       objs-
       (recur (:then then-) (get-objs-by-path objs- (:what then-) mom)))))
 
-
 (declare process-nests)
+(defmacro p-nest
+  "Generates code for process :nest value with some objects."
+  [nest objs mom]
+  `(reduce #(assoc %1 %2 (process-nests (:nest ~nest) %2 ~mom)) 
+          {}
+          (process-then (:then ~nest) ~objs ~mom)))
+
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
   [nest objs mom]
-  (reduce #(assoc %1 %2 (process-nests (:nest nest) %2 mom)) 
-          {}
-          (process-then (:then nest) (get-objs-by-path objs (:what nest) mom) mom)))
-
+  (p-nest nest (get-objs-by-path objs (:what nest) mom) mom))
 
 (defn- process-nests
   "Processes :nest value of query structure"
@@ -77,9 +80,7 @@
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [em mom q]
-  (reduce #(assoc %1 %2 (process-nests (:nest q) %2 mom)) 
-          {}
-          (process-then (:then q) (select-elems (:what q) em) mom)))
+  (p-nest q (select-elems (:what q) em) mom))
 
 
 (defn run-query
