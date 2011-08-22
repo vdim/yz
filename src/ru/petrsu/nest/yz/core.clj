@@ -30,7 +30,7 @@
 
 
 (defn- get-objs
-  "Returns sequence of objects which is belonged to 'objs' 
+  "Returns sequence of objects which are belonged to 'objs' 
   by specified 'field-name'"
   [field-name, objs]
   (flatten
@@ -43,7 +43,7 @@
 
 
 (defn- get-objs-by-path
-  "Returns sequence of objects which has cl-target's class and is 
+  "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
   [sources cl-target mom]
   (if-let [paths (get (get mom (class (nth sources 0))) cl-target)]
@@ -63,8 +63,9 @@
       objs-
       (recur (:then then-) (get-objs-by-path objs- (:what then-) mom)))))
 
-(defn get-key
-  "Returns key for result map."
+(defn- process-props
+  "If nest has props then function returns value of property,
+  otherwise obj is returned."
   [obj, nest]
   (if-let [prop (:props nest)]
     (get-fv obj prop)
@@ -74,7 +75,7 @@
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
   [nest objs mom]
-  `(reduce #(conj %1 (get-key %2 ~nest) (process-nests (:nest ~nest) %2 ~mom))             
+  `(reduce #(conj %1 (process-props %2 ~nest) (process-nests (:nest ~nest) %2 ~mom))             
           []
           (process-then (:then ~nest) ~objs ~mom)))
 
