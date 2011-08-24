@@ -76,9 +76,14 @@
    "floor#(number=1) (room (device)), building"
    "floor#(number=1).room"
    "floor#(number=(1 and (2 or 3 and 4))).room.building.name"
-   "floor#(number=1 and name=\"B\")"
-   "floor#(number=1 or name=\"B\")"
-   "floor#((number=1 or number=2) and name=\"B\")"
+   "floor#(number=1 and name=2)"
+   "floor#(number=1 or name=2)"
+   "floor#((number=1 or number=2) and name=3)"
+   "floor#((number=1 or number=2) and name=3), room"
+   "floor#((number=1 or number=2) and name=3), room#(number=1)"
+   "floor#((number=1 or number=2) and name=3), room#(number=1 and name=2)"
+   "floor#((number=1 or number=2) and name=3) (room#(number=1))"
+   "floor#((number=1 or number=2) and name=3) (room#(number=1 and name=2))"
    "room"])
 
 (deftest parse-remainder

@@ -12,6 +12,7 @@
            :mom ; The map of the object model some area
            :then-level ; then level, the nubmer of dots.
            :nest-level ; Nest level, level of query (the number of parentthesis).
+           :preds ; The vector within current predicates structure.
            :is-then)  ; Defines whether id comes from '.'.
 
 ;; Helper macros, definitions and functions.
@@ -22,27 +23,16 @@
   [rule]
   `(conc (opt whitespaces) ~rule (opt whitespaces)))
 
-
-(defmacro change-level
-  "Generates code for changing 'key-level' due to function 'f'."
-  [ch key-level f]
-  `(complex [ret# (lit ~ch),
-            level# (get-info ~key-level)
-            _# (set-info ~key-level (~f level#))]
-           ret#))
-
 (defmacro change-preds
   "Generates code for changing ':preds'."
-  ([rule]
-   `(change-preds ~rule nil))
-  ([rule st]
+  [rule st]
   `(complex [ret# ~rule
             res# (get-info :result)
             nl# (get-info :nest-level)
             _# (set-info :result 
-                        (assoc-in-nest res# (dec nl#) :preds 
-                                       (str (get-in-nest res# nl# :preds ) (if (nil? ~st) ret# ~st))))]
-           ret#)))
+                        (assoc-in-nest res# nl# :preds 
+                                       (str (get-in-nest res# nl# :preds ) ~st)))]
+           ret#))
 
 (defn assoc-in-nest
   "Like assoc-in, but takes into account structure :result.
@@ -94,6 +84,34 @@
    :props nil
    :preds nil
    :then nil})
+
+(def empty-pred
+  ^{:doc "Defines pred structure"}
+  {:id nil
+   :sign nil
+   :value nil})
+
+
+(defn add-pred
+  "Conjs empty-pred to current vector :preds in
+  q-representation."
+  [rule]
+  (complex [ret rule 
+            preds (get-info :preds)
+            _ (set-info :preds (conj preds empty-pred))]
+           ret))
+
+(defn change-pred
+  "Changes :preds of q-presentation by setiing key 'k' to
+  the return value of 'rule'."
+  [rule, k f]
+  (complex [ret rule
+            preds (get-info :preds)
+            _ (set-info :preds (conj (pop preds) 
+                                     (assoc (peek preds) 
+                                            k 
+                                            (if (nil? f) ret (f ret)))))]
+           ret))
 
 
 (defn find-class
@@ -151,6 +169,21 @@
           (assoc-in-nest res nl :then (assoc-in last-then (repeat (dec tl) :then) (assoc empty-then :what cl))))
         (assoc-in-nest res nl :what cl)))))
 
+(defn tr-pred
+  "Transforms 'pred' map into string"
+  [pred]
+  (str "(" (:sign pred) " (get-fv o, \"" 
+       (reduce str (:id pred)) "\") " 
+       (reduce str (:value pred)) ")"))
+
+(defn do-predicate
+  "Returns string of predicate."
+  [f, pred1, pred2]
+  (let [pred1- (if (map? pred1) (tr-pred pred1) pred1)
+        pred2- (if (map? pred2) (tr-pred pred2) pred2)]
+    (str "(" f " " pred1- " " pred2- ")")))
+
+
 
 
 
@@ -163,13 +196,13 @@
   ^{:doc "Sequence of characters."}
   (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
 
-(def one-number
-  ^{:doc "Sequence of number."}
+(def digit
+  ^{:doc "Sequence of digits."}
   (lit-alt-seq "1234567890."))
 
 (def number
   ^{:doc "Defines number."}
-  (conc (opt (alt (lit \+) (lit \-))) (rep+ one-number)))
+  (conc (opt (alt (lit \+) (lit \-))) (rep+ digit)))
 
 (def whitespaces
   ^{:doc "List of whitespaces"}
@@ -195,7 +228,7 @@
   ^{:doc "Defines delimiter of ids: there are comma (for queries) 
   and dot (for property or link and so on)."}
   (alt
-       (invisi-conc (change-level \. :then-level inc) (set-info :is-then true))
+       (invisi-conc (invisi-conc (lit \.) (update-info :then-level inc))  (set-info :is-then true))
        (complex [ret (sur-by-ws (lit \,)) 
                  res (get-info :result)
                  nl (get-info :nest-level)
@@ -207,14 +240,14 @@
 (declare query)
 (def nest-query
   ^{:doc "Defines nested query"}
-  (conc (sur-by-ws (complex [ret (change-level \( :nest-level inc)
+  (conc (sur-by-ws (complex [ret (invisi-conc (lit\() (update-info :nest-level inc))
                              nl (get-info :nest-level)
                              res (get-info :result)
                              _ (set-info :result (assoc-in-nest res (dec nl) :nest empty-res))
                              _ (set-info :then-level 0)]
                             ret))
         query 
-        (sur-by-ws (change-level \) :nest-level dec))))
+        (sur-by-ws (invisi-conc (lit \)) (update-info :nest-level dec)))))
 
 (def bid
   (conc id (rep* (conc delimiter id))))
@@ -229,14 +262,7 @@
        (conc (lit \<) (lit \=))))
 
 
-(def pred-id
-  (complex [ret (conc (rep+ alpha) (rep* (conc delimiter (rep+ alpha))))
-            res (get-info :result)
-            nl (get-info :nest-level)
-            _ (set-info :result 
-                        (assoc-in-nest res (dec nl) :preds 
-                                       (str (get-in-nest res nl :preds ) (reduce str (first ret)))))]
-           ret))
+(def pred-id (conc (rep+ alpha) (rep* (conc delimiter (rep+ alpha)))))
 
 ;; The block "value" has following BNF:
 ;;    value -> v value'
@@ -245,10 +271,13 @@
 ;;    v'-> and v-f v' | ε
 ;;    v-f -> (value) | some-value
 (declare value)
-(def v-f (alt (conc (lit \() value (lit \))) (alt (conc (opt sign) number) string)))
-(def v-prime (alt (conc (sur-by-ws (conc (lit \a) (lit \n) (lit \d))) v-f v-prime) emptiness))
+(def v-f (alt (conc (lit \() value (lit \))) 
+              (alt (conc (opt sign) 
+                         (change-pred number :value last)) 
+                   (change-pred string :value last))))
+(def v-prime (alt (conc (sur-by-ws (lit-conc-seq "and")) v-f v-prime) emptiness))
 (def v (conc v-f v-prime))
-(def value-prime (alt (conc (sur-by-ws (conc (lit \o) (lit \r))) v value-prime) emptiness))
+(def value-prime (alt (conc (sur-by-ws (lit-conc-seq "or")) v value-prime) emptiness))
 (def value (conc v value-prime)) 
 
 
@@ -260,21 +289,45 @@
 ;;    F -> (where) | id sign value
 
 (declare where)
-(def f (alt (conc (lit \() where (lit \))) (conc pred-id sign value)))
-(def t-prime (alt (conc (sur-by-ws (conc (lit \a) (lit \n) (lit \d))) f t-prime) emptiness))
+(def f (alt (conc (lit \() where (lit \)))
+            (conc (change-pred pred-id :id first) 
+                  (change-pred sign :sign nil) 
+                  value)))
+(def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 
+                        (complex [ret f
+                                  preds (get-info :preds)
+                                  _ (set-info :preds (conj (pop (pop preds)) 
+                                              (do-predicate "and" (peek (pop preds)) (peek preds))))]
+                                 ret)
+                        t-prime) emptiness))
 (def t (conc f t-prime))
-(def where-prime (alt (conc (sur-by-ws (conc (lit \o) (lit \r))) t where-prime) emptiness))
+(def where-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "or"))) 
+                         (complex [ret t
+                                  preds (get-info :preds)
+                                  _ (set-info :preds (conj (pop (pop preds))
+                                              (do-predicate "or" (peek (pop preds)) (peek preds))))]
+                                 ret)
+                           
+                            where-prime) emptiness))
 (def where (conc t where-prime)) 
 
+(def block-where
+  ^{:doc ""}
+  (conc (change-preds (add-pred (lit \#)) "(fn [o, mom] ") 
+        (complex [wh where
+                  preds (get-info :preds)
+                  _ (set-info :preds [])
+                  _ (change-preds emptiness (let [fp (first preds)] (if (map? fp) (tr-pred fp) fp)))]
+                 wh)))
 
 (def query
-  (rep+ (alt bid nest-query (conc delimiter bid) (conc (lit \#) where))))
+  (rep+ (alt bid nest-query (conc delimiter bid) block-where)))
 
 
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 false)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] false)) 1))
 
 
 (defn parse
