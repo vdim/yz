@@ -65,6 +65,20 @@
    "building (room.device.forwarding, floor)"
    "building (room.device.forwarding, floor, network.building.floors)"
    "building (room.device.forwarding, floor (network.building.floors))"
+   "floor#(number=1)"
+   "floor#(number=1 or number=2)"
+   "floor#(number=(1 or 2))"
+   "floor#(number=(1 or (2 or 3)))"
+   "floor#(number=(1 and (2 or 3)))"
+   "floor#(number=(1 and (2 or 3 and 4)))"
+   "floor#(number=1) (room)"
+   "floor#(number=1) (room (device))"
+   "floor#(number=1) (room (device)), building"
+   "floor#(number=1).room"
+   "floor#(number=(1 and (2 or 3 and 4))).room.building.name"
+   "floor#(number=1 and name=\"B\")"
+   "floor#(number=1 or name=\"B\")"
+   "floor#((number=1 or number=2) and name=\"B\")"
    "room"])
 
 (deftest parse-remainder

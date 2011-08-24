@@ -12,7 +12,7 @@
            :mom ; The map of the object model some area
            :then-level ; then level, the nubmer of dots.
            :nest-level ; Nest level, level of query (the number of parentthesis).
-           :is-then)  ; Defines whether id is came from '.'.
+           :is-then)  ; Defines whether id comes from '.'.
 
 ;; Helper macros, definitions and functions.
 
@@ -31,6 +31,18 @@
             _# (set-info ~key-level (~f level#))]
            ret#))
 
+(defmacro change-preds
+  "Generates code for changing ':preds'."
+  ([rule]
+   `(change-preds ~rule nil))
+  ([rule st]
+  `(complex [ret# ~rule
+            res# (get-info :result)
+            nl# (get-info :nest-level)
+            _# (set-info :result 
+                        (assoc-in-nest res# (dec nl#) :preds 
+                                       (str (get-in-nest res# nl# :preds ) (if (nil? ~st) ret# ~st))))]
+           ret#)))
 
 (defn assoc-in-nest
   "Like assoc-in, but takes into account structure :result.
@@ -144,17 +156,28 @@
 
 
 
+
 ;; Rules of grammar are below. See BNF in the begining of file.
 
 (def alpha
   ^{:doc "Sequence of characters."}
   (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"))
 
+(def one-number
+  ^{:doc "Sequence of number."}
+  (lit-alt-seq "1234567890."))
+
+(def number
+  ^{:doc "Defines number."}
+  (conc (opt (alt (lit \+) (lit \-))) (rep+ one-number)))
 
 (def whitespaces
   ^{:doc "List of whitespaces"}
   (rep+ (alt (lit \space) (lit \newline) (lit \tab))))
 
+(def string
+  ^{:doc "Defines string"}
+  (conc (lit \") anything (lit \")))
 
 (def id 
   (complex [id# (rep+ alpha)
@@ -196,13 +219,63 @@
 (def bid
   (conc id (rep* (conc delimiter id))))
 
+(def sign
+  ^{:doc "Defines sing of where's expression."}
+  (alt (lit \=) 
+       (lit \<)
+       (lit \>)
+       (conc (lit \!) (lit \=))
+       (conc (lit \>) (lit \=))
+       (conc (lit \<) (lit \=))))
+
+
+(def pred-id
+  (complex [ret (conc (rep+ alpha) (rep* (conc delimiter (rep+ alpha))))
+            res (get-info :result)
+            nl (get-info :nest-level)
+            _ (set-info :result 
+                        (assoc-in-nest res (dec nl) :preds 
+                                       (str (get-in-nest res nl :preds ) (reduce str (first ret)))))]
+           ret))
+
+;; The block "value" has following BNF:
+;;    value -> v value'
+;;    value'-> or v value' | ε
+;;    v -> v-f v'
+;;    v'-> and v-f v' | ε
+;;    v-f -> (value) | some-value
+(declare value)
+(def v-f (alt (conc (lit \() value (lit \))) (alt (conc (opt sign) number) string)))
+(def v-prime (alt (conc (sur-by-ws (conc (lit \a) (lit \n) (lit \d))) v-f v-prime) emptiness))
+(def v (conc v-f v-prime))
+(def value-prime (alt (conc (sur-by-ws (conc (lit \o) (lit \r))) v value-prime) emptiness))
+(def value (conc v value-prime)) 
+
+
+;; The block "where" has following BNF:
+;;    where -> T where'
+;;    where'-> or T where' | ε
+;;    T -> F T'
+;;    T'-> and F T' | ε
+;;    F -> (where) | id sign value
+
+(declare where)
+(def f (alt (conc (lit \() where (lit \))) (conc pred-id sign value)))
+(def t-prime (alt (conc (sur-by-ws (conc (lit \a) (lit \n) (lit \d))) f t-prime) emptiness))
+(def t (conc f t-prime))
+(def where-prime (alt (conc (sur-by-ws (conc (lit \o) (lit \r))) t where-prime) emptiness))
+(def where (conc t where-prime)) 
+
+
 (def query
-  (rep+ (alt bid nest-query (conc delimiter bid))))
+  (rep+ (alt bid nest-query (conc delimiter bid) (conc (lit \#) where))))
+
 
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
   ((query (struct q-representation (seq q) empty-res mom 0 0 false)) 1))
+
 
 (defn parse
   "Parses specified query ('q') on YZ language based on
