@@ -45,13 +45,14 @@
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
-  [sources cl-target mom]
-  (if-let [paths (get (get mom (class (nth sources 0))) cl-target)]
-    (loop [ps (nth paths 0) res sources]
-      (if (empty? ps)
-        res
-        (recur (rest ps) (get-objs (first ps) res))))
-    (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target ".")))))
+  [sources cl-target mom preds]
+  (let [f (if (nil? preds) (fn [o, mom] true) (read-string preds))]
+    (if-let [paths (get (get mom (class (nth sources 0))) cl-target)]
+      (loop [ps (nth paths 0) res sources]
+        (if (empty? ps)
+          res
+          (recur (rest ps) (filter #(f % mom) (get-objs (first ps) res)))))
+      (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target "."))))))
 
 
 (defn- process-then
@@ -61,7 +62,7 @@
   (loop [then- then objs- objs]
     (if (or (nil? then-) (every? nil? objs-))
       objs-
-      (recur (:then then-) (get-objs-by-path objs- (:what then-) mom)))))
+      (recur (:then then-) (get-objs-by-path objs- (:what then-) mom (:preds then-))))))
 
 (defn- process-props
   "If nest has props then function returns value of property,
@@ -82,7 +83,7 @@
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
   [nest objs mom]
-  (p-nest nest (get-objs-by-path objs (:what nest) mom) mom))
+  (p-nest nest (get-objs-by-path objs (:what nest) mom (:preds nest)) mom))
 
 (defn- process-nests
   "Processes :nest value of query structure"

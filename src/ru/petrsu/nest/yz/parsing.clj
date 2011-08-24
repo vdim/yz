@@ -172,7 +172,7 @@
 (defn tr-pred
   "Transforms 'pred' map into string"
   [pred]
-  (str "(" (:sign pred) " (get-fv o, \"" 
+  (str "(" (:sign pred) " (ru.petrsu.nest.yz.core/get-fv o, \"" 
        (reduce str (:id pred)) "\") " 
        (reduce str (:value pred)) ")"))
 
@@ -313,11 +313,11 @@
 
 (def block-where
   ^{:doc ""}
-  (conc (change-preds (add-pred (lit \#)) "(fn [o, mom] ") 
+  (conc (change-preds (add-pred (lit \#)) "#=(eval (fn [o, mom] ") 
         (complex [wh where
                   preds (get-info :preds)
                   _ (set-info :preds [])
-                  _ (change-preds emptiness (let [fp (first preds)] (if (map? fp) (tr-pred fp) fp)))]
+                  _ (change-preds emptiness (str (let [fp (first preds)] (if (map? fp) (tr-pred fp) fp)) "))"))]
                  wh)))
 
 (def query
