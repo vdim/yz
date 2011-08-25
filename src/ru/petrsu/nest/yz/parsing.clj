@@ -2,7 +2,8 @@
   ^{:author Vyacheslav Dimitrov
     :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse)
-  (:require [clojure.string :as cs]))
+  (:require [clojure.string :as cs]
+            [clojure.contrib.string :as ccs]))
 
 
 ; The parsing state data structure. 
@@ -113,10 +114,12 @@
 (defn change-pred
   "Changes :preds of q-presentation by setting key 'k' to
   the return value of 'rule'."
-  [rule, k f]
-  (complex [ret rule  
-            _ (update-info :preds #(conj (pop %) (assoc (peek %) k (if (nil? f) ret (f ret)))))]
-           ret))
+  ([rule, k]
+   (change-pred rule, k, nil))
+  ([rule, k f]
+   (complex [ret rule  
+             _ (update-info :preds #(conj (pop %) (assoc (peek %) k (if (nil? f) ret (f ret)))))]
+            ret)))
 
 
 (defn find-class
@@ -213,20 +216,36 @@
   ^{:doc "List of whitespaces"}
   (rep+ (alt (lit \space) (lit \newline) (lit \tab))))
 
+
+(defn string-
+  "Rule for recognizing any string."
+  [state]
+  (let [remainder (reduce str (:remainder state))
+        res (for [a (:remainder state) :while (not (= a \"))] a)]
+    [(reduce str res) 
+     (assoc state :remainder (ccs/drop (count res) remainder))]))
+
+
 (def string
   ^{:doc "Defines string"}
-  (conc (lit \") anything (lit \")))
+  (conc (lit \") string- (lit \")))
 
-(def id 
-  (complex [id# (rep+ alpha)
-            g-res (get-info :result)
-            g-mom (get-info :mom)
-            tl (get-info :then-level)
-            nl (get-info :nest-level)
-            is-then (get-info :is-then)
-            _ (set-info :result (found-id g-res g-mom (reduce str id#) nl tl is-then))
-            _ (set-info :is-then false)]
-           id#))
+
+(defn set-id
+  [id, state]
+  [(:remainder state) 
+   (assoc state :result 
+          (found-id (:result state) 
+                    (:mom state) 
+                    (reduce str id) 
+                    (:nest-level state)
+                    (:then-level state)
+                    (:is-then state)))])
+
+
+(def id (complex [id- (rep+ alpha) 
+                  _ (invisi-conc (partial set-id id-) (set-info :is-then false))]
+                 id-))
 
 
 (def delimiter
@@ -278,7 +297,9 @@
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt sign) 
                          (change-pred number :value last)) 
-                   (change-pred string :value last))))
+                   (change-pred string :value)
+                   (change-pred (lit-conc-seq "true") :value)
+                   (change-pred (lit-conc-seq "false") :value))))
 (def v-prime (alt (conc (sur-by-ws (lit-conc-seq "and")) v-f v-prime) emptiness))
 (def v (conc v-f v-prime))
 (def value-prime (alt (conc (sur-by-ws (lit-conc-seq "or")) v value-prime) emptiness))
