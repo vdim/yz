@@ -41,18 +41,26 @@
                fv)))
            objs)))
 
+(defn- filter-by-preds
+  "Gets sequence of objects and string of restrictions and
+  returns new sequence of objects which are filtered by specified preds."
+  [objs, preds, mom]
+  (if (nil? preds) 
+    objs 
+    (let [f (read-string preds)] 
+      (filter #(f % mom) objs))))
+
 
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
   [sources cl-target mom preds]
-  (let [f (if (nil? preds) (fn [o, mom] true) (read-string preds))]
-    (if-let [paths (get (get mom (class (nth sources 0))) cl-target)]
-      (loop [ps (nth paths 0) res sources]
-        (if (empty? ps)
-          res
-          (recur (rest ps) (filter #(f % mom) (get-objs (first ps) res)))))
-      (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target "."))))))
+  (if-let [paths (get (get mom (class (nth sources 0))) cl-target)]
+    (loop [ps (nth paths 0) res sources]
+      (if (empty? ps)
+        res
+        (recur (rest ps) (filter-by-preds (get-objs (first ps) res), preds, mom))))
+    (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target ".")))))
 
 
 (defn- process-then
@@ -95,7 +103,7 @@
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [em mom q]
-  (p-nest q (select-elems (:what q) em) mom))
+  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q) mom) mom))
 
 
 (defn run-query
