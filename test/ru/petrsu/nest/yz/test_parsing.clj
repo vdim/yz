@@ -41,6 +41,9 @@
            (is (= "3" (get-in-nest (assoc-in-nest some-vvv 2 :what "3") 2 :what)))
            (is (= "4" (get-in-nest (assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
 
+(def st-fun
+;  ^{:doc "Defines start of 'preds' function."}
+  "#=(eval (fn [o, mom] ")
 
 (def qlist
   ^{:doc "Defines list of YZ's queries (used Nest's model)."}
@@ -250,7 +253,6 @@
                                    :then nil
                                    :nest nil}]}]}]))
 
-
          (is (= (parse "building, room", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil
@@ -261,8 +263,9 @@
                    :props nil
                    :preds nil
                    :then nil
-                   :nest nil}])))
-         
+                   :nest nil}]))
+ 
+        
 
 (deftest t-parse-props
          ^{:doc "Tests parsing queries with properties."}
@@ -293,9 +296,65 @@
                    :props nil
                    :preds nil
                    :then {:what ru.petrsu.nest.son.Room 
-                          :props "number" 
+                          :props "number"
                           :preds nil 
                           :then nil}
+                   :nest nil}]))))
+
+
+(deftest t-parse-predicates
+         ^{:doc "Tests parsing queries with some restrictions."}
+          (is (= (parse "building#(name=1)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds (str st-fun "(= (ru.petrsu.nest.yz.core/get-fv o, \"name\") 1)))")
+                   :then nil
+                   :nest nil}]))
+          (is (= (parse "building#(name=1 and address=2)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds (str st-fun "(and (= (ru.petrsu.nest.yz.core/get-fv o, \"name\") 1) " 
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"address\") 2))))")
+                   :then nil
+                   :nest nil}]))
+          (is (= (parse "building#(name=1 or address=2)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds (str st-fun "(or (= (ru.petrsu.nest.yz.core/get-fv o, \"name\") 1) " 
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"address\") 2))))")
+                   :then nil
+                   :nest nil}]))
+          (is (= (parse "building#(name=1 and address=2 and number=3)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds (str st-fun "(and (and (= (ru.petrsu.nest.yz.core/get-fv o, \"name\") 1) " 
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"address\") 2)) "
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"number\") 3))))")
+                   :then nil
+                   :nest nil}]))
+          (is (= (parse "building#(name=1 and address=2 or number=3)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds (str st-fun "(or (and (= (ru.petrsu.nest.yz.core/get-fv o, \"name\") 1) " 
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"address\") 2)) "
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"number\") 3))))")
+                   :then nil
+                   :nest nil}]))
+          (is (= (parse "building#(name=1 or address=2 and number=3)", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds (str st-fun "(or (= (ru.petrsu.nest.yz.core/get-fv o, \"name\") 1) "
+                                      "(and (= (ru.petrsu.nest.yz.core/get-fv o, \"address\") 2) " 
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"number\") 3)))))")
+                   :then nil
+                   :nest nil}]))
+          (is (= (parse "building#(name=1 and (address=2 or number=3))", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds (str st-fun "(and (= (ru.petrsu.nest.yz.core/get-fv o, \"name\") 1) " 
+                                      "(or (= (ru.petrsu.nest.yz.core/get-fv o, \"address\") 2) "
+                                      "(= (ru.petrsu.nest.yz.core/get-fv o, \"number\") 3)))))")
+                   :then nil
                    :nest nil}])))
 
 
