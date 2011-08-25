@@ -23,17 +23,6 @@
   [rule]
   `(conc (opt whitespaces) ~rule (opt whitespaces)))
 
-(defmacro change-preds
-  "Generates code for changing ':preds'."
-  [rule st]
-  `(complex [ret# ~rule
-            res# (get-info :result)
-            nl# (get-info :nest-level)
-            _# (set-info :result 
-                        (assoc-in-nest res# nl# :preds 
-                                       (str (get-in-nest res# nl# :preds ) ~st)))]
-           ret#))
-
 (defn assoc-in-nest
   "Like assoc-in, but takes into account structure :result.
   Inserts some value 'v' in 'res' map to :nest key."
@@ -92,6 +81,22 @@
    :value nil})
 
 
+(defmacro change-preds
+  "Generates code for changing ':preds'."
+  [rule st]
+  `(complex [ret# ~rule
+             res# (get-info :result)
+             nl# (get-info :nest-level)
+             tl# (get-info :then-level)
+             _# (set-info :result 
+                        (if (= tl# 0) 
+                          (assoc-in-nest res# nl# :preds (str (get-in-nest res# nl# :preds ) ~st))
+                          (let [last-then# (get-in-nest res# nl# :then)]
+                            (assoc-in-nest res# nl# :then 
+                                           (assoc last-then# :preds (str (:preds last-then#) ~st))))))]
+           ret#))
+
+
 (defn add-pred
   "Conjs empty-pred to current vector :preds in
   q-representation."
@@ -100,7 +105,7 @@
 
 
 (defn change-pred
-  "Changes :preds of q-presentation by setiing key 'k' to
+  "Changes :preds of q-presentation by setting key 'k' to
   the return value of 'rule'."
   [rule, k f]
   (complex [ret rule  
@@ -258,7 +263,7 @@
 
 (def pred-id (conc (rep+ alpha) (rep* (conc delimiter (rep+ alpha)))))
 
-;; The block "value" has following BNF:
+;; The block "value" has the following BNF:
 ;;    value -> v value'
 ;;    value'-> or v value' | ε
 ;;    v -> v-f v'
@@ -275,7 +280,7 @@
 (def value (conc v value-prime)) 
 
 
-;; The block "where" has following BNF:
+;; The block "where" has the following BNF:
 ;;    where -> T where'
 ;;    where'-> or T where' | ε
 ;;    T -> F T'
