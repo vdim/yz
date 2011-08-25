@@ -58,3 +58,11 @@
   (= structure (transform-first-q query)))
 
 
+(declare *em*)
+(defn setup [sons]
+  "Returns function for creating entity manager 
+  and closing it after executing all tests."
+  (fn [f]
+    (binding [*em* (create-em sons)] (f) 
+      (.close *em*))))
+

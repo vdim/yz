@@ -31,51 +31,45 @@
 
 ;; Define entity manager.
 
-(declare *em*)
-(defn setup 
-  "This fixture defines entity manager and after all tests closes it."
-  [f]
-  (binding [*em* (tc/create-em [son])] (f) (.close *em*)))
-
-(use-fixtures :once setup)
+(use-fixtures :once (tc/setup [son]))
 
 
 ;; Define tests
 
 (deftest select-b-and-f
          ^{:doc "Selects all Building and its Floor objects."}
-         (is (tc/qstruct? (run-query "building (floor)" tc/mom *em*)
+         (is (tc/qstruct? (run-query "building (floor)" tc/mom tc/*em*)
                 [[Building [[Floor []]]]])))
 
 (deftest select-b-and-r
          ^{:doc "Selects all Building and its Room objects."}
-         (is (tc/qstruct? (run-query "building (room)" tc/mom *em*)
+         (is (tc/qstruct? (run-query "building (room)" tc/mom tc/*em*)
                           [[Building [[Room []]]]])))
 
 (deftest select-r-and-b
          ^{:doc "Selects all Room and its Building objects."}
-         (is (tc/qstruct? (run-query "room (building)" tc/mom *em*)
+         (is (tc/qstruct? (run-query "room (building)" tc/mom tc/*em*)
                           [[Room [[Building []]]]])))
 
 (deftest select-f-and-b
          ^{:doc "Selects all Floor and its Building objects."}
-         (is (tc/qstruct? (run-query "floor (building)" tc/mom *em*)
+         (is (tc/qstruct? (run-query "floor (building)" tc/mom tc/*em*)
                 [[Floor [[Building []]]]])))
 
 (deftest select-bn-and-f
          ^{:doc "Selects all Building's name and its Floor objects."}
-         (is (tc/qstruct? (run-query "building.name (floor)" tc/mom *em*)
+         (is (tc/qstruct? (run-query "building.name (floor)" tc/mom tc/*em*)
                 [[String [[Floor []]]]])))
 
 
 (deftest select-b-f-r
          ^{:doc "Selects all Building, its Floor and its Room objects."}
-         (is (tc/qstruct? (run-query "building (floor (room))" tc/mom *em*)
+         (is (tc/qstruct? (run-query "building (floor (room))" tc/mom tc/*em*)
                 [[Building [[Floor [[Room []]]]]]])))
 
 (deftest select-b-r-f
          ^{:doc "Selects all Building, its Room and its Floor objects."}
-         (is (tc/qstruct? (run-query "building (room (floor))" tc/mom *em*)
+         (is (tc/qstruct? (run-query "building (room (floor))" tc/mom tc/*em*)
                 [[Building [[Room [[Floor []]]]]]])))
 
 
