@@ -84,17 +84,23 @@
 (defmacro change-preds
   "Generates code for changing ':preds'."
   [rule st]
-  `(complex [ret# ~rule
-             res# (get-info :result)
-             nl# (get-info :nest-level)
-             tl# (get-info :then-level)
-             _# (set-info :result 
-                        (if (= tl# 0) 
-                          (assoc-in-nest res# nl# :preds (str (get-in-nest res# nl# :preds ) ~st))
-                          (let [last-then# (get-in-nest res# nl# :then)]
-                            (assoc-in-nest res# nl# :then 
-                                           (assoc last-then# :preds (str (:preds last-then#) ~st))))))]
-           ret#))
+  `(complex 
+     [ret# ~rule
+      res# (get-info :result)
+      nl# (get-info :nest-level)
+      tl# (get-info :then-level)
+      _# (set-info 
+           :result 
+           (if (= tl# 0) 
+             (assoc-in-nest res# nl# :preds (str (get-in-nest res# nl# :preds ) ~st))
+             (let [last-then# (get-in-nest res# nl# :then)]
+               (assoc-in-nest res# nl# :then 
+                              (assoc-in last-then# 
+                                        (conj (vec (repeat (dec tl#) :then)) :preds) 
+                                        (str (get-in last-then# 
+                                                     (conj (vec (repeat (dec tl#) :then)) :preds)) 
+                                             ~st))))))]
+     ret#))
 
 
 (defn add-pred
