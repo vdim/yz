@@ -247,8 +247,7 @@
   ^{:doc "Defines nested query"}
   (conc (sur-by-ws (complex [ret (invisi-conc (lit\() (update-info :nest-level inc))
                              nl (get-info :nest-level)
-                             res (get-info :result)
-                             _ (set-info :result (assoc-in-nest res (dec nl) :nest empty-res))
+                             _ (update-info :result #(assoc-in-nest % (dec nl) :nest empty-res))
                              _ (set-info :then-level 0)]
                             ret))
         query 
@@ -299,20 +298,19 @@
                   (change-pred sign :sign nil) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 
-                        (complex [ret f
-                                  preds (get-info :preds)
-                                  _ (set-info :preds (conj (pop (pop preds)) 
-                                              (do-predicate "and" (peek (pop preds)) (peek preds))))]
-                                 ret)
+                        (invisi-conc 
+                          f 
+                          (update-info :preds 
+                                       #(conj (pop (pop %))
+                                              (do-predicate "and" (peek (pop %)) (peek %)))))                       
                         t-prime) emptiness))
 (def t (conc f t-prime))
 (def where-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "or"))) 
-                         (complex [ret t
-                                  preds (get-info :preds)
-                                  _ (set-info :preds (conj (pop (pop preds))
-                                              (do-predicate "or" (peek (pop preds)) (peek preds))))]
-                                 ret)
-                           
+                            (invisi-conc 
+                              t 
+                              (update-info :preds 
+                                           #(conj (pop (pop %))
+                                                  (do-predicate "or" (peek (pop %)) (peek %)))))
                             where-prime) emptiness))
 (def where (conc t where-prime)) 
 
