@@ -3,7 +3,7 @@
     :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse)
   (:require [clojure.string :as cs]))
-;            [ru.petrsu.nest.yz.map-utils :as mu]))
+
 
 ; The parsing state data structure. 
 (defstruct q-representation 
@@ -96,21 +96,15 @@
   "Conjs empty-pred to current vector :preds in
   q-representation."
   [rule]
-  (complex [ret rule 
-            preds (get-info :preds)
-            _ (set-info :preds (conj preds empty-pred))]
-           ret))
+  (invisi-conc rule (update-info :preds #(conj % empty-pred))))
+
 
 (defn change-pred
   "Changes :preds of q-presentation by setiing key 'k' to
   the return value of 'rule'."
   [rule, k f]
-  (complex [ret rule
-            preds (get-info :preds)
-            _ (set-info :preds (conj (pop preds) 
-                                     (assoc (peek preds) 
-                                            k 
-                                            (if (nil? f) ret (f ret)))))]
+  (complex [ret rule  
+            _ (update-info :preds #(conj (pop %) (assoc (peek %) k (if (nil? f) ret (f ret)))))]
            ret))
 
 
@@ -178,10 +172,10 @@
 
 (defn do-predicate
   "Returns string of predicate."
-  [f, pred1, pred2]
+  [op, pred1, pred2]
   (let [pred1- (if (map? pred1) (tr-pred pred1) pred1)
         pred2- (if (map? pred2) (tr-pred pred2) pred2)]
-    (str "(" f " " pred1- " " pred2- ")")))
+    (str "(" op " " pred1- " " pred2- ")")))
 
 
 
