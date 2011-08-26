@@ -41,6 +41,13 @@
                fv)))
            objs)))
 
+
+(defn process-preds
+  "Processes restrictions."
+  [o, paths f value]
+  (some #(f % value) (reduce #(get-objs %2 %1) [o] paths)))
+
+
 (defn- filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
@@ -48,7 +55,7 @@
   (if (nil? preds) 
     objs 
     (let [f (read-string preds)] 
-      (filter #(f % mom) objs))))
+      (filter #(f %) objs))))
 
 
 (defn- get-objs-by-path

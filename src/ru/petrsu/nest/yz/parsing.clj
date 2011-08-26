@@ -58,6 +58,13 @@
       (get (last res-) k)
       (recur (:nest (last res-)) (dec nl)))))
 
+(defn get-in-then
+  "Gets value from res due to nl and tl"
+  [res nl tl k]
+  (if (= tl 0) 
+    (get-in-nest res nl :what) 
+    (get-in (get-in-nest res nl :then) (conj (vec (repeat (dec tl) :then)) k))))
+
 
 (def empty-res
   ^{:doc "Defines vector within one empty map. 
@@ -77,8 +84,8 @@
 
 (def empty-pred
   ^{:doc "Defines pred structure"}
-  {:id nil
-   :sign nil
+  {:ids []
+   :func nil
    :value nil})
 
 
@@ -111,15 +118,52 @@
   (invisi-conc rule (update-info :preds #(conj % empty-pred))))
 
 
+(declare find-class, find-prop)
+(defn- get-path
+  "Returns path from cl-source to class of id
+  (search based on the mom.)"
+  [id, cl-source, mom]
+  (if-let [cl-target (find-class id mom)]
+    (let [paths (get (get mom cl-source) cl-target)]
+      (if (empty? paths)
+        (throw (Exception. (str "Not found id: " id)))
+        (nth paths 0)))
+    (if (find-prop cl-source id, mom)
+      [id]
+      (throw (Exception. (str "Not found id: " id " cl-sourse " cl-source))))))
+
+
+(defn- get-ids 
+  "Returns new value of the :ids key of the pred structure."
+  [ids res mom cl]
+  (let [sp-res (ccs/split #"\." res)]
+    (loop [cl- cl, ids- ids, sp-res- sp-res]
+      (if (empty? sp-res-)
+        ids-
+        (recur (find-class (first sp-res-) mom) 
+               (vec (flatten (conj ids- (get-path (first sp-res-) cl- mom))))
+               (rest sp-res-))))))
+
+
 (defn change-pred
   "Changes :preds of q-presentation by setting key 'k' to
   the return value of 'rule'."
-  ([rule, k]
-   (change-pred rule, k, nil))
-  ([rule, k f]
-   (complex [ret rule  
-             _ (update-info :preds #(conj (pop %) (assoc (peek %) k (if (nil? f) ret (f ret)))))]
-            ret)))
+  [rule, k]
+  (complex [ret rule
+            mom (get-info :mom)
+            res (get-info :result)
+            nl (get-info :nest-level)
+            tl (get-info :then-level)
+            _ (update-info 
+                :preds 
+                #(conj (pop %) 
+                       (assoc (peek %) 
+                              k 
+                              (let [res- (if (seq? ret) (reduce str (flatten ret)) ret)]
+                                (if (= k :ids)
+                                  (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
+                                  res-)))))]
+           ret))
 
 
 (defn find-class
@@ -177,12 +221,19 @@
           (assoc-in-nest res nl :then (assoc-in last-then (repeat (dec tl) :then) (assoc empty-then :what cl))))
         (assoc-in-nest res nl :what cl)))))
 
+;(defn tr-pred
+;  "Transforms 'pred' map into string"
+;  [pred]
+;  (str "(" (:sign pred) " (ru.petrsu.nest.yz.core/get-fv o, \"" 
+;       (reduce str (:id pred)) "\") " 
+;       (reduce str (:value pred)) ")"))
+
+
 (defn tr-pred
   "Transforms 'pred' map into string"
   [pred]
-  (str "(" (:sign pred) " (ru.petrsu.nest.yz.core/get-fv o, \"" 
-       (reduce str (:id pred)) "\") " 
-       (reduce str (:value pred)) ")"))
+  (str " (ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
+       ", " (:func pred) ", " (reduce str (:value pred)) ")"))
 
 (defn do-predicate
   "Returns string of predicate."
@@ -285,7 +336,7 @@
        (conc (lit \<) (lit \=))))
 
 
-(def pred-id (conc (rep+ alpha) (rep* (conc delimiter (rep+ alpha)))))
+(def pred-id (conc (rep+ alpha) (rep* (conc (lit \.) (rep+ alpha)))))
 
 ;; The block "value" has the following BNF:
 ;;    value -> v value'
@@ -296,7 +347,7 @@
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt sign) 
-                         (change-pred number :value last)) 
+                         (change-pred number :value)) 
                    (change-pred string :value)
                    (change-pred (lit-conc-seq "true") :value)
                    (change-pred (lit-conc-seq "false") :value))))
@@ -315,8 +366,8 @@
 
 (declare where)
 (def f (alt (conc (lit \() where (lit \)))
-            (conc (change-pred pred-id :id first) 
-                  (change-pred sign :sign nil) 
+            (conc (change-pred pred-id :ids) 
+                  (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 
                         (invisi-conc 
@@ -337,7 +388,7 @@
 
 (def block-where
   ^{:doc ""}
-  (conc (change-preds (add-pred (lit \#)) "#=(eval (fn [o, mom] ") 
+  (conc (change-preds (add-pred (lit \#)) "#=(eval (fn [o] ") 
         (complex [wh where
                   preds (get-info :preds)
                   _ (set-info :preds [])
