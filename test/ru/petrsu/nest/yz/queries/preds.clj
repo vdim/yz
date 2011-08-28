@@ -95,7 +95,8 @@
            (is (tc/check-query q [[Building [], Building[]]]))))
 
 (deftest select-street1-b1-b2
-         ^{:doc ""}
+         ^{:doc "Selects all Buildings which have 
+                address Street1 and name either b1 or b2"}
          (let [q (run-query 
                    "building#(address=\"Street1\" and (name=\"b1\" or name=\"b2\"))" 
                    tc/mom tc/*em*)]
@@ -104,7 +105,7 @@
            (is (tc/check-query q [[Building []]]))))
 
 (deftest select-f1
-         ^{:doc ""}
+         ^{:doc "Selects all Floors which have number 1."}
          (let [q (run-query "floor#(number=1)" tc/mom tc/*em*)]
            (is (= (.getNumber ((q 0) 0)) 1))
            (is (empty? ((q 0) 1)))
@@ -113,7 +114,7 @@
            (is (tc/check-query q [[Floor [], Floor []]]))))
 
 (deftest select-f2
-         ^{:doc ""}
+         ^{:doc "Selects all Floors which have number 2."}
          (let [q (run-query "floor#(number=2)" tc/mom tc/*em*)]
            (is (= (.getNumber ((q 0) 0)) 2))
            (is (empty? ((q 0) 1)))
@@ -154,4 +155,18 @@
          (is (tc/check-query 
                (run-query "floor#(number=11).room#(number=\"101\").building#(name=\"b3\")" tc/mom tc/*em*) 
                [[]])))
+
+(deftest select-f11-r101-then-b2
+         ^{:doc "Selects rooms (with number 101) on the first floors and its
+                buildings which have name b2."}
+         (is (tc/check-query 
+               (run-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b2\"))" tc/mom tc/*em*) 
+               [[Room [[]], Room [[Building []]]]])))
+
+(deftest select-f11-r101-then-b3
+         ^{:doc "Selects rooms (with number 101) on the first floors and then
+                buildings which have name b3."}
+         (is (tc/check-query 
+               (run-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b3\"))" tc/mom tc/*em*) 
+               [[Room [[]], Room [[]]]])))
 

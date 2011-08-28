@@ -52,6 +52,7 @@
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
   [objs, preds, mom]
+;  (let [n (println "preds = " preds)]
   (if (nil? preds) 
     objs 
     (let [f (read-string preds)] 
@@ -65,8 +66,8 @@
   (if-let [paths (get (get mom (class (nth sources 0))) cl-target)]
     (loop [ps (nth paths 0) res sources]
       (if (empty? ps)
-        res
-        (recur (rest ps) (filter-by-preds (get-objs (first ps) res), preds, mom))))
+        (filter-by-preds res preds mom)
+        (recur (rest ps) (get-objs (first ps) res))))
     (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target ".")))))
 
 
