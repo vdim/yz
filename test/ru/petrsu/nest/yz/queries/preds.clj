@@ -226,10 +226,115 @@
                (run-query "building#(floor.number=1) (room#(number=\"201\"))" tc/mom tc/*em*) 
                [[Building [[Room []]], Building [[Room []]]]])))
 
-(deftest select-b-nest-f1-or-f2
+(deftest select-b-nest-fngt5-or-fnlt1
          ^{:doc ""}
          (is (tc/check-query 
                (run-query "building (floor#(number>5 or number<1))" tc/mom tc/*em*) 
                [[Building [[]] Building [[]] Building [[]]]])))
+
+
+
+;; Cherks sign
+
+(deftest select-b-fnumgt1
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#(floor.number>1)" tc/mom tc/*em*) 
+               [[Building []]])))
+
+(deftest select-fnumgt4
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number>4)" tc/mom tc/*em*) 
+               [[]])))
+
+(deftest select-fnumgt-or-eq4
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number>=4)" tc/mom tc/*em*) 
+               [[Floor []]])))
+
+(deftest select-fnumlt1
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number<1)" tc/mom tc/*em*) 
+               [[]])))
+
+(deftest select-fnumlt-or-eq1
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number<=1)" tc/mom tc/*em*) 
+               [[Floor [], Floor []]])))
+
+
+(deftest select-fnumgt4-ws
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number  >  4)" tc/mom tc/*em*) 
+               [[]])))
+
+(deftest select-fnumgt-or-eq4-ws
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number    >= 4)" tc/mom tc/*em*) 
+               [[Floor []]])))
+
+(deftest select-fnumlt1-ws
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number <1)" tc/mom tc/*em*) 
+               [[]])))
+
+(deftest select-fnumlt-or-eq1-ws
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number<= 1)" tc/mom tc/*em*) 
+               [[Floor [], Floor []]])))
+
+
+
+;; Checks reduced restrictions.
+
+(deftest select-reduced-preds
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 or 2))" tc/mom tc/*em*) 
+               [[Floor [], Floor [], Floor []]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 or >4))" tc/mom tc/*em*) 
+               [[Floor [], Floor []]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 or =5))" tc/mom tc/*em*) 
+               [[Floor [], Floor []]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(<1 or >4))" tc/mom tc/*em*) 
+               [[]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 and <2))" tc/mom tc/*em*) 
+               [[Floor [], Floor []]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 and 4))" tc/mom tc/*em*) 
+               [[]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 and =4))" tc/mom tc/*em*) 
+               [[]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(=1 and 4))" tc/mom tc/*em*) 
+               [[]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(=1 and =4))" tc/mom tc/*em*) 
+               [[]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 or (>3 and <5)))" tc/mom tc/*em*) 
+               [[Floor [], Floor [], Floor []]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 or (>3 and <5)))" tc/mom tc/*em*) 
+               [[Floor [], Floor [], Floor []]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(1 or (>3 and <5)) or building.name=\"b2\")" tc/mom tc/*em*) 
+               [[Floor [], Floor [], Floor []]]))
+         (is (tc/check-query 
+               (run-query "floor#(number=(<1 or (>3 and <5)) and building.name=\"b3\")" tc/mom tc/*em*) 
+               [[]])))
 
 

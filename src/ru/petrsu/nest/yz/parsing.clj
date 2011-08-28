@@ -111,10 +111,12 @@
 
 
 (defn add-pred
-  "Conjs empty-pred to current vector :preds in
-  q-representation."
-  [rule]
-  (invisi-conc rule (update-info :preds #(conj % empty-pred))))
+  "Conjs empty-pred value to current vector :preds in q-representation.
+  If 'f' is supplied then value is call of 'f' with :preds as parameter."
+  ([rule]
+   (add-pred rule (fn [_] empty-pred)))
+  ([rule f]
+   (invisi-conc rule (update-info :preds #(conj % (f %))))))
 
 
 (declare find-class, find-prop)
@@ -311,12 +313,11 @@
 
 (def sign
   ^{:doc "Defines sing of where's expression."}
-  (alt (lit \=) 
-       (lit \<)
-       (lit \>)
-       (conc (lit \!) (lit \=))
-       (conc (lit \>) (lit \=))
-       (conc (lit \<) (lit \=))))
+  (sur-by-ws (alt (lit-conc-seq ">=")
+                  (lit-conc-seq "<=")
+                  (lit \=) 
+                  (lit \<)
+                  (lit \>))))
 
 
 (def pred-id (conc (rep+ alpha) (rep* (conc (lit \.) (rep+ alpha)))))
@@ -329,13 +330,17 @@
 ;;    v-f -> (value) | some-value
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
-              (alt (conc (opt sign) (change-pred number :value)) 
+              (alt (conc (opt (change-pred sign :func)) (change-pred number :value)) 
                    (change-pred string :value)
                    (change-pred (lit-conc-seq "true") :value)
                    (change-pred (lit-conc-seq "false") :value))))
-(def v-prime (alt (conc (sur-by-ws (lit-conc-seq "and")) v-f v-prime) emptiness))
+(def v-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and") peek)) 
+                        (invisi-conc v-f (update-preds "and"))
+                        v-prime) emptiness))
 (def v (conc v-f v-prime))
-(def value-prime (alt (conc (sur-by-ws (lit-conc-seq "or")) v value-prime) emptiness))
+(def value-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "or") peek)) 
+                            (invisi-conc v (update-preds "or")) 
+                            value-prime) emptiness))
 (def value (conc v value-prime)) 
 
 
@@ -356,11 +361,7 @@
                         t-prime) emptiness))
 (def t (conc f t-prime))
 (def where-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "or"))) 
-                            (invisi-conc 
-                              t 
-                              (update-info :preds 
-                                           #(conj (pop (pop %))
-                                                  (do-predicate "or" (peek (pop %)) (peek %)))))
+                            (invisi-conc t (update-preds "or"))
                             where-prime) emptiness))
 (def where (conc t where-prime)) 
 
