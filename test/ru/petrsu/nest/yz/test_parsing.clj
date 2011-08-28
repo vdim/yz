@@ -294,6 +294,26 @@
                    :nest nil}]))
 
 
+         (is (= (parse "building.floor.room.occupancy.device.forwarding", mom)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props nil
+                   :preds nil
+                   :then {:what ru.petrsu.nest.son.Floor 
+                          :props nil 
+                          :preds nil 
+                          :then {:what ru.petrsu.nest.son.Room
+                                 :props nil 
+                                 :preds nil 
+                                 :then {:what ru.petrsu.nest.son.Occupancy
+                                        :props nil 
+                                        :preds nil 
+                                        :then {:what ru.petrsu.nest.son.Device
+                                               :props "forwarding" 
+                                               :preds nil 
+                                               :then nil}}}}
+                   :nest nil}]))
+
+
          (is (= (parse "building.room.number", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props nil

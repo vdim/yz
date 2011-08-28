@@ -156,17 +156,80 @@
                (run-query "floor#(number=11).room#(number=\"101\").building#(name=\"b3\")" tc/mom tc/*em*) 
                [[]])))
 
-(deftest select-f11-r101-then-b2
+(deftest select-f1-r101-then-b1
+         ^{:doc "Selects rooms (with number 101) on the first floors and its
+                buildings which have name b1."}
+         (is (let [q (run-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b1\"))" tc/mom tc/*em*)]
+               (or (tc/check-query q [[Room [[]], Room [[Building []]]]])
+                   (tc/check-query q [[Room [[Building []]], Room [[]]]])))))
+
+
+(deftest select-f1-r101-then-b2
          ^{:doc "Selects rooms (with number 101) on the first floors and its
                 buildings which have name b2."}
-         (is (tc/check-query 
-               (run-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b2\"))" tc/mom tc/*em*) 
-               [[Room [[]], Room [[Building []]]]])))
+         (is (let [q (run-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b2\"))" tc/mom tc/*em*)]
+               (or (tc/check-query q [[Room [[]], Room [[Building []]]]])
+                   (tc/check-query q [[Room [[Building []]], Room [[]]]])))))
 
-(deftest select-f11-r101-then-b3
+(deftest select-f1-r101-then-b3
          ^{:doc "Selects rooms (with number 101) on the first floors and then
                 buildings which have name b3."}
          (is (tc/check-query 
                (run-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b3\"))" tc/mom tc/*em*) 
                [[Room [[]], Room [[]]]])))
+
+(deftest select-b3-and-flnum1
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#(name=\"b3\" and floor.number=1)" tc/mom tc/*em*) 
+               [[]])))
+
+(deftest select-b1-and-flnum4
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#(name=\"b1\" and floor.number=4)" tc/mom tc/*em*) 
+               [[Building []]])))
+
+(deftest select-b1-or-b2-and-flnum4
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#((name=\"b1\" or name=\"b2\") and floor.number=4)" tc/mom tc/*em*) 
+               [[Building []]])))
+
+(deftest select-b1-or-b2-and-flnum1
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#((name=\"b1\" or name=\"b2\") and floor.number=1)" tc/mom tc/*em*) 
+               [[Building [], Building []]])))
+
+(deftest select-b3-or-flnum1
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#(name=\"b3\" or floor.number=1)" tc/mom tc/*em*) 
+               [[Building [], Building [], Building []]])))
+
+(deftest select-flnumgt0
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#(floor.number>=0)" tc/mom tc/*em*) 
+               [[Building [], Building []]])))
+
+(deftest select-flnumgt3
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#(floor.number>=3)" tc/mom tc/*em*) 
+               [[Building []]])))
+
+(deftest select-b-flnum1-nest-r
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building#(floor.number=1) (room#(number=\"201\"))" tc/mom tc/*em*) 
+               [[Building [[Room []]], Building [[Room []]]]])))
+
+(deftest select-b-nest-f1-or-f2
+         ^{:doc ""}
+         (is (tc/check-query 
+               (run-query "building (floor#(number>5 or number<1))" tc/mom tc/*em*) 
+               [[Building [[]] Building [[]] Building [[]]]])))
+
 
