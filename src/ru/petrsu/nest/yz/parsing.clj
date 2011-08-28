@@ -221,6 +221,11 @@
         pred2- (if (map? pred2) (tr-pred pred2) pred2)]
     (str "(" op " " pred1- " " pred2- ")")))
 
+(defn update-preds
+  [op]
+  (update-info :preds #(conj (pop (pop %)) (do-predicate op (peek (pop %)) (peek %)))))
+
+
 
 
 
@@ -347,11 +352,7 @@
                   (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 
-                        (invisi-conc 
-                          f 
-                          (update-info :preds 
-                                       #(conj (pop (pop %))
-                                              (do-predicate "and" (peek (pop %)) (peek %)))))                       
+                        (invisi-conc f (update-preds "and"))
                         t-prime) emptiness))
 (def t (conc f t-prime))
 (def where-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "or"))) 
