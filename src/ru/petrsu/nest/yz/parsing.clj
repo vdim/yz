@@ -13,10 +13,32 @@
            :mom ; The map of the object model some area
            :then-level ; then level, the nubmer of dots.
            :nest-level ; Nest level, level of query (the number of parentthesis).
-           :preds ; The vector within current predicates structure.
-           :is-then)  ; Defines whether id comes from '.'.
+           :preds) ; The vector within current predicates structure.
 
 ;; Helper macros, definitions and functions.
+
+(def empty-res
+  ^{:doc "Defines vector within one empty map. 
+         The vector is initial result of 'parse' function."}
+  [{:what nil
+   :props nil
+   :preds nil
+   :then nil
+   :nest nil}])
+
+(def empty-then
+  ^{:doc "Defines then structure"}
+  {:what nil
+   :props nil
+   :preds nil
+   :then nil})
+
+(def empty-pred
+  ^{:doc "Defines pred structure"}
+  {:ids []
+   :func nil
+   :value nil})
+
 
 (defmacro sur-by-ws
   "Surrounds 'rule' by whitespaces like this
@@ -58,64 +80,20 @@
       (get (last res-) k)
       (recur (:nest (last res-)) (dec nl)))))
 
+
 (defn get-in-then
   "Gets value from res due to nl and tl"
   [res nl tl k]
   (if (= tl 0) 
-    (get-in-nest res nl :what) 
+    (get-in-nest res nl k) 
     (get-in (get-in-nest res nl :then) (conj (vec (repeat (dec tl) :then)) k))))
-
-
-(def empty-res
-  ^{:doc "Defines vector within one empty map. 
-         The vector is initial result of 'parse' function."}
-  [{:what nil
-   :props nil
-   :preds nil
-   :then nil
-   :nest nil}])
-
-(def empty-then
-  ^{:doc "Defines then structure"}
-  {:what nil
-   :props nil
-   :preds nil
-   :then nil})
-
-(def empty-pred
-  ^{:doc "Defines pred structure"}
-  {:ids []
-   :func nil
-   :value nil})
-
-
-(defmacro change-preds-
-  "Generates code for changing ':preds'."
-  [rule st]
-  `(complex 
-     [ret# ~rule
-      res# (get-info :result)
-      nl# (get-info :nest-level)
-      tl# (get-info :then-level)
-      _# (set-info 
-           :result 
-           (if (= tl# 0) 
-             (assoc-in-nest res# nl# :preds (str (get-in-nest res# nl# :preds ) ~st))
-             (let [last-then# (get-in-nest res# nl# :then)]
-               (assoc-in-nest res# nl# :then 
-                              (assoc-in last-then# 
-                                        (conj (vec (repeat (dec tl#) :then)) :preds) 
-                                        (str (get-in last-then# 
-                                                     (conj (vec (repeat (dec tl#) :then)) :preds)) 
-                                             ~st))))))]
-     ret#))
 
 
 (declare tr-pred)
 (defn change-preds
-  "Generates code for changing ':preds'."
+  "Changed ':preds' and 'result' of the state."
   [state]
-  ["", (let [res (:result state)
+  [nil, (let [res (:result state)
              nl (:nest-level state)
              tl (:then-level state)
              st (str "#=(eval (fn [o] " 
@@ -210,43 +188,31 @@
   (contains? (set (:properties (get mom cl))) prop))
 
 
-(defmacro assoc-in* 
-  "Like clojure.core/assoc-in but vector of keys has specified structure: 
-  key* repeats n times and then key-in is."
-  [m key* n key-in v] 
-  `(assoc-in ~m (vec (flatten [(repeat ~n ~key*) ~key-in])) ~v))
-
-
 (defn found-id
   "This function is called when id is found in query. Returns new result."
-  [res mom id nl tl is-then]
+  [res mom id nl tl]
   (let [cl (find-class id, mom)
         last-then (get-in-nest res nl :then)
-        tl- (- tl 2)
-        what (if last-then 
-               (:what (if (<= tl- 0) 
-                        last-then
-                        (get-in last-then (repeat tl- :then)))) 
-               (get-in-nest res nl :what))]
+        tl- (dec tl)]
     (if (nil? cl)
-      (if is-then
-        (if-let [prop (find-prop what id mom)]
-          (if (>= tl- 0)
-            (assoc-in-nest res nl :then (assoc-in last-then (conj (vec (repeat tl- :then)) :props) id))
-            (assoc-in-nest res nl :props id))
-          (throw (Exception. (str "Not found id: " id))))
+      (if-let [prop (find-prop (get-in-then res nl tl- :what) id mom)]
+        (if (> tl- 0)
+          (assoc-in-nest res nl :then (assoc-in last-then (conj (vec (repeat (dec tl-) :then)) :props) id))
+          (assoc-in-nest res nl :props id))
         (throw (Exception. (str "Not found id: " id))))
-      (if is-then
+      (if (> tl 0)
         (if (nil? last-then)
           (assoc-in-nest res nl :then (assoc empty-then :what cl))
-          (assoc-in-nest res nl :then (assoc-in last-then (repeat (dec tl) :then) (assoc empty-then :what cl))))
+          (assoc-in-nest res nl :then (assoc-in last-then (repeat tl- :then) (assoc empty-then :what cl))))
         (assoc-in-nest res nl :what cl)))))
+
 
 (defn tr-pred
   "Transforms 'pred' map into string"
   [pred]
   (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
        ", " (:func pred) ", " (reduce str (:value pred)) ")"))
+
 
 (defn do-predicate
   "Returns string of predicate."
@@ -303,12 +269,11 @@
                     (:mom state) 
                     (reduce str id) 
                     (:nest-level state)
-                    (:then-level state)
-                    (:is-then state)))])
+                    (:then-level state)))])
 
 
 (def id (complex [id- (rep+ alpha) 
-                  _ (invisi-conc (partial set-id id-) (set-info :is-then false))]
+                  _ (partial set-id id-)]
                  id-))
 
 
@@ -316,7 +281,7 @@
   ^{:doc "Defines delimiter of ids: there are comma (for queries) 
   and dot (for property or link and so on)."}
   (alt
-       (invisi-conc (invisi-conc (lit \.) (update-info :then-level inc))  (set-info :is-then true))
+       (invisi-conc (lit \.) (update-info :then-level inc))
        (complex [ret (sur-by-ws (lit \,)) 
                  res (get-info :result)
                  nl (get-info :nest-level)
@@ -359,8 +324,7 @@
 ;;    v-f -> (value) | some-value
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
-              (alt (conc (opt sign) 
-                         (change-pred number :value)) 
+              (alt (conc (opt sign) (change-pred number :value)) 
                    (change-pred string :value)
                    (change-pred (lit-conc-seq "true") :value)
                    (change-pred (lit-conc-seq "false") :value))))
@@ -411,13 +375,13 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] false)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [])) 1))
 
 
 (defn parse
-  "Parses specified query ('q') on YZ language based on
+  "Parses specified query ('q') on the YZ language based on
   specified ('mom') the map of the object model.
-  Returns value of key's :result of structure of result (q-representation structure)."
+  Returns a value of the :result key of the structure of the q-representation structure."
   [q, mom]
   (:result (parse+ q, mom)))
 
