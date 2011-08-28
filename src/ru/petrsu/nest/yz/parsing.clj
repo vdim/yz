@@ -89,7 +89,7 @@
    :value nil})
 
 
-(defmacro change-preds
+(defmacro change-preds-
   "Generates code for changing ':preds'."
   [rule st]
   `(complex 
@@ -111,6 +111,27 @@
      ret#))
 
 
+(declare tr-pred)
+(defn change-preds
+  "Generates code for changing ':preds'."
+  [state]
+  ["", (let [res (:result state)
+             nl (:nest-level state)
+             tl (:then-level state)
+             st (str "#=(eval (fn [o] " 
+                     (let [fp (first (:preds state))] 
+                       (if (map? fp) (tr-pred fp) fp)) "))")]
+         (assoc (assoc state :preds []) :result 
+                (if (= tl 0) 
+                  (assoc-in-nest res nl :preds (str (get-in-nest res nl :preds ) st))
+                  (let [last-then (get-in-nest res nl :then)]
+                    (assoc-in-nest res nl :then 
+                                   (assoc-in last-then 
+                                             (conj (vec (repeat (dec tl) :then)) :preds) 
+                                             (str (get-in last-then (conj (vec (repeat (dec tl) :then)) :preds)) 
+                                                  st)))))))])
+
+
 (defn add-pred
   "Conjs empty-pred to current vector :preds in
   q-representation."
@@ -130,7 +151,7 @@
         (nth paths 0)))
     (if (find-prop cl-source id, mom)
       [id]
-      (throw (Exception. (str "Not found id: " id " cl-sourse " cl-source))))))
+      (throw (Exception. (str "Not found id: " id " which must be beloged to " cl-source))))))
 
 
 (defn- get-ids 
@@ -221,18 +242,10 @@
           (assoc-in-nest res nl :then (assoc-in last-then (repeat (dec tl) :then) (assoc empty-then :what cl))))
         (assoc-in-nest res nl :what cl)))))
 
-;(defn tr-pred
-;  "Transforms 'pred' map into string"
-;  [pred]
-;  (str "(" (:sign pred) " (ru.petrsu.nest.yz.core/get-fv o, \"" 
-;       (reduce str (:id pred)) "\") " 
-;       (reduce str (:value pred)) ")"))
-
-
 (defn tr-pred
   "Transforms 'pred' map into string"
   [pred]
-  (str " (ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
+  (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
        ", " (:func pred) ", " (reduce str (:value pred)) ")"))
 
 (defn do-predicate
@@ -386,14 +399,10 @@
                             where-prime) emptiness))
 (def where (conc t where-prime)) 
 
+
 (def block-where
   ^{:doc ""}
-  (conc (change-preds (add-pred (lit \#)) "#=(eval (fn [o] ") 
-        (complex [wh where
-                  preds (get-info :preds)
-                  _ (set-info :preds [])
-                  _ (change-preds emptiness (str (let [fp (first preds)] (if (map? fp) (tr-pred fp) fp)) "))"))]
-                 wh)))
+  (conc (add-pred (lit \#)) (invisi-conc where change-preds)))
 
 (def query
   (rep+ (alt bid nest-query (conc delimiter bid) block-where)))
