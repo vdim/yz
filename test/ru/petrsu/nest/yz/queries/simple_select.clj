@@ -45,14 +45,11 @@
          (is (tc/qstruct? (run-query "building.name" tc/mom tc/*em*)
                           [[String []]])))
 
-(deftest select-f-numbers
-         ^{:doc "Selects floor's numbers."}
+(deftest select-props
+         ^{:doc "Checks props"}
          (is (tc/qstruct? (run-query "floor.number" tc/mom tc/*em*)
-                          [[Integer []]])))
-
-(deftest select-f-names
-         ^{:doc "Selects floor's names"}
+                          [[Integer []]]))
          (is (tc/qstruct? (run-query "floor.name" tc/mom tc/*em*)
-                          [[nil []]])))
-
-
+                          [[nil []]]))
+         (is (tc/qstruct? (run-query "building.floor.number" tc/mom tc/*em*)
+                          [[Integer []]])))

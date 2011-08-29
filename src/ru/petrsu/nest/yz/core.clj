@@ -52,7 +52,6 @@
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
   [objs, preds, mom]
-;  (let [n (println "preds = " preds)]
   (if (nil? preds) 
     objs 
     (let [f (read-string preds)] 
@@ -71,30 +70,35 @@
     (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target ".")))))
 
 
-(defn- process-then
-  "Processes :then value of query structure.
-  Returns sequence of objects."
-  [then, objs, mom]
-  (loop [then- then objs- objs]
-    (if (or (nil? then-) (every? nil? objs-))
-      objs-
-      (recur (:then then-) (get-objs-by-path objs- (:what then-) mom (:preds then-))))))
-
 (defn- process-props
   "If nest has props then function returns value of property,
   otherwise obj is returned."
-  [obj, nest]
-  (if-let [prop (:props nest)]
-    (get-fv obj prop)
-    obj))
+  [obj, props]
+  (if (nil? props)
+    obj
+    (get-fv obj props)))
+
+
+(defn process-then
+  "Processes :then value of query structure.
+  Returns sequence of objects."
+  [then, objs, mom, props]
+  (loop [then- then objs- objs props- props]
+    (if (or (nil? then-) (every? nil? objs-))
+      (map (fn [o] [o, (process-props o props-)]) objs-)
+      (recur (:then then-) 
+             (get-objs-by-path objs- (:what then-) mom (:preds then-))
+             (:props then-)))))
+
 
 (declare process-nests)
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
   [nest objs mom]
-  `(reduce #(conj %1 (process-props %2 ~nest) (process-nests (:nest ~nest) %2 ~mom))             
+  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0) ~mom))             
           []
-          (process-then (:then ~nest) ~objs ~mom)))
+          (process-then (:then ~nest) ~objs ~mom (:props ~nest))))
+
 
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
