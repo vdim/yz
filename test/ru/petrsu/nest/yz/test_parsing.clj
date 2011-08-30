@@ -50,7 +50,9 @@
 
 (def qlist
   ^{:doc "Defines list of YZ's queries (used Nest's model)."}
-  ["building"
+  [
+;; Selections   
+   "building"
    "building.room"
    "building.floor.room"
    "building.floor.room.occupancy"
@@ -71,6 +73,8 @@
    "building (room.device.forwarding, floor)"
    "building (room.device.forwarding, floor, network.building.floors)"
    "building (room.device.forwarding, floor (network.building.floors))"
+
+;; Restrictions.
    "floor#(number=1)"
    "floor#(number=1 or number=2)"
    "floor#(number=(1 or 2))"
@@ -90,6 +94,8 @@
    "floor#((number=1 or number=2) and name=3), room#(number=1 and name=2)"
    "floor#((number=1 or number=2) and name=3) (room#(number=1))"
    "floor#((number=1 or number=2) and name=3) (room#(number=1 and name=2))"
+
+;; Properties.
    "floor[name]"
    "floor[name number]"
    "floor[name number rooms]"
@@ -105,6 +111,12 @@
    "room[name number floor].floor[number name rooms].building[name address floors]"
    "room.floor[number name rooms].building[name address floors]"
    "room.floor.building[name address floors]"
+   "simpleou[*parent]"
+   "simpleou[*parent name]"
+   "compositeou[*parent OUs]"
+   "building (simpleou[*parent])"
+   "building[name] (simpleou[*parent])"
+   "building[name] (simpleou[*parent name])"
    "room"])
 
 (deftest parse-remainder
@@ -289,7 +301,7 @@
          ^{:doc "Tests parsing queries with properties."}
          (is (= (parse "building.name", mom)
                  [{:what ru.petrsu.nest.son.Building 
-                   :props ["name"]
+                   :props [["name" false]]
                    :preds nil
                    :then nil
                    :nest nil}]))
@@ -303,7 +315,7 @@
                           :props []
                           :preds nil 
                           :then {:what ru.petrsu.nest.son.Floor 
-                                 :props ["rooms"]
+                                 :props [["rooms" false]]
                                  :preds nil 
                                  :then nil}}
                    :nest nil}]))
@@ -323,9 +335,33 @@
                                         :props []
                                         :preds nil 
                                         :then {:what ru.petrsu.nest.son.Device
-                                               :props ["forwarding"] 
+                                               :props [["forwarding" false]] 
                                                :preds nil 
                                                :then nil}}}}
+                   :nest nil}]))
+
+
+         (is (= (parse "simpleou[*parent]", mom)
+                 [{:what ru.petrsu.nest.son.SimpleOU 
+                   :props [["parent" true]]
+                   :preds nil
+                   :then nil 
+                   :nest nil}]))
+
+
+         (is (= (parse "compositeou[*parent OUs]", mom)
+                 [{:what ru.petrsu.nest.son.CompositeOU 
+                   :props [["parent" true] ["OUs" false]]
+                   :preds nil
+                   :then nil 
+                   :nest nil}]))
+
+
+         (is (= (parse "compositeou[OUs *parent]", mom)
+                 [{:what ru.petrsu.nest.son.CompositeOU 
+                   :props [["OUs" false] ["parent" true]]
+                   :preds nil
+                   :then nil 
                    :nest nil}]))
 
 
@@ -334,7 +370,7 @@
                    :props []
                    :preds nil
                    :then {:what ru.petrsu.nest.son.Room 
-                          :props ["number"]
+                          :props [["number" false]]
                           :preds nil 
                           :then nil}
                    :nest nil}]))))
