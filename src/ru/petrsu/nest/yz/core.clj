@@ -70,13 +70,23 @@
     (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target ".")))))
 
 
+(defn- process-prop
+  "Processes property."
+  [[prop is-recur] obj]
+  (if is-recur
+    (loop [res [] obj- obj]
+      (if (nil? obj-)
+        res
+        (recur (conj res obj-) (get-fv obj- prop))))
+    (get-fv obj prop)))
+
 (defn- process-props
   "If nest has props then function returns value of property,
   otherwise obj is returned."
   [obj, props]
   (if (empty? props)
     obj
-    (map #(get-fv obj %) props)))
+    (map #(process-prop % obj) props)))
 
 
 (defn process-then

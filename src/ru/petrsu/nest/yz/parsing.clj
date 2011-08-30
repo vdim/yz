@@ -13,7 +13,8 @@
            :mom ; The map of the object model some area
            :then-level ; then level, the nubmer of dots.
            :nest-level ; Nest level, level of query (the number of parentthesis).
-           :preds) ; The vector within current predicates structure.
+           :preds ; The vector within current predicates structure.
+           :is-recur) ; Defines whether property is recur.
 
 ;; Helper macros, definitions and functions.
 
@@ -190,20 +191,28 @@
   (contains? (set (:properties (get mom cl))) prop))
 
 
+(defn found-prop
+  "This function is called when likely prop is found"
+  [res mom id nl tl is-recur]
+  (let [tl- (dec tl)
+        last-then (get-in-nest res nl :then)]
+    (if-let [prop (find-prop (get-in-then res nl tl- :what) id mom)]
+      (if (> tl- 0)
+        (assoc-in-nest res nl :then (update-in last-then 
+                                               (conj (vec (repeat (dec tl-) :then)) :props) 
+                                               #(conj % [id is-recur])))
+        (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) [id is-recur])))
+      (throw (Exception. (str "Not found id: " id))))))
+
+
 (defn found-id
   "This function is called when id is found in query. Returns new result."
-  [res mom id nl tl]
+  [res mom id nl tl is-recur]
   (let [cl (find-class id, mom)
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
-      (if-let [prop (find-prop (get-in-then res nl tl- :what) id mom)]
-        (if (> tl- 0)
-          (assoc-in-nest res nl :then (update-in last-then 
-                                                 (conj (vec (repeat (dec tl-) :then)) :props) 
-                                                 #(conj % id)))
-          (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) id)))
-        (throw (Exception. (str "Not found id: " id))))
+      (found-prop res mom id nl tl is-recur)
       (if (> tl 0)
         (if (nil? last-then)
           (assoc-in-nest res nl :then (assoc empty-then :what cl))
@@ -272,20 +281,25 @@
 
 
 (defn set-id
-  [id, state]
+  [id, f, state]
   [(:remainder state) 
    (assoc state :result 
-          (found-id (:result state) 
-                    (:mom state) 
-                    (reduce str id) 
-                    (:nest-level state)
-                    (:then-level state)))])
+          (f (:result state) 
+             (:mom state) 
+             (reduce str id) 
+             (:nest-level state)
+             (:then-level state)
+             (:is-recur state)))])
+
+(defmacro process-id
+  "Processes some id due to functions 'f'"
+  [f]
+  `(complex [id# (rep+ alpha) 
+             _# (partial set-id id# ~f)]
+            id#))
 
 
-(def id (complex [id- (rep+ alpha) 
-                  _ (partial set-id id-)]
-                 id-))
-
+(def id (process-id found-id))
 
 (def delimiter
   ^{:doc "Defines delimiter of ids: there are comma (for queries) 
@@ -377,7 +391,8 @@
 (def props
   ^{:doc "Defines sequences of properties of an object."}
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
-        (rep+ (sur-by-ws id)) 
+        (rep+ (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
+                               (invisi-conc (process-id found-prop) (set-info :is-recur false)))))
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 (def query
@@ -387,7 +402,7 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [])) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] false)) 1))
 
 
 (defn parse
