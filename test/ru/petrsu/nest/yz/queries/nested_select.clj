@@ -58,9 +58,13 @@
 
 (deftest select-bn-and-f
          ^{:doc "Selects all Building's name and its Floor objects."}
-         (is (tc/qstruct? (run-query "building.name (floor)" tc/mom tc/*em*)
-                [[String [[Floor []]]]])))
-
+         (let [q (run-query "building.name (floor)" tc/mom tc/*em*)]
+           (is (= ((q 0) 0) '("building")))
+           (is (or (= (count (((q 0) 1) 0)) 4) (= (count (((q 0) 1) 0)) 2)))
+           (is (or (= (count (((q 0) 3) 0)) 4) (= (count (((q 0) 3) 0)) 2)))
+           (is (= (class ((((q 0) 1) 0) 0)) Floor))
+           (is (= (class ((((q 0) 3) 0) 0)) Floor))
+           (is (= ((q 0) 2) '("building")))))
 
 (deftest select-b-f-r
          ^{:doc "Selects all Building, its Floor and its Room objects."}

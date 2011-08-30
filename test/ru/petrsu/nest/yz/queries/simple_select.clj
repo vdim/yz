@@ -42,14 +42,15 @@
 
 (deftest select-b-names
          ^{:doc "Selects building's names"}
-         (is (tc/qstruct? (run-query "building.name" tc/mom tc/*em*)
-                          [[String []]])))
+         (let [q (run-query "building.name" tc/mom tc/*em*)]
+           (is (or (= q [['("building1") [] '("building2") []]])
+                   (= q [['("building2") [] '("building1") []]])))))
 
 (deftest select-props
          ^{:doc "Checks props"}
-         (is (tc/qstruct? (run-query "floor.number" tc/mom tc/*em*)
-                          [[Integer []]]))
-         (is (tc/qstruct? (run-query "floor.name" tc/mom tc/*em*)
-                          [[nil []]]))
-         (is (tc/qstruct? (run-query "building.floor.number" tc/mom tc/*em*)
-                          [[Integer []]])))
+         (is (= (run-query "floor.number" tc/mom tc/*em*)
+                          [['(0) [] '(0) [] '(0) []]]))
+         (is (= (run-query "floor.name" tc/mom tc/*em*)
+                          [['(nil) [] '(nil) [] '(nil) []]]))
+         (is (= (run-query "building.floor.number" tc/mom tc/*em*)
+                          [['(0) [] '(0) [] '(0) []]])))
