@@ -21,7 +21,7 @@
   ^{:doc "Defines vector within one empty map. 
          The vector is initial result of 'parse' function."}
   [{:what nil
-   :props nil
+   :props []
    :preds nil
    :then nil
    :nest nil}])
@@ -29,7 +29,7 @@
 (def empty-then
   ^{:doc "Defines then structure"}
   {:what nil
-   :props nil
+   :props []
    :preds nil
    :then nil})
 
@@ -199,8 +199,10 @@
     (if (nil? cl)
       (if-let [prop (find-prop (get-in-then res nl tl- :what) id mom)]
         (if (> tl- 0)
-          (assoc-in-nest res nl :then (assoc-in last-then (conj (vec (repeat (dec tl-) :then)) :props) id))
-          (assoc-in-nest res nl :props id))
+          (assoc-in-nest res nl :then (update-in last-then 
+                                                 (conj (vec (repeat (dec tl-) :then)) :props) 
+                                                 #(conj % id)))
+          (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) id)))
         (throw (Exception. (str "Not found id: " id))))
       (if (> tl 0)
         (if (nil? last-then)
@@ -266,6 +268,7 @@
 (def string
   ^{:doc "Defines string"}
   (conc (lit \") string- (lit \")))
+
 
 
 (defn set-id
@@ -367,11 +370,18 @@
 
 
 (def block-where
-  ^{:doc ""}
+  ^{:doc "Defines where clause."}
   (conc (add-pred (lit \#)) (invisi-conc where change-preds)))
 
+
+(def props
+  ^{:doc "Defines sequences of properties of an object."}
+  (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
+        (rep+ (sur-by-ws id)) 
+        (invisi-conc (lit \]) (update-info :then-level dec))))
+
 (def query
-  (rep+ (alt bid nest-query (conc delimiter bid) block-where)))
+  (rep+ (alt bid nest-query (conc delimiter bid) block-where props)))
 
 
 (defn parse+

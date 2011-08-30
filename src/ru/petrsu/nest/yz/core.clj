@@ -74,9 +74,9 @@
   "If nest has props then function returns value of property,
   otherwise obj is returned."
   [obj, props]
-  (if (nil? props)
+  (if (empty? props)
     obj
-    (get-fv obj props)))
+    (map #(get-fv obj %) props)))
 
 
 (defn process-then
@@ -95,7 +95,7 @@
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
   [nest objs mom]
-  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0) ~mom))             
+  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0) ~mom))
           []
           (process-then (:then ~nest) ~objs ~mom (:props ~nest))))
 
