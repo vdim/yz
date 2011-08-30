@@ -74,7 +74,7 @@
   "Processes property."
   [[prop is-recur] obj]
   (if is-recur
-    (loop [res [] obj- obj]
+    (loop [res [] obj- (get-fv obj prop)]
       (if (nil? obj-)
         res
         (recur (conj res obj-) (get-fv obj- prop))))
