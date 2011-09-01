@@ -4,7 +4,7 @@
   (:use ru.petrsu.nest.yz.core 
         clojure.contrib.test-is)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
-  (:import (ru.petrsu.nest.son SON Building Room Floor)))
+  (:import (ru.petrsu.nest.son SON Building Room Floor NetworkInterface IPv4Interface)))
 
 
 ;; Define model
@@ -54,3 +54,14 @@
                           [['(nil) [] '(nil) [] '(nil) []]]))
          (is (= (run-query "building.floor.number" tc/mom tc/*em*)
                           [['(0) [] '(0) [] '(0) []]])))
+
+(deftest select-by-short-name
+         ^{:doc "Selects object by short name"}
+         (is (tc/qstruct? (run-query "b" tc/mom tc/*em*) [[Building []]]))
+         (is (tc/qstruct? (run-query "f" tc/mom tc/*em*) [[Floor []]]))
+         (is (tc/check-query (run-query "ni" tc/mom tc/*em*) [[]]))
+         (is (tc/check-query (run-query "ip4i" tc/mom tc/*em*) [[]]))
+         (is (tc/qstruct? (run-query "f (b)" tc/mom tc/*em*) [[Floor [[Building []]]]]))
+         (is (tc/qstruct? (run-query "floor (b)" tc/mom tc/*em*) [[Floor [[Building []]]]]))
+         (is (tc/qstruct? (run-query "f (building)" tc/mom tc/*em*) [[Floor [[Building []]]]])))
+

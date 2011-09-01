@@ -17,3 +17,11 @@
           (is (= (first (get-paths Building Floor classes))
                  {:path [ru.petrsu.nest.son.Building ru.petrsu.nest.son.Floor], 
                   :ppath ["floors"]})))
+
+(deftest t-get-short-name
+         ^{:doc "Tests 'get-short-name' function."}
+         (is (= "f" (get-short-name Floor)))
+         (is (= "b" (get-short-name Building)))
+         (is (= "ni" (get-short-name ru.petrsu.nest.son.NetworkInterface)))
+         (is (= "ip4i" (get-short-name ru.petrsu.nest.son.IPv4Interface))))
+

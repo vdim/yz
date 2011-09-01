@@ -109,7 +109,6 @@
   "Gets maps from get-paths and transforms value of :ppath key to
   one string. Returns sequence of this strings."
   [from to classes]
-;  (map #(reduce (fn [x1, x2] (str x1 "." x2)) (:ppath %)) 
   (map :ppath (get-paths from to classes)))
 
 
@@ -122,7 +121,16 @@
     (if (nil? cl-)
       res
       (recur (:superclass (bean cl-)) 
-             (concat res(map #(.getName %) (.getDeclaredFields cl-)))))))
+             (concat res (map #(.getName %) (.getDeclaredFields cl-)))))))
+
+
+(defn get-short-name
+  "Return a short name for the specified class. 
+  The short is a set of upper letters from the simple name of the class."
+  [cl]
+  (.toLowerCase (reduce str ""
+                        (for [a (.getSimpleName cl) 
+                              :when (< (int a) (int \a))] a))))
 
 (defn init-map-for-cl
   "Inits map for specified class. Adds following keys and values:
@@ -131,7 +139,7 @@
     - :superclass (super class)
     - :properties (list of properties)"
   [cl]
-  {:sn ""
+  {:sn (get-short-name cl)
    :dp ""
    :superclass (:superclass (bean cl))
    :properties (get-fields-name cl)})
