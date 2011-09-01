@@ -62,12 +62,17 @@
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
   [sources cl-target mom preds]
-  (if-let [paths (get (get mom (class (nth sources 0))) cl-target)]
-    (loop [ps (nth paths 0) res sources]
-      (if (empty? ps)
-        (filter-by-preds res preds mom)
-        (recur (rest ps) (get-objs (first ps) res))))
-    (throw (Exception. (str "Not found path between " (class (nth sources 0)) " and " cl-target ".")))))
+  (let [cl-source (class (nth sources 0))]
+    (loop [cl- cl-target]
+      (let [paths (get (get mom cl-source) cl-)]
+        (if (empty? paths)
+          (if (nil? cl-)
+            (throw (Exception. (str "Not found path between " cl-source " and " cl-target ".")))
+            (recur (:superclass (get mom cl-target))))
+          (loop [ps (nth paths 0) res sources]
+            (if (empty? ps)
+              (filter-by-preds res preds mom)
+              (recur (rest ps) (get-objs (first ps) res)))))))))
 
 
 (defn- process-prop
@@ -81,7 +86,7 @@
     (get-fv obj prop)))
 
 (defn- process-props
-  "If nest has props then function returns value of property,
+  "If nest has props then function returns value of property(ies),
   otherwise obj is returned."
   [obj, props]
   (if (empty? props)

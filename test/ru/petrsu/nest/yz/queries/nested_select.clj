@@ -76,4 +76,11 @@
          (is (tc/qstruct? (run-query "building (room (floor))" tc/mom tc/*em*)
                 [[Building [[Room [[Floor []]]]]]])))
 
+(deftest select-inheritance
+         ^{:doc "Tests inheritance queries."}
+         (is (run-query "device (network)" tc/mom tc/*em*))
+         (is (run-query "device (ipnetwork)" tc/mom tc/*em*))
+         (is (run-query "device (linkinterface)" tc/mom tc/*em*))
+         (is (run-query "device (ethernetinterface)" tc/mom tc/*em*)))
+
 
