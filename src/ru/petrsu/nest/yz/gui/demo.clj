@@ -28,18 +28,6 @@
      0))) ; ipady
 
 
-(defn get-row-count
-  "Returns the number of row for specified result of query."
-  [data]
-  (if (empty? data)
-    1
-    (if (empty? (data 1))
-      (/ (count data) 2)
-      (reduce #(if (vector? %2)
-                 (+ %1 (get-row-count (%2 0)))
-                 %1) 0 data))))
-
-
 (defn get-column-count
   "Returns the number of column for specified result of query."
   [data]
@@ -49,62 +37,26 @@
       (recur ((data- 1) 0) (inc res)))))
 
 
-(defn get-value
-  [data, row, column]
-  ())
-
-(defn get-rows-
-  [data]
-  (if (empty? data)
-    []
-    (if (empty? (data 1))
-      (for [a (partition 2 data)] (first a))
-      (reduce #(if (vector? %2)
-                 (conj %1 (get-rows (%2 0)))
-                 %1) [] data))))
-
-;(defn get-rows
-;  [data]
-;  (loop [data- data res [] rst (rest (rest data))]
-;    (if (or (empty? rst) (nil? rst))
-;      (reduce #(conj %1 (conj res (first %2))) [] (partition 2 data-)
-;      (if (empty? (data- 1))
-;        (recur rst res  (rest (rest rst)))
-;        (recur ((data- 1) 0) (conj res (data- 0))  rst))))))
-;  (reduce #(conj %1 (first %2)) [] (partition 2 (data 0))))
-
-(defn myf
+(defn get-rows
+  "Returns set of rows. The 'data' is the result of 
+  processing a query."
   ([data]
-   (myf data ()))
+   (get-rows data ()))
   ([data & args]
    (if (empty? (data 0))
      (list (vec (flatten args)))
      (mapcat (fn [o]
             (if (empty? (o 1))
-              (for [b (partition 2 o)] (vec (flatten [args b])))
+              (for [pair (partition 2 o)] (vec (flatten [args pair])))
               (mapcat #(myf (nth % 1) args (nth % 0)) (partition 2 o)))) 
           data))))
 
 
-(defn myff
-  [data]
-  (let [d (myf data)]
-    (loop [d- d res [] dd- nil]
-      (if (vector? (nth d- 0))
-        (reduce #(conj %2 %1) [] dd-)
-        (recur (reduce #(concat %1 %2) d-) res d-)))))
-
-(defn myff-
-  ([data]
-   (if (vector? data)
-     (do (println data) 1)
-     (map #(myff- %) data))))
-
-
 (defn table-model [data c-names]
   "Implements TableModel for querie's representation."
-  (let [colcnt (get-column-count data)
-	rowcnt (get-row-count data)]
+  (let [rows (get-rows data)
+        colcnt (get-column-count data)
+	rowcnt (count rows)]
     (proxy [TableModel] []
       (addTableModelListener [tableModelListener])
       (getColumnClass [columnIndex] Object)
@@ -113,7 +65,7 @@
                      (nth c-names columnIndex))
       (getRowCount [] rowcnt)
       (getValueAt [rowIndex columnIndex]
-                  (get-value data rowIndex columnIndex))
+                  ((nth rows rowIndex) columnIndex))
       (isCellEditable [rowIndex columnIndex] false)
       (removeTableModelListener [tableModelListener]))))
 
