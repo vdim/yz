@@ -5,7 +5,7 @@
             [ru.petrsu.nest.yz.hb-utils :as hb])
   (:import (javax.swing JPanel JTree JTable JScrollPane 
                         JFrame JToolBar JButton SwingUtilities JTextField)
-           (java.awt Insets GridBagConstraints)
+           (java.awt Insets GridBagConstraints GridBagLayout)
            (javax.swing.table TableModel AbstractTableModel)
            (java.awt.event KeyEvent KeyAdapter)))
 
@@ -86,11 +86,9 @@
       (.addKeyListener component listener)
       listener))
 
-(def 
-  mom (hb/gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
+(def mom (hb/gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
 
-(def
-  em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest")))
+(def em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest")))
 
 
 (defn- create-qtext
@@ -100,9 +98,10 @@
     (add-key-released-listener 
       qtext 
       (fn [e] 
-        (if (= (.getKeyCode e) KeyEvent/VK_ENTER) 
-          (.setModel rtable (table-model (c/run-query (.getText qtext) mom em) 
-                                         ["a" "b" "c" "d" "e"])))))
+        (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
+          (let [qr (c/pquery (.getText qtext) mom em)]
+            (.setModel rtable (table-model (:result qr)
+                                           (:columns qr)))))))
     qtext))
 
 (defn- create-pane

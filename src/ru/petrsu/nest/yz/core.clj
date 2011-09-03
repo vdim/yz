@@ -136,9 +136,49 @@
 (defn run-query
   "Returns result of 'query' based on specified map of object model ('mom')
   and instance of javax.persistence.EntityManager ('em')."
+  [parse-res mom em]
+  (vec (map #(do-query em mom %) parse-res)))
+
+
+(defn- get-column-name
+  "Returns the string representation of column 
+  for the specified nest from result of query."
+  [nest]
+  (let [then (:then nest)
+        what (:what nest)
+        props (:props nest)]
+    (cond  
+      (not (nil? then)) (loop [then- then]
+                          (if (nil? (:then then-))
+                            [(.getSimpleName (:what then-))]
+                            (recur (:then then-))))
+      (not (empty? props)) (map first props)
+      :else [(.getSimpleName what)])))
+
+
+(defn get-columns
+  "Returns vector with columns names 
+  for the specified result of parsing some query."
+  [parse-res]
+  (loop [p parse-res res []]
+    (if (every? nil? p)
+      res
+      (recur (flatten (map #(:nest %) p)) 
+             (conj res (mapcat #(get-column-name %) p))))))
+
+
+(defn pquery
+  "Returns map where
+    :error - defines message of an error
+    :result - result of query
+    :columns - vector with column's names."
   [query mom em]
   (if (empty? query)
-    [[]]
+    {:result [[]]
+     :error ""
+     :columns []}
     (let [parse-res (p/parse query mom)]
-      (vec (map #(do-query em mom %) parse-res)))))
+      {:result (run-query parse-res mom em)
+       :error ""
+       :columns (map #(reduce str "" %) (get-columns parse-res))})))
 
