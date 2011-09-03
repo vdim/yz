@@ -137,6 +137,8 @@
   "Returns result of 'query' based on specified map of object model ('mom')
   and instance of javax.persistence.EntityManager ('em')."
   [query mom em]
-  (let [parse-res (p/parse query mom)]
-    (vec (map #(do-query em mom %) parse-res))))
+  (if (empty? query)
+    [[]]
+    (let [parse-res (p/parse query mom)]
+      (vec (map #(do-query em mom %) parse-res)))))
 
