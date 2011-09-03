@@ -1,7 +1,8 @@
 (ns ru.petrsu.nest.yz.gui.demo
   ^{:author Vyacheslav Dimitrov
     :doc "This code implements GUI for the demonstration using YZ."}
-  (:require [ru.petrsu.nest.yz.parsing :as p])
+  (:require [ru.petrsu.nest.yz.core :as c]
+            [ru.petrsu.nest.yz.hb-utils :as hb])
   (:import (javax.swing JPanel JTree JTable JScrollPane 
                         JFrame JToolBar JButton SwingUtilities JTextField)
            (java.awt Insets GridBagConstraints)
@@ -48,14 +49,14 @@
      (mapcat (fn [o]
             (if (empty? (o 1))
               (for [pair (partition 2 o)] (vec (flatten [args pair])))
-              (mapcat #(myf (nth % 1) args (nth % 0)) (partition 2 o)))) 
+              (mapcat #(myf (nth % 1) args (nth % 0)) (partition 2 o))))
           data))))
 
 
 (defn table-model [data c-names]
   "Implements TableModel for querie's representation."
   (let [rows (get-rows data)
-        colcnt (get-column-count data)
+        colcnt (reduce max (map count rows))
 	rowcnt (count rows)]
     (proxy [TableModel] []
       (addTableModelListener [tableModelListener])
@@ -65,7 +66,10 @@
                      (nth c-names columnIndex))
       (getRowCount [] rowcnt)
       (getValueAt [rowIndex columnIndex]
-                  ((nth rows rowIndex) columnIndex))
+                  (let [row (nth rows rowIndex)]
+                    (if (< (dec (count row)) columnIndex)
+                      nil
+                      (row columnIndex))))
       (isCellEditable [rowIndex columnIndex] false)
       (removeTableModelListener [tableModelListener]))))
 
@@ -80,15 +84,23 @@
       (.addKeyListener component listener)
       listener))
 
+(def 
+  mom (hb/gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
+
+(def
+  em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest")))
+
+
 (defn- create-qtext
   "Create jtextfield for the input query."
-  [rtext]
+  [rtable]
   (let [qtext (JTextField.)]
     (add-key-released-listener 
       qtext 
       (fn [e] 
         (if (= (.getKeyCode e) KeyEvent/VK_ENTER) 
-          (println "HEY"))))
+          (.setModel rtable (table-model (c/run-query (.getText qtext) mom em) 
+                                         ["a" "b" "c" "d" "e"])))))
     qtext))
 
 (defn- create-pane
