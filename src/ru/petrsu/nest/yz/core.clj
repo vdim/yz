@@ -175,10 +175,21 @@
   [query mom em]
   (if (empty? query)
     {:result [[]]
-     :error ""
+     :error nil
      :columns []}
-    (let [parse-res (p/parse query mom)]
-      {:result (run-query parse-res mom em)
-       :error ""
-       :columns (map #(reduce str "" %) (get-columns parse-res))})))
+    (let [parse-res (try
+                      (p/parse query mom)
+                      (catch Exception e (.getMessage e)))
+          run-query-res (if (string? parse-res)
+                          parse-res
+                          (try
+                            (run-query parse-res mom em)
+                            (catch Exception e (.getMessage e))))]
+      (if (string? run-query-res)
+        {:result []
+         :error run-query-res
+         :columns []}
+         {:result run-query-res
+         :error nil
+         :columns (map #(reduce str "" %) (get-columns parse-res))}))))
 

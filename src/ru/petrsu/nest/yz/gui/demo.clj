@@ -3,8 +3,8 @@
     :doc "This code implements GUI for the demonstration using YZ."}
   (:require [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.yz.hb-utils :as hb])
-  (:import (javax.swing JPanel JTree JTable JScrollPane 
-                        JFrame JToolBar JButton SwingUtilities JTextField)
+  (:import (javax.swing JPanel JTable JScrollPane 
+                        JFrame JTextField JOptionPane)
            (java.awt Insets GridBagConstraints GridBagLayout)
            (javax.swing.table TableModel AbstractTableModel)
            (java.awt.event KeyEvent KeyAdapter)))
@@ -100,8 +100,10 @@
       (fn [e] 
         (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
           (let [qr (c/pquery (.getText qtext) mom em)]
-            (.setModel rtable (table-model (:result qr)
-                                           (:columns qr)))))))
+            (if (nil? (:error qr))
+              (.setModel rtable (table-model (:result qr)
+                                             (:columns qr)))
+              (JOptionPane/showMessageDialog rtable (:error qr)))))))
     qtext))
 
 (defn- create-pane
