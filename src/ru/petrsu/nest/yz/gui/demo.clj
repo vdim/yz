@@ -47,9 +47,11 @@
    (if (empty? (data 0))
      (list (vec (flatten args)))
      (mapcat (fn [o]
-            (if (empty? (o 1))
-              (for [pair (partition 2 o)] (vec (flatten [args pair])))
-              (mapcat #(myf (nth % 1) args (nth % 0)) (partition 2 o))))
+               (if (empty? o)
+                 []
+                 (if (empty? (o 1))
+                   (for [pair (partition 2 o)] (vec (flatten [args pair])))
+                   (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o)))))
           data))))
 
 
