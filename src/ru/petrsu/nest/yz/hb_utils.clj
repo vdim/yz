@@ -24,7 +24,8 @@
          can use hibernate as framework between its 
          object model and database."}
   (:require [clojure.xml :as cx] 
-            [clojure.set :as cs]))
+            [clojure.set :as cs])
+  (:import (javax.persistence Transient)))
 
 
 (defn- get-classes
@@ -112,7 +113,6 @@
   (map :ppath (get-paths from to classes)))
 
 
-; TODO: exculde fields with javax.persistence.Transient
 (defn get-fields-name
   "Returns list of all field's names (including superclass's
   fields and excluding fields with Transient annotation)."
@@ -121,7 +121,13 @@
     (if (nil? cl-)
       res
       (recur (:superclass (bean cl-)) 
-             (concat res (map #(.getName %) (.getDeclaredFields cl-)))))))
+             (concat res (filter #(not (nil? %)) 
+                                 (map #(let [anns (.getDeclaredAnnotations %)
+                                             t-anns (set (map (fn [ann] (.annotationType ann)) anns))]
+                                         (if (contains? t-anns Transient)
+                                           nil
+                                           (.getName %))) 
+                                      (.getDeclaredFields cl-))))))))
 
 
 (defn get-short-name
