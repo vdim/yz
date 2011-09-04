@@ -117,6 +117,18 @@
    "building (simpleou[*parent])"
    "building[name] (simpleou[*parent])"
    "building[name] (simpleou[*parent name])"
+   "building[&]"
+   "building[& name]"
+   "building[name &]"
+   "building[name floors &]"
+   "building[name & floors]"
+   "building[& name floors]"
+   "building (room[&])"
+   "building (room[number &])"
+   "building (room[& number])"
+   "building[name] (room[& number])"
+   "building[name] (room[number &])"
+   "building[name &] (room[number &])"
    "room"])
 
 (deftest parse-remainder

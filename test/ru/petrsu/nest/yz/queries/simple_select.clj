@@ -12,7 +12,7 @@
            (.addBuilding (doto (Building.) (.setName "building1") 
                            (.addFloor (Floor.)) (.addFloor (Floor.)))) 
            (.addBuilding (doto (Building.) (.setName "building2") 
-                           (.addFloor (Floor.))))))
+                           (.addFloor (doto (Floor.) (.addRoom (Room. "1"))))))))
 
 
 ;; Define entity manager.
@@ -33,9 +33,9 @@
                 [#<Floor Floor 0> [], #<Floor Floor 0> [], #<Floor Floor 0> []]]"}
          (is (tc/check-query "floor" [[Floor [], Floor[], Floor[]]])))
 
-(deftest select-rooms
-         ^{:doc "Selects all Room objects. Result should be empty."}
-         (is (tc/check-query "room" [[]])))
+(deftest select-devices
+         ^{:doc "Selects all Device objects. Result should be empty."}
+         (is (tc/check-query "device" [[]])))
 
 (deftest select-b-names
          ^{:doc "Selects building's names"}
@@ -43,11 +43,17 @@
            (is (or (= q [['("building1") [] '("building2") []]])
                    (= q [['("building2") [] '("building1") []]])))))
 
-(deftest select-props
+(deftest select-prop
          ^{:doc "Checks props"}
          (is (= (tc/check-query "floor.number" [['(0) [] '(0) [] '(0) []]])))
          (is (= (tc/check-query "floor.name" [['(nil) [] '(nil) [] '(nil) []]])))
          (is (= (tc/check-query "building.floor.number" [['(0) [] '(0) [] '(0) []]]))))
+
+(deftest select-props
+         ^{:doc "Checks props"}
+         (is (= (tc/check-query "floor[number name]" [['(0 nil) [] '(0 nil) [] '(0 nil) []]])))
+         (is (= (tc/check-query "floor[name number]" [['(nil 0) [] '(nil 0) [] '(nil 0) []]])))
+         (is (= (tc/check-query "room[number]" [['("1") []]]))))
 
 (deftest select-by-short-name
          ^{:doc "Selects object by short name"}
