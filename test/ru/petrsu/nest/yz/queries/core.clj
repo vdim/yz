@@ -2,7 +2,8 @@
   ^{:author Vyacheslav Dimitrov
     :doc "Helper functions for testing YZ's queries."}
   (:use ru.petrsu.nest.yz.core clojure.contrib.test-is)
-  (:require [ru.petrsu.nest.yz.hb-utils :as hb])
+  (:require [ru.petrsu.nest.yz.hb-utils :as hb]
+            [ru.petrsu.nest.yz.core :as c])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
            (ru.petrsu.nest.son SON Building Room Floor)))
 
@@ -34,13 +35,6 @@
        q-seq))
 
 
-(defn check-query
-  "Checks correspondence specified result of query to
-  specified structure."
-  [query, structure]
-  (= structure (transform-q query)))
-
-
 (defn- transform-first-q
   "Transforms each first element of each nested query."
   [q]
@@ -51,13 +45,6 @@
               q))
     (class q)))
 
-(defn qstruct?
-  "Defines whether structure of the specified query correspends to
-  the specified query."
-  [query, structure]
-  (= structure (transform-first-q query)))
-
-
 (declare *em*)
 (defn setup [sons]
   "Returns function for creating entity manager 
@@ -65,4 +52,27 @@
   (fn [f]
     (binding [*em* (create-em sons)] (f) 
       (.close *em*))))
+
+
+(defn r-query
+  "Returns :result of core/pquery."
+  [query]
+  (:result (c/pquery query mom *em*)))
+
+
+(defn qstruct?
+  "Defines whether structure of the specified query correspends to
+  the specified query."
+  [query, structure]
+  (let [rq (if (string? query) (r-query query) query)]
+    (= structure (transform-first-q rq))))
+
+
+(defn check-query
+  "Checks correspondence specified result of query to
+  specified structure."
+  [query, structure]
+  (let [rq (if (string? query) (r-query query) query)]
+    (= structure (transform-q rq))))
+
 

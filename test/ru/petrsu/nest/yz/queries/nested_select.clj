@@ -38,27 +38,27 @@
 
 (deftest select-b-and-f
          ^{:doc "Selects all Building and its Floor objects."}
-         (is (tc/qstruct? (run-query "building (floor)" tc/mom tc/*em*)
-                [[Building [[Floor []]]]])))
+         (is (tc/qstruct? "building (floor)"
+                          [[Building [[Floor []]]]])))
 
 (deftest select-b-and-r
          ^{:doc "Selects all Building and its Room objects."}
-         (is (tc/qstruct? (run-query "building (room)" tc/mom tc/*em*)
+         (is (tc/qstruct? "building (room)"
                           [[Building [[Room []]]]])))
 
 (deftest select-r-and-b
          ^{:doc "Selects all Room and its Building objects."}
-         (is (tc/qstruct? (run-query "room (building)" tc/mom tc/*em*)
+         (is (tc/qstruct? "room (building)"
                           [[Room [[Building []]]]])))
 
 (deftest select-f-and-b
          ^{:doc "Selects all Floor and its Building objects."}
-         (is (tc/qstruct? (run-query "floor (building)" tc/mom tc/*em*)
-                [[Floor [[Building []]]]])))
+         (is (tc/qstruct? "floor (building)"
+                          [[Floor [[Building []]]]])))
 
 (deftest select-bn-and-f
          ^{:doc "Selects all Building's name and its Floor objects."}
-         (let [q (run-query "building.name (floor)" tc/mom tc/*em*)]
+         (let [q (tc/r-query "building.name (floor)")]
            (is (= ((q 0) 0) '("building")))
            (is (or (= (count (((q 0) 1) 0)) 4) (= (count (((q 0) 1) 0)) 2)))
            (is (or (= (count (((q 0) 3) 0)) 4) (= (count (((q 0) 3) 0)) 2)))
@@ -68,19 +68,19 @@
 
 (deftest select-b-f-r
          ^{:doc "Selects all Building, its Floor and its Room objects."}
-         (is (tc/qstruct? (run-query "building (floor (room))" tc/mom tc/*em*)
-                [[Building [[Floor [[Room []]]]]]])))
+         (is (tc/qstruct? "building (floor (room))"
+                          [[Building [[Floor [[Room []]]]]]])))
 
 (deftest select-b-r-f
          ^{:doc "Selects all Building, its Room and its Floor objects."}
-         (is (tc/qstruct? (run-query "building (room (floor))" tc/mom tc/*em*)
-                [[Building [[Room [[Floor []]]]]]])))
+         (is (tc/qstruct? "building (room (floor))"
+                          [[Building [[Room [[Floor []]]]]]])))
 
 (deftest select-inheritance
          ^{:doc "Tests inheritance queries."}
-         (is (run-query "device (network)" tc/mom tc/*em*))
-         (is (run-query "device (ipnetwork)" tc/mom tc/*em*))
-         (is (run-query "device (linkinterface)" tc/mom tc/*em*))
-         (is (run-query "device (ethernetinterface)" tc/mom tc/*em*)))
+         (is (tc/r-query "device (network)"))
+         (is (tc/r-query "device (ipnetwork)"))
+         (is (tc/r-query "device (linkinterface)"))
+         (is (tc/r-query "device (ethernetinterface)")))
 
 
