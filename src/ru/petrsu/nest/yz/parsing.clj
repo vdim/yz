@@ -195,8 +195,9 @@
   "This function is called when likely prop is found"
   [res mom id nl tl is-recur]
   (let [tl- (dec tl)
-        last-then (get-in-nest res nl :then)]
-    (if-let [prop (find-prop (get-in-then res nl tl- :what) id mom)]
+        last-then (get-in-nest res nl :then)
+        id (str id)]
+    (if (or (= id "&") (find-prop (get-in-then res nl tl- :what) id mom))
       (if (> tl- 0)
         (assoc-in-nest res nl :then (update-in last-then 
                                                (conj (vec (repeat (dec tl-) :then)) :props) 
@@ -250,7 +251,7 @@
 
 (def alpha
   ^{:doc "Sequence of characters."}
-  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456780"))
+  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456780&"))
 
 (def digit
   ^{:doc "Sequence of digits."}
@@ -294,7 +295,7 @@
 (defmacro process-id
   "Processes some id due to functions 'f'"
   [f]
-  `(complex [id# (rep+ alpha) 
+  `(complex [id# (rep+ alpha)
              _# (partial set-id id# ~f)]
             id#))
 

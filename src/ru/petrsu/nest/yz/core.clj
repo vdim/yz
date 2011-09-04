@@ -78,12 +78,14 @@
 (defn- process-prop
   "Processes property."
   [[prop is-recur] obj]
-  (if is-recur
-    (loop [res [] obj- (get-fv obj prop)]
-      (if (nil? obj-)
-        res
-        (recur (conj res obj-) (get-fv obj- prop))))
-    (get-fv obj prop)))
+  (if (= prop "&")
+    obj
+    (if is-recur
+      (loop [res [] obj- (get-fv obj prop)]
+        (if (nil? obj-)
+          res
+          (recur (conj res obj-) (get-fv obj- prop))))
+      (get-fv obj prop))))
 
 (defn- process-props
   "If nest has props then function returns value of property(ies),
