@@ -10,6 +10,9 @@
            (java.awt.event KeyEvent KeyAdapter)))
 
 
+(def *q-history* (ref []))
+(def *current-q* (ref 0))
+
 (defn- create-gbc
   "Creates instanse of the GridBagConstraints."
   ([]
@@ -89,12 +92,30 @@
     (add-key-released-listener 
       qtext 
       (fn [e] 
+        (if (= (.getKeyCode e) KeyEvent/VK_UP)
+          (let [cur-q (dec @*current-q*)]
+            (if (>= cur-q 0)
+              (dosync 
+                (.setText qtext (@*q-history* cur-q))
+                (ref-set *current-q* cur-q)))))
+
+        (if (= (.getKeyCode e) KeyEvent/VK_DOWN)
+          (let [cur-q (inc @*current-q*)]
+            (if (< cur-q (count @*q-history*))
+              (dosync 
+                (.setText qtext (@*q-history* cur-q))
+                (ref-set *current-q* cur-q)))))
+
         (if (= (.getKeyCode e) KeyEvent/VK_ENTER)
-          (let [qr (c/pquery (.getText qtext) mom em)]
+          (let [text (.getText qtext) 
+                qr (c/pquery text mom em)]
             (if (nil? (:error qr))
               (.setModel rtable (table-model (:result qr)
                                              (:columns qr)))
-              (JOptionPane/showMessageDialog rtable (:error qr)))))))
+              (JOptionPane/showMessageDialog rtable (:error qr)))
+            (dosync 
+              (ref-set *q-history* (conj @*q-history* text))
+              (ref-set *current-q* (dec (count @*q-history*))))))))
     qtext))
 
 (defn- create-pane
