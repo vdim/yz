@@ -29,15 +29,6 @@
      0))) ; ipady
 
 
-(defn get-column-count
-  "Returns the number of column for specified result of query."
-  [data]
-  (loop [data- data res 1]
-    (if (empty? (data- 1))
-      res
-      (recur ((data- 1) 0) (inc res)))))
-
-
 (defn get-rows
   "Returns set of rows. The 'data' is the result of 
   processing a query."
@@ -65,7 +56,7 @@
       (getColumnClass [columnIndex] Object)
       (getColumnCount [] colcnt)
       (getColumnName [columnIndex]
-                     (nth c-names columnIndex))
+                     "") ;(nth c-names columnIndex))
       (getRowCount [] rowcnt)
       (getValueAt [rowIndex columnIndex]
                   (let [row (nth rows rowIndex)]
