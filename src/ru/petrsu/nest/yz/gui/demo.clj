@@ -32,27 +32,9 @@
      0))) ; ipady
 
 
-(defn get-rows
-  "Returns set of rows. The 'data' is the result of 
-  processing a query."
-  ([data]
-   (get-rows data ()))
-  ([data & args]
-   (if (empty? (data 0))
-     (list (vec (flatten args)))
-     (mapcat (fn [o]
-               (if (empty? o)
-                 []
-                 (if (empty? (o 1))
-                   (for [pair (partition 2 o)] (vec (flatten [args pair])))
-                   (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o)))))
-          data))))
-
-
-(defn table-model [data c-names]
+(defn table-model [rows c-names]
   "Implements TableModel for querie's representation."
-  (let [rows (get-rows data)
-        colcnt (reduce max (map count rows))
+  (let [colcnt (reduce max (map count rows))
 	rowcnt (count rows)]
     (proxy [TableModel] []
       (addTableModelListener [tableModelListener])
@@ -110,7 +92,7 @@
           (let [text (.getText qtext) 
                 qr (c/pquery text mom em)]
             (if (nil? (:error qr))
-              (.setModel rtable (table-model (:result qr)
+              (.setModel rtable (table-model (:rows qr)
                                              (:columns qr)))
               (JOptionPane/showMessageDialog rtable (:error qr)))
             (dosync 

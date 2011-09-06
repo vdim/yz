@@ -169,6 +169,23 @@
              (conj res (mapcat #(get-column-name %) p))))))
 
 
+(defn get-rows
+  "Returns set of rows. The 'data' is the result of 
+  processing a query."
+  ([data]
+   (get-rows data ()))
+  ([data & args]
+   (if (empty? (data 0))
+     (list (conj (vec (flatten args)) nil))
+     (mapcat (fn [o]
+               (if (empty? o)
+                 [nil]
+                 (if (empty? (o 1))
+                   (for [pair (partition 2 o)] (vec (flatten [args pair])))
+                   (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o)))))
+          data))))
+
+
 (defn pquery
   "Returns map where
     :error - defines message of an error
@@ -178,7 +195,8 @@
   (if (empty? query)
     {:result [[]]
      :error nil
-     :columns []}
+     :columns []
+     :rows ()}
     (let [parse-res (try
                       (p/parse query mom)
                       (catch Exception e (.getMessage e)))
@@ -190,8 +208,10 @@
       (if (string? run-query-res)
         {:result []
          :error run-query-res
-         :columns []}
-         {:result run-query-res
+         :columns []
+         :rows ()}
+        {:result run-query-res
          :error nil
-         :columns []}))));(map #(reduce str "" %) (get-columns parse-res))}))))
+         :columns [] ;(map #(reduce str "" %) (get-columns parse-res))
+         :rows (get-rows run-query-res)}))))
 
