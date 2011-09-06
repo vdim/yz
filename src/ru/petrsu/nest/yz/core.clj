@@ -193,5 +193,5 @@
          :columns []}
          {:result run-query-res
          :error nil
-         :columns (map #(reduce str "" %) (get-columns parse-res))}))))
+         :columns []}))));(map #(reduce str "" %) (get-columns parse-res))}))))
 
