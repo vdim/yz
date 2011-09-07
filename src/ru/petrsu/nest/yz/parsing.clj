@@ -14,6 +14,7 @@
            :then-level ; then level, the nubmer of dots.
            :nest-level ; Nest level, level of query (the number of parentthesis).
            :preds ; The vector within current predicates structure.
+           :res-stack ; Stack with result (needed for processing function's calls).
            :is-recur) ; Defines whether property is recur.
 
 ;; Helper macros, definitions and functions.
@@ -315,7 +316,7 @@
                 ret)))
 
 
-(declare query)
+(declare query, function)
 (def nest-query
   ^{:doc "Defines nested query"}
   (conc (sur-by-ws (complex [ret (invisi-conc (lit\() (update-info :nest-level inc))
@@ -392,9 +393,36 @@
 (def props
   ^{:doc "Defines sequences of properties of an object."}
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
-        (rep+ (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
-                               (invisi-conc (process-id found-prop) (set-info :is-recur false)))))
+        (rep+ (alt function (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
+                                             (invisi-conc (process-id found-prop) (set-info :is-recur false))))))
         (invisi-conc (lit \]) (update-info :then-level dec))))
+
+
+(declare params, param, pquery)
+(def function
+  ^{:doc "Defines YZ's function."}
+  (conc (lit \@) (lit \() (rep+ alpha) params (lit \))))
+
+(def params
+  ^{:doc "Defines sequense of parameters of YZ's function."}
+  (alt (conc param params) emptiness))
+
+(def param
+  ^{:doc ""}
+  (sur-by-ws (alt string number pquery)))
+
+(def pquery
+  ^{:doc "Defines param as query."}
+  (conc (complex [ret (lit \`) 
+                  res (get-info :result)
+                  _ (update-info :res-stack #(conj % res))
+                  _ (set-info :result empty-res)]
+                 ret)
+        (complex [ret query
+                  res-s (get-info :res-stack)
+                  _ (set-info :result (peek res-s))
+                  _ (update-info :res-stack #(pop %))]
+                 ret)))
 
 (def query
   (rep+ (alt bid nest-query (conc delimiter bid) block-where props)))
@@ -403,13 +431,13 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] false)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] [] false)) 1))
 
 
 (defn parse
   "Parses specified query ('q') on the YZ language based on
   specified ('mom') the map of the object model.
-  Returns a value of the :result key of the structure of the q-representation structure."
+  Returns a value of the :result key of the q-representation structure."
   [q, mom]
   (:result (parse+ q, mom)))
 
