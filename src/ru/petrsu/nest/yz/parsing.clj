@@ -15,6 +15,7 @@
            :nest-level ; Nest level, level of query (the number of parentthesis).
            :preds ; The vector within current predicates structure.
            :res-stack ; Stack with result (needed for processing function's calls).
+           :function ; Describe current function.
            :is-recur) ; Defines whether property is recur.
 
 ;; Helper macros, definitions and functions.
@@ -40,6 +41,11 @@
   {:ids []
    :func nil
    :value nil})
+
+(def empty-fun
+  ^{:doc "Defines function structure"}
+  {:func nil ; Function (:func has clojure.lang.Var type.)
+   :params []}) ; Vector with parameters.
 
 
 (defmacro sur-by-ws
@@ -236,10 +242,16 @@
         pred2- (if (map? pred2) (tr-pred pred2) pred2)]
     (str "(" op " " pred1- " " pred2- ")")))
 
+
 (defn update-preds
   [op]
   (update-info :preds #(conj (pop (pop %)) (do-predicate op (peek (pop %)) (peek %)))))
 
+
+(defn update-param
+  "Updates :params key of :function key of the q-representation structure."
+  [value]
+  (update-info :function #(assoc % :params (conj (:params %) value))))
 
 
 
@@ -252,7 +264,7 @@
 
 (def alpha
   ^{:doc "Sequence of characters."}
-  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456780&"))
+  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456780&+/-*:"))
 
 (def digit
   ^{:doc "Sequence of digits."}
@@ -398,18 +410,18 @@
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 
-(declare params, param, pquery)
+(declare params, param, pquery, pnumber, pstring, process-fn)
 (def function
   ^{:doc "Defines YZ's function."}
-  (conc (lit \@) (lit \() (rep+ alpha) params (lit \))))
+  (conc (lit \@) (lit \() (process-fn) params (lit \))))
 
 (def params
   ^{:doc "Defines sequense of parameters of YZ's function."}
   (alt (conc param params) emptiness))
 
 (def param
-  ^{:doc ""}
-  (sur-by-ws (alt string number pquery)))
+  ^{:doc "Defines different types of function's parameters."}
+  (sur-by-ws (alt pstring pnumber pquery)))
 
 (def pquery
   ^{:doc "Defines param as query."}
@@ -419,10 +431,36 @@
                   _ (set-info :result empty-res)]
                  ret)
         (complex [ret query
+                  res (get-info :result)
                   res-s (get-info :res-stack)
+                  _ (update-param res)
                   _ (set-info :result (peek res-s))
                   _ (update-info :res-stack #(pop %))]
-                 ret)))
+                 ret)
+        (lit \')))
+
+(def pnumber
+  ^{:doc "Defines param as number."}
+  (complex [n number
+            _ (update-param (Double/parseDouble (reduce str "" (flatten n))))]
+           n))
+
+(def pstring
+  ^{:doc "Defines param as string."}
+  (complex [s string
+            _ (update-param (nth s 1))]
+           s))
+
+
+(defn process-fn
+  "Processes function name."
+  []
+  (complex [n (rep+ alpha)
+            _ (update-info :function 
+                           #(assoc % :func
+                                   (resolve (symbol (reduce str "" n)))))]
+           n))
+
 
 (def query
   (rep+ (alt bid nest-query (conc delimiter bid) block-where props)))
@@ -431,7 +469,7 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] [] false)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] [] empty-fun false)) 1))
 
 
 (defn parse
