@@ -278,18 +278,28 @@
   (rep+ (alt (lit \space) (lit \newline) (lit \tab))))
 
 
-(defn string-
+(defn text
   "Rule for recognizing any string."
-  [state]
+  [ch state]
   (let [remainder (reduce str (:remainder state))
-        res (for [a (:remainder state) :while (not (= a \"))] a)]
+        res (for [a (:remainder state) :while (not (= a ch))] a)]
     [(reduce str res) 
      (assoc state :remainder (ccs/drop (count res) remainder))]))
 
 
+(defn string-
+  "Rule for recognizing any string."
+  [state]
+  (text state \"))
+;  (let [remainder (reduce str (:remainder state))
+;        res (for [a (:remainder state) :while (not (= a \"))] a)]
+;    [(reduce str res) 
+;     (assoc state :remainder (ccs/drop (count res) remainder))]))
+
+
 (def string
   ^{:doc "Defines string"}
-  (conc (lit \") string- (lit \")))
+  (conc (lit \") (partial text \") (lit \")))
 
 
 (defn set-id
@@ -412,7 +422,7 @@
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 
-(declare params, param, pquery, pnumber, pstring, process-fn)
+(declare params, param, pquery, pnumber, pstring, process-fn, parse+)
 (def function
   ^{:doc "Defines YZ's function."}
   (conc (lit \@) (lit \() (process-fn) params (lit \))))
@@ -425,27 +435,22 @@
   ^{:doc "Defines different types of function's parameters."}
   (sur-by-ws (alt pstring pnumber pquery)))
 
+
 (def pquery
-  ^{:doc "Defines param as query."}
-  (conc (complex [ret (lit \`) 
-                  res (get-info :result)
-                  _ (update-info :res-stack #(conj % res))
-                  _ (set-info :result empty-res)]
-                 ret)
-        (complex [ret query
-                  res (get-info :result)
-                  res-s (get-info :res-stack)
-                  _ (update-param res)
-                  _ (set-info :result (peek res-s))
-                  _ (update-info :res-stack #(pop %))]
-                 ret)
+  (conc (lit \`) (complex [ret (partial text \')
+                           mom (get-info :mom)
+                           q (effects (:result (parse+ ret mom)))
+                           _ (update-param q)]
+                          ret)
         (lit \')))
+
 
 (def pnumber
   ^{:doc "Defines param as number."}
   (complex [n number
             _ (update-param (Double/parseDouble (reduce str "" (flatten n))))]
            n))
+
 
 (def pstring
   ^{:doc "Defines param as string."}
