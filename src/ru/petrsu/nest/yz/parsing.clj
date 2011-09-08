@@ -202,9 +202,8 @@
   "This function is called when likely prop is found"
   [res mom id nl tl is-recur]
   (let [tl- (dec tl)
-        last-then (get-in-nest res nl :then)
-        id (str id)]
-    (if (or (= id "&") (find-prop (get-in-then res nl tl- :what) id mom))
+        last-then (get-in-nest res nl :then)]
+    (if (or (= id \&) (map? id) (find-prop (get-in-then res nl tl- :what) id mom))
       (if (> tl- 0)
         (assoc-in-nest res nl :then (update-in last-then 
                                                (conj (vec (repeat (dec tl-) :then)) :props) 
@@ -293,14 +292,13 @@
   (conc (lit \") string- (lit \")))
 
 
-
 (defn set-id
   [id, f, state]
   [(:remainder state) 
    (assoc state :result 
           (f (:result state) 
-             (:mom state) 
-             (reduce str id) 
+             (:mom state)
+             id
              (:nest-level state)
              (:then-level state)
              (:is-recur state)))])
@@ -309,7 +307,7 @@
   "Processes some id due to functions 'f'"
   [f]
   `(complex [id# (rep+ alpha)
-             _# (partial set-id id# ~f)]
+             _# (partial set-id (reduce str id#) ~f)]
             id#))
 
 
@@ -405,8 +403,12 @@
 (def props
   ^{:doc "Defines sequences of properties of an object."}
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
-        (rep+ (alt function (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
-                                             (invisi-conc (process-id found-prop) (set-info :is-recur false))))))
+        (rep+ (alt (complex [ret function
+                             f (get-info :function)
+                             _ (partial set-id f found-prop)]
+                            ret)
+                   (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
+                                    (invisi-conc (process-id found-prop) (set-info :is-recur false))))))
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 

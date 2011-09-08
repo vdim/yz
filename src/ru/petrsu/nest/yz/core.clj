@@ -28,6 +28,11 @@
         (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
         (recur (:superclass (bean cl)))))))
 
+(defn- process-func
+  "Gets :function map of q-representation 
+  and returns value of evaluation of one."
+  [f-map]
+  (apply (:func f-map) (:params f-map)))
 
 (defn- get-objs
   "Returns sequence of objects which are belonged to 'objs' 
@@ -78,14 +83,14 @@
 (defn- process-prop
   "Processes property."
   [[prop is-recur] obj]
-  (if (= prop "&")
-    obj
-    (if is-recur
-      (loop [res [] obj- (get-fv obj prop)]
-        (if (nil? obj-)
-          res
-          (recur (conj res obj-) (get-fv obj- prop))))
-      (get-fv obj prop))))
+  (cond (map? prop) (process-func prop)
+        (= prop \&) obj
+        is-recur (loop [res [] obj- (get-fv obj prop)]
+                   (if (nil? obj-)
+                     res
+                     (recur (conj res obj-) (get-fv obj- prop))))
+        :else (get-fv obj prop)))
+
 
 (defn- process-props
   "If nest has props then function returns value of property(ies),
