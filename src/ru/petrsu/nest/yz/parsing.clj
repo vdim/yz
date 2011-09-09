@@ -253,6 +253,29 @@
   (update-info :function #(assoc % :params (conj (:params %) value))))
 
 
+(defn text
+  "Rule for recognizing any string."
+  [ch state]
+  (let [remainder (reduce str (:remainder state))
+        res (for [a (:remainder state) :while (not (= a ch))] a)]
+    [(reduce str res) 
+     (assoc state :remainder (ccs/drop (count res) remainder))]))
+
+
+(defn textq
+  "Recognizes text of query which is parameter of function."
+  [state]
+  (loop [res "" remainder (:remainder state) end-c 0]
+    (let [ch (first remainder)
+          c (cond (= ch \`) (inc end-c)
+                  (= ch \') (dec end-c)
+                  :else end-c)]
+      (if (and (= ch \') (= c -1))
+        [res (assoc state :remainder (ccs/drop (count res) (reduce str (:remainder state))))]
+        (recur (str res ch) (rest remainder) c)))))
+
+
+
 
 
 
@@ -276,25 +299,6 @@
 (def whitespaces
   ^{:doc "List of whitespaces"}
   (rep+ (alt (lit \space) (lit \newline) (lit \tab))))
-
-
-(defn text
-  "Rule for recognizing any string."
-  [ch state]
-  (let [remainder (reduce str (:remainder state))
-        res (for [a (:remainder state) :while (not (= a ch))] a)]
-    [(reduce str res) 
-     (assoc state :remainder (ccs/drop (count res) remainder))]))
-
-
-(defn string-
-  "Rule for recognizing any string."
-  [state]
-  (text state \"))
-;  (let [remainder (reduce str (:remainder state))
-;        res (for [a (:remainder state) :while (not (= a \"))] a)]
-;    [(reduce str res) 
-;     (assoc state :remainder (ccs/drop (count res) remainder))]))
 
 
 (def string
@@ -437,7 +441,7 @@
 
 
 (def pquery
-  (conc (lit \`) (complex [ret (partial text \')
+  (conc (lit \`) (complex [ret textq ;(partial text \')
                            mom (get-info :mom)
                            q (effects (:result (parse+ ret mom)))
                            _ (update-param q)]
