@@ -28,11 +28,18 @@
         (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
         (recur (:superclass (bean cl)))))))
 
+
+(declare p-nest, filter-by-preds, process-nests, get-rows)
 (defn- process-func
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
-  [f-map]
-  (apply (:func f-map) (:params f-map)))
+  [f-map, obj, mom]
+  (let [params (map #(if (vector? %)
+                       (get-rows (process-nests % obj mom))
+                       %) 
+                    (:params f-map))]
+    (apply (:func f-map) params)))
+
 
 (defn- get-objs
   "Returns sequence of objects which are belonged to 'objs' 
@@ -82,8 +89,8 @@
 
 (defn- process-prop
   "Processes property."
-  [[prop is-recur] obj]
-  (cond (map? prop) (process-func prop)
+  [[prop is-recur] obj, mom]
+  (cond (map? prop) (process-func prop, obj, mom)
         (= prop \&) obj
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
@@ -95,10 +102,10 @@
 (defn- process-props
   "If nest has props then function returns value of property(ies),
   otherwise obj is returned."
-  [obj, props]
+  [obj, props, mom]
   (if (empty? props)
     obj
-    (map #(process-prop % obj) props)))
+    (map #(process-prop % obj mom) props)))
 
 
 (defn process-then
@@ -107,7 +114,7 @@
   [then, objs, mom, props]
   (loop [then- then objs- objs props- props]
     (if (or (nil? then-) (every? nil? objs-))
-      (map (fn [o] [o, (process-props o props-)]) objs-)
+      (map (fn [o] [o, (process-props o props- mom)]) objs-)
       (recur (:then then-) 
              (get-objs-by-path objs- (:what then-) mom (:preds then-))
              (:props then-)))))
@@ -181,7 +188,7 @@
    (get-rows data ()))
   ([data & args]
    (if (empty? (data 0))
-     (list (conj (vec (flatten args)) nil))
+     (flatten args)
      (mapcat (fn [o]
                (if (empty? o)
                  [nil]
@@ -193,9 +200,11 @@
 
 (defn pquery
   "Returns map where
-    :error - defines message of an error
-    :result - result of query
-    :columns - vector with column's names."
+    :error - defines message of an error 
+            (:error is nil if nothing errors is occured)
+    :result - a result of a query
+    :columns - vector with column's names.
+    :rows - rows of the result of a query."
   [query mom em]
   (if (empty? query)
     {:result [[]]

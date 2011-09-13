@@ -262,15 +262,16 @@
      (assoc state :remainder (ccs/drop (count res) remainder))]))
 
 
+(declare single-pq, list-pq, indep-pq, end-pq)
 (defn textq
   "Recognizes text of query which is parameter of function."
   [state]
   (loop [res "" remainder (:remainder state) end-c 0]
     (let [ch (first remainder)
-          c (cond (= ch \`) (inc end-c)
-                  (= ch \') (dec end-c)
+          c (cond (or (= ch single-pq) (= ch list-pq) (= ch indep-pq)) (inc end-c)
+                  (= ch end-pq) (dec end-c)
                   :else end-c)]
-      (if (and (= ch \') (= c -1))
+      (if (and (= ch end-pq) (= c -1))
         [res (assoc state :remainder (ccs/drop (count res) (reduce str (:remainder state))))]
         (recur (str res ch) (rest remainder) c)))))
 
@@ -299,6 +300,28 @@
 (def whitespaces
   ^{:doc "List of whitespaces"}
   (rep+ (alt (lit \space) (lit \newline) (lit \tab))))
+
+(def end-pq
+  ^{:doc "Defines symbol for indication 
+         end query which is parameter."}
+  (identity \'))
+
+(def list-pq
+  ^{:doc "Defines symbol for indication 
+         query-parameter which is passed as list."}
+  (identity \`))
+
+(def single-pq
+  ^{:doc "Defines symbol for indication 
+         query-parameter for which function is called
+         for each tuple."}
+  (identity \$))
+
+(def indep-pq
+  ^{:doc "Defines symbol for indication 
+         query-parameter which is independence
+         from the rest of query."}
+  (identity \%))
 
 
 (def string
@@ -441,11 +464,12 @@
 
 
 (def pquery
-  (conc (lit \`) (complex [ret textq ;(partial text \')
-                           mom (get-info :mom)
-                           q (effects (:result (parse+ ret mom)))
-                           _ (update-param q)]
-                          ret)
+  (conc (alt (lit single-pq) (lit list-pq) (lit indep-pq)) 
+        (complex [ret textq 
+                  mom (get-info :mom)
+                  q (effects (:result (parse+ ret mom)))
+                  _ (update-param q)]
+                 ret)
         (lit \')))
 
 
