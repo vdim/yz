@@ -197,6 +197,13 @@
                    (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o)))))
           data))))
 
+(defn def-result
+  "Returns map of the reusult executing 'pquery'."
+  [result, error, columns rows]
+  {:result result
+   :error error
+   :columns columns
+   :rows rows})
 
 (defn pquery
   "Returns map where
@@ -207,10 +214,7 @@
     :rows - rows of the result of a query."
   [query mom em]
   (if (empty? query)
-    {:result [[]]
-     :error nil
-     :columns []
-     :rows ()}
+    (def-result [[]] nil [] ())
     (let [parse-res (try
                       (p/parse query mom)
                       (catch Exception e (.getMessage e)))
@@ -220,12 +224,6 @@
                             (run-query parse-res mom em)
                             (catch Exception e (.getMessage e))))]
       (if (string? run-query-res)
-        {:result []
-         :error run-query-res
-         :columns []
-         :rows ()}
-        {:result run-query-res
-         :error nil
-         :columns [] ;(map #(reduce str "" %) (get-columns parse-res))
-         :rows (get-rows run-query-res)}))))
+        (def-result [] run-query-res [] ())
+        (def-result run-query-res nil [] (get-rows run-query-res))))))
 
