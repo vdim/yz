@@ -264,16 +264,20 @@
 
 (declare single-pq, list-pq, indep-pq, end-pq)
 (defn textq
-  "Recognizes text of query which is parameter of function."
+  "Recognizes text of query which is parameter of function.
+  textq restricts count of nested queries, because in case where
+  user input an incorrect query (with starting modificator and without
+  ending modificator), then infinite loop is occured."
   [state]
-  (loop [res "" remainder (:remainder state) end-c 0]
+  (loop [res "" remainder (:remainder state) end-c 0 count-nq 0]
     (let [ch (first remainder)
           c (cond (or (= ch single-pq) (= ch list-pq) (= ch indep-pq)) (inc end-c)
                   (= ch end-pq) (dec end-c)
                   :else end-c)]
-      (if (and (= ch end-pq) (= c -1))
-        [res (assoc state :remainder (ccs/drop (count res) (reduce str (:remainder state))))]
-        (recur (str res ch) (rest remainder) c)))))
+      (cond (> count-nq 100) (throw (Exception. "Limit of nested queries is exceeded."))
+            (and (= ch end-pq) (= c -1)) [res (assoc state :remainder 
+                                                     (ccs/drop (count res) (reduce str (:remainder state))))]
+            :else (recur (str res ch) (rest remainder) c (inc count-nq))))))
 
 
 
