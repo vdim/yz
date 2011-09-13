@@ -262,6 +262,10 @@
      (assoc state :remainder (ccs/drop (count res) remainder))]))
 
 
+(def limit-nq
+  ^{:doc "Defines number of the nested queries in YZ's function."}
+  (identity 100))
+
 (declare single-pq, list-pq, indep-pq, end-pq)
 (defn textq
   "Recognizes text of query which is parameter of function.
@@ -274,7 +278,7 @@
           c (cond (or (= ch single-pq) (= ch list-pq) (= ch indep-pq)) (inc end-c)
                   (= ch end-pq) (dec end-c)
                   :else end-c)]
-      (cond (> count-nq 100) (throw (Exception. "Limit of nested queries is exceeded."))
+      (cond (> count-nq limit-nq) (throw (Exception. "Limit of nested queries is exceeded."))
             (and (= ch end-pq) (= c -1)) [res (assoc state :remainder 
                                                      (ccs/drop (count res) (reduce str (:remainder state))))]
             :else (recur (str res ch) (rest remainder) c (inc count-nq))))))
