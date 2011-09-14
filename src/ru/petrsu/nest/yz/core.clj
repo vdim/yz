@@ -29,13 +29,16 @@
         (recur (:superclass (bean cl)))))))
 
 
-(declare p-nest, filter-by-preds, process-nests, get-rows)
+(declare process-nests, get-rows, run-query)
 (defn- process-func
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
-  [f-map, obj, mom]
+  [f-map, obj, mom, em]
   (let [params (map #(if (vector? %)
-                       (get-rows (process-nests % obj mom))
+                       (let [[fmod q] %]
+                         (cond (= fmod :list) (get-rows (process-nests q obj mom em))
+                               (= fmod :indep) (get-rows (run-query q mom em))
+                               (= fmod :single) []))
                        %) 
                     (:params f-map))]
     (apply (:func f-map) params)))
@@ -89,8 +92,8 @@
 
 (defn- process-prop
   "Processes property."
-  [[prop is-recur] obj, mom]
-  (cond (map? prop) (process-func prop, obj, mom)
+  [[prop is-recur] obj, mom, em]
+  (cond (map? prop) (process-func prop, obj, mom, em)
         (= prop \&) obj
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
@@ -102,19 +105,19 @@
 (defn- process-props
   "If nest has props then function returns value of property(ies),
   otherwise obj is returned."
-  [obj, props, mom]
+  [obj, props, mom, em]
   (if (empty? props)
     obj
-    (map #(process-prop % obj mom) props)))
+    (map #(process-prop % obj mom em) props)))
 
 
 (defn process-then
   "Processes :then value of query structure.
   Returns sequence of objects."
-  [then, objs, mom, props]
+  [then, objs, mom, props, em]
   (loop [then- then objs- objs props- props]
     (if (or (nil? then-) (every? nil? objs-))
-      (map (fn [o] [o, (process-props o props- mom)]) objs-)
+      (map (fn [o] [o, (process-props o props- mom em)]) objs-)
       (recur (:then then-) 
              (get-objs-by-path objs- (:what then-) mom (:preds then-))
              (:props then-)))))
@@ -123,28 +126,28 @@
 (declare process-nests)
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
-  [nest objs mom]
-  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0) ~mom))
+  [nest objs mom em]
+  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0) ~mom ~em))
           []
-          (process-then (:then ~nest) ~objs ~mom (:props ~nest))))
+          (process-then (:then ~nest) ~objs ~mom (:props ~nest) ~em)))
 
 
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
-  [nest objs mom]
-  (p-nest nest (get-objs-by-path objs (:what nest) mom (:preds nest)) mom))
+  [nest objs mom, em]
+  (p-nest nest (get-objs-by-path objs (:what nest) mom (:preds nest)) mom em))
 
 (defn- process-nests
   "Processes :nest value of query structure"
-  [nests obj mom]
-  (vec (map #(process-nest % [obj] mom) nests)))
+  [nests obj mom em]
+  (vec (map #(process-nest % [obj] mom em) nests)))
 
 
 (defn- do-query
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [em mom q]
-  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q) mom) mom))
+  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q) mom) mom em))
 
 
 (defn run-query
@@ -197,13 +200,15 @@
                    (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o)))))
           data))))
 
-(defn def-result
+
+(defn- def-result
   "Returns map of the reusult executing 'pquery'."
   [result, error, columns rows]
   {:result result
    :error error
    :columns columns
    :rows rows})
+
 
 (defn pquery
   "Returns map where

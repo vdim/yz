@@ -14,7 +14,7 @@
            :then-level ; then level, the nubmer of dots.
            :nest-level ; Nest level, level of query (the number of parentthesis).
            :preds ; The vector within current predicates structure.
-           :res-stack ; Stack with result (needed for processing function's calls).
+           :f-modificator ; Modificator of function's param.
            :function ; Describe current function.
            :is-recur) ; Defines whether property is recur.
 
@@ -263,7 +263,7 @@
 
 
 (def limit-nq
-  ^{:doc "Defines number of the nested queries in YZ's function."}
+  ^{:doc "Defines number of the nested queries into parameter as query."}
   (identity 100))
 
 (declare single-pq, list-pq, indep-pq, end-pq)
@@ -462,23 +462,35 @@
   ^{:doc "Defines YZ's function."}
   (conc (lit \@) (lit \() (process-fn) params (lit \))))
 
+
 (def params
   ^{:doc "Defines sequense of parameters of YZ's function."}
   (alt (conc param params) emptiness))
+
 
 (def param
   ^{:doc "Defines different types of function's parameters."}
   (sur-by-ws (alt pstring pnumber pquery)))
 
 
+(defmacro f-mod
+  "Generates code for processing modificator 
+  of function's param as query."
+  [ch fm]
+  `(invisi-conc (lit ~ch) (set-info :f-modificator ~fm)))
+
+
 (def pquery
-  (conc (alt (lit single-pq) (lit list-pq) (lit indep-pq)) 
+  (conc (alt (f-mod single-pq :single)
+             (f-mod list-pq :list)
+             (f-mod indep-pq :indep))
         (complex [ret textq 
                   mom (get-info :mom)
                   q (effects (:result (parse+ ret mom)))
-                  _ (update-param q)]
+                  fm (get-info :f-modificator)
+                  _ (update-param [fm q])]
                  ret)
-        (lit \')))
+        (lit end-pq)))
 
 
 (def pnumber
@@ -504,15 +516,21 @@
                                    (resolve (symbol (reduce str "" n)))))]
            n))
 
+(def funcq
+  ^{:doc "Defines rule for query as function."}
+  (complex [ret function
+            f (get-info :function)
+            _ (set-info :result f)]
+           ret))
 
 (def query
-  (rep+ (alt bid nest-query (conc delimiter bid) block-where props)))
+  (alt funcq (rep+ (alt bid nest-query (conc delimiter bid) block-where props))))
 
 
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] [] empty-fun false)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil empty-fun false)) 1))
 
 
 (defn parse
