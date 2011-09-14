@@ -512,8 +512,9 @@
   []
   (complex [n (rep+ alpha)
             _ (update-info :function 
-                           #(assoc % :func
-                                   (resolve (symbol (reduce str "" n)))))]
+                           #(if-let [f (resolve (symbol (reduce str "" n)))]
+                              (assoc % :func f)
+                              (throw (Exception. (str "Could not found function " (reduce str "" n) ".")))))]
            n))
 
 (def funcq
