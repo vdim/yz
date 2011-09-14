@@ -250,7 +250,11 @@
 (defn update-param
   "Updates :params key of :function key of the q-representation structure."
   [value]
-  (update-info :function #(assoc % :params (conj (:params %) value))))
+  (update-info :function #(let [f (peek %)] 
+                            (conj (pop %) 
+                                  (assoc f 
+                                         :params 
+                                         (conj (:params f) value))))))
 
 
 (defn text
@@ -450,17 +454,19 @@
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
         (rep+ (alt (complex [ret function
                              f (get-info :function)
-                             _ (partial set-id f found-prop)]
+                             _ (partial set-id (peek f) found-prop) 
+                             _ (update-info :function #(pop %))]
                             ret)
                    (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
                                     (invisi-conc (process-id found-prop) (set-info :is-recur false))))))
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 
-(declare params, param, pquery, pnumber, pstring, process-fn, parse+)
+(declare params, param, pquery, pnumber, pstring, process-fn, parse+, pfunc)
 (def function
   ^{:doc "Defines YZ's function."}
-  (conc (lit \@) (lit \() (process-fn) params (lit \))))
+  (conc (invisi-conc (lit \@) (update-info :function #(conj % empty-fun)))
+        (lit \() (process-fn) params (lit \))))
 
 
 (def params
@@ -470,7 +476,7 @@
 
 (def param
   ^{:doc "Defines different types of function's parameters."}
-  (sur-by-ws (alt pstring pnumber pquery)))
+  (sur-by-ws (alt pstring pnumber pquery pfunc)))
 
 
 (defmacro f-mod
@@ -481,6 +487,7 @@
 
 
 (def pquery
+  ^{:doc "Defines parameter as query."}
   (conc (alt (f-mod single-pq :single)
              (f-mod list-pq :list)
              (f-mod indep-pq :indep))
@@ -506,6 +513,13 @@
             _ (update-param (nth s 1))]
            s))
 
+(def pfunc
+  ^{:doc "Defines parameter of function as another function"}
+  (complex [f function
+            f-m (get-info :function)
+            _ (update-info :function #(pop %))
+            _ (update-param (peek f-m))]
+           f))
 
 (defn process-fn
   "Processes function name."
@@ -513,7 +527,7 @@
   (complex [n (rep+ alpha)
             _ (update-info :function 
                            #(if-let [f (resolve (symbol (reduce str "" n)))]
-                              (assoc % :func f)
+                              (conj (pop %) (assoc (peek %) :func f))
                               (throw (Exception. (str "Could not found function " (reduce str "" n) ".")))))]
            n))
 
@@ -521,7 +535,8 @@
   ^{:doc "Defines rule for query as function."}
   (complex [ret function
             f (get-info :function)
-            _ (set-info :result f)]
+            _ (set-info :result (peek f)) 
+            _ (update-info :function #(pop %))]
            ret))
 
 (def query
@@ -531,7 +546,7 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil empty-fun false)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false)) 1))
 
 
 (defn parse
