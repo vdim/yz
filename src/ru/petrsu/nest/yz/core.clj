@@ -34,12 +34,13 @@
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
   [f-map, obj, mom, em]
-  (let [params (map #(if (vector? %)
-                       (let [[fmod q] %]
-                         (cond (and (not (nil? obj)) (= fmod :list)) (get-rows (process-nests q obj mom em))
-                               (or (nil? obj) (= fmod :indep)) (get-rows (run-query q mom em))
-                               (= fmod :single) []))
-                       %) 
+  (let [params (map #(cond (vector? %)
+                           (let [[fmod q] %]
+                             (cond (= fmod :single) nil
+                                   (and (not (nil? obj)) (= fmod :list)) (get-rows (process-nests q obj mom em))
+                                   (or (nil? obj) (= fmod :indep)) (get-rows (run-query q mom em))))
+                           (map? %) (process-func % obj mom em)
+                           :else %) 
                     (:params f-map))]
     (apply (:func f-map) params)))
 
