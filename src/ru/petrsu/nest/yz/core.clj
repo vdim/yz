@@ -36,8 +36,8 @@
   [f-map, obj, mom, em]
   (let [params (map #(if (vector? %)
                        (let [[fmod q] %]
-                         (cond (= fmod :list) (get-rows (process-nests q obj mom em))
-                               (= fmod :indep) (get-rows (run-query q mom em))
+                         (cond (and (not (nil? obj)) (= fmod :list)) (get-rows (process-nests q obj mom em))
+                               (or (nil? obj) (= fmod :indep)) (get-rows (run-query q mom em))
                                (= fmod :single) []))
                        %) 
                     (:params f-map))]
@@ -188,7 +188,9 @@
   "Returns set of rows. The 'data' is the result of 
   processing a query."
   ([data]
-   (get-rows data ()))
+   (if (not (vector? data))
+     (list [data])
+     (get-rows data ())))
   ([data & args]
    (if (empty? (data 0))
      (flatten args)
@@ -196,7 +198,7 @@
                (cond (empty? o) [nil]
                      (empty? (o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
                      :else (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o))))
-          data))))
+             data))))
 
 
 (defn- def-result
@@ -221,11 +223,13 @@
     (let [parse-res (try
                       (p/parse query mom)
                       (catch Exception e (.getMessage e)))
-          run-query-res (if (string? parse-res)
-                          parse-res
-                          (try
-                            (run-query parse-res mom em)
-                            (catch Exception e (.getMessage e))))]
+          run-query-res (cond (string? parse-res) parse-res
+                              (map? parse-res) (try
+                                                 (process-func parse-res nil mom em)
+                                                 (catch Exception e (.getMessage e)))
+                              :else (try
+                                      (run-query parse-res mom em)
+                                      (catch Exception e (.getMessage e))))]
       (if (string? run-query-res)
         (def-result [] run-query-res [] ())
         (def-result run-query-res nil [] (get-rows run-query-res))))))
