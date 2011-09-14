@@ -66,7 +66,7 @@
 (defn- filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
-  [objs, preds, mom]
+  [objs, preds]
   (if (nil? preds) 
     objs 
     (let [f (read-string preds)] 
@@ -86,7 +86,7 @@
             (recur (:superclass (get mom cl-target))))
           (loop [ps (nth paths 0) res sources]
             (if (empty? ps)
-              (filter-by-preds res preds mom)
+              (filter-by-preds res preds)
               (recur (rest ps) (get-objs (first ps) res)))))))))
 
 
@@ -147,7 +147,7 @@
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [em mom q]
-  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q) mom) mom em))
+  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q)) mom em))
 
 
 (defn run-query
@@ -193,11 +193,9 @@
    (if (empty? (data 0))
      (flatten args)
      (mapcat (fn [o]
-               (if (empty? o)
-                 [nil]
-                 (if (empty? (o 1))
-                   (for [pair (partition 2 o)] (vec (flatten [args pair])))
-                   (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o)))))
+               (cond (empty? o) [nil]
+                     (empty? (o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
+                     :else (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o))))
           data))))
 
 

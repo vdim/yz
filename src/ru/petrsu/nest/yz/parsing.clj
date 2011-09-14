@@ -475,7 +475,7 @@
 
 (defmacro f-mod
   "Generates code for processing modificator 
-  of function's param as query."
+  of function's parameter-query."
   [ch fm]
   `(invisi-conc (lit ~ch) (set-info :f-modificator ~fm)))
 
