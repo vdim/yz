@@ -35,14 +35,19 @@
   and returns value of evaluation of one."
   [f-map, obj, mom, em]
   (let [params (map #(cond (vector? %)
-                           (let [[fmod q] %]
-                             (cond (= fmod :single) nil
-                                   (and (not (nil? obj)) (= fmod :list)) (get-rows (process-nests q obj mom em))
-                                   (or (nil? obj) (= fmod :indep)) (get-rows (run-query q mom em))))
+                           (let [[fmod q] %
+                                 rows (if (or (= fmod :indep) (nil? obj))
+                                        (get-rows (run-query q mom em))
+                                        (get-rows (process-nests q obj mom em)))]
+                             (cond (= fmod :single) {:mode :single :res rows}
+                                   :else rows))
                            (map? %) (process-func % obj mom em)
                            :else %) 
-                    (:params f-map))]
-    (apply (:func f-map) params)))
+                    (:params f-map))
+        lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
+                           (vec (mapcat (fn [lp] (map (fn [o] (conj lp o)) (:res %2))) %1))
+                           (vec (map (fn [lp] (conj lp %2)) %1))) [[]] params)]
+    (map #(apply (:func f-map) %) lparams)))
 
 
 (defn- get-objs
