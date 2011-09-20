@@ -189,12 +189,10 @@
   "Returns set of rows. The 'data' is the result of 
   processing a query."
   ([data]
-   (if (not (vector? data))
-     (list [data])
-     (get-rows data ())))
+     (get-rows data ()))
   ([data & args]
    (if (empty? (data 0))
-     (flatten args)
+     (list (vec (flatten args)))
      (mapcat (fn [o]
                (cond (empty? o) [nil]
                      (empty? (o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
@@ -226,12 +224,14 @@
                       (catch Exception e (.getMessage e)))
           run-query-res (cond (string? parse-res) parse-res
                               (map? parse-res) (try
-                                                 (process-func parse-res nil mom em)
+                                                 (let [pc (process-func parse-res nil mom em)]
+                                                   [pc (list [pc])])
                                                  (catch Exception e (.getMessage e)))
                               :else (try
-                                      (run-query parse-res mom em)
+                                      (let [rq (run-query parse-res mom em)]
+                                        [rq (get-rows rq)])
                                       (catch Exception e (.getMessage e))))]
       (if (string? run-query-res)
         (def-result [] run-query-res [] ())
-        (def-result run-query-res nil [] (get-rows run-query-res))))))
+        (def-result (run-query-res 0) nil [] (run-query-res 1))))))
 
