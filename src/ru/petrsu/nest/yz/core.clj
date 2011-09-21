@@ -65,14 +65,17 @@
 
 (defn process-preds
   "Processes restrictions."
-  [o, paths f value]
-  (some #(f % value) (reduce #(get-objs %2 %1) [o] paths)))
+  [o, l-side, f, value, em, mom]
+  (cond (vector? l-side) (some #(f % value) (reduce #(get-objs %2 %1) [o] l-side))
+        (map? l-side) (some #(f % value) (process-func l-side o em mom))
+        :else true))
+
 
 
 (defn- filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
-  [objs, preds]
+  [objs, preds, em, mom]
   (if (nil? preds) 
     objs 
     (let [f (read-string preds)] 
@@ -82,7 +85,7 @@
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
-  [sources cl-target mom preds]
+  [sources cl-target mom preds em]
   (let [cl-source (class (nth sources 0))]
     (loop [cl- cl-target]
       (let [paths (get (get mom cl-source) cl-)]
@@ -92,7 +95,7 @@
             (recur (:superclass (get mom cl-target))))
           (loop [ps (nth paths 0) res sources]
             (if (empty? ps)
-              (filter-by-preds res preds)
+              (filter-by-preds res preds em mom)
               (recur (rest ps) (get-objs (first ps) res)))))))))
 
 
@@ -125,7 +128,7 @@
     (if (or (nil? then-) (every? nil? objs-))
       (map (fn [o] [o, (process-props o props- mom em)]) objs-)
       (recur (:then then-) 
-             (get-objs-by-path objs- (:what then-) mom (:preds then-))
+             (get-objs-by-path objs- (:what then-) mom (:preds then-) em)
              (:props then-)))))
 
 
@@ -141,7 +144,7 @@
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
   [nest objs mom, em]
-  (p-nest nest (get-objs-by-path objs (:what nest) mom (:preds nest)) mom em))
+  (p-nest nest (get-objs-by-path objs (:what nest) mom (:preds nest) em) mom em))
 
 (defn- process-nests
   "Processes :nest value of query structure"
@@ -153,7 +156,7 @@
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [em mom q]
-  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q)) mom em))
+  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q) em mom) mom em))
 
 
 (defn run-query

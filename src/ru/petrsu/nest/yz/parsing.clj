@@ -231,7 +231,7 @@
   "Transforms 'pred' map into string"
   [pred]
   (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
-       ", " (:func pred) ", " (reduce str (:value pred)) ")"))
+       ", " (:func pred) ", " (reduce str (:value pred)) ", mom, em)"))
 
 
 (defn do-predicate
@@ -406,7 +406,7 @@
 ;;    v -> v-f v'
 ;;    v'-> and v-f v' | ε
 ;;    v-f -> (value) | some-value
-(declare value)
+(declare value, function)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) (change-pred number :value)) 
                    (change-pred string :value)
@@ -431,7 +431,17 @@
 
 (declare where)
 (def f (alt (conc (lit \() where (lit \)))
-            (conc (change-pred pred-id :ids) 
+            (conc (alt (change-pred pred-id :ids) 
+                       (complex [f function
+                                 f-m (get-info :function)
+                                 _ (update-info :function #(pop %))
+                                 _ (update-info 
+                                     :preds 
+                                     #(conj (pop %) 
+                                            (assoc (peek %) 
+                                                   :ids
+                                                   (peek f-m))))]
+                                f))
                   (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 
