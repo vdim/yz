@@ -41,7 +41,7 @@
                                         (get-rows (process-nests q obj mom em)))]
                              (cond (= fmod :single) {:mode :single :res rows}
                                    :else rows))
-                           (map? %) (process-func % obj mom em)
+                           (map? %) {:mode :single :res (process-func % obj mom em)}
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
@@ -230,7 +230,7 @@
           run-query-res (cond (string? parse-res) parse-res
                               (map? parse-res) (try
                                                  (let [pc (process-func parse-res nil mom em)]
-                                                   [pc (list [pc])])
+                                                   [pc (reduce #(cons [%2] %1) () pc)])
                                                  (catch Exception e (.getMessage e)))
                               :else (try
                                       (let [rq (run-query parse-res mom em)]
