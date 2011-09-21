@@ -288,6 +288,16 @@
             :else (recur (str res ch) (rest remainder) c (inc count-nq))))))
 
 
+(defmacro pfunction
+  "Helper function for reduced code for processing function."
+  [pf up]
+  `(complex [ret# function
+             f# (get-info :function)
+             _# (~pf f#) 
+             _# ~up]
+            ret#))
+
+
 
 
 
@@ -406,7 +416,7 @@
 ;;    v -> v-f v'
 ;;    v'-> and v-f v' | ε
 ;;    v-f -> (value) | some-value
-(declare value, function)
+(declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) (change-pred number :value)) 
                    (change-pred string :value)
@@ -431,17 +441,15 @@
 
 (declare where)
 (def f (alt (conc (lit \() where (lit \)))
-            (conc (alt (change-pred pred-id :ids) 
-                       (complex [f function
-                                 f-m (get-info :function)
-                                 _ (update-info :function #(pop %))
-                                 _ (update-info 
-                                     :preds 
-                                     #(conj (pop %) 
-                                            (assoc (peek %) 
-                                                   :ids
-                                                   (peek f-m))))]
-                                f))
+            (conc (alt (change-pred pred-id :ids)
+                        (pfunction 
+                          (fn [f-m] (update-info 
+                                      :preds 
+                                      #(conj (pop %) 
+                                             (assoc (peek %) 
+                                                    :ids
+                                                    (peek f-m)))))
+                          (update-info :function #(pop %))))
                   (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 
@@ -462,11 +470,9 @@
 (def props
   ^{:doc "Defines sequences of properties of an object."}
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
-        (rep+ (alt (sur-by-ws (complex [ret function
-                                        f (get-info :function)
-                                        _ (partial set-id (peek f) found-prop) 
-                                        _ (update-info :function #(pop %))]
-                                       ret))
+        (rep+ (alt (sur-by-ws (pfunction
+                                #(partial set-id (peek %) found-prop) 
+                                (update-info :function #(pop %))))
                    (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
                                     (invisi-conc (process-id found-prop) (set-info :is-recur false))))))
         (invisi-conc (lit \]) (update-info :then-level dec))))
@@ -551,11 +557,9 @@
 
 (def funcq
   ^{:doc "Defines rule for query as function."}
-  (complex [ret function
-            f (get-info :function)
-            _ (set-info :result (peek f)) 
-            _ (update-info :function #(pop %))]
-           ret))
+  (pfunction #(set-info :result (peek %)) 
+             (update-info :function #(pop %))))
+
 
 (def query
   (alt funcq (rep+ (alt bid nest-query (conc delimiter bid) block-where props))))
