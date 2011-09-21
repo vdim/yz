@@ -462,11 +462,11 @@
 (def props
   ^{:doc "Defines sequences of properties of an object."}
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
-        (rep+ (alt (complex [ret function
-                             f (get-info :function)
-                             _ (partial set-id (peek f) found-prop) 
-                             _ (update-info :function #(pop %))]
-                            ret)
+        (rep+ (alt (sur-by-ws (complex [ret function
+                                        f (get-info :function)
+                                        _ (partial set-id (peek f) found-prop) 
+                                        _ (update-info :function #(pop %))]
+                                       ret))
                    (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
                                     (invisi-conc (process-id found-prop) (set-info :is-recur false))))))
         (invisi-conc (lit \]) (update-info :then-level dec))))
