@@ -10,7 +10,7 @@
 
 (def 
   ^{:doc "The map of the object model."}
-  mom (hb/gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
+  *mom* (hb/gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
 
 (defn create-em
   "Returns entity manager by specified name ('n', 'test-model' name 
@@ -57,7 +57,7 @@
 (defn r-query
   "Returns :result of core/pquery."
   [query]
-  (:result (c/pquery query mom *em*)))
+  (:result (c/pquery query *mom* *em*)))
 
 
 (defn qstruct?

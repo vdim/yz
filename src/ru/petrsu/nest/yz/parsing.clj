@@ -231,7 +231,7 @@
   "Transforms 'pred' map into string"
   [pred]
   (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
-       ", " (:func pred) ", " (reduce str (:value pred)) ", mom, em)"))
+       ", " (:func pred) ", " (reduce str (:value pred)) ")"))
 
 
 (defn do-predicate

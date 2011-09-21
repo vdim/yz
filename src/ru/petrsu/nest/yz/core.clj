@@ -10,9 +10,10 @@
   (:import (javax.persistence.criteria CriteriaQuery)))
 
 
+(declare em, mom)
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
-  [cl em]
+  [cl]
   (let [cr (.. em getCriteriaBuilder createTupleQuery)
         root (. cr (from cl))]
     (map #(.get % 0) (.. em (createQuery (doto cr (.multiselect [root]))) getResultList))))
@@ -33,15 +34,15 @@
 (defn- process-func
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
-  [f-map, obj, mom, em]
+  [f-map, obj]
   (let [params (map #(cond (vector? %)
                            (let [[fmod q] %
                                  rows (if (or (= fmod :indep) (nil? obj))
-                                        (get-rows (run-query q mom em))
-                                        (get-rows (process-nests q obj mom em)))]
+                                        (get-rows (run-query q))
+                                        (get-rows (process-nests q obj)))]
                              (cond (= fmod :single) {:mode :single :res rows}
                                    :else rows))
-                           (map? %) {:mode :single :res (process-func % obj mom em)}
+                           (map? %) {:mode :single :res (process-func % obj)}
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
@@ -65,9 +66,9 @@
 
 (defn process-preds
   "Processes restrictions."
-  [o, l-side, f, value, em, mom]
+  [o, l-side, f, value]
   (cond (vector? l-side) (some #(f % value) (reduce #(get-objs %2 %1) [o] l-side))
-        (map? l-side) (some #(f % value) (process-func l-side o em mom))
+        (map? l-side) (some #(f % value) (process-func l-side o))
         :else true))
 
 
@@ -75,7 +76,7 @@
 (defn- filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
-  [objs, preds, em, mom]
+  [objs, preds]
   (if (nil? preds) 
     objs 
     (let [f (read-string preds)] 
@@ -85,7 +86,7 @@
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
-  [sources cl-target mom preds em]
+  [sources cl-target preds]
   (let [cl-source (class (nth sources 0))]
     (loop [cl- cl-target]
       (let [paths (get (get mom cl-source) cl-)]
@@ -95,14 +96,14 @@
             (recur (:superclass (get mom cl-target))))
           (loop [ps (nth paths 0) res sources]
             (if (empty? ps)
-              (filter-by-preds res preds em mom)
+              (filter-by-preds res preds)
               (recur (rest ps) (get-objs (first ps) res)))))))))
 
 
 (defn- process-prop
   "Processes property."
-  [[prop is-recur] obj, mom, em]
-  (cond (map? prop) (process-func prop, obj, mom, em)
+  [[prop is-recur] obj]
+  (cond (map? prop) (process-func prop, obj)
         (= prop \&) obj
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
@@ -114,56 +115,56 @@
 (defn- process-props
   "If nest has props then function returns value of property(ies),
   otherwise obj is returned."
-  [obj, props, mom, em]
+  [obj, props]
   (if (empty? props)
     obj
-    (map #(process-prop % obj mom em) props)))
+    (map #(process-prop % obj) props)))
 
 
 (defn process-then
   "Processes :then value of query structure.
   Returns sequence of objects."
-  [then, objs, mom, props, em]
+  [then, objs, props]
   (loop [then- then objs- objs props- props]
     (if (or (nil? then-) (every? nil? objs-))
-      (map (fn [o] [o, (process-props o props- mom em)]) objs-)
+      (map (fn [o] [o, (process-props o props-)]) objs-)
       (recur (:then then-) 
-             (get-objs-by-path objs- (:what then-) mom (:preds then-) em)
+             (get-objs-by-path objs- (:what then-) (:preds then-))
              (:props then-)))))
 
 
 (declare process-nests)
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
-  [nest objs mom em]
-  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0) ~mom ~em))
+  [nest, objs]
+  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0)))
           []
-          (process-then (:then ~nest) ~objs ~mom (:props ~nest) ~em)))
+          (process-then (:then ~nest) ~objs (:props ~nest))))
 
 
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
-  [nest objs mom, em]
-  (p-nest nest (get-objs-by-path objs (:what nest) mom (:preds nest) em) mom em))
+  [nest objs]
+  (p-nest nest (get-objs-by-path objs (:what nest) (:preds nest))))
 
 (defn- process-nests
   "Processes :nest value of query structure"
-  [nests obj mom em]
-  (vec (map #(process-nest % [obj] mom em) nests)))
+  [nests obj]
+  (vec (map #(process-nest % [obj]) nests)))
 
 
 (defn- do-query
   "Gets structure of query getting from parser and returns
   structure of user's result."
-  [em mom q]
-  (p-nest q (filter-by-preds (select-elems (:what q) em) (:preds q) em mom) mom em))
+  [q]
+  (p-nest q (filter-by-preds (select-elems (:what q)) (:preds q))))
 
 
-(defn run-query
+(defn- run-query
   "Returns result of 'query' based on specified map of object model ('mom')
   and instance of javax.persistence.EntityManager ('em')."
-  [parse-res mom em]
-  (vec (map #(do-query em mom %) parse-res)))
+  [parse-res]
+  (vec (map #(do-query %) parse-res)))
 
 
 (defn- get-column-name
@@ -225,21 +226,23 @@
     :columns - vector with column's names.
     :rows - rows of the result of a query."
   [query mom em]
-  (if (empty? query)
-    (def-result [[]] nil [] ())
-    (let [parse-res (try
-                      (p/parse query mom)
-                      (catch Exception e (.getMessage e)))
-          run-query-res (cond (string? parse-res) parse-res
-                              (map? parse-res) (try
-                                                 (let [pc (process-func parse-res nil mom em)]
-                                                   [pc (reduce #(cons [%2] %1) () pc)])
-                                                 (catch Exception e (.getMessage e)))
-                              :else (try
-                                      (let [rq (run-query parse-res mom em)]
-                                        [rq (get-rows rq)])
-                                      (catch Exception e (.getMessage e))))]
-      (if (string? run-query-res)
-        (def-result [] run-query-res [] ())
-        (def-result (run-query-res 0) nil [] (run-query-res 1))))))
+  (do (def mom mom)
+    (def em em)
+    (if (empty? query)
+      (def-result [[]] nil [] ())
+      (let [parse-res (try
+                        (p/parse query mom)
+                        (catch Exception e (.getMessage e)))
+            run-query-res (cond (string? parse-res) parse-res
+                                (map? parse-res) (try
+                                                   (let [pc (process-func parse-res nil)]
+                                                     [pc (reduce #(cons [%2] %1) () pc)])
+                                                   (catch Exception e (.getMessage e)))
+                                :else (try
+                                        (let [rq (run-query parse-res)]
+                                          [rq (get-rows rq)])
+                                        (catch Exception e (.getMessage e))))]
+        (if (string? run-query-res)
+          (def-result [] run-query-res [] ())
+          (def-result (run-query-res 0) nil [] (run-query-res 1)))))))
 
