@@ -6,6 +6,7 @@
          See the code for the parsing queries in the parsing.clj file
 
          Criteria API 2.0 is used as persistence storage."}
+  (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.parsing :as p])
   (:import (javax.persistence.criteria CriteriaQuery)))
 
@@ -37,12 +38,14 @@
   [f-map, obj]
   (let [params (map #(cond (vector? %)
                            (let [[fmod q] %
-                                 rows (if (or (= fmod :indep) (nil? obj))
-                                        (get-rows (run-query q))
-                                        (get-rows (process-nests q obj)))]
-                             (cond (= fmod :single) {:mode :single :res rows}
-                                   :else rows))
-                           (map? %) {:mode :single :res (process-func % obj)}
+                                 rq (if (or (= fmod :indep) (nil? obj))
+                                        (run-query q)
+                                        (process-nests q obj))]
+                             (cond (= fmod :single) {:mode :single 
+                                                     :res (map (fn [p] (get-rows [p])) 
+                                                               (mapcat (fn [r] (map vec (partition 2 r))) rq))}
+                                   :else (get-rows rq)))
+                           (map? %) (process-func % obj)
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
