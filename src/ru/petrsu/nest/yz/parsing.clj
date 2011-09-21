@@ -231,7 +231,10 @@
   "Transforms 'pred' map into string"
   [pred]
   (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
-       ", " (:func pred) ", " (reduce str (:value pred)) ")"))
+       ", " (:func pred) ", " (let [v (:value pred)] 
+                                (if (seq? v)
+                                  (reduce str (:value pred))
+                                  v)) ")"))
 
 
 (defn do-predicate
@@ -421,7 +424,15 @@
               (alt (conc (opt (change-pred sign :func)) (change-pred number :value)) 
                    (change-pred string :value)
                    (change-pred (lit-conc-seq "true") :value)
-                   (change-pred (lit-conc-seq "false") :value))))
+                   (change-pred (lit-conc-seq "false") :value)
+                   (pfunction
+                     (fn [f-m] (update-info 
+                                 :preds 
+                                 #(conj (pop %) 
+                                        (assoc (peek %) 
+                                               :value
+                                               (peek f-m)))))
+                          (update-info :function #(pop %))))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and") peek)) 
                         (invisi-conc v-f (update-preds "and"))
                         v-prime) emptiness))
@@ -442,14 +453,14 @@
 (declare where)
 (def f (alt (conc (lit \() where (lit \)))
             (conc (alt (change-pred pred-id :ids)
-                        (pfunction 
-                          (fn [f-m] (update-info 
-                                      :preds 
-                                      #(conj (pop %) 
-                                             (assoc (peek %) 
-                                                    :ids
-                                                    (peek f-m)))))
-                          (update-info :function #(pop %))))
+                       (pfunction 
+                         (fn [f-m] (update-info 
+                                     :preds 
+                                     #(conj (pop %) 
+                                            (assoc (peek %) 
+                                                   :ids
+                                                   (peek f-m)))))
+                         (update-info :function #(pop %))))
                   (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 

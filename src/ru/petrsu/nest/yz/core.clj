@@ -67,10 +67,12 @@
 (defn process-preds
   "Processes restrictions."
   [o, l-side, f, value]
-  (cond (vector? l-side) (some #(f % value) (reduce #(get-objs %2 %1) [o] l-side))
-        (map? l-side) (some #(f % value) (process-func l-side o))
-        :else true))
-
+  (let [objs (cond (vector? l-side) (reduce #(get-objs %2 %1) [o] l-side)
+                   (map? l-side) (process-func l-side o)
+                   :else true)]
+    (if (map? value)
+      (some #(f (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
+      (some #(f % value) objs))))
 
 
 (defn- filter-by-preds
