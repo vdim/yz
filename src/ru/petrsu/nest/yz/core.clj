@@ -26,11 +26,10 @@
   (if (nil? o)
     nil
     (loop [cl (class o)]
-      (if (nil? cl)
-        (throw (NoSuchFieldException. ))
-        (if (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-          (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-          (recur (:superclass (bean cl))))))))
+      (cond (nil? cl) (throw (NoSuchFieldException. ))
+            (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+            (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+            :else (recur (:superclass (bean cl)))))))
 
 
 (declare process-nests, get-rows, run-query)
@@ -73,8 +72,7 @@
   "Processes restrictions."
   [o, l-side, f, value]
   (let [objs (cond (vector? l-side) (reduce #(get-objs %2 %1) [o] l-side)
-                   (map? l-side) (process-func l-side o)
-                   :else true)]
+                   (map? l-side) (process-func l-side o))]
     (if (map? value)
       (some #(f (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
       (some #(f % value) objs))))
