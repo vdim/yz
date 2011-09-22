@@ -23,12 +23,14 @@
 (defn get-fv
   "Returns value of field."
   [o, field-name]
-  (loop [cl (class o)]
-    (if (nil? cl)
-      (throw (NoSuchFieldException. ))
-      (if (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-        (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-        (recur (:superclass (bean cl)))))))
+  (if (nil? o)
+    nil
+    (loop [cl (class o)]
+      (if (nil? cl)
+        (throw (NoSuchFieldException. ))
+        (if (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+          (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+          (recur (:superclass (bean cl))))))))
 
 
 (declare process-nests, get-rows, run-query)
