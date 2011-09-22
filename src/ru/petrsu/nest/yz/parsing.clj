@@ -560,7 +560,7 @@
 (defn process-fn
   "Processes function name."
   []
-  (complex [n (rep+ alpha)
+  (complex [n (rep+ (alt alpha (lit \.)))
             _ (update-info :function 
                            #(if-let [f (resolve (symbol (reduce str "" n)))]
                               (conj (pop %) (assoc (peek %) :func f))
