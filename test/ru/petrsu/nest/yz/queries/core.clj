@@ -60,6 +60,12 @@
   (:result (c/pquery query *mom* *em*)))
 
 
+(defn rows-query
+  "Returns :rows of core/pquery."
+  [query]
+  (:rows (c/pquery query *mom* *em*)))
+
+
 (defn qstruct?
   "Defines whether structure of the specified query correspends to
   the specified query."

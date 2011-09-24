@@ -267,6 +267,7 @@
 (deftest select-reduced-preds
          ^{:doc ""}
          (is (tc/check-query "floor#(number=(1 or 2))" [[Floor [], Floor [], Floor []]]))
+         (is (tc/check-query "floor#(number=(1 or 2 or 3))" [[Floor [], Floor [], Floor [], Floor []]]))
          (is (tc/check-query "floor#(number=(1 or >4))" [[Floor [], Floor []]]))
          (is (tc/check-query "floor#(number=(1 or =5))" [[Floor [], Floor []]]))
          (is (tc/check-query "floor#(number=(<1 or >4))" [[]]))

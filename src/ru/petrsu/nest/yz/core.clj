@@ -206,7 +206,9 @@
      (get-rows data ()))
   ([data & args]
    (if (empty? (data 0))
-     (list (vec (flatten args)))
+     (if (empty? (nth args 0))
+       ()
+       (list (vec (flatten args))))
      (mapcat (fn [o]
                (cond (empty? o) [nil]
                      (empty? (o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
