@@ -13,5 +13,10 @@
 		<property name="hibernate.ejb.cfgfile" value="/META-INF/hibernate.cfg.xml"/>
         </properties>
     </persistence-unit>
+    <persistence-unit name="bench">
+        <properties>
+		<property name="hibernate.ejb.cfgfile" value="hibench.cfg.xml"/>
+        </properties>
+    </persistence-unit>
 
 </persistence>

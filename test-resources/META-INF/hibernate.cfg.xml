@@ -8,24 +8,12 @@
         <property name="hibernate.connection.username">sa</property>
 	<property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
     
-<!--
-        <property name="hibernate.connection.driver_class">org.hsqldb.jdbcDriver</property>
-	<property name="hibernate.connection.url">jdbc:hsqldb:file:db/default;shutdown=true;hsqldb.write_delay=false;</property>
-	<property name="hibernate.dialect">org.hibernate.dialect.HSQLDialect</property>
--->	
-<!--
-        <property name="hibernate.connection.driver_class">com.mysql.jdbc.Driver</property>
-        <property name="hibernate.connection.url">jdbc:mysql://nest.cs.prv/nest?characterEncoding=UTF-8</property>
-        <property name="hibernate.connection.username">nest</property>
-        <property name="hibernate.connection.password">...</property>
-        <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
--->
         <!-- Use the C3P0 connection pool provider -->
-        <!--property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.min_size">5</property>
         <property name="hibernate.c3p0.max_size">200</property>
         <property name="hibernate.c3p0.timeout">300</property>
         <property name="hibernate.c3p0.max_statements">50</property>
-        <property name="hibernate.c3p0.idle_test_period">3000</property-->
+        <property name="hibernate.c3p0.idle_test_period">3000</property>
         
         <!-- Show and print nice SQL on stdout -->
         <property name="show_sql">false</property>
