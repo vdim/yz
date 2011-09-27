@@ -7,3 +7,5 @@
 *.pdf
 lib/
 classes/
+db/
+ddl.sql
