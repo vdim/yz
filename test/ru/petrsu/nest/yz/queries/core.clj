@@ -14,16 +14,16 @@
 
 (defn create-em
   "Returns entity manager by specified name ('n', 'test-model' name 
-  is used by default) and persists each object of model from 'elems'."
-  ([elems]
-   (create-em elems "test-model"))
-  ([elems, n]
-   (let [em (.createEntityManager (Persistence/createEntityManagerFactory n))
-         _ (do (.. em getTransaction begin) 
-             (dotimes [i (count elems)]
-               (.persist em (elems i)))
-             (.. em getTransaction commit))]
-     em)))
+  is used by default (for getting name by default you must pass 'n' as nil)) 
+  and persists each object of model from 'elems'."
+  [elems, n]
+  (let [n (if (nil? n) "test-model" n)
+        em (.createEntityManager (Persistence/createEntityManagerFactory n))
+        _ (do (.. em getTransaction begin) 
+            (dotimes [i (count elems)]
+              (.persist em (elems i)))
+            (.. em getTransaction commit))]
+    em))
 
 
 (defn- transform-q
@@ -46,12 +46,15 @@
     (class q)))
 
 (declare *em*)
-(defn setup [sons]
+(defn setup 
   "Returns function for creating entity manager 
   and closing it after executing all tests."
-  (fn [f]
-    (binding [*em* (create-em sons)] (f) 
-      (.close *em*))))
+  ([sons]
+   (setup sons nil))
+  ([sons n]
+   (fn [f]
+     (binding [*em* (create-em sons n)] (f) 
+       (.close *em*)))))
 
 
 (defn r-query
