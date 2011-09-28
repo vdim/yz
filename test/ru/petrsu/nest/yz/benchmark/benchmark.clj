@@ -39,13 +39,13 @@
 (defn run-query
   "Runs specified query ('q') due to specified function ('f')
   which takes string-query and some EntityManager."
-  ([f q]
+  [f q em]
+  (if (nil? em)
    (let [em (create-em)
          t (run-query f q em)]
      (.close em)
-     t))
-  ([f q em]
-   (btime (f q em))))
+     t)
+    (btime (f q em))))
 
 
 (def queries
@@ -63,13 +63,13 @@
 
 (defn run-queries
   "Runs all queries."
-  []
+  [em]
   (loop [n ncount, res []]
     (if (= n 0)
       res
       (recur (dec n) 
              (conj res (map (fn [qs] 
-                              (vec (map #(run-query (:func qs) %) 
+                              (vec (map #(run-query (:func qs) % em)
                                         (:queries qs)))) queries))))))
 
 
@@ -81,8 +81,10 @@
 
 (defn avg
   "Calculates average value of evaluating queries."
-  []
-  (let [times (run-queries)
-        sums (reduce #(if (empty? %1) %2 (add-seq %1 %2)) [] times)]
-    (map #(vec (map (fn [x] (/ x ncount)) %)) sums)))
+  ([]
+   (avg nil))
+  ([em]
+   (let [times (run-queries em)
+         sums (reduce #(if (empty? %1) %2 (add-seq %1 %2)) [] times)]
+     (map #(vec (map (fn [x] (/ x ncount)) %)) sums))))
 
