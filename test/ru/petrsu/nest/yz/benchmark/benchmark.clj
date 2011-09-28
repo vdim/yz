@@ -52,14 +52,16 @@
   [{:func run-hql
     :queries ["from Building" 
               "from Room" 
-              "select b, r from Building as b left join b.floors as f left join f.rooms as r"]}
+              "select b, r from Building as b left join b.floors as f left join f.rooms as r"
+              "select b, li from Building as b left join b.floors as f left join f.rooms as r 
+              left join r.occupancies as o left join o.devices as d left join d.linkInterfaces as li"]}
    {:func run-yz
-    :queries ["building" "room" "building (room)"]}])
+    :queries ["building" "room" "building (room)" "b (li)"]}])
 
 
 (def ncount
   ^{:doc "Defines amount of evaluating set of queries. "}
-  (identity 5))
+  (identity 1000))
 
 (defn run-queries
   "Runs all queries."
@@ -87,4 +89,9 @@
    (let [times (run-queries em)
          sums (reduce #(if (empty? %1) %2 (add-seq %1 %2)) [] times)]
      (map #(vec (map (fn [x] (/ x ncount)) %)) sums))))
+
+(defn avg-lite
+  ""
+  []
+  (avg (create-em)))
 
