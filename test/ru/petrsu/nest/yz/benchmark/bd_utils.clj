@@ -134,10 +134,10 @@
 
 
 (defn create-bd
-  "Creates BD which has n elements."
-  [n]
-  (let [em (.createEntityManager (Persistence/createEntityManagerFactory "bench"))
-        son (gen-bd n)]
+  "Creates BD for specified EntityManager 
+  and with specified n elements."
+  [n, em]
+  (let [son (gen-bd n)]
     (do (.. em getTransaction begin) 
       (.persist em son)
       (.. em getTransaction commit))))

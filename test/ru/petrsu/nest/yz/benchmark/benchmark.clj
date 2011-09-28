@@ -26,15 +26,26 @@
   [q em]
   (.. em (createQuery q) getResultList))
 
+(defn- create-em
+  "Creates entity manager, clean database 
+  and generates some database's structure."
+  []
+  (let [emb (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "bench"))]
+    (do (bu/schema-export)
+      (bu/create-bd 1000 emb))
+    emb))
+
+
 (defn run-query
-  ""
-  [f q]
-  (let [emb (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "bench"))
-        t (do (bu/schema-export)
-            (bu/create-bd 1000)
-            (btime (f q emb)))]
-    (.close emb)
-    t))
+  "Runs specified query ('q') due to specified function ('f')
+  which takes string-query and some EntityManager."
+  ([f q]
+   (let [em (create-em)
+         t (run-query f q em)]
+     (.close em)
+     t))
+  ([f q em]
+   (btime (f q em))))
 
 
 (def queries
@@ -46,7 +57,32 @@
     :queries ["building" "room" "building (room)"]}])
 
 
+(def ncount
+  ^{:doc "Defines amount of evaluating set of queries. "}
+  (identity 5))
+
 (defn run-queries
   "Runs all queries."
   []
-  (map (fn [qs] (map #(run-query (:func qs) %) (:queries qs))) queries))
+  (loop [n ncount, res []]
+    (if (= n 0)
+      res
+      (recur (dec n) 
+             (conj res (map (fn [qs] 
+                              (vec (map #(run-query (:func qs) %) 
+                                        (:queries qs)))) queries))))))
+
+
+(defn- add-seq
+  "Adds two collection."
+  [coll1 coll2]
+  (map #(vec (map + %1 %2)) coll1 coll2))
+
+
+(defn avg
+  "Calculates average value of evaluating queries."
+  []
+  (let [times (run-queries)
+        sums (reduce #(if (empty? %1) %2 (add-seq %1 %2)) [] times)]
+    (map #(vec (map (fn [x] (/ x ncount)) %)) sums)))
+
