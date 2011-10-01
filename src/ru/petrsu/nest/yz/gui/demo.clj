@@ -62,9 +62,9 @@
       (.addKeyListener component listener)
       listener))
 
-(def mom (hb/gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
-
-(def em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest")))
+(def emf (javax.persistence.Persistence/createEntityManagerFactory "nest"))
+(def mom (hb/gen-mom-from-metamodel emf))
+(def em (.createEntityManager emf))
 
 
 (defn- create-qtext
