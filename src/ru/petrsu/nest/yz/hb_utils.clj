@@ -182,3 +182,8 @@
       generates MOM from this list."
   [])
 
+(defn gen-mom-from-metamodel
+  "Takes EntityManagerFactory and generates mom from metamodel."
+  [emf]
+  (gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities))))
+
