@@ -8,10 +8,6 @@
            (ru.petrsu.nest.son SON Building Room Floor)))
 
 
-(def 
-  ^{:doc "The map of the object model."}
-  *mom* (hb/gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
-
 (defn create-em
   "Returns entity manager by specified name ('n', 'test-model' name 
   is used by default (for getting name by default you must pass 'n' as nil)) 
@@ -45,7 +41,7 @@
               q))
     (class q)))
 
-(declare *em*)
+(declare *em* *mom*)
 (defn setup 
   "Returns function for creating entity manager 
   and closing it after executing all tests."
@@ -53,8 +49,11 @@
    (setup sons nil))
   ([sons n]
    (fn [f]
-     (binding [*em* (create-em sons n)] (f) 
-       (.close *em*)))))
+     (let [em (create-em sons n)]
+       (binding [*em* em
+                 *mom* (hb/gen-mom-from-metamodel (.getEntityManagerFactory em))]
+         (f)
+         (.close *em*))))))
 
 
 (defn r-query

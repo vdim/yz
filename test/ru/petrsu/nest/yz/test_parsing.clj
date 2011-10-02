@@ -6,9 +6,10 @@
         clojure.contrib.test-is)
   (:import (ru.petrsu.nest.son Building Room Floor)))
 
+(def emf (javax.persistence.Persistence/createEntityManagerFactory "nest"))
 (def mom 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
-  (gen-mom-from-cfg "test-resources/hibernate.cfg.xml"))
+  (gen-mom-from-metamodel emf))
 
 (def some-v
   ^{:doc "Defines vector with single empty map."}
