@@ -10,3 +10,4 @@ classes/
 db/
 db1/
 ddl.sql
+*.jar
