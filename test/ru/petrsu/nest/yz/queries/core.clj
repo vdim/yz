@@ -41,7 +41,14 @@
               q))
     (class q)))
 
-(declare *em* *mom*)
+(def ^{:dynamic true
+       :tag EntityManager}
+  *em*)
+
+(def ^{:dynamic true}
+  *mom*)
+
+;(declare *em* *mom*)
 (defn setup 
   "Returns function for creating entity manager 
   and closing it after executing all tests."
