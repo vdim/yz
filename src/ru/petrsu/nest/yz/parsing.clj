@@ -3,9 +3,24 @@
     :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse)
   (:use ru.petrsu.nest.yz.functions)
-  (:require [clojure.string :as cs]
-            [clojure.contrib.string :as ccs]))
+  (:require [clojure.string :as cs])
+  (:import (java.util.regex Pattern)))
 
+(defn ^String sdrop
+  "Drops first n characters from s.  Returns an empty string if n is
+   greater than the length of s."
+  [n ^String s]
+  (if (< (count s) n)
+    ""
+    (.substring s n)))
+
+
+(defn split
+    "Splits string on a regular expression.  Optional argument limit is
+      the maximum number of splits."
+    {:deprecated "1.2"}
+    ([^Pattern re ^String s] (seq (.split re s)))
+    ([^Pattern re limit ^String s] (seq (.split re s limit))))
 
 ; The parsing state data structure. 
 (defstruct q-representation 
@@ -146,7 +161,7 @@
 (defn- get-ids 
   "Returns new value of the :ids key of the pred structure."
   [ids res mom cl]
-  (let [sp-res (ccs/split #"\." res)]
+  (let [sp-res (split #"\." res)]
     (loop [cl- cl, ids- ids, sp-res- sp-res]
       (if (empty? sp-res-)
         ids-
@@ -267,7 +282,7 @@
   (let [remainder (reduce str (:remainder state))
         res (for [a (:remainder state) :while (not (= a ch))] a)]
     [(reduce str res) 
-     (assoc state :remainder (ccs/drop (count res) remainder))]))
+     (assoc state :remainder (sdrop (count res) remainder))]))
 
 
 (def limit-nq
@@ -288,7 +303,7 @@
                   :else end-c)]
       (cond (> count-nq limit-nq) (throw (Exception. "Limit of nested queries is exceeded."))
             (and (= ch end-pq) (= c -1)) [res (assoc state :remainder 
-                                                     (ccs/drop (count res) (reduce str (:remainder state))))]
+                                                     (sdrop (count res) (reduce str (:remainder state))))]
             :else (recur (str res ch) (rest remainder) c (inc count-nq))))))
 
 
