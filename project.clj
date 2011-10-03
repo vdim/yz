@@ -1,9 +1,10 @@
 (defproject yz "0.0.1"
   :description "Implementation of YZ language."
   :dependencies [[org.clojure/clojure "1.3.0"]
-                 [org.clojure/clojure-contrib "1.2.0"]
-                 [fnparse "2.2.7"]
-                 [org.hibernate/hibernate-entitymanager "3.6.1.Final"]]
+                 [org.hibernate/hibernate-entitymanager "3.6.1.Final"]
+                 [org.apache.derby/derby "10.7.1.1"]
+                 [com.h2database/h2 "1.3.160"]
+                 [org.clojure/algo.monads "0.1.0"]]
   :aot [ru.petrsu.nest.yz.core 
         ru.petrsu.nest.yz.hb-utils 
         ru.petrsu.nest.yz.functions]
