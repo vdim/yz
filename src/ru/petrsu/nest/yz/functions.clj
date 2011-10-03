@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.functions
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Set of functions which is build-in YZ."}
   (:use clojure.core))
 

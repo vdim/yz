@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.parsing
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse)
   (:use ru.petrsu.nest.yz.functions)

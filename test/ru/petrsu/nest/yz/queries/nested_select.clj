@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.queries.nested-select
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Processes queries nested statements like this: 
          object1 (object2 (object3))."}
   (:use ru.petrsu.nest.yz.core 

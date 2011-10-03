@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.map-utils
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Helper functions for working with map of object model (MOM).
          MOM has simple ini-format and represents by Clojure's map, 
          where key is full name of class (or another block of data, e.g. packages, funcs, scritps) 

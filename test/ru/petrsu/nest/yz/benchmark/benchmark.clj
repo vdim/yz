@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.benchmark.benchmark
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "System for benchmarking different types of queries."}
   (:use ru.petrsu.nest.yz.core)
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]

@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.queries.simple-select
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Processes simple select queries."}
   (:use clojure.contrib.test-is)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])

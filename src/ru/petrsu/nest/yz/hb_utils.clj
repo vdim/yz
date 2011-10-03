@@ -18,7 +18,7 @@
 
 
 (ns ru.petrsu.nest.yz.hb-utils
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "This functions are for working with hibernate because
          user (at least we use hibernate in nest) 
          can use hibernate as framework between its 

@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.gui.demo
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "This code implements GUI for the demonstration using YZ."}
   (:require [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.yz.hb-utils :as hb])

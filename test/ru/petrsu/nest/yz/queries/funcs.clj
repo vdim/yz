@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.queries.funcs
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Test queries within some functions."}
   (:use ru.petrsu.nest.yz.core 
         clojure.contrib.test-is)

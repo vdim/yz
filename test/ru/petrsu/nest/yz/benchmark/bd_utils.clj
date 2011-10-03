@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.benchmark.bd-utils
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Usefull functions for working with bd for benchmark."}
   (:import (ru.petrsu.nest.son Building Floor Room
                                Occupancy SimpleOU CompositeOU

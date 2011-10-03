@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.queries.preds
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Processes queries within some restrictions."}
   (:use ru.petrsu.nest.yz.core 
         clojure.contrib.test-is)

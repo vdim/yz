@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.queries.recur-props
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Processes queries within recur properties."}
   (:use ru.petrsu.nest.yz.core 
         clojure.contrib.test-is)

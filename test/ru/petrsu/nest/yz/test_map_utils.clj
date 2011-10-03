@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.test-map-utils
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Tests for MOM's utils."}
   (:use ru.petrsu.nest.yz.map-utils clojure.contrib.test-is))
 

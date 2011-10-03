@@ -1,9 +1,9 @@
 (ns ru.petrsu.nest.yz.test-parsing
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Tests for parsing functions."}
   (:use ru.petrsu.nest.yz.parsing 
         ru.petrsu.nest.yz.hb-utils 
-        clojure.contrib.test-is)
+        clojure.test)
   (:import (ru.petrsu.nest.son Building Room Floor)))
 
 (def emf (javax.persistence.Persistence/createEntityManagerFactory "nest"))

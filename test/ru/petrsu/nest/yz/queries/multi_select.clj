@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.queries.multi-select
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Processes queries within multi selects like this:
          building, room"}
   (:use ru.petrsu.nest.yz.core 

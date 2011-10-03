@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.queries.core
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "Helper functions for testing YZ's queries."}
   (:use ru.petrsu.nest.yz.core clojure.contrib.test-is)
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]

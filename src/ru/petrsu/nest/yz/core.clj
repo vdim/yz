@@ -1,5 +1,5 @@
 (ns ru.petrsu.nest.yz.core
-  ^{:author Vyacheslav Dimitrov
+  ^{:author "Vyacheslav Dimitrov"
     :doc "This code contains core functions of the Clojure's implementation of the YZ language.
 
          The Parsing of queries does due to the fnparse library.
