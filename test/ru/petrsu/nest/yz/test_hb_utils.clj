@@ -1,7 +1,7 @@
 (ns ru.petrsu.nest.yz.test-hb-utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests for functions which generate MOM."}
-  (:use ru.petrsu.nest.yz.hb-utils clojure.contrib.test-is)
+  (:use ru.petrsu.nest.yz.hb-utils clojure.test)
   (:import (ru.petrsu.nest.son Floor Room Building)))
 
 (def classes #{Floor, Room, Building})

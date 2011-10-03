@@ -1,7 +1,7 @@
 (ns ru.petrsu.nest.yz.test-map-utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests for MOM's utils."}
-  (:use ru.petrsu.nest.yz.map-utils clojure.contrib.test-is))
+  (:use ru.petrsu.nest.yz.map-utils clojure.test))
 
 (def mom {:a {:sn "sn1", :dp "dp1"}, :b {:sn "sn2" :dp, "dp2"}})
 

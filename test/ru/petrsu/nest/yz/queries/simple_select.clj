@@ -1,7 +1,7 @@
 (ns ru.petrsu.nest.yz.queries.simple-select
   ^{:author "Vyacheslav Dimitrov"
     :doc "Processes simple select queries."}
-  (:use clojure.contrib.test-is)
+  (:use clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
   (:import (ru.petrsu.nest.son SON Building Room Floor NetworkInterface IPv4Interface)))
 

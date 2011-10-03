@@ -1,7 +1,7 @@
 (ns ru.petrsu.nest.yz.queries.core
   ^{:author "Vyacheslav Dimitrov"
     :doc "Helper functions for testing YZ's queries."}
-  (:use ru.petrsu.nest.yz.core clojure.contrib.test-is)
+  (:use ru.petrsu.nest.yz.core clojure.test)
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.core :as c])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)

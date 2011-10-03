@@ -3,7 +3,7 @@
     :doc "Processes queries within multi selects like this:
          building, room"}
   (:use ru.petrsu.nest.yz.core 
-        clojure.contrib.test-is)
+        clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
   (:import (ru.petrsu.nest.son SON Building Room Floor)))
 
