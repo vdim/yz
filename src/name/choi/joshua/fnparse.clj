@@ -30,7 +30,8 @@
      default states are maps containing :remainder). But the accessor is
      rebindable, so that you can use different kinds of state objects in your
      parsing application. Myself, I usually put a struct-map accessor for
-     :remainder in here."}
+     :remainder in here."
+     :dynamic true}
   *remainder-accessor*
   :remainder)
 (def
@@ -41,7 +42,8 @@
      #(assoc %1 :remainder %2), which means that FnParse's default states are
      maps containing :remainder. But the accessor is rebindable, so that you can
      use different kinds of state objects in your parsing application. Myself, I
-     usually leave this variable alone."}
+     usually leave this variable alone."
+     :dynamic true}
   *remainder-setter*
   #(assoc %1 :remainder %2))
 
