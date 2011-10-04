@@ -205,7 +205,7 @@
   [rows]
   (if (= (count rows) 0)
     ()
-    (map #(.getSimpleName (.getClass %)) (nth rows 0))))
+    (map #(if (nil? %) "" (.getSimpleName (.getClass %))) (nth rows 0))))
 
 
 (defn get-rows
