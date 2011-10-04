@@ -199,6 +199,15 @@
              (conj res (mapcat #(get-column-name %) p))))))
 
 
+(defn- get-columns-lite
+  "Takes rows with result of query and returns vector with columns name.
+  Doesn't use complex algorithm for getting column's names."
+  [rows]
+  (if (= (count rows) 0)
+    ()
+    (map #(.getSimpleName (.getClass %)) (nth rows 0))))
+
+
 (defn get-rows
   "Returns set of rows. The 'data' is the result of 
   processing a query."
@@ -251,5 +260,5 @@
                                         (catch Exception e (.getMessage e))))]
         (if (string? run-query-res)
           (def-result [] run-query-res [] ())
-          (def-result (run-query-res 0) nil [] (run-query-res 1)))))))
+          (def-result (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))
 

@@ -10,8 +10,8 @@
            (java.awt.event KeyEvent KeyAdapter)))
 
 
-(def *q-history* (ref []))
-(def *current-q* (ref 0))
+(def ^{:dynamic true} *q-history* (ref []))
+(def ^{:dynamic true} *current-q* (ref 0))
 
 (defn- create-gbc
   "Creates instanse of the GridBagConstraints."
@@ -41,7 +41,7 @@
       (getColumnClass [columnIndex] Object)
       (getColumnCount [] colcnt)
       (getColumnName [columnIndex]
-                     "") ;(nth c-names columnIndex))
+                     (nth c-names columnIndex))
       (getRowCount [] rowcnt)
       (getValueAt [rowIndex columnIndex]
                   (let [row (nth rows rowIndex)]
