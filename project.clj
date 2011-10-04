@@ -10,5 +10,5 @@
         ru.petrsu.nest.yz.hb-utils 
         ru.petrsu.nest.yz.functions]
   :jar-exclusions [#"\.swp$|\.clj$"]
-  :dev-dependencies [[lein-clojars "0.5.0"]])
+  :dev-dependencies [[lein-clojars "0.7.0"]])
 
