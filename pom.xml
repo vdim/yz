@@ -7,22 +7,13 @@
   <name>yz</name>
   <description>Implementation of the YZ language.</description>
   <url>https://github.com/vdim/yz</url>
-  <scm>
-    <tag>5e3b72f772d0029f355a4162abad8b8855e81543</tag>
-  </scm>
   <build>
     <sourceDirectory>src</sourceDirectory>
-    <testSourceDirectory>test</testSourceDirectory>
     <resources>
       <resource>
         <directory>resources</directory>
       </resource>
     </resources>
-    <testResources>
-      <testResource>
-        <directory>test-resources</directory>
-      </testResource>
-    </testResources>
   </build>
   <repositories>
     <repository>
