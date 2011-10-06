@@ -1,4 +1,8 @@
 Implementation of the YZ query language specification.
+
+## Restriction
+It is just prototype, not for production using.
+
 ## Installation
 
 ### Build from source code
@@ -48,6 +52,7 @@ The main goal of the YZ language is reducing the text of a query
 in comparison with existing object query languages (e.g. OQL, HQL, JP-QL and so on).
 
 For achieving this we offers following approaches:
+
 1. Eliminates keywords (select, from, where and so on).
 2. Eliminates indications of associations.
 3. Using consice names of entities.
