@@ -4,21 +4,21 @@ Implementation of the YZ query language specification.
 ### Build from source code
 1. Install [lein] (https://github.com/technomancy/leiningen) build tool.
 2. Download source code from repository:
-
->$ git clone http://github.com/vdim/yz
->$ cd yz
+<pre>
+<code>
+$ git clone http://github.com/vdim/yz
+$ cd yz
+</code>
+</pre>
 
 3. Download dependencies:
-
->$ lein deps
+<pre><code>$ lein deps</code></pre>
 
 4. Compile code:
-
->$ lein compile
+<pre><code>$ lein compile</code></pre>
 
 5. Create jar file
-
->$ lein jar
+<pre><code>$ lein jar</code></pre>
 
 ### Install from repository
 The YZ is distributed due to [clojars.org] (http://clojars.org), so
