@@ -1,5 +1,5 @@
-(defproject yz "0.0.1-alpha1"
-  :description "Implementation of YZ language."
+(defproject ru.petrsu.nest/yz "0.0.1-alpha1"
+  :description "Implementation of the YZ language."
   :url "https://github.com/vdim/yz"
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [org.hibernate/hibernate-entitymanager "3.6.1.Final"]
