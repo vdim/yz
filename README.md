@@ -7,12 +7,15 @@ Implementation of the YZ query language specification.
 
 >$ git clone http://github.com/vdim/yz
 >$ cd yz
+
 3. Download dependencies:
 
 >$ lein deps
+
 4. Compile code:
 
 >$ lein compile
+
 5. Create jar file
 
 >$ lein jar
