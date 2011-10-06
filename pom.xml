@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>ru.petrsu.nest</groupId>
+  <artifactId>yz</artifactId>
+  <version>0.0.1-alpha1</version>
+  <name>yz</name>
+  <description>Implementation of YZ language.</description>
+  <url>https://github.com/vdim/yz</url>
+  <scm>
+    <tag>3503d64bc8a84692af73f13dd2362eb5dc78f0c4</tag>
+  </scm>
+  <build>
+    <sourceDirectory>src</sourceDirectory>
+    <testSourceDirectory>test</testSourceDirectory>
+    <resources>
+      <resource>
+        <directory>resources</directory>
+      </resource>
+    </resources>
+    <testResources>
+      <testResource>
+        <directory>test-resources</directory>
+      </testResource>
+    </testResources>
+  </build>
+  <repositories>
+    <repository>
+      <id>clojars</id>
+      <url>http://clojars.org/repo/</url>
+    </repository>
+  </repositories>
+  <dependencies>
+    <dependency>
+	<groupId>org.hibernate.javax.persistence</groupId>
+	<artifactId>hibernate-jpa-2.0-api</artifactId>
+	<version>1.0.1.Final</version>
+    </dependency>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>clojure</artifactId>
+      <version>1.3.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.clojure</groupId>
+      <artifactId>algo.monads</artifactId>
+      <version>0.1.0</version>
+    </dependency>
+  </dependencies>
+</project>
