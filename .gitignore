@@ -9,5 +9,6 @@ lib/
 classes/
 db/
 db1/
+db-auction/
 ddl.sql
 *.jar

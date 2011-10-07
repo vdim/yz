@@ -12,7 +12,8 @@
 
 (def hibcfg
   ^{:doc "Defines name of file with hibernate config relatively classpath."}
-  (identity "/META-INF/hibernate.cfg.xml"))
+;  (identity "/META-INF/hibernate.cfg.xml"))
+  (identity "/META-INF/auction-hb.cfg.xml"))
 
 (def classes
   ^{:doc "Defines all classes of SON model."}
@@ -25,8 +26,8 @@
   "Clean databases due to Hibernate Schema Export."
   []
   (let [cfg (doto (Configuration.) 
-              (.configure hibcfg)
-              (.setProperty "hibernate.connection.url" "jdbc:h2:db1/db1;create=true"))
+              (.configure hibcfg))
+;              (.setProperty "hibernate.connection.url" "jdbc:h2:db1/db1;create=true"))
         just-drop false
         just-create false
         script false

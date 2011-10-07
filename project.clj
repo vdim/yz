@@ -9,6 +9,7 @@
   :aot [ru.petrsu.nest.yz.core 
         ru.petrsu.nest.yz.hb-utils 
         ru.petrsu.nest.yz.functions]
+  :java-source-path "test/auction/model"
   :jar-exclusions [#"\.swp$|\.clj$"]
   :dev-dependencies [[lein-clojars "0.7.0"]])
 

@@ -1,0 +1,38 @@
+<!DOCTYPE hibernate-configuration SYSTEM
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+	<property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
+	<property name="hibernate.connection.url">jdbc:derby:db-auction;create=true</property>
+        <property name="hibernate.connection.username">sa</property>
+	<property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
+    
+        <!-- Use the C3P0 connection pool provider -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">200</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+        <property name="hibernate.c3p0.idle_test_period">3000</property>
+        
+        <!-- Show and print nice SQL on stdout -->
+        <property name="show_sql">false</property>
+        <property name="format_sql">true</property>
+	
+	<!-- Set a maximum "depth" for the outer join fetch tree for single-ended associations -->
+	<property name="max_fetch_depth">1</property>
+        
+        <!-- List of XML mapping files -->
+        <mapping class="auction.model.AddressEntity"/>
+        <mapping class="auction.model.BankAccount"/>
+        <mapping class="auction.model.Bid"/>
+        <mapping class="auction.model.BillingDetails"/>
+        <mapping class="auction.model.CategorizedItem"/>
+        <mapping class="auction.model.Category"/>
+        <mapping class="auction.model.Comment"/>
+        <mapping class="auction.model.CreditCard"/>
+        <mapping class="auction.model.Item"/>
+        <mapping class="auction.model.Shipment"/>
+        <mapping class="auction.model.User"/>
+    </session-factory>
+</hibernate-configuration>
