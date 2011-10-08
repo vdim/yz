@@ -36,9 +36,10 @@
 (defn- pq
   "Performs YZ's query."
   [this ^String query]
-  (let [res (yz/pquery query (get-by-key :mom this) (get-by-key :em this))]
+  (let [res (yz/pquery query (get-by-key :mom this) (get-by-key :em this))
+        _ (reset! (.state this) (assoc @(.state this) :res res))]
     (if (nil? (:error res))
-      (do (reset! (.state this) (assoc @(.state this) :res res)) res)
+      res
       (throw (Exception. (:error res))))))
 
 
