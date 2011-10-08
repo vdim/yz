@@ -70,6 +70,8 @@ Let's consider each point in more details.
 
 ### Eliminates keywords (select, from, where and so on).
 Although keywords are made right english sentencies from queries it are verbose.
+
+#### Select and from
 For example for getting all categories you should write HQL query like this
 
 	select c from Category as c
@@ -99,6 +101,7 @@ each object Category. You can use metasymbol & to definition self object. So the
 
 returns object Category, its name and its version for each object Category.
 
+#### Where
 For definition some restrictions you should write HQL query like this:
 
 	select c from Category as c where c.version=0 and c.name="some cat"
