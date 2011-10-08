@@ -57,10 +57,10 @@
 (defn -getError
   "Returns value of :error key from query's result."
   [this]
-  (get-by-key :error this))
+  (:error (get-by-key :res this)))
 
 
 (defn -getColumnsName
   "Returns value of :columns key from query's result."
   [this]
-  (get-by-key :columns this))
+  (:columns (get-by-key :res this)))
