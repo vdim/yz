@@ -24,8 +24,9 @@
          can use hibernate as framework between its 
          object model and database."}
   (:require [clojure.xml :as cx] 
-            [clojure.set :as cs])
-  (:import (javax.persistence Transient)))
+            [clojure.set :as cs]
+            [clojure.java.io :as cio])
+  (:import (javax.persistence Transient EntityManagerFactory)))
 
 
 (defn- get-classes
@@ -182,8 +183,30 @@
       generates MOM from this list."
   [])
 
+
 (defn gen-mom-from-metamodel
   "Takes EntityManagerFactory and generates mom from metamodel."
   [emf]
   (gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities))))
+
+
+(defn- to-file
+  "Writes mom to file"
+  [mom, f]
+  (let [f (if (instance? String f)
+            (cio/file f)
+            f)]
+    (cio/copy (.toString mom) f)))
+
+
+(defn mom-to-file
+  "Writes mom to file. If emf-or-hbcfg-or-mom is 
+  EntityManagerFactory or String (name of hibernate config file) then first
+  mom is generated and then wrote to file"
+  [emf-or-hbcfg-or-mom f]
+  (let [s emf-or-hbcfg-or-mom
+        mom (cond (instance? EntityManagerFactory s) (gen-mom-from-metamodel s)
+                  (instance? String s) (gen-mom-from-cfg s)
+                  :else s)]
+    (to-file mom f)))
 
