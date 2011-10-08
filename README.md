@@ -35,6 +35,7 @@ something like this:
 Direct link: [http://clojars.org/ru.petrsu.nest/yz] (http://clojars.org/ru.petrsu.nest/yz)
 
 ## Usage
+### Clojure
 You can use YZ from your clojure code something like this:
 
 	(ns some.ns
@@ -46,6 +47,22 @@ You can use YZ from your clojure code something like this:
 	(def em (.createEntityManager emf))
 
 	(c/pquery "text-of-query" mom em)
+
+### Java
+There is wrapper for using the YZ from a Java code in usual manner.
+
+	import import ru.petrsu.nest.yz.QueryYZ;
+	...
+	EntityManager em = Persistence.createEntityManagerFactory("test-model").createEntityManager();
+	QueryYZ yz = new QueryYZ(em);
+
+	// Gets result of query (List of lists). If error is occured then java.lang.Exception is thrown.
+	List<List<Object>> l = yz.getResultList("category (user)");
+	// Gets error (If null then any errors are not occured.)
+	String err = yz.getError();
+	// Gets columns names.
+	List<String> columns = yz.getColumnsName()
+
 
 ## Notes about the YZ
 The main goal of the YZ language is reducing the text of a query
@@ -62,7 +79,7 @@ For achieving this we offers following approaches:
 Let's get an object model from the book ["Java persistence with Hibernate"] 
 (http://www.amazon.com/Java-Persistence-Hibernate-Christian-Bauer/dp/1932394885). 
 See source code in [http://downloads.jboss.org/hibernate/caveatemptor/] (http://downloads.jboss.org/hibernate/caveatemptor/).
-(We use this model for the testing the YZ, so you can sources's model into YZ's repository.)
+(We use this model for the testing the YZ, so you can see sources's model into YZ's repository.)
 
 Caveatemptor's model has the following structure: 
 
