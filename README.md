@@ -51,15 +51,17 @@ You can use YZ from your clojure code something like this:
 ### Java
 There is wrapper for using the YZ from a Java code in usual manner.
 
-	import import ru.petrsu.nest.yz.QueryYZ;
+	import ru.petrsu.nest.yz.QueryYZ;
 	...
 	EntityManager em = Persistence.createEntityManagerFactory("test-model").createEntityManager();
 	QueryYZ yz = new QueryYZ(em);
 
 	// Gets result of query (List of lists). If error is occured then java.lang.Exception is thrown.
 	List<List<Object>> l = yz.getResultList("category (user)");
+
 	// Gets error (If null then any errors are not occured.)
 	String err = yz.getError();
+
 	// Gets columns names.
 	List<String> columns = yz.getColumnsName()
 
