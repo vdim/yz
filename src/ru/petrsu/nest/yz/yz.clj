@@ -6,7 +6,8 @@
   (:import
     (javax.persistence EntityManager))
   (:gen-class :name ru.petrsu.nest.yz.QueryYZ
-              :constructors {[javax.persistence.EntityManager], []}
+              :constructors {[javax.persistence.EntityManager], []
+                             [javax.persistence.EntityManager String], []}
               :methods [[getResultList [String] java.util.List]
                         [getResult [String] java.util.Map]
                         [getError [] String]
@@ -23,14 +24,26 @@
   [key, this]
   (key @(.state this)))
 
+(defn- create-state
+  "Creates state due to em. If f-mom is'not nil then
+  mom is extracted from file."
+  [em, f-mom]
+  (atom {:em em 
+         :mom (if (nil? @*mom*) 
+                (reset! *mom* 
+                        (if (nil? f-mom)
+                          (hu/gen-mom-from-metamodel (.getEntityManagerFactory em))
+                          (hu/mom-from-file f-mom)))
+                @*mom*)
+         :res nil}))
 
 (defn -init
-  [^EntityManager em]
-  [[] (atom {:em em 
-             :mom (if (nil? @*mom*) 
-                    (reset! *mom* (hu/gen-mom-from-metamodel (.getEntityManagerFactory em)))
-                    @*mom*)
-             :res nil})])
+  "Defines constructors."
+  ([^EntityManager em]
+   [[] (create-state em nil)])
+
+  ([^EntityManager em ^String f]
+   [[] (create-state em f)]))
 
 
 (defn- pq
