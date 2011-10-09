@@ -1,6 +1,7 @@
 (ns ru.petrsu.nest.yz.gui.demo
   ^{:author "Vyacheslav Dimitrov"
     :doc "This code implements GUI for the demonstration using YZ."}
+  (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.yz.hb-utils :as hb])
   (:import (javax.swing JPanel JTable JScrollPane 
@@ -62,7 +63,7 @@
       (.addKeyListener component listener)
       listener))
 
-(def mom (hb/mom-from-file "test-resources/nest.mom"))
+(def mom (hb/mom-from-file "nest.mom"))
 (def em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest")))
 
 
