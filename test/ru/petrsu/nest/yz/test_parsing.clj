@@ -403,6 +403,15 @@
    "floor#((number=1 or number=2) and name=3), room#(number=1 and name=2)"
    "floor#((number=1 or number=2) and name=3) (room#(number=1))"
    "floor#((number=1 or number=2) and name=3) (room#(number=1 and name=2))"
+;; not= predicate
+   "floor#(number not= 1 and name not= 2)"
+   "floor#(number not=1 or name not=2)"
+   "floor#((number not= 1 or number=2) and name=3)"
+   "floor#((number=1 or number not= 2) and name not= 3), room"
+   "floor#((number=1 or number=2) and name=3), room#(number not= 1)"
+   "floor#((number=1 or number=2) and name=3), room#(number not= 1 and name not= 2)"
+   "floor#((number=1 or number=2) and name=3) (room#(number not= 1))"
+   "floor#((number=1 or number=2) and name=3) (room#(number=1 and name not= 2))"
 
 ;; Properties.
    "floor[name]"
