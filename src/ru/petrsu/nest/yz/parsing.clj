@@ -422,6 +422,7 @@
   ^{:doc "Defines sing of where's expression."}
   (sur-by-ws (alt (lit-conc-seq ">=")
                   (lit-conc-seq "<=")
+                  (lit-conc-seq "not=")
                   (lit \=) 
                   (lit \<)
                   (lit \>))))
