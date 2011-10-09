@@ -111,7 +111,7 @@
   "Gets maps from get-paths and transforms value of :ppath key to
   one string. Returns sequence of this strings."
   [from to classes]
-  (map :ppath (get-paths from to classes)))
+  (vec (map :ppath (get-paths from to classes))))
 
 
 (defn get-fields-name
@@ -149,7 +149,7 @@
   {:sn (get-short-name cl)
    :dp ""
    :superclass (:superclass (bean cl))
-   :properties (get-fields-name cl)})
+   :properties (vec (get-fields-name cl))})
 
 
 (defn gen-mom
@@ -209,4 +209,9 @@
                   (instance? String s) (gen-mom-from-cfg s)
                   :else s)]
     (to-file mom f)))
+
+(defn mom-from-file
+  "Takes a name of the file and restores a mom from one."
+  [f]
+  (eval (read-string (nth (line-seq (cio/reader f)) 0))))
 
