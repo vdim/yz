@@ -62,9 +62,8 @@
       (.addKeyListener component listener)
       listener))
 
-(def emf (javax.persistence.Persistence/createEntityManagerFactory "nest"))
-(def mom (hb/gen-mom-from-metamodel emf))
-(def em (.createEntityManager emf))
+(def mom (hb/mom-from-file "test-resources/nest.mom"))
+(def em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest")))
 
 
 (defn- create-qtext
