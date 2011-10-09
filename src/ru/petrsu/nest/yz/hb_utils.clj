@@ -211,7 +211,10 @@
     (to-file mom f)))
 
 (defn mom-from-file
-  "Takes a name of the file and restores a mom from one."
+  "Takes a name of the file (resource file) and restores a mom from one."
   [f]
-  (eval (read-string (nth (line-seq (cio/reader f)) 0))))
+  (eval (read-string 
+          (nth (line-seq 
+                 (cio/reader (ClassLoader/getSystemResourceAsStream f))) 
+               0))))
 
