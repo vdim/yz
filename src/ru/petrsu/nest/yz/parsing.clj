@@ -185,9 +185,9 @@
                        (assoc (peek %) 
                               k 
                               (let [res- (if (seq? ret) (reduce str (flatten ret)) ret)]
-                                (if (= k :ids)
-                                  (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
-                                  res-)))))]
+                                (cond (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
+                                      (and (= k :func) (= res- "!=")) "not="
+                                      :else res-)))))]
            ret))
 
 
@@ -423,6 +423,7 @@
   (sur-by-ws (alt (lit-conc-seq ">=")
                   (lit-conc-seq "<=")
                   (lit-conc-seq "not=")
+                  (lit-conc-seq "!=")
                   (lit \=) 
                   (lit \<)
                   (lit \>))))
@@ -442,6 +443,7 @@
                    (change-pred string :value)
                    (change-pred (lit-conc-seq "true") :value)
                    (change-pred (lit-conc-seq "false") :value)
+                   (change-pred (lit-conc-seq "nil") :value)
                    (pfunction
                      (fn [f-m] (update-info 
                                  :preds 
@@ -450,11 +452,11 @@
                                                :value
                                                (peek f-m)))))
                           (update-info :function #(pop %))))))
-(def v-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and") peek)) 
+(def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) peek)) 
                         (invisi-conc v-f (update-preds "and"))
                         v-prime) emptiness))
 (def v (conc v-f v-prime))
-(def value-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "or") peek)) 
+(def value-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||")) peek)) 
                             (invisi-conc v (update-preds "or")) 
                             value-prime) emptiness))
 (def value (conc v value-prime)) 
@@ -480,11 +482,11 @@
                          (update-info :function #(pop %))))
                   (change-pred sign :func) 
                   value)))
-(def t-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "and"))) 
+(def t-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")))) 
                         (invisi-conc f (update-preds "and"))
                         t-prime) emptiness))
 (def t (conc f t-prime))
-(def where-prime (alt (conc (sur-by-ws (add-pred (lit-conc-seq "or"))) 
+(def where-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||"))))
                             (invisi-conc t (update-preds "or"))
                             where-prime) emptiness))
 (def where (conc t where-prime)) 
