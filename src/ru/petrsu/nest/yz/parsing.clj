@@ -186,7 +186,7 @@
                               k 
                               (let [res- (if (seq? ret) (reduce str (flatten ret)) ret)]
                                 (cond (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
-                                      (and (= k :func) (= res- "!=")) "not="
+                                      (and (= k :func) (= (cs/trim res-) "!=")) "not="
                                       :else res-)))))]
            ret))
 
