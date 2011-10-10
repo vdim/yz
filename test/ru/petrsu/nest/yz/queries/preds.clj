@@ -220,44 +220,56 @@
                [[Building [[]] Building [[]] Building [[]]]])))
 
 
+;; Check not= and !=
+(deftest check-not=
+         (is (tc/check-query "floor#(number not= 1)"
+                             [[Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number != 1)"
+                             [[Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number != 1 && number != 2)"
+                             [[Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number != 1 && number != 2 && number != 3)"
+                             [[Floor []]]))
+         (is (tc/check-query "floor#(number != 1 && number != 2 && number != 3 && number != 4)"
+                             [[]]))
+         (is (tc/check-query "floor#(number != 1 || number != 2)"
+                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number != 1 || number != 2 && number != 3)"
+                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#((number != 1 || number != 2) && number != 3)"
+                             [[Floor [] Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number!=(1 && 2))"
+                             [[Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number!=(1 && 2 && 3))"
+                             [[Floor []]]))
+         (is (tc/check-query "floor#(number!=(1 && 2 && 3 && 4))"
+                             [[]]))
+         (is (tc/check-query "floor#(number!=(1 || 2))"
+                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number!=(1 || 2 && 3))"
+                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#((number!=(1 || 2) && 3))"
+                             [[Floor [] Floor [] Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number!=(4 && >2))"
+                             [[Floor []]]))
+         (is (tc/check-query "floor#(number!=(1 && =2))"
+                             [[Floor []]]))
+         (is (tc/check-query "floor#(number!=(1 && (=2 || =3)))"
+                             [[Floor [] Floor []]]))
+         (is (tc/check-query "floor#(number!=(1 && =2 && 3))"
+                             [[Floor []]])))
 
-;; Cherks sign
 
+;; Checks sign
 (deftest select-b-fnumgt1
-         ^{:doc ""}
-         (is (tc/check-query "building#(floor.number>1)" [[Building []]])))
-
-(deftest select-fnumgt4
-         ^{:doc ""}
-         (is (tc/check-query "floor#(number>4)" [[]])))
-
-(deftest select-fnumgt-or-eq4
-         ^{:doc ""}
-         (is (tc/check-query "floor#(number>=4)" [[Floor []]])))
-
-(deftest select-fnumlt1
-         ^{:doc ""}
-         (is (tc/check-query "floor#(number<1)" [[]])))
-
-(deftest select-fnumlt-or-eq1
-         ^{:doc ""}
-         (is (tc/check-query "floor#(number<=1)" [[Floor [], Floor []]])))
-
-
-(deftest select-fnumgt4-ws
-         ^{:doc ""}
-         (is (tc/check-query "floor#(number  >  4)" [[]])))
-
-(deftest select-fnumgt-or-eq4-ws
-         ^{:doc ""}
-         (is (tc/check-query "floor#(number    >= 4)" [[Floor []]])))
-
-(deftest select-fnumlt1-ws
-         ^{:doc ""}
-         (is (tc/check-query "floor#(number <1)" [[]])))
-
-(deftest select-fnumlt-or-eq1-ws
-         ^{:doc ""}
+         (is (tc/check-query "building#(floor.number>1)" [[Building []]]))
+         (is (tc/check-query "floor#(number>4)" [[]]))
+         (is (tc/check-query "floor#(number>=4)" [[Floor []]]))
+         (is (tc/check-query "floor#(number<1)" [[]]))
+         (is (tc/check-query "floor#(number<=1)" [[Floor [], Floor []]]))
+         (is (tc/check-query "floor#(number  >  4)" [[]]))
+         (is (tc/check-query "floor#(number    >= 4)" [[Floor []]]))
+         (is (tc/check-query "floor#(number <1)" [[]]))
          (is (tc/check-query "floor#(number<= 1)" [[Floor [], Floor []]])))
 
 
