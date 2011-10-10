@@ -32,7 +32,8 @@
            :preds ; The vector within current predicates structure.
            :f-modificator ; Modificator of function's param.
            :function ; Describe current function.
-           :is-recur) ; Defines whether property is recur.
+           :is-recur ; Defines whether property is recur.
+           :cur-pred) ; Current predicate.
 
 ;; Helper macros, definitions and functions.
 
@@ -138,9 +139,11 @@
   "Conjs empty-pred value to current vector :preds in q-representation.
   If 'f' is supplied then value is call of 'f' with :preds as parameter."
   ([rule]
-   (add-pred rule (fn [_] empty-pred)))
+   (add-pred rule empty-pred))
   ([rule f]
-   (invisi-conc rule (update-info :preds #(conj % (f %))))))
+   (complex [cur_pred (get-info :cur-pred)
+             ret (invisi-conc rule (update-info :preds #(conj % (if (nil? f) cur_pred f))))]
+            ret)))
 
 
 (declare find-class, find-prop)
@@ -179,6 +182,8 @@
             res (get-info :result)
             nl (get-info :nest-level)
             tl (get-info :then-level)
+            preds (get-info :preds)
+            _ (update-info :cur-pred #(if (nil? (last preds)) % (last preds)))
             _ (update-info 
                 :preds 
                 #(conj (pop %) 
@@ -452,11 +457,11 @@
                                                :value
                                                (peek f-m)))))
                           (update-info :function #(pop %))))))
-(def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) peek)) 
+(def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (update-preds "and"))
                         v-prime) emptiness))
 (def v (conc v-f v-prime))
-(def value-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||")) peek)) 
+(def value-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||")) nil)) 
                             (invisi-conc v (update-preds "or")) 
                             value-prime) emptiness))
 (def value (conc v value-prime)) 
@@ -598,7 +603,7 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
 
 
 (defn parse
