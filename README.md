@@ -66,6 +66,33 @@ There is wrapper for using the YZ from a Java code in usual manner.
 	List<String> columns = yz.getColumnsName()
 
 
+In the previous code we created mom in the beggining of our program, but it is 
+waste of time (due to reflection of Java). So if your model is static 
+(that is model is defined on the projection stage not at the runtime), you
+can save your model to file:
+
+	(ns some.ns
+	  (:import (javax.persistence Persistence))
+	  (:require [ru.petrsu.nest.yz.hb-utils :as hu]))
+
+	(hu/mom-to-file (Persistence/createEntityManagerFactory "test-model") "test_model.mom")
+
+And then you can restore it from file. Your clojure code:
+
+	(ns some.ns
+	  (:import (javax.persistence Persistence))
+	  (:require [ru.petrsu.nest.yz.hb-utils :as hu]))
+
+	(def mom (hu/mom-from-file "test_model.mom"))
+
+Or your Java code:
+
+	import ru.petrsu.nest.yz.QueryYZ;
+	...
+	EntityManager em = Persistence.createEntityManagerFactory("test-model").createEntityManager();
+	QueryYZ yz = new QueryYZ(em, "test_model.mom");
+
+
 ## Notes about the YZ
 The main goal of the YZ language is reducing the text of a query
 in comparison with existing object query languages (e.g. OQL, HQL, JP-QL and so on).
