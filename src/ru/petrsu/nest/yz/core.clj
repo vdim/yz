@@ -205,7 +205,9 @@
   [rows]
   (if (= (count rows) 0)
     ()
-    (map #(if (nil? %) "" (.getSimpleName (.getClass %))) (nth rows 0))))
+    (let [m (reduce #(max %1 (count %2)) 0 rows)
+          row (some #(if (= (count %) m) %) rows)]
+      (map #(if (nil? %) "" (.getSimpleName (.getClass %))) row))))
 
 
 (defn get-rows
