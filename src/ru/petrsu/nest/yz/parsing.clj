@@ -606,6 +606,9 @@
   specified ('mom') the map of the object model.
   Returns a value of the :result key of the q-representation structure."
   [q, mom]
-  (:result (parse+ q, mom)))
+  (let [r (parse+ q, mom)]
+    (if (nil? (:reminder r))
+      (:result (parse+ q, mom))
+      (throw (Exception. (str "Syntax error near: " (reduce str "" (:remainder r))))))))
 
 
