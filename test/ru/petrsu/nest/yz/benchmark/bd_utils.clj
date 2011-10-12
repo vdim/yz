@@ -12,22 +12,34 @@
 
 (def hibcfg
   ^{:doc "Defines name of file with hibernate config relatively classpath."}
-;  (identity "/META-INF/hibernate.cfg.xml"))
-  (identity "/META-INF/auction-hb.cfg.xml"))
+  (identity "/META-INF/hibernate.cfg.xml"))
+;  (identity "/META-INF/auction-hb.cfg.xml"))
 
 (def classes
   ^{:doc "Defines all classes of SON model."}
-  [Building Floor Room
-   Occupancy SimpleOU CompositeOU
-   Device Network NetworkInterface EthernetInterface
-   LinkInterface IPv4Interface IPNetwork VLANInterface SON])
+  (vec (flatten (map (fn [[k v]] (repeat v k)) 
+                     {Building 1
+                      Floor 5
+                      Room 50
+                      Occupancy 5
+                      SimpleOU 20
+                      CompositeOU 5
+                      Device 300
+                      Network 5
+                      NetworkInterface 170 
+                      EthernetInterface 150
+                      LinkInterface 150
+                      IPv4Interface 170
+                      IPNetwork 5
+                      VLANInterface 20
+                      SON 1}))))
 
 (defn schema-export
   "Clean databases due to Hibernate Schema Export."
   []
   (let [cfg (doto (Configuration.) 
-              (.configure hibcfg))
-;              (.setProperty "hibernate.connection.url" "jdbc:h2:db1/db1;create=true"))
+              (.configure hibcfg)
+              (.setProperty "hibernate.connection.url" "jdbc:h2:db1/db1;create=true"))
         just-drop false
         just-create false
         script false
