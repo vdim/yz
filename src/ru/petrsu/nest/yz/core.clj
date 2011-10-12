@@ -8,13 +8,15 @@
          Criteria API 2.0 is used as persistence storage."}
   (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.parsing :as p])
-  (:import (javax.persistence.criteria CriteriaQuery)))
+  (:import (javax.persistence.criteria CriteriaQuery)
+           (javax.persistence EntityManager)
+           (clojure.lang PersistentArrayMap)))
 
 
 (declare em, mom)
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
-  [cl]
+  [^Class cl]
   (let [cr (.. em getCriteriaBuilder createTupleQuery)
         root (. cr (from cl))]
     (map #(.get % 0) (.. em (createQuery (doto cr (.multiselect [root]))) getResultList))))
@@ -22,7 +24,7 @@
 
 (defn get-fv
   "Returns value of field."
-  [o, field-name]
+  [o, ^String field-name]
   (if (nil? o)
     nil
     (loop [cl (class o)]
@@ -58,7 +60,7 @@
 (defn- get-objs
   "Returns sequence of objects which are belonged to 'objs' 
   by specified 'field-name'"
-  [field-name, objs]
+  [^String field-name, objs]
   (flatten
     (map (fn [o] 
            (if-let [fv (get-fv o field-name)]
@@ -81,7 +83,7 @@
 (defn- filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
-  [objs, preds]
+  [objs, ^String preds]
   (if (nil? preds) 
     objs 
     (let [f (read-string preds)] 
@@ -91,7 +93,7 @@
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
-  [sources cl-target preds]
+  [sources ^Class cl-target preds]
   (let [cl-source (class (nth sources 0))]
     (loop [cl- cl-target]
       (let [paths (get (get mom cl-source) cl-)]
@@ -107,7 +109,7 @@
 
 (defn- process-prop
   "Processes property."
-  [[prop is-recur] obj]
+  [[prop ^Boolean is-recur] obj]
   (cond (map? prop) (process-func prop, obj)
         (= prop \&) obj
         is-recur (loop [res [] obj- (get-fv obj prop)]
@@ -141,7 +143,7 @@
 (declare process-nests)
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
-  [nest, objs]
+  [^PersistentArrayMap nest, objs]
   `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0)))
           []
           (process-then (:then ~nest) ~objs (:props ~nest))))
@@ -149,7 +151,7 @@
 
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
-  [nest objs]
+  [^PersistentArrayMap nest objs]
   (p-nest nest (get-objs-by-path objs (:what nest) (:preds nest))))
 
 (defn- process-nests
@@ -175,7 +177,7 @@
 (defn- get-column-name
   "Returns the string representation of column 
   for the specified nest from result of query."
-  [nest]
+  [^PersistentArrayMap nest]
   (let [then (:then nest)
         what (:what nest)
         props (:props nest)]
@@ -207,7 +209,7 @@
     ()
     (let [m (reduce #(max %1 (count %2)) 0 rows)
           row (some #(if (= (count %) m) %) rows)]
-      (map #(if (nil? %) "" (.getSimpleName (.getClass %))) row))))
+      (map #(if (nil? %) "" (.getSimpleName (class %))) row))))
 
 
 (defn get-rows
@@ -243,7 +245,7 @@
     :result - a result of a query
     :columns - vector with column's names.
     :rows - rows of the result of a query."
-  [query mom em]
+  [^String query ^PersistentArrayMap mom ^EntityManager em]
   (do (def mom mom)
     (def em em)
     (if (empty? query)
