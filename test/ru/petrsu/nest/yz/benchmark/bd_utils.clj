@@ -32,7 +32,10 @@
 (def hibcfg
   ^{:doc "Defines name of file with hibernate config relatively classpath."}
   (identity "/META-INF/hibernate.cfg.xml"))
-;  (identity "/META-INF/auction-hb.cfg.xml"))
+
+(def ^{:dynamic true} *url* (identity "jdbc:derby:db1;create=true"))
+(def ^{:dynamic true} *dialect* (identity "org.hibernate.dialect.DerbyDialect"))
+(def ^{:dynamic true} *driver* (identity "org.apache.derby.jdbc.EmbeddedDriver"))
 
 (def classes
   ^{:doc "Defines all classes of SON model."}
@@ -56,11 +59,13 @@
 (defn schema-export
   "Cleans database due to Hibernate Schema Export."
   ([]
-   (schema-export "jdbc:h2:db1/db1;create=true"))
-  ([url]
+   (schema-export *url* *dialect* *driver*))
+  ([url dialect driver]
    (let [cfg (doto (Configuration.) 
                (.configure hibcfg)
-               (.setProperty "hibernate.connection.url" url))
+               (.setProperty "hibernate.connection.url" url)
+               (.setProperty "hibernate.dialect" dialect)
+               (.setProperty "hibernate.connection.driver_class" driver))
          just-drop false
          just-create false
          script false
@@ -176,26 +181,26 @@
   (let [son (gen-bd n)]
     (do (.. em getTransaction begin) 
       (.persist em son)
+      (.flush em)
       (.. em getTransaction commit))))
 
 
 (defn- do-cr
   "Takes a number of query from 'queries array' and a name of the persistence unit,
   executes query, ant returns time of executing query."
-  [nums, n, url]
-  (let [_ (schema-export url)
+  [nums, n, url dialect driver]
+  (let [_ (schema-export url dialect driver)
         em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n))]
-    (create-bd (Integer/parseInt nums) em)
-    (.close em)))
+    (create-bd (Integer/parseInt nums) em)))
 
 
 (defn -main
   "Takes a number of elements and name of the persistence unit 
   ant creates database. If name of persistence unit is not supplied then \"bench\" is used."
   ([nums]
-   (do-cr nums, "bench", "jdbc:h2:db1/db1;create=true"))
+   (do-cr nums, "bench", *url* *dialect* *driver*))
   ([nums, n]
-   (do-cr nums, n, "jdbc:h2:db1/db1;create=true"))
-  ([nums, n, url]
-   (do-cr nums, n, url)))
+   (do-cr nums, n, *url* *dialect* *driver*))
+  ([nums, n, url dialect driver]
+   (do-cr nums, n, url, dialect, driver)))
 
