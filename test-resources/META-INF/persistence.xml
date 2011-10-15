@@ -17,7 +17,8 @@
     <persistence-unit name="bench">
         <properties>
 		<property name="hibernate.ejb.cfgfile" value="/META-INF/hibernate.cfg.xml"/>
-		<property name="hibernate.connection.url" value="jdbc:h2:db1/db1;create=true"/>
+		<property name="hibernate.connection.url" value="jdbc:derby:db1;create=true"/>
+		<!--property name="hibernate.connection.url" value="jdbc:h2:db1/db1;create=true"/-->
         </properties>
     </persistence-unit>
     <persistence-unit name="auction">

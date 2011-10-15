@@ -19,10 +19,12 @@
 
 (defn run-yz
   "Runs specified yz's queries."
-  [q em]
-  (if (nil? (resolve (symbol "momb")))
-    (def momb (hb/gen-mom-from-metamodel em)))
-  (btime (pquery q momb em)))
+  ([q em]
+   (if (nil? (resolve (symbol "momb")))
+     (def momb (hb/gen-mom-from-metamodel em)))
+   (run-yz q em momb))
+  ([q em mom]
+   (btime (pquery q mom em))))
 
 
 (defn run-hql
