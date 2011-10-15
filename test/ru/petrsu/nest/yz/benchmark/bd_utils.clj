@@ -54,19 +54,21 @@
                       SON 1}))))
 
 (defn schema-export
-  "Clean databases due to Hibernate Schema Export."
-  []
-  (let [cfg (doto (Configuration.) 
-              (.configure hibcfg)
-              (.setProperty "hibernate.connection.url" "jdbc:h2:db1/db1;create=true"))
-        just-drop false
-        just-create false
-        script false
-        export true
-        _ (doto (SchemaExport. cfg) 
-            (.setOutputFile "ddl.sql")
-            (.setDelimiter ";")
-            (.execute script export just-drop just-create))]))
+  "Cleans database due to Hibernate Schema Export."
+  ([]
+   (schema-export "jdbc:h2:db1/db1;create=true"))
+  ([url]
+   (let [cfg (doto (Configuration.) 
+               (.configure hibcfg)
+               (.setProperty "hibernate.connection.url" url))
+         just-drop false
+         just-create false
+         script false
+         export true
+         _ (doto (SchemaExport. cfg) 
+             (.setOutputFile "ddl.sql")
+             (.setDelimiter ";")
+             (.execute script export just-drop just-create))])))
 
 
 (defn init-model
@@ -175,4 +177,25 @@
     (do (.. em getTransaction begin) 
       (.persist em son)
       (.. em getTransaction commit))))
+
+
+(defn- do-cr
+  "Takes a number of query from 'queries array' and a name of the persistence unit,
+  executes query, ant returns time of executing query."
+  [nums, n, url]
+  (let [_ (schema-export url)
+        em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n))]
+    (create-bd (Integer/parseInt nums) em)
+    (.close em)))
+
+
+(defn -main
+  "Takes a number of elements and name of the persistence unit 
+  ant creates database. If name of persistence unit is not supplied then \"bench\" is used."
+  ([nums]
+   (do-cr nums, "bench", "jdbc:h2:db1/db1;create=true"))
+  ([nums, n]
+   (do-cr nums, n, "jdbc:h2:db1/db1;create=true"))
+  ([nums, n, url]
+   (do-cr nums, n, url)))
 
