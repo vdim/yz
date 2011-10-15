@@ -174,9 +174,7 @@ case if you use some implementation of this API (for example, [OpenJPA] (http://
 
 ## Copyright
 
-Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
-
-This file is part of YZ.
+Copyright 2011 Vyacheslav Dimitrov, Petrozavodsk State University
 
 YZ is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License version 3
