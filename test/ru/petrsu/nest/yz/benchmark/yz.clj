@@ -20,9 +20,9 @@
 (ns ru.petrsu.nest.yz.benchmark.yz
     ^{:author "Vyacheslav Dimitrov"
           :doc "YZ queries for benchmark."}
-    (:require [ru.petrsu.nest.yz.hb-utils :as hu]
-              [ru.petrsu.nest.yz.benchmark.benchmark :as b]))
-
+  (:use ru.petrsu.nest.yz.core)
+  (:require [ru.petrsu.nest.yz.hb-utils :as hu]
+            [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]))
 
 
 (def queries
@@ -33,24 +33,23 @@
      "floor#(number = 1)"
      "floor#(number = 1) (room#(number = \"215\"))"
      "d#(forwarding = true)"
-     "device#(network.device.id = 25 and forwarding = true)"])
+     "device#(network.device.id = 25 and forwarding = true)"
+     "device (room (building#(name=\"MB\")))"
+     "device (room#(number=\"200\") (building#(name=\"MB\")))"])
 
 
-(defn- do-q
+(defn- run-yz
+  "Runs specified yz's queries."
+  [q em mom]
+  (bu/btime (pquery q mom em)))
+
+
+(defn do-q
   "Takes a number of query from 'queries array' and a name of the persistense unit,
-  executes query, ant returns time of executing query."
-  [num, n]
-  (let [em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n))
+  executes query, and returns time of executing query."
+  [num, n, m]
+  (let [em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n m))
         mom (hu/mom-from-file "nest.mom")]
-    (println (b/run-yz (queries (Integer/parseInt num)) em mom))
+    (println (run-yz (queries (Integer/parseInt num)) em mom))
     (.close em)))
-
-
-(defn -main
-  "Takes a number of query and returns time of executing query.
-  If name of persistense unit is not supplied then \"bench\" is used."
-  ([num]
-   (do-q num, "bench"))
-  ([num, n]
-   (do-q num, n)))
 

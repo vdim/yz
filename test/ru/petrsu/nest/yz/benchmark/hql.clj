@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.benchmark.hql
     ^{:author "Vyacheslav Dimitrov"
           :doc "HQL queries for benchmark."}
-    (:require [ru.petrsu.nest.yz.benchmark.benchmark :as b]))
+    (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]))
 
 
 (def queries
@@ -37,23 +37,26 @@
           left join lis.networkInterfaces as nis
           left join nis.network.networkInterfaces as nis2
           left join nis2.linkInterface.device as router
-          where router.forwarding = true and d.id = 25"])
+          where router.forwarding = true and d.id = 25"
+   "select d from Device as d 
+          left join d.occupancy.room.floor.building as b where b.name='MB'"
+   "select d from Device as d 
+          left join d.occupancy.room as r 
+          left join r.floor.building as b 
+          where b.name='MB' and r.number='200'"])
 
 
-(defn- do-q
+(defn- run-hql
+  "Runs specified HQL's queries."
+  [q em]
+  (bu/btime (.. em (createQuery q) getResultList)))
+
+
+(defn do-q
   "Takes a number of query from 'queries array' and a name of the persistense unit,
   executes query, ant returns time of executing query."
-  [num, n]
-  (let [em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n))]
-    (println (b/run-hql (queries (Integer/parseInt num)) em))
+  [num, n, m]
+  (let [em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n, m))]
+    (println (run-hql (queries (Integer/parseInt num)) em))
     (.close em)))
-
-
-(defn -main
-  "Takes a number of query and returns time of executing query.
-  If name of persistense unit is not supplied then \"bench\" is used."
-  ([num]
-   (do-q num, "bench"))
-  ([num, n]
-   (do-q num, n)))
 

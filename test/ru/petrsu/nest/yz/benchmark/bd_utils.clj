@@ -29,6 +29,17 @@
            (org.hibernate.cfg Configuration)
            (java.util Random)))
 
+
+(defmacro btime
+  "Like Clojure's macros time, but doesn't have side effect 
+  (something prints) and returns time which is taken for
+  evaluating an expr."
+  [expr]
+  `(let [start# (. System (nanoTime))
+         ret# ~expr]
+     (/ (double (- (. System (nanoTime)) start#)) 1000000.0)))
+
+
 (def hibcfg
   ^{:doc "Defines name of file with hibernate config relatively classpath."}
   (identity "/META-INF/hibernate.cfg.xml"))
@@ -190,7 +201,10 @@
   executes query, ant returns time of executing query."
   [nums, n, url dialect driver]
   (let [_ (schema-export url dialect driver)
-        em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n))]
+        m {"hibernate.connection.url" url, 
+           "hibernate.dialect" dialect, 
+           "hibernate.connection.driver_class" driver}
+        em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n m))]
     (create-bd (Integer/parseInt nums) em)))
 
 
