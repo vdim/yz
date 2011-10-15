@@ -2,7 +2,7 @@
 
 CP=`lein classpath`
 LANGS="yz hql"
-N=5
+N=7
 
 for i in `seq 0 $N`; do 
     res=""
