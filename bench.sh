@@ -32,15 +32,19 @@ dialect_hsqldb="org.hibernate.dialect.HSQLDialect"
 driver_hsqldb="org.apache.derby.jdbc.EmbeddedDriver"
 hsqldb="$url_hsqldb $dialect_hsqldb $driver_hsqldb"
 
-## Current settings
+## Current settings.
 db=$h2
 
 ## List with number of elements for DB.
 counts="100 1000 10000 25000 50000 75000 100000 250000 500000 750000 1000000"
 
+## Java options (Needed for big databases (since 250000 elements)).
+JAVA_OPTS="-Xss128M -Xmx1G"
+
 for c in $counts; do 
     echo $c
-    java -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bd-utils $c $name $db
+    # Generate the DB with specified amount of elements.
+    java $JAVA_OPT -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bd-utils $c $name $db
     for i in `seq 0 $N`; do 
 	res=""
 	for lang in $LANGS; do
