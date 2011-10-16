@@ -39,14 +39,14 @@
 
 
 (defn- run-yz
-  "Runs specified yz's queries."
+  "Runs specified yz's queries and returns time of executing query."
   [q em mom]
   (bu/btime (pquery q mom em)))
 
 
 (defn do-q
   "Takes a number of query from 'queries array' and a name of the persistense unit,
-  executes query, and returns time of executing query."
+  executes query, and prints time of executing query."
   [num, n, m]
   (let [em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n m))
         mom (hu/mom-from-file "nest.mom")]

@@ -75,7 +75,7 @@
 
 
 (defn -main
-  "Takes a number of query and some settings and returns time of executing query."
+  "Takes a number of query and some settings and prints time of executing query."
   ([num, n, url, dialect, driver, ql]
    ((getf ql)
       num, n, 

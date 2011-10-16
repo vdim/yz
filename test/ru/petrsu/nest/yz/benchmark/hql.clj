@@ -47,14 +47,14 @@
 
 
 (defn- run-hql
-  "Runs specified HQL's queries."
+  "Runs specified HQL's queries and returns time of executing query."
   [q em]
   (bu/btime (.. em (createQuery q) getResultList)))
 
 
 (defn do-q
   "Takes a number of query from 'queries array' and a name of the persistense unit,
-  executes query, ant returns time of executing query."
+  executes query, and prints time of executing query."
   [num, n, m]
   (let [em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n, m))]
     (println (run-hql (queries (Integer/parseInt num)) em))
