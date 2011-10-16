@@ -12,3 +12,4 @@ db1/
 db-auction/
 ddl.sql
 *.jar
+logs/

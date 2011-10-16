@@ -1,0 +1,56 @@
+\documentclass[a4paper,12pt]{report}
+
+\usepackage{ucs}
+\usepackage[utf8x]{inputenc}
+\usepackage[russian]{babel}
+\usepackage[unicode,pdfborder={0 0 0}]{hyperref}
+\usepackage{graphicx}
+\usepackage[top=25mm, left=25mm, right=25mm, bottom=25mm, nohead]{geometry}
+\usepackage{indentfirst}
+\usepackage{cmlgc}
+
+
+\sloppy
+
+%example of query (as description)
+\newcommand{\showq}[1]{
+    \begin{figure}
+	\centering
+	\includegraphics[scale=0.7]{figures/query#1.png}
+	\label{bench:query#1}
+    \end{figure}
+}
+
+\title{Benchmark Report}
+\date{\today}
+
+%\renewcommand{\baselinestretch}{1.50}
+\bibliographystyle{gost780u}
+
+\begin{document}
+%\fontsize{14}{23}\selectfont
+
+\maketitle
+%\tableofcontents
+
+\showq{0}
+
+\showq{1}
+
+\showq{2}
+
+\showq{3}
+
+\showq{4}
+
+\showq{5}
+
+\showq{6}
+
+\showq{7}
+
+\showq{8}
+
+\showq{9}
+
+\end{document}
