@@ -27,13 +27,21 @@
            (ru.petrsu.nest.son SON Building Room Floor)))
 
 
+(def ^{:dynamic true} *url* (identity "jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"))
+(def ^{:dynamic true} *dialect* (identity "org.hibernate.dialect.H2Dialect"))
+(def ^{:dynamic true} *driver* (identity "org.h2.Driver"))
+
 (defn create-em
   "Returns entity manager by specified name ('n', 'test-model' name 
   is used by default (for getting name by default you must pass 'n' as nil)) 
   and persists each object of model from 'elems'."
   [elems, n]
-  (let [n (if (nil? n) "test-model" n)
-        em (.createEntityManager (Persistence/createEntityManagerFactory n))
+  (let [[n m] (if (nil? n) 
+                ["test-model" {"hibernate.connection.url" *url*, 
+                               "hibernate.dialect" *dialect*, 
+                               "hibernate.connection.driver_class" *driver*}] 
+                [n {}])
+        em (.createEntityManager (Persistence/createEntityManagerFactory n m))
         _ (do (.. em getTransaction begin) 
             (dotimes [i (count elems)]
               (.persist em (elems i)))

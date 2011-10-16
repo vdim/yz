@@ -9,6 +9,7 @@
 		<property name="hibernate.connection.url" value="jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"/>
 		<property name="hibernate.connection.driver_class" value="org.h2.Driver"/>
 		<property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+		<property name="hibernate.hbm2ddl.auto" value="create-drop"/>
         </properties>
     </persistence-unit>
     <persistence-unit name="nest">
@@ -19,19 +20,6 @@
     <persistence-unit name="bench">
         <properties>
 		<property name="hibernate.ejb.cfgfile" value="/META-INF/hibernate.cfg.xml"/>
-		
-		<!--property name="hibernate.connection.url" value="jdbc:derby:db1;create=true"/>
-		<property name="hibernate.connection.driver_class" value="org.apache.derby.jdbc.EmbeddedDriver"/>
-		<property name="hibernate.dialect" value="org.hibernate.dialect.DerbyDialect"/-->
-		
-		<!--property name="hibernate.connection.url" value="jdbc:hsqldb:db1/db1;create=true"/>
-		<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
-		<property name="hibernate.connection.driver_class" value="org.apache.derby.jdbc.EmbeddedDriver"/-->
-
-		<!--property name="hibernate.connection.url" value="jdbc:h2:db1/db1;create=true"/>
-		<property name="hibernate.connection.driver_class" value="org.h2.Driver"/>
-		<property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/-->
-		
         </properties>
     </persistence-unit>
     <persistence-unit name="auction">
