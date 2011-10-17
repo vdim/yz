@@ -28,7 +28,7 @@ h2="$url_h2 $dialect_h2 $driver_h2"
 ## HSQLDB settings.
 url_hsqldb="jdbc:hsqldb:db1/db1;create=true"
 dialect_hsqldb="org.hibernate.dialect.HSQLDialect"
-driver_hsqldb="org.apache.derby.jdbc.EmbeddedDriver"
+driver_hsqldb="org.hsqldb.jdbcDriver"
 hsqldb="$url_hsqldb $dialect_hsqldb $driver_hsqldb"
 
 ## Current settings.
@@ -88,13 +88,13 @@ mkdir $logdir || echo "Could not create directory $logdir" exit 1;
 for c in $counts; do 
 
     # Generate the DB with specified amount of elements.
-    java $JAVA_OPT -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bd-utils $c $name $db
+    java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bd-utils $c $name $db
 
     # Execute query.
     for i in `seq 0 $N`; do 
 	res="$c "
 	for lang in $LANGS; do
-	    res+="`java -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.benchmark $i $name $db $lang` "
+	    res+="`java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.benchmark $i $name $db $lang` "
 	done;
 	echo $res >> $logdir/$i.txt;
     done;
