@@ -35,7 +35,7 @@ hsqldb="$url_hsqldb $dialect_hsqldb $driver_hsqldb"
 db=$h2
 
 ## List with number of elements for DB.
-counts="100 1000 10000 25000 50000 75000 100000 250000 500000 750000 1000000"
+counts="100 1000 10000 25000 50000 75000 100000 250000 300000 400000 500000"
 
 ## Java options (Needed for big databases (since 250000 elements)).
 JAVA_OPTS="-Xss128M -Xmx1G"
