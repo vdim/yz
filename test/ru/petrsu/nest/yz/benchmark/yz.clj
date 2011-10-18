@@ -29,13 +29,17 @@
     ["building" 
      "room" 
      "building (room)" 
-     "b (li)"
+     "room (building)" 
+     "building (li)"
+     "device (building)"
+     "device (room (floor (building)))"
      "floor#(number = 1)"
      "floor#(number = 1) (room#(number = \"215\"))"
-     "d#(forwarding = true)"
+     "device#(forwarding = true)"
      "device#(network.device.id = 25 and forwarding = true)"
      "device (room (building#(name=\"MB\")))"
-     "device (room#(number=\"200\") (building#(name=\"MB\")))"])
+     "device (room#(number=\"200\") (building#(name=\"MB\")))"
+     "device#(id=25) (room#(number=\"200\") (building#(name=\"MB\")))"])
 
 
 (defn- run-yz

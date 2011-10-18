@@ -27,8 +27,11 @@
   ["from Building" 
    "from Room" 
    "select b, r from Building as b left join b.floors as f left join f.rooms as r"
+   "select r, r.floor.building from Room as r"
    "select b, li from Building as b left join b.floors as f left join f.rooms as r 
            left join r.occupancies as o left join o.devices as d left join d.linkInterfaces as li"
+   "select d, d.occupancy.room.floor.building from Device as d"
+   "select d, d.occupancy.room, d.occupancy.room.floor, d.occupancy.room.floor.building from Device as d"
    "select f from Floor as f where f.number=1"
    "select f, r from Floor as f left join f.rooms as r where f.number=1 and r.number='215'"
    "select d from Device as d where d.forwarding=true"
@@ -40,11 +43,14 @@
           where router.forwarding = true and d.id = 25"
    "select d from Device as d 
           left join d.occupancy.room.floor.building as b where b.name='MB'"
-   "select d from Device as d 
+   "select d, r, b from Device as d 
           left join d.occupancy.room as r 
           left join r.floor.building as b 
-          where b.name='MB' and r.number='200'"])
-
+          where b.name='MB' and r.number='200'"
+   "select d, r, b from Device as d 
+          left join d.occupancy.room as r 
+          left join r.floor.building as b 
+          where b.name='MB' and r.number='200' and d.id=25"])
 
 (defn- run-hql
   "Runs specified HQL's queries and returns time of executing query."

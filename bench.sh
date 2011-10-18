@@ -7,7 +7,7 @@ CP=`lein classpath`
 LANGS="yz hql"
 
 ## Number of queries.
-N=9
+N=13
 
 ## Name of the persistence unit.
 name="bench"
