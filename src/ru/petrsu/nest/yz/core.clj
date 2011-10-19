@@ -63,7 +63,7 @@
 
 
 (defn- get-op
-  "Finds corresponding value of :func of pred map to some Clojurs' function, 
+  "Finds corresponding value of :func of pred map to some Clojure's function, 
   and then generates code for creating Predicate due to get-p macros."
   [^PersistentArrayMap pred, ^CriteriaBuilder cb, ^Root root]
   (let [op (:func pred)
@@ -94,7 +94,7 @@
   (let [cb (.getCriteriaBuilder em)
         cr (.createTupleQuery cb)
         root (. cr (from cl))
-        cr (.multiselect cr [root])]
+        cr (.. cr (multiselect [root]) (distinct true))]
     (map #(.get % 0) (.. em (createQuery (if (nil? preds) 
                                            cr 
                                            (.where cr (create-predicate preds cb root))))
