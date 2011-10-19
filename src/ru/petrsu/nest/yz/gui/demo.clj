@@ -54,7 +54,7 @@
 
 (defn table-model [rows c-names]
   "Implements TableModel for querie's representation."
-  (let [colcnt (reduce max (map count rows))
+  (let [colcnt (reduce max 0 (map count rows))
 	rowcnt (count rows)]
     (proxy [TableModel] []
       (addTableModelListener [tableModelListener])
