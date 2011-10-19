@@ -23,23 +23,82 @@
     :doc "This code contains core functions of the Clojure's implementation of the YZ language.
 
          The Parsing of queries does due to the fnparse library.
-         See the code for the parsing queries in the parsing.clj file
+         See the code for the parsing queries in the parsing.clj file.
 
-         Criteria API 2.0 is used as persistence storage."}
+         Criteria API 2.0 is used as API for access to a storage."}
   (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.parsing :as p])
-  (:import (javax.persistence.criteria CriteriaQuery)
+  (:import (javax.persistence.criteria 
+             CriteriaQuery CriteriaBuilder Predicate Root)
            (javax.persistence EntityManager)
-           (clojure.lang PersistentArrayMap)))
+           (clojure.lang PersistentArrayMap PersistentVector)))
 
 
 (declare em, mom)
+
+(defn tr-pred
+  "Transforms 'pred' map into string"
+  [pred]
+  (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
+       ", " (:func pred) ", " (let [v (:value pred)] 
+                                (if (seq? v)
+                                  (reduce str (:value pred))
+                                  v)) ")"))
+
+
+(defn- get-path
+  "Returns Path for specified vector with names of properties and
+  the root element."
+  [^Root root, ids]
+  (reduce #(try (.join %1 %2)
+             (catch Exception e (.get %1 %2))) root ids))
+
+
+(defmacro complex-predicate
+  "Creates complex predicate for specified operator ('.and' or '.or')
+  from stack ('v') with set of Predicate. Adds new predicate to the 
+  top of stack and returns new stack."
+  [v, op, cb]
+  `(conj (pop (pop ~v)) (~op ~cb (peek ~v) (peek (pop ~v)))))
+
+
+(defn- get-op
+  "Finds corresponding value of :func of pred map to some Clojurs' function, 
+  and then generates code for creating Predicate due to get-p macros."
+  [^PersistentArrayMap pred, ^CriteriaBuilder cb, ^Root root]
+  (let [op (:func pred)
+        path (get-path root (:ids pred))
+        v (:value pred)]
+    (cond (= "=" op) (.equal cb path v)
+          (= ">" op) (.gt cb path (Double/parseDouble v))
+          (= "<" op) (.lt cb path (Double/parseDouble v))
+          (= ">=" op) (.ge cb path (Double/parseDouble v))
+          (= "<=" op) (.le cb path (Double/parseDouble v))
+          (= "not=" op) (.notEqual cb path v)
+          :else (throw (Exception. (str "No find function " op))))))
+
+
+(defn- ^Predicate create-predicate
+  "Takes stack with definition of restrictions 
+  and CriteriaBuilding's instance. Returns Predicate."
+  [^PersistentVector preds, ^CriteriaBuilder cb, ^Root root]
+  ((reduce #(cond (map? %2) (conj %1 (get-op %2 cb root))
+                  (= :and %2) (complex-predicate %1 .and cb)
+                  (= :or %2) (complex-predicate %1 .or cb)
+                  :else %2) [] preds) 0))
+
+
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
-  [^Class cl]
-  (let [cr (.. em getCriteriaBuilder createTupleQuery)
-        root (. cr (from cl))]
-    (map #(.get % 0) (.. em (createQuery (doto cr (.multiselect [root]))) getResultList))))
+  [^Class cl, preds]
+  (let [cb (.getCriteriaBuilder em)
+        cr (.createTupleQuery cb)
+        root (. cr (from cl))
+        cr (.multiselect cr [root])]
+    (map #(.get % 0) (.. em (createQuery (if (nil? preds) 
+                                           cr 
+                                           (.where cr (create-predicate preds cb root))))
+                       getResultList))))
 
 
 (defn get-fv
@@ -100,13 +159,25 @@
       (some #(f % value) objs))))
 
 
+(defn- ^String create-string-from-preds
+  "Creates string from preds vector for 
+  checking object due to restriction"
+  [^PersistentVector preds]
+  (str "#=(eval (fn [o] " 
+       ((reduce #(cond (keyword? %2) (conj (pop (pop %1)) 
+                                           (str " (" (name %2) " " (peek %1) " " (peek (pop %1)) " )") )
+                :else (conj %1 (tr-pred %2)))
+                [] 
+                preds) 0) "))"))
+
+
 (defn- filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
-  [objs, ^String preds]
+  [objs, preds]
   (if (nil? preds) 
     objs 
-    (let [f (read-string preds)] 
+    (let [f (read-string (create-string-from-preds preds))] 
       (filter #(f %) objs))))
 
 
@@ -184,7 +255,7 @@
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [q]
-  (p-nest q (filter-by-preds (select-elems (:what q)) (:preds q))))
+  (p-nest q (select-elems (:what q) (:preds q))))
 
 
 (defn- run-query

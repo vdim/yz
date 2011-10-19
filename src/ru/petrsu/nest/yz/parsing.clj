@@ -138,14 +138,12 @@
   "Changed ':preds' and 'result' of the state."
   [state]
   [nil, (let [res (:result state)
-             nl (:nest-level state)
-             tl (:then-level state)
-             st (str "#=(eval (fn [o] " 
-                     (let [fp (first (:preds state))] 
-                       (if (map? fp) (tr-pred fp) fp)) "))")]
+              nl (:nest-level state)
+              tl (:then-level state)
+              st (:preds state)]
          (assoc (assoc state :preds []) :result 
                 (if (= tl 0) 
-                  (assoc-in-nest res nl :preds (str (get-in-nest res nl :preds ) st))
+                  (assoc-in-nest res nl :preds st)
                   (let [last-then (get-in-nest res nl :then)]
                     (assoc-in-nest res nl :then 
                                    (assoc-in last-then 
@@ -194,25 +192,30 @@
 
 (defn change-pred
   "Changes :preds of q-presentation by setting key 'k' to
-  the return value of 'rule'."
-  [rule, k]
-  (complex [ret rule
-            mom (get-info :mom)
-            res (get-info :result)
-            nl (get-info :nest-level)
-            tl (get-info :then-level)
-            preds (get-info :preds)
-            _ (update-info :cur-pred #(if (nil? (last preds)) % (last preds)))
-            _ (update-info 
-                :preds 
-                #(conj (pop %) 
-                       (assoc (peek %) 
-                              k 
-                              (let [res- (if (seq? ret) (reduce str (flatten ret)) ret)]
-                                (cond (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
-                                      (and (= k :func) (= (cs/trim res-) "!=")) "not="
-                                      :else res-)))))]
-           ret))
+  the return value of 'rule'. If 'value' is supplied then
+  value of the 'k' is set to 'value' (This is need for 
+  true, false, nil and so on special values.). "
+  ([rule, k]
+   (change-pred rule, k, :not-value))
+  ([rule, k, value]
+   (complex [ret rule
+             mom (get-info :mom)
+             res (get-info :result)
+             nl (get-info :nest-level)
+             tl (get-info :then-level)
+             preds (get-info :preds)
+             _ (update-info :cur-pred #(if (nil? (last preds)) % (last preds)))
+             _ (update-info 
+                 :preds 
+                 #(conj (pop %) 
+                        (assoc (peek %) 
+                               k 
+                               (let [res- (if (seq? ret) (reduce str (flatten ret)) ret)]
+                                 (cond (not= value :not-value) value
+                                       (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
+                                       (and (= k :func) (= (cs/trim res-) "!=")) "not="
+                                       :else res-)))))]
+              ret)))
 
 
 (defn find-class
@@ -267,27 +270,9 @@
         (assoc-in-nest res nl :what cl)))))
 
 
-(defn tr-pred
-  "Transforms 'pred' map into string"
-  [pred]
-  (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
-       ", " (:func pred) ", " (let [v (:value pred)] 
-                                (if (seq? v)
-                                  (reduce str (:value pred))
-                                  v)) ")"))
-
-
-(defn do-predicate
-  "Returns string of predicate."
-  [op, pred1, pred2]
-  (let [pred1- (if (map? pred1) (tr-pred pred1) pred1)
-        pred2- (if (map? pred2) (tr-pred pred2) pred2)]
-    (str "(" op " " pred1- " " pred2- ")")))
-
-
 (defn update-preds
   [op]
-  (update-info :preds #(conj (pop (pop %)) (do-predicate op (peek (pop %)) (peek %)))))
+  (update-info :preds #(conj % op)))
 
 
 (defn update-param
@@ -464,10 +449,10 @@
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) (change-pred number :value)) 
-                   (change-pred string :value)
-                   (change-pred (lit-conc-seq "true") :value)
-                   (change-pred (lit-conc-seq "false") :value)
-                   (change-pred (lit-conc-seq "nil") :value)
+                   (conc (lit \") (change-pred (partial text \") :value) (lit \"))
+                   (change-pred (lit-conc-seq "true") :value true)
+                   (change-pred (lit-conc-seq "false") :value false)
+                   (change-pred (lit-conc-seq "nil") :value nil)
                    (pfunction
                      (fn [f-m] (update-info 
                                  :preds 
@@ -477,11 +462,11 @@
                                                (peek f-m)))))
                           (update-info :function #(pop %))))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
-                        (invisi-conc v-f (update-preds "and"))
+                        (invisi-conc v-f (update-preds :and))
                         v-prime) emptiness))
 (def v (conc v-f v-prime))
 (def value-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||")) nil)) 
-                            (invisi-conc v (update-preds "or")) 
+                            (invisi-conc v (update-preds :or)) 
                             value-prime) emptiness))
 (def value (conc v value-prime)) 
 
@@ -507,11 +492,11 @@
                   (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")))) 
-                        (invisi-conc f (update-preds "and"))
+                        (invisi-conc f (update-preds :and))
                         t-prime) emptiness))
 (def t (conc f t-prime))
 (def where-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||"))))
-                            (invisi-conc t (update-preds "or"))
+                            (invisi-conc t (update-preds :or))
                             where-prime) emptiness))
 (def where (conc t where-prime)) 
 
