@@ -152,20 +152,36 @@
              ret (invisi-conc rule (update-info :preds #(conj % (if (nil? f) cur_pred f))))]
             ret)))
 
+(defn- getsupers
+  "Returns vector with superclasses of specified class ('cl')."
+  [cl]
+  (loop [cl- cl res []] 
+    (if (nil? cl-) 
+      res 
+      (recur (.getSuperclass cl-) (conj res cl-)))))
+
+
+(defn- checkfield
+  "If 'cl' contains field 'field' then 
+  class of field is returned else nil is returned."
+  [field cl]
+  (some #(if (= (.getName %) field) (.getType %)) 
+        (mapcat #(.getDeclaredFields %) (getsupers cl))))
+
 
 (declare find-class, find-prop)
 (defn- get-path
   "Returns path from cl-source to class of id
   (search based on the mom.)"
-  [id, cl-source, mom]
-  (if-let [cl-target (find-class id mom)]
+  [id, cl-source, cl-target, mom]
+  (if (not (nil? cl-target))
     (let [paths (get (get mom cl-source) cl-target)]
       (if (empty? paths)
-        (throw (Exception. (str "Not found id: " id)))
+        (if (find-prop cl-source id, mom)
+          [id]
+          (throw (Exception. (str "Not found id: " id))))
         (nth paths 0)))
-    (if (find-prop cl-source id, mom)
-      [id]
-      (throw (Exception. (str "Not found id: " id " which must be beloged to " cl-source))))))
+    (throw (Exception. (str "Not found id: " id)))))
 
 
 (defn- get-ids 
@@ -175,9 +191,12 @@
     (loop [cl- cl, ids- ids, sp-res- sp-res]
       (if (empty? sp-res-)
         ids-
-        (recur (find-class (first sp-res-) mom) 
-               (vec (flatten (conj ids- (get-path (first sp-res-) cl- mom))))
-               (rest sp-res-))))))
+        (let [id (first sp-res-)
+              cl-target (find-class id mom)
+              cl-target (if (nil? cl-target) (checkfield id cl-) cl-target)]
+          (recur cl-target
+                 (vec (flatten (conj ids- (get-path id cl- cl-target mom))))
+                 (rest sp-res-)))))))
 
 
 (defn change-pred
