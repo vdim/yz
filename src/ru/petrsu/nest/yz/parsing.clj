@@ -21,9 +21,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse)
-  (:use ru.petrsu.nest.yz.functions)
-  (:require [clojure.string :as cs])
-  (:import (java.util.regex Pattern)))
+  (:require [clojure.string :as cs]))
 
 (defn ^String sdrop
   "Drops first n characters from s.  Returns an empty string if n is

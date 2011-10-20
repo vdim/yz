@@ -26,9 +26,7 @@
          See the code for the parsing queries in the parsing.clj file.
 
          Criteria API 2.0 is used as API for access to a storage."}
-  (:use ru.petrsu.nest.yz.functions)
-  (:require [ru.petrsu.nest.yz.parsing :as p])
-  (:require [clojure.string :as cs])
+  (:require [ru.petrsu.nest.yz.parsing :as p] [clojure.string :as cs])
   (:import (javax.persistence.criteria 
              CriteriaQuery CriteriaBuilder Predicate Root)
            (javax.persistence EntityManager)
@@ -37,14 +35,11 @@
 
 (declare em, mom)
 
-(defn tr-pred
+(defn ^String tr-pred
   "Transforms 'pred' map into string"
   [pred]
   (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
-       ", " (:func pred) ", " (let [v (:value pred)] 
-                                (if (seq? v)
-                                  (reduce str v)
-                                  v)) ")"))
+       ", " (:func pred) ", " (:value pred) ")"))
 
 
 (defn- get-path
@@ -92,10 +87,10 @@
 
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
-  [^Class cl, preds]
-  (let [cb (.getCriteriaBuilder em)
+  [^Class cl, ^PersistentVector preds]
+  (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
         cr (.createTupleQuery cb)
-        root (. cr (from cl))
+        ^Root root (. cr (from cl))
         cr (.. cr (multiselect [root]) (distinct true))]
     (map #(.get % 0) (.. em (createQuery (if (nil? preds) 
                                            cr 
@@ -108,7 +103,7 @@
   [o, ^String field-name]
   (if (nil? o)
     nil
-    (loop [cl (class o)]
+    (loop [^Class cl (class o)]
       (cond (nil? cl) (throw (NoSuchFieldException. ))
             (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
             (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
