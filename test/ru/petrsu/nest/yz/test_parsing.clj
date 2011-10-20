@@ -323,53 +323,47 @@
           (is (= (parse "building#(name=1)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds (str st-fun "(" fun "o, [\"name\"], =, 1)))")
+                   :preds [{:ids ["name"], :func "=", :value "1"}]
                    :then nil
                    :nest nil}]))
           (is (= (parse "building#(name=1 and address=2)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds (str st-fun "(and (" fun "o, [\"name\"], =, 1) " 
-                                      "(" fun "o, [\"address\"], =, 2))))")
+                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} :and]
                    :then nil
                    :nest nil}]))
           (is (= (parse "building#(name=1 or address=2)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds (str st-fun "(or (" fun "o, [\"name\"], =, 1) " 
-                                      "(" fun "o, [\"address\"], =, 2))))")
+                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} :or]
                    :then nil
                    :nest nil}]))
           (is (= (parse "building#(name=1 and address=2 and floor.number=3)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds (str st-fun "(and (and (" fun "o, [\"name\"], =, 1) " 
-                                      "(" fun "o, [\"address\"], =, 2)) "
-                                      "(" fun "o, [\"floors\" \"number\"], =, 3))))")
+                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
+                           :and {:ids ["floors", "number"], :func "=", :value "3"} :and]
                    :then nil
                    :nest nil}]))
           (is (= (parse "building#(name=1 and address=2 or floor.number=3)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds (str st-fun "(or (and (" fun "o, [\"name\"], =, 1) " 
-                                      "(" fun "o, [\"address\"], =, 2)) "
-                                      "(" fun "o, [\"floors\" \"number\"], =, 3))))")
+                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
+                           :and {:ids ["floors", "number"], :func "=", :value "3"} :or]
                    :then nil
                    :nest nil}]))
           (is (= (parse "building#(name=1 or address=2 and floor.number=3)", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds (str st-fun "(or (" fun "o, [\"name\"], =, 1) "
-                                      "(and (" fun "o, [\"address\"], =, 2) " 
-                                      "(" fun "o, [\"floors\" \"number\"], =, 3)))))")
+                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
+                           {:ids ["floors", "number"], :func "=", :value "3"} :and :or]
                    :then nil
                    :nest nil}]))
           (is (= (parse "building#(name=1 and (address=2 or floor.number=3))", mom)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds (str st-fun "(and (" fun "o, [\"name\"], =, 1) " 
-                                      "(or (" fun "o, [\"address\"], =, 2) "
-                                      "(" fun "o, [\"floors\" \"number\"], =, 3)))))")
+                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
+                           {:ids ["floors" "number"], :func "=", :value "3"} :or :and]
                    :then nil
                    :nest nil}])))
 
@@ -587,7 +581,7 @@
   "Generates code for checking remainder about specified list with queries."
   [l]
   `(is (nil? (some #(not (nil? %)) (map #(:remainder (parse+ % mom)) ~l)))))
-
+(comment
 (deftest parse-remainder
          ^{:doc "Checks remainder after parsing for queries in 'qlist' vector.
                 It must be nil for all queries, because qlist contains
@@ -611,4 +605,4 @@
            (f qlist-prop)
            (f qlist-pred)
            (f qlist-list)))
-
+)
