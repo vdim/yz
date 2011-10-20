@@ -34,13 +34,6 @@
     (.substring s n)))
 
 
-(defn split
-    "Splits string on a regular expression.  Optional argument limit is
-      the maximum number of splits."
-    {:deprecated "1.2"}
-    ([^Pattern re ^String s] (seq (.split re s)))
-    ([^Pattern re limit ^String s] (seq (.split re s limit))))
-
 ; The parsing state data structure. 
 (defstruct q-representation 
            :remainder ; The rest of input string
@@ -180,7 +173,7 @@
 (defn- get-ids 
   "Returns new value of the :ids key of the pred structure."
   [ids res mom cl]
-  (let [sp-res (split #"\." res)]
+  (let [sp-res (cs/split res #"\.")]
     (loop [cl- cl, ids- ids, sp-res- sp-res]
       (if (empty? sp-res-)
         ids-
