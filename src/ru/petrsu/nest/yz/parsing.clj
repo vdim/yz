@@ -148,8 +148,7 @@
                     (assoc-in-nest res nl :then 
                                    (assoc-in last-then 
                                              (conj (vec (repeat (dec tl) :then)) :preds) 
-                                             (str (get-in last-then (conj (vec (repeat (dec tl) :then)) :preds)) 
-                                                  st)))))))])
+                                             st))))))])
 
 
 (defn add-pred
@@ -210,7 +209,7 @@
                  #(conj (pop %) 
                         (assoc (peek %) 
                                k 
-                               (let [res- (if (seq? ret) (reduce str (flatten ret)) ret)]
+                               (let [res- (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret)]
                                  (cond (not= value :not-value) value
                                        (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
                                        (and (= k :func) (= (cs/trim res-) "!=")) "not="
@@ -449,7 +448,7 @@
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) (change-pred number :value)) 
-                   (conc (lit \") (change-pred (partial text \") :value) (lit \"))
+                   (change-pred string :value)
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)

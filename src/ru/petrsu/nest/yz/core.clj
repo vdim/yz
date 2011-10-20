@@ -28,6 +28,7 @@
          Criteria API 2.0 is used as API for access to a storage."}
   (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.parsing :as p])
+  (:require [clojure.string :as cs])
   (:import (javax.persistence.criteria 
              CriteriaQuery CriteriaBuilder Predicate Root)
            (javax.persistence EntityManager)
@@ -42,7 +43,7 @@
   (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
        ", " (:func pred) ", " (let [v (:value pred)] 
                                 (if (seq? v)
-                                  (reduce str (:value pred))
+                                  (reduce str v)
                                   v)) ")"))
 
 
@@ -68,7 +69,8 @@
   [^PersistentArrayMap pred, ^CriteriaBuilder cb, ^Root root]
   (let [op (:func pred)
         path (get-path root (:ids pred))
-        v (:value pred)]
+        v (cs/trim (:value pred))
+        v (if (and (instance? String v) (= \" (nth v 0))) (subs v 1 (- (count v) 1)) v)]
     (cond (= "=" op) (.equal cb path v)
           (= ">" op) (.gt cb path (Double/parseDouble v))
           (= "<" op) (.lt cb path (Double/parseDouble v))
