@@ -160,28 +160,30 @@
   "Creates string from preds vector for 
   checking object due to restriction"
   [^PersistentVector preds]
-  (str "#=(eval (fn [o] " 
-       ((reduce #(cond (keyword? %2) (conj (pop (pop %1)) 
-                                           (str " (" (name %2) " " (peek %1) " " (peek (pop %1)) " )") )
-                :else (conj %1 (tr-pred %2)))
-                [] 
-                preds) 0) "))"))
+  (if (nil? preds)
+    nil
+    (str "#=(eval (fn [o] " 
+         ((reduce #(cond (keyword? %2) (conj (pop (pop %1)) 
+                                             (str " (" (name %2) " " (peek %1) " " (peek (pop %1)) " )") )
+                  :else (conj %1 (tr-pred %2)))
+                  [] 
+                  preds) 0) "))")))
 
 
 (defn- filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
-  [objs, preds]
+  [objs, ^String preds]
   (if (nil? preds) 
     objs 
-    (let [f (read-string (create-string-from-preds preds))] 
+    (let [f (read-string preds)] 
       (filter #(f %) objs))))
 
 
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
-  [sources ^Class cl-target preds]
+  [sources ^Class cl-target ^String preds]
   (let [cl-source (class (nth sources 0))]
     (loop [cl- cl-target]
       (let [paths (get (get mom cl-source) cl-)]
@@ -224,7 +226,7 @@
     (if (or (nil? then-) (every? nil? objs-))
       (map (fn [o] [o, (process-props o props-)]) objs-)
       (recur (:then then-) 
-             (get-objs-by-path objs- (:what then-) (:preds then-))
+             (get-objs-by-path objs- (:what then-) (create-string-from-preds (:preds then-)))
              (:props then-)))))
 
 
@@ -240,7 +242,7 @@
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
   [^PersistentArrayMap nest objs]
-  (p-nest nest (get-objs-by-path objs (:what nest) (:preds nest))))
+  (p-nest nest (get-objs-by-path objs (:what nest) (create-string-from-preds (:preds nest)))))
 
 (defn- process-nests
   "Processes :nest value of query structure"
