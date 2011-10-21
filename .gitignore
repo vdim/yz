@@ -7,8 +7,7 @@
 *.pdf
 lib/
 classes/
-db/
-db1/
+db*
 db-auction/
 ddl.sql
 *.jar
