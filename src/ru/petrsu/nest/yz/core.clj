@@ -138,7 +138,7 @@
   by specified 'field-name'"
   [^String field-name, objs]
   (flatten
-    (map (fn [o] 
+    (pmap (fn [o] 
            (if-let [fv (get-fv o field-name)]
              (if (instance? java.util.Collection fv)
                (reduce #(conj %1 %2) [] fv)
@@ -224,7 +224,7 @@
   [then, objs, props]
   (loop [then- then objs- objs props- props]
     (if (or (nil? then-) (every? nil? objs-))
-      (map (fn [o] [o, (process-props o props-)]) objs-)
+      (pmap (fn [o] [o, (process-props o props-)]) objs-)
       (recur (:then then-) 
              (get-objs-by-path objs- (:what then-) (create-string-from-preds (:preds then-)))
              (:props then-)))))
@@ -247,7 +247,7 @@
 (defn- process-nests
   "Processes :nest value of query structure"
   [nests obj]
-  (vec (map #(process-nest % [obj]) nests)))
+  (vec (pmap #(process-nest % [obj]) nests)))
 
 
 (defn- do-query
@@ -261,7 +261,7 @@
   "Returns result of 'query' based on specified map of object model ('mom')
   and instance of javax.persistence.EntityManager ('em')."
   [parse-res]
-  (vec (map #(do-query %) parse-res)))
+  (vec (pmap #(do-query %) parse-res)))
 
 
 (defn- get-column-name
