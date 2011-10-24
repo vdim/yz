@@ -190,12 +190,12 @@
         (if (empty? paths)
           (if (nil? cl-)
             (throw (Exception. (str "Not found path between " cl-source " and " cl-target ".")))
-            (recur (:superclass (get mom cl-target))))
+            (recur (:superclass (get mom cl-))))
           (mapcat 
             #(loop [ps % res sources]
                (if (empty? ps)
-                 (filter-by-preds res preds)
-                 (recur (rest ps) (get-objs (first ps) res))))
+                 (filter-by-preds res preds))
+                 (recur (rest ps) (get-objs (first ps) res)))
              paths))))))
 
 
