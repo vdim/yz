@@ -158,6 +158,7 @@
                                                                (mapcat (fn [r] (map vec (partition 2 r))) rq))}
                                    :else (get-rows rq)))
                            (map? %) (process-func % obj)
+                           (= "&" %) obj
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 

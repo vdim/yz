@@ -526,7 +526,7 @@
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 
-(declare params, param, pquery, pnumber, pstring, process-fn, parse+, pfunc, pid)
+(declare params, param, pquery, pnumber, pstring, process-fn, parse+, pfunc, pid, pself)
 (def function
   ^{:doc "Defines YZ's function."}
   (conc (invisi-conc (lit \@) (update-info :function #(conj % empty-fun)))
@@ -540,7 +540,7 @@
 
 (def param
   ^{:doc "Defines different types of function's parameters."}
-  (sur-by-ws (alt pstring pnumber pquery pfunc pid)))
+  (sur-by-ws (alt pstring pnumber pquery pfunc pself pid)))
 
 
 (defmacro f-mod
@@ -594,6 +594,12 @@
             _ (update-param (symbol (reduce str id)))]
            id))
 
+
+(def pself
+  ^{:doc "Defines param as self object."}
+  (complex [s (lit \&)
+            _ (update-param "&")]
+           s))
 
 (defn process-fn
   "Processes function name."
