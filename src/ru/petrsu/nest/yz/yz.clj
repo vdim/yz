@@ -25,8 +25,7 @@
   (:import
     (javax.persistence EntityManager))
   (:gen-class :name ru.petrsu.nest.yz.QueryYZ
-              :constructors {[javax.persistence.EntityManager], []
-                             [javax.persistence.EntityManager String], []}
+              :constructors {[Object] [], [Object String] []}
               :methods [[getResultList [String] java.util.List]
                         [getResult [String] java.util.Map]
                         [getError [] String]
@@ -56,14 +55,14 @@
                 @*mom*)
          :res nil}))
 
+
 (defn -init
   "Defines constructors."
-  ([^EntityManager em]
+  ([em]
    [[] (create-state em nil)])
 
-  ([^EntityManager em ^String f]
+  ([em ^String f]
    [[] (create-state em f)]))
-
 
 (defn- pq
   "Performs YZ's query."

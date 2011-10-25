@@ -30,7 +30,24 @@
   (:import (javax.persistence.criteria 
              CriteriaQuery CriteriaBuilder Predicate Root)
            (javax.persistence EntityManager)
-           (clojure.lang PersistentArrayMap PersistentVector)))
+           (clojure.lang PersistentArrayMap PersistentVector)
+           (java.util Collection)))
+
+
+(definterface ElementManager
+  ^{:doc "This interface is needed for abstraction of any persistence storage. 
+         You should implement getElements which takes specified class ('claz')
+         and returns collection of objects which have this class.
+         The YZ implements the next algorithm 
+         (let's consider query: \"building (device#(forwarding=true))\"):
+            1. Gets root elements (building) due to the implementation of this interface.
+            2. Finds elements (device) which are connected with root elements (building) due to the MOM.
+            3. Executes restrictions.
+         
+         getClasses returns collection of classes which are entities of the model.
+         This method is needed for generating the MOM (Map Of the Model)."}
+  (^Collection getElements [^Class claz])
+  (^Collection getClasses []))
 
 
 (declare em, mom)
@@ -85,17 +102,21 @@
                   :else %2) [] preds) 0))
 
 
+(declare filter-by-preds, create-string-from-preds)
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
   [^Class cl, ^PersistentVector preds]
-  (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
-        cr (.createTupleQuery cb)
-        ^Root root (. cr (from cl))
-        cr (.. cr (multiselect [root]) (distinct true))]
-    (map #(.get % 0) (.. em (createQuery (if (nil? preds) 
-                                           cr 
-                                           (.where cr (create-predicate preds cb root))))
-                       getResultList))))
+  (if (instance? EntityManager em)
+        (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
+              cr (.createTupleQuery cb)
+              ^Root root (. cr (from cl))
+              cr (.. cr (multiselect [root]) (distinct true))]
+          (map #(.get % 0) (.. em (createQuery (if (nil? preds) 
+                                                 cr 
+                                                 (.where cr (create-predicate preds cb root))))
+                             getResultList)))
+        (try (filter-by-preds (.getElements em cl) (create-string-from-preds preds))
+          (catch IllegalArgumentException e "Don't recognize ElementManager."))))
 
 
 (defn get-fv
@@ -138,7 +159,7 @@
   by specified 'field-name'"
   [^String field-name, objs]
   (flatten
-    (pmap (fn [o] 
+    (map (fn [o] 
            (if-let [fv (get-fv o field-name)]
              (if (instance? java.util.Collection fv)
                (reduce #(conj %1 %2) [] fv)
@@ -194,8 +215,8 @@
           (mapcat 
             #(loop [ps % res sources]
                (if (empty? ps)
-                 (filter-by-preds res preds))
-                 (recur (rest ps) (get-objs (first ps) res)))
+                 (filter-by-preds res preds)
+                 (recur (rest ps) (get-objs (first ps) res))))
              paths))))))
 
 
@@ -226,7 +247,7 @@
   [then, objs, props]
   (loop [then- then objs- objs props- props]
     (if (or (nil? then-) (every? nil? objs-))
-      (pmap (fn [o] [o, (process-props o props-)]) objs-)
+      (map (fn [o] [o, (process-props o props-)]) objs-)
       (recur (:then then-) 
              (get-objs-by-path objs- (:what then-) (create-string-from-preds (:preds then-)))
              (:props then-)))))
@@ -249,7 +270,7 @@
 (defn- process-nests
   "Processes :nest value of query structure"
   [nests obj]
-  (vec (pmap #(process-nest % [obj]) nests)))
+  (vec (map #(process-nest % [obj]) nests)))
 
 
 (defn- do-query
@@ -261,9 +282,9 @@
 
 (defn- run-query
   "Returns result of 'query' based on specified map of object model ('mom')
-  and instance of javax.persistence.EntityManager ('em')."
+  and instance of some ElementManager ('em')."
   [parse-res]
-  (vec (pmap #(do-query %) parse-res)))
+  (vec (map #(do-query %) parse-res)))
 
 
 (defn- get-column-name
@@ -337,7 +358,7 @@
     :result - a result of a query
     :columns - vector with column's names.
     :rows - rows of the result of a query."
-  [^String query ^PersistentArrayMap mom ^EntityManager em]
+  [^String query ^PersistentArrayMap mom em]
   (do (def mom mom)
     (def em em)
     (if (empty? query)
