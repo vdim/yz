@@ -320,7 +320,7 @@
   "Takes rows with result of query and returns vector with columns name.
   Doesn't use complex algorithm for getting column's names."
   [rows]
-  (if (= (count rows) 0)
+  (if (empty? rows)
     ()
     (let [m (reduce #(max %1 (count %2)) 0 rows)
           row (some #(if (= (count %) m) %) rows)]
