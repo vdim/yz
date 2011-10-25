@@ -1,3 +1,12 @@
+## 0.0.1-alpha3 / 25.10.2011
+
+* Added throwing in case a remainder of the parsing is not nil.
+* Fixed bug with multiple or/and into reduced complex predicates: floor#(number=(1 || 2 || 3))
+* Predicates for root element go to the Criteria API (for improving performance). True for users of Criteria API.
+* Fixed problem with referencing to property from property: compositeou#(parent.id = 4)
+* Fixed infinite loop for queries without links.
+* YZ without Criteria API (experimental).
+
 ## 0.0.1-alpha2 / 10.10.2011
 
 * Added a wrapper for Java user.

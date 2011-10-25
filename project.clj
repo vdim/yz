@@ -1,4 +1,4 @@
-(defproject ru.petrsu.nest/yz "0.0.1-alpha2"
+(defproject ru.petrsu.nest/yz "0.0.1-alpha3"
   :description "Implementation of the YZ language."
   :url "https://github.com/vdim/yz"
   :dependencies [[org.clojure/clojure "1.3.0"]
@@ -10,7 +10,7 @@
         ru.petrsu.nest.yz.hb-utils 
         ru.petrsu.nest.yz.functions 
         ru.petrsu.nest.yz.yz]
-  :java-source-path "test/auction/model"
+  :java-source-path "test"
   :jar-exclusions [#"\.swp$|\.clj$"]
   :dev-dependencies [[lein-clojars "0.7.0"]])
 
