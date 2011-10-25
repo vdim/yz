@@ -58,6 +58,11 @@
   (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
        ", " (:func pred) ", " (:value pred) ")"))
 
+(defn- contains-f?
+  "Checks whether vector with predicates contains 
+  function as a value of the key :value."
+  [^PersistentArrayMap pred]
+  (some #(or (map? (:value %)) (map? (:ids %))) pred))
 
 (defn- get-path
   "Returns Path for specified vector with names of properties and
@@ -110,11 +115,16 @@
         (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
               cr (.createTupleQuery cb)
               ^Root root (. cr (from cl))
-              cr (.. cr (multiselect [root]) (distinct true))]
-          (map #(.get % 0) (.. em (createQuery (if (nil? preds) 
+              cr (.. cr (multiselect [root]) (distinct true))
+              ch-p (contains-f? preds) ; ch-p defines whether "preds" contains function.
+              elems (map #(.get % 0) 
+                         (.. em (createQuery (if (or (nil? preds) ch-p)
                                                  cr 
                                                  (.where cr (create-predicate preds cb root))))
-                             getResultList)))
+                           getResultList))]
+          (if ch-p
+            (filter-by-preds elems (create-string-from-preds preds))
+            elems))
         (try (filter-by-preds (.getElements em cl) (create-string-from-preds preds))
           (catch IllegalArgumentException e 
             (throw (IllegalArgumentException. 

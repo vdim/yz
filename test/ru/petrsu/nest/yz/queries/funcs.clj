@@ -123,7 +123,6 @@
            (is (f-c "building#(name=\"b3\")[& @(count `floor')]" 1 0))
            (is (f-c "building#(name=\"b3\")[& @(count `room')]" 1 0))))
 
-(comment
 (deftest t-count-pred
          ^{:doc "Tests calling function (count) from predicates."}
          (let [f-c #(= (nth (nth (tc/rows-query %1) 0) %2) %3)]
@@ -134,4 +133,3 @@
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 1))")) 2))
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 1 or 0))")) 3))
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 0))")) 2)))
-  )
