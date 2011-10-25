@@ -76,7 +76,8 @@
 (deftest t-str
          ^{:doc "Test calling function (count)."}
          (is (= (nth (tc/r-query "@(str \"1\" \"2\")") 0) "12"))
-         (is (= (nth (tc/r-query "@(str \"asdf\" 1 \"qwer\")") 0) "asdf1.0qwer")))
+         (is (= (nth (tc/r-query "@(str \"asdf\" 1 \"qwer\")") 0) "asdf1qwer"))
+         (is (= (nth (tc/r-query "@(str \"asdf\" 1.0 \"qwer\")") 0) "asdf1.0qwer")))
         
 
 (deftest t-count
@@ -128,7 +129,8 @@
          (let [f-c #(= (nth (nth (tc/rows-query %1) 0) %2) %3)]
            (is (f-c "building#(@(count `floor') > 1)" 0 b1))
            (is (f-c "building#(@(count `floor') = 1)" 0 b2))
-           (is (f-c "building#(@(count `floor') < 1)" 0 b3)))
+           (is (f-c "building#(@(count `floor') < 1)" 0 b3))
+           (is (f-c "floor#(number = @(max 1 2 3))" 0 f3_b1)))
          (is (= (tc/rows-query "building#(@(count `floor') > 4)") ()))
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 1))")) 2))
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 1 or 0))")) 3))

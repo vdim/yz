@@ -567,7 +567,9 @@
 (def pnumber
   ^{:doc "Defines param as number."}
   (complex [n number
-            _ (update-param (Double/parseDouble (reduce str "" (flatten n))))]
+            _ (update-param (let [n- (reduce str "" (flatten n))] 
+                              (try (Integer/parseInt n-)
+                                (catch Exception e (Double/parseDouble n-)))))]
            n))
 
 
