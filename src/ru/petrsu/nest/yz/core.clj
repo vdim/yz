@@ -164,7 +164,7 @@
     (map (fn [o] 
            (if-let [fv (get-fv o field-name)]
              (if (instance? java.util.Collection fv)
-               (reduce #(conj %1 %2) [] fv)
+               (map identity fv)
                fv)))
            objs)))
 
