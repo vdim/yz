@@ -116,7 +116,9 @@
                                                  (.where cr (create-predicate preds cb root))))
                              getResultList)))
         (try (filter-by-preds (.getElements em cl) (create-string-from-preds preds))
-          (catch IllegalArgumentException e "Don't recognize ElementManager."))))
+          (catch IllegalArgumentException e 
+            (throw (IllegalArgumentException. 
+                     "Don't recognize ElementManager. Do you implement getElements method?"))))))
 
 
 (defn get-fv
