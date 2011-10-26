@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.parsing
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
-  (:use name.choi.joshua.fnparse)
+  (:use name.choi.joshua.fnparse ru.petrsu.nest.yz.functions)
   (:require [clojure.string :as cs]))
 
 (defn ^String sdrop
@@ -606,7 +606,8 @@
   []
   (complex [n (rep+ (alt alpha (lit \.)))
             _ (update-info :function 
-                           #(if-let [f (resolve (symbol (reduce str "" n)))]
+                           #(if-let [f (let [sym (symbol (reduce str "" n))]
+                                        (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
                               (conj (pop %) (assoc (peek %) :func f))
                               (throw (Exception. (str "Could not found function " (reduce str "" n) ".")))))]
            n))

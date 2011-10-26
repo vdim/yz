@@ -27,6 +27,7 @@
 
          Criteria API 2.0 is used as API for access to a storage."}
   (:require [ru.petrsu.nest.yz.parsing :as p] [clojure.string :as cs])
+  (:use ru.petrsu.nest.yz.functions)
   (:import (javax.persistence.criteria 
              CriteriaQuery CriteriaBuilder Predicate Root)
            (javax.persistence EntityManager)
