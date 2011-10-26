@@ -596,9 +596,9 @@
 
 
 (def pself
-  ^{:doc "Defines param as self object."}
-  (complex [s (lit \&)
-            _ (update-param "&")]
+  ^{:doc "Defines param as self object or property of one."}
+  (complex [s (conc (lit \&) (alt (conc (lit \.) (rep+ alpha)) emptiness))
+            _ (update-param (reduce str "" (flatten s)))]
            s))
 
 (defn process-fn

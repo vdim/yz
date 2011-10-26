@@ -160,6 +160,7 @@
                                    :else (get-rows rq)))
                            (map? %) (process-func % obj)
                            (= "&" %) obj
+                           (.startsWith % "&.")  (get-fv obj (.substring % 2))
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
