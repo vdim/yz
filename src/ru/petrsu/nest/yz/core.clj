@@ -197,7 +197,7 @@
                    (map? l-side) (process-func l-side o))
 
         ;; If objects from objs are arrays then we must compare two arrays.
-        f (let [cl (class (nth objs 0))]
+        f (let [cl (if (empty? objs) nil (class (nth objs 0)))]
            (if (and (not (nil? cl)) (.isArray cl)) eq-arrays? f))]
     (if (map? value)
       (some #(f (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
@@ -224,7 +224,7 @@
   [objs, ^String preds]
   (if (nil? preds) 
     objs 
-    (let [f (read-string preds)] 
+    (let [f (read-string preds)]
       (filter #(f %) objs))))
 
 
