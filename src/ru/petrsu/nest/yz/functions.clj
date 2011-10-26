@@ -41,18 +41,24 @@
   "Transforms a string representation of 
   the IP Address to an array of bytes."
   [^String ip]
-  (.getAddress (InetAddress/getByName ip)))
+  (if (nil? ip)
+    nil
+    (.getAddress (InetAddress/getByName ip))))
 
 
 (defn ip2name
   "Transforms a byte representation of 
   the IP address to a host name."
   [ip]
-  (.getHostName (InetAddress/getByAddress ip)))
+  (if (nil? ip)
+    nil
+    (.getHostName (InetAddress/getByAddress ip))))
 
 
 (defn ip
   "Transforms a byte representation of 
   the IP address to a string representation."
   [ip]
-  (.getHostAddress (InetAddress/getByAddress ip)))
+  (if (nil? ip)
+    nil
+    (.getHostAddress (InetAddress/getByAddress ip))))
