@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.functions
   ^{:author "Vyacheslav Dimitrov"
     :doc "Set of functions which is build-in YZ."}
-  (:use clojure.core))
+  (:import (java.net InetAddress)))
 
 
 (defn maxl
@@ -29,8 +29,30 @@
   [tuples]
   (reduce max (flatten tuples)))
 
+
 (defn minl
   "Takes a list with tuples which have one element and its
   value is numeric and returns min element from this list."
   [tuples]
   (reduce min (flatten tuples)))
+
+
+(defn ip2b 
+  "Transforms a string representation of 
+  the IP Address to an array of bytes."
+  [^String ip]
+  (.getAddress (InetAddress/getByName ip)))
+
+
+(defn ip2name
+  "Transforms a byte representation of 
+  the IP address to a host name."
+  [ip]
+  (.getHostName (InetAddress/getByAddress ip)))
+
+
+(defn ip
+  "Transforms a byte representation of 
+  the IP address to a string representation."
+  [ip]
+  (.getHostAddress (InetAddress/getByAddress ip)))
