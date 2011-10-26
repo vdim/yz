@@ -137,11 +137,7 @@
   [o, ^String field-name]
   (if (nil? o)
     nil
-    (loop [^Class cl (class o)]
-      (cond (nil? cl) (throw (NoSuchFieldException. ))
-            (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-            (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-            :else (recur (:superclass (bean cl)))))))
+    ((keyword field-name) (bean o))))
 
 
 (declare process-nests, get-rows, run-query)
