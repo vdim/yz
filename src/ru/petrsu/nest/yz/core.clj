@@ -180,11 +180,23 @@
            objs)))
 
 
+(defn- eq-arrays?
+  "Returns true if array a1 equals arrya a2."
+  [a1 a2]
+  (if (or (nil? a1) (nil? a2))
+    nil
+    (java.util.Arrays/equals a1 a2)))
+
+
 (defn process-preds
   "Processes restrictions."
   [o, l-side, f, value]
   (let [objs (cond (vector? l-side) (reduce #(get-objs %2 %1) [o] l-side)
-                   (map? l-side) (process-func l-side o))]
+                   (map? l-side) (process-func l-side o))
+
+        ;; If objects from objs are arrays then we must compare two arrays.
+        f (let [cl (class (nth objs 0))]
+           (if (and (not (nil? cl)) (.isArray cl)) eq-arrays? f))]
     (if (map? value)
       (some #(f (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
       (some #(f % value) objs))))
