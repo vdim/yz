@@ -1,3 +1,8 @@
+## 0.0.1-alpha4 / 27.10.2011
+
+* Improved support functions.
+* Replaced reflection with field by bean.
+
 ## 0.0.1-alpha3 / 25.10.2011
 
 * Added throwing in case a remainder of the parsing is not nil.
