@@ -163,9 +163,8 @@
 (defn- checkfield
   "If 'cl' contains field 'field' then 
   class of field is returned else nil is returned."
-  [field cl]
-  (some #(if (= (.getName %) field) (.getType %)) 
-        (mapcat #(.getDeclaredFields %) (getsupers cl))))
+  [field cl mom]
+  (contains? (:properties (get mom cl)) field))
 
 
 (declare find-class, find-prop)
@@ -192,7 +191,7 @@
         ids-
         (let [id (first sp-res-)
               cl-target (find-class id mom)
-              cl-target (if (nil? cl-target) (checkfield id cl-) cl-target)]
+              cl-target (if (nil? cl-target) (checkfield id cl- mom) cl-target)]
           (recur cl-target
                  (vec (flatten (conj ids- (get-path id cl- cl-target mom))))
                  (rest sp-res-)))))))
