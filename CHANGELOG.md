@@ -1,3 +1,7 @@
+## 0.0.1-alpha5 / 27.10.2011
+
+* Fixed bug with searching property of object.
+
 ## 0.0.1-alpha4 / 27.10.2011
 
 * Improved support functions.
