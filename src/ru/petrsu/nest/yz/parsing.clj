@@ -124,7 +124,6 @@
     (get-in (get-in-nest res nl :then) (conj (vec (repeat (dec tl) :then)) k))))
 
 
-(declare tr-pred)
 (defn change-preds
   "Changed ':preds' and 'result' of the state."
   [state]

@@ -316,14 +316,22 @@
   [^PersistentArrayMap nest]
   (let [then (:then nest)
         what (:what nest)
-        props (:props nest)]
+        props (:props nest)
+        pprops (fn [props parent] 
+                 (map #(let [v (% 0)]
+                         (if (= v \&)
+                           (.getSimpleName parent)
+                           v))
+                         props))]
     (cond  
       (not (nil? then)) (loop [then- then]
                           (if (nil? (:then then-))
-                            [(.getSimpleName (:what then-))]
+                            (if (nil? (:props then-))
+                              (.getSimpleName (:what then-))
+                              (pprops (:props then-) (:what then-)))
                             (recur (:then then-))))
-      (not (empty? props)) (map first props)
-      :else [(.getSimpleName what)])))
+      (not (empty? props)) (pprops props what)
+      :else (.getSimpleName what))))
 
 
 (defn get-columns
@@ -332,9 +340,17 @@
   [parse-res]
   (loop [p parse-res res []]
     (if (every? nil? p)
-      res
+      (let [res (loop [f (first res) res- res r (rest res)] 
+                  (if (nil? f)
+                    res-
+                    (recur (first r) 
+                           (if (sequential? f) 
+                             (reduce inc res- f)
+                             res-) 
+                           (rest r))))]
+      (map #(reduce (fn [sv n] (str sv ", " n) ) %) res))
       (recur (flatten (map #(:nest %) p)) 
-             (conj res (mapcat #(get-column-name %) p))))))
+               (conj res (map #(get-column-name %) p))))))
 
 
 (defn- get-columns-lite
