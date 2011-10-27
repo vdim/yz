@@ -138,11 +138,20 @@
 
 
 (defn get-fv
-  "Returns value of field."
+  "Returns value of field. First we try to find property
+  due to bean function, if is failed then we try to using
+  reflection (e.g. getDeclaredField)."
   [o, ^String field-name]
   (if (nil? o)
     nil
-    ((keyword field-name) (bean o))))
+    (let [v (get (bean o) (keyword field-name) :not-found)]
+      (if (= v :not-found)
+        (loop [^Class cl (class o)]
+          (cond (nil? cl) (throw (NoSuchFieldException. ))
+                (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+                (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+                :else (recur (:superclass (bean cl)))))
+        v))))
 
 
 (declare process-nests, get-rows, run-query)
