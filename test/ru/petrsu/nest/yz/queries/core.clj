@@ -90,16 +90,26 @@
          (.close *em*))))))
 
 
+(defn- do-q
+  "Executes query, If error is occured then
+  throw is thrown, else key 'k' of result of the 
+  query is returned."
+  [query k]
+  (let [rq (c/pquery query *mom* *em*)]
+    (if (not (nil? (:error rq)))
+      (throw Exception e "Query exception.")
+      (k rq))))
+
 (defn r-query
   "Returns :result of core/pquery."
   [query]
-  (:result (c/pquery query *mom* *em*)))
+  (do-q query :result))
 
 
 (defn rows-query
   "Returns :rows of core/pquery."
   [query]
-  (:rows (c/pquery query *mom* *em*)))
+  (do-q query :rows))
 
 
 (defn qstruct?
