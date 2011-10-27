@@ -632,7 +632,7 @@
   Returns a value of the :result key of the q-representation structure."
   [q, mom]
   (let [r (parse+ q, mom)]
-    (if (nil? (:reminder r))
+    (if (nil? (:remainder r))
       (:result (parse+ q, mom))
       (throw (Exception. (str "Syntax error near: " (reduce str "" (:remainder r))))))))
 
