@@ -56,8 +56,10 @@
 (defn ^String tr-pred
   "Transforms 'pred' map into string"
   [pred]
-  (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
-       ", " (:func pred) ", " (:value pred) ")"))
+  (let [v (:value pred)
+        v (if (nil? v) "nil" v)]
+    (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
+         ", " (:func pred) ", " v ")")))
 
 (defn- contains-f?
   "Checks whether vector with predicates contains 
@@ -87,13 +89,16 @@
   [^PersistentArrayMap pred, ^CriteriaBuilder cb, ^Root root]
   (let [op (:func pred)
         path (get-path root (:ids pred))
-        v (cs/trim (:value pred))
+        ;v  (cs/trim (:value pred))
+        v (:value pred)
         v (if (and (instance? String v) (= \" (nth v 0))) (subs v 1 (- (count v) 1)) v)]
-    (cond (= "=" op) (.equal cb path v)
+    (cond (and (= "=" op) (nil? v)) (.isNull cb path)
+          (= "=" op) (.equal cb path v)
           (= ">" op) (.gt cb path (Double/parseDouble v))
           (= "<" op) (.lt cb path (Double/parseDouble v))
           (= ">=" op) (.ge cb path (Double/parseDouble v))
           (= "<=" op) (.le cb path (Double/parseDouble v))
+          (and (= "not=" op) (nil? v)) (.isNotNull cb path)
           (= "not=" op) (.notEqual cb path v)
           :else (throw (Exception. (str "No find function " op))))))
 

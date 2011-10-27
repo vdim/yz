@@ -54,7 +54,9 @@
              (.addRoom (Room. "1002"))))
 
 
-(def b1 (doto (Building.) (.setName "b1") (.setAddress "Street1") 
+(def b1 (doto (Building.) (.setName "b1") 
+          (.setAddress "Street1") 
+          (.setDescription "Some desc")
           (.addFloor f1_b1) (.addFloor f2_b1)
           (.addFloor f3_b1) (.addFloor f4_b1)))
 (def b2 (doto (Building.) (.setName "b2") (.setAddress "Street2") (.addFloor f1_b2)))
@@ -314,3 +316,14 @@
          (is (tc/check-query "floor#(number=(<1 or (>3 and <5)) and building.name=\"b3\")"
                              [[]])))
 
+;; Checks nil
+
+(deftest select-nil
+         ^{:doc "Tests keyword nil into predicates."}
+         (is (tc/check-query "building#(description != nil)" [[Building []]]))
+         (is (tc/check-query "building#(name != nil)" [[Building [], Building [], Building []]]))
+         (is (tc/check-query "floor#(description != nil)" [[]]))
+         (is (tc/check-query "floor#(number = nil)" [[]]))
+         (is (tc/check-query "floor#(description=nil)" [[Floor [], Floor [], Floor [], Floor [], Floor []]]))
+         (is (tc/check-query "floor#(number != nil)" [[Floor [], Floor [], Floor [], Floor [], Floor []]]))
+         (is (tc/check-query "building#(description = nil)" [[Building [], Building []]])))
