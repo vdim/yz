@@ -94,6 +94,14 @@
          ^{:doc "Selects all Building, its Room and its Floor objects."}
          (is (tc/qstruct? "building (room (floor))"
                           [[Building [[Room [[Floor []]]]]]])))
+(comment
+(deftest select-empty-links
+         ^{:doc "Tests emptiness links."}
+         (is (tc/qstruct? "building (device)"
+                          [[Building [[nil []]]]]))
+         (is (tc/qstruct? "building (device (network))"
+                          [[Building [[nil [[nil []]]]]]])))
+)
 
 (deftest select-inheritance
          ^{:doc "Tests inheritance queries."}
