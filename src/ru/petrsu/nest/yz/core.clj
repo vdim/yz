@@ -145,7 +145,8 @@
   (if (nil? o)
     nil
     (let [v (get (bean o) (keyword field-name) :not-found)]
-      (cond (= v :not-found)
+      (cond (nil? v) v
+            (= v :not-found)
             (loop [^Class cl (class o)]
               (cond (nil? cl) (throw (NoSuchFieldException. ))
                     (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
