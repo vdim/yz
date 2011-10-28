@@ -148,11 +148,11 @@
       (cond (nil? v) v
             (= v :not-found)
             (loop [^Class cl (class o)]
-              (cond (nil? cl) (throw (NoSuchFieldException. ))
+              (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
                     (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
                     (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
                     :else (recur (:superclass (bean cl)))))
-            (.isArray (class v)) (map identity v)
+            (and (.isArray (class v)) (get mom (.getComponentType (class v)))) (map identity v)
             :else v))))
 
 
@@ -420,16 +420,16 @@
       (def-result [[]] nil [] ())
       (let [parse-res (try
                         (p/parse query mom)
-                        (catch Exception e (.getMessage e)))
+                        (catch Throwable e (.getMessage e)))
             run-query-res (cond (string? parse-res) parse-res
                                 (map? parse-res) (try
                                                    (let [pc (process-func parse-res nil)]
                                                      [pc (reduce #(cons [%2] %1) () pc)])
-                                                   (catch Exception e (.getMessage e)))
+                                                   (catch Throwable e (.getMessage e)))
                                 :else (try
                                         (let [rq (run-query parse-res)]
                                           [rq (get-rows rq)])
-                                        (catch Exception e (.getMessage e))))]
+                                        (catch Throwable e (.getMessage e))))]
         (if (string? run-query-res)
           (def-result [] run-query-res [] ())
           (def-result (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))

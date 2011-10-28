@@ -172,14 +172,10 @@
   "Returns path from cl-source to class of id
   (search based on the mom.)"
   [id, cl-source, cl-target, mom]
-  (if (not (nil? cl-target))
-    (let [paths (get (get mom cl-source) cl-target)]
-      (if (empty? paths)
-        (if (find-prop cl-source id, mom)
-          [id]
-          (throw (Exception. (str "Not found id: " id))))
-        (nth paths 0)))
-    (throw (Exception. (str "Not found id: " id)))))
+  (let [paths (get (get mom cl-source) cl-target)]
+    (if (empty? paths)
+      [id]
+      (nth paths 0))))
 
 
 (defn- get-ids 
@@ -253,13 +249,11 @@
   [res mom id nl tl is-recur]
   (let [tl- (dec tl)
         last-then (get-in-nest res nl :then)]
-    (if (or (= id \&) (map? id) (find-prop (get-in-then res nl tl- :what) id mom))
       (if (> tl- 0)
         (assoc-in-nest res nl :then (update-in last-then 
                                                (conj (vec (repeat (dec tl-) :then)) :props) 
                                                #(conj % [id is-recur])))
-        (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) [id is-recur])))
-      (throw (Exception. (str "Not found id: " id))))))
+        (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) [id is-recur])))))
 
 
 (defn found-id
