@@ -145,13 +145,14 @@
   (if (nil? o)
     nil
     (let [v (get (bean o) (keyword field-name) :not-found)]
-      (if (= v :not-found)
-        (loop [^Class cl (class o)]
-          (cond (nil? cl) (throw (NoSuchFieldException. ))
-                (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-                (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-                :else (recur (:superclass (bean cl)))))
-        v))))
+      (cond (= v :not-found)
+            (loop [^Class cl (class o)]
+              (cond (nil? cl) (throw (NoSuchFieldException. ))
+                    (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+                    (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+                    :else (recur (:superclass (bean cl)))))
+            (.isArray (class v)) (map identity v)
+            :else v))))
 
 
 (declare process-nests, get-rows, run-query)
