@@ -23,6 +23,7 @@
   (:use ru.petrsu.nest.yz.core)
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]
             [ru.petrsu.nest.yz.hb-utils :as hb]
+            [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [ru.petrsu.nest.yz.benchmark.hql :as hql]))
 
@@ -84,4 +85,12 @@
        "hibernate.connection.driver_class" driver}))
   ([num, n, ql]
    ((getf ql) num, n, {})))
+
+
+(defn bench-parsing
+  "Beanchmark parsing."
+  [n ^String query mom]
+  (time (dotimes [_ n]
+          (p/parse query mom))))
+
 
