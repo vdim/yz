@@ -1,3 +1,7 @@
+## 0.0.1-alpha8 / 28.10.2011
+
+* Fixed problems with interfaces and properties.
+
 ## 0.0.1-alpha7 / 28.10.2011
 
 * Fixed bug with a link to array.
