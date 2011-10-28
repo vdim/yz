@@ -1,3 +1,9 @@
+## 0.0.1-alpha6 / 28.10.2011
+
+* Fixed problem with nil into the restriction: building#(description = nil)
+* Added some new built-in functions (ip, mac, ip2b, name2ip).
+* Fixed some minor bugs.
+
 ## 0.0.1-alpha5 / 27.10.2011
 
 * Fixed bug with searching property of object.
