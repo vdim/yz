@@ -64,10 +64,14 @@
   (let [pt (.getPropertyType pd)]
     (if (contains? classes pt)
       [pt (.getName pd)]
-      (if (contains? (ancestors pt) java.util.Collection)
-        (let [t (vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments))]
-          (if (and (> (count t) 0) (contains? classes (t 0)))
-            [(t 0), (.getName pd)] ))))))
+      (cond (contains? (ancestors pt) java.util.Collection)
+            (let [t (vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments))]
+              (if (and (> (count t) 0) (contains? classes (t 0)))
+                [(t 0), (.getName pd)] ))
+            (.isArray pt)
+            (let [t (.getComponentType pt)]
+              (if (and (not (nil? t)) (contains? classes t))
+                [t, (.getName pd)]))))))
 
 
 (defn get-related
@@ -138,17 +142,9 @@
   "Returns list of all field's names (including superclass's
   fields and excluding fields with Transient annotation)."
   [cl]
-  (loop [cl- cl res ()]
-    (if (nil? cl-)
-      res
-      (recur (:superclass (bean cl-)) 
-             (concat res (filter #(not (nil? %)) 
-                                 (map #(let [anns (.getDeclaredAnnotations %)
-                                             t-anns (set (map (fn [ann] (.annotationType ann)) anns))]
-                                         (if (contains? t-anns Transient)
-                                           nil
-                                           (.getName %))) 
-                                      (.getDeclaredFields cl-))))))))
+  (if (or (nil? cl)  (.isInterface cl))
+    ()
+    (map name (keys (bean (.newInstance cl))))))
 
 
 (defn get-short-name
@@ -227,8 +223,10 @@
   (let [s emf-or-hbcfg-or-mom
         mom (cond (instance? EntityManagerFactory s) (gen-mom-from-metamodel s)
                   (instance? String s) (gen-mom-from-cfg s)
+                  (sequential? s) (gen-mom s)
                   :else s)]
     (to-file mom f)))
+
 
 (defn mom-from-file
   "Takes a name of the file (resource file) and restores a mom from one."
