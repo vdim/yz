@@ -1,3 +1,7 @@
+## 0.0.1-alpha7 / 28.10.2011
+
+* Fixed bug with a link to array.
+
 ## 0.0.1-alpha6 / 28.10.2011
 
 * Fixed problem with nil into the restriction: building#(description = nil)
