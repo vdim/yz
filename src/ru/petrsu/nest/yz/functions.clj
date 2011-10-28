@@ -62,3 +62,15 @@
   (if (nil? ip)
     nil
     (.getHostAddress (InetAddress/getByAddress ip))))
+
+(defn mac
+  "Transforms a byte representation of 
+  the MAC address to a string representation."
+  [ip]
+  (if (nil? ip)
+    nil
+    (reduce #(str %1 ":" %2) 
+            (map #(String/format 
+                    "%02x" 
+                    (into-array [(bit-and 0xFF %)])) ip))))
+
