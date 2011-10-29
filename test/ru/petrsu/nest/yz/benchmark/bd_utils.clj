@@ -22,8 +22,8 @@
     :doc "Usefull functions for working with bd for benchmark."}
   (:import (ru.petrsu.nest.son Building Floor Room
                                Occupancy SimpleOU CompositeOU
-                               Device Network NetworkInterface EthernetInterface
-                               LinkInterface IPv4Interface IPNetwork VLANInterface SON)
+                               Device UnknownNetwork UnknownNetworkInterface EthernetInterface
+                               UnknownLinkInterface IPv4Interface IPNetwork VLANInterface SON)
            (javax.persistence Persistence)
            (org.hibernate.tool.hbm2ddl SchemaExport)
            (org.hibernate.cfg Configuration)
@@ -58,10 +58,10 @@
                       SimpleOU 20
                       CompositeOU 5
                       Device 300
-                      Network 5
-                      NetworkInterface 170 
+                      UnknownNetwork 5
+                      UnknownNetworkInterface 170 
                       EthernetInterface 150
-                      LinkInterface 150
+                      UnknownLinkInterface 150
                       IPv4Interface 170
                       IPNetwork 5
                       VLANInterface 20
@@ -137,12 +137,12 @@
                                  (assoc sm :sou o))
         (instance? CompositeOU o) (do (.addOU (:cou sm) o) (assoc sm :cou o))
         (instance? Device o) (do (.addDevice (:occupancy sm) o) (assoc sm :device o))
-        (instance? LinkInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :li o))
+        (instance? UnknownLinkInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :li o))
         (instance? EthernetInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :ei o))
         (instance? VLANInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :vlan o))
-        (instance? NetworkInterface o) (do (.addNetworkInterface (:li sm) o) (assoc sm :ni o))
+        (instance? UnknownNetworkInterface o) (do (.addNetworkInterface (:li sm) o) (assoc sm :ni o))
         (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) (assoc sm :ipv4 o))
-        (instance? Network o) (do 
+        (instance? UnknownNetwork o) (do 
                                  (if (nil? (.getNetwork (:ni sm)))
                                    (.setNetwork (:ni sm) o)
                                    (if (nil? (.getNetwork (:ipv4 sm)))
@@ -168,10 +168,10 @@
                         :sou (SimpleOU.)
                         :cou (CompositeOU.)
                         :device (Device.)
-                        :network (Network.)
-                        :ni (NetworkInterface.)
+                        :network (UnknownNetwork.)
+                        :ni (UnknownNetworkInterface.)
                         :ei (EthernetInterface.)
-                        :li (LinkInterface.)
+                        :li (UnknownLinkInterface.)
                         :ipn (IPNetwork.)
                         :ipv4 (IPv4Interface.)
                         :vlan (VLANInterface.)

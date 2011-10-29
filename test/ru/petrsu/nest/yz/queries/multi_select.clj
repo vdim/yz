@@ -36,7 +36,7 @@
 
 ;; Define entity manager.
 
-(use-fixtures :once (tc/setup [son]))
+(use-fixtures :once (tc/setup-son son))
 
 
 ;; Define tests

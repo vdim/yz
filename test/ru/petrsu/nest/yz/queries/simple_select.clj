@@ -31,12 +31,12 @@
            (.addBuilding (doto (Building.) (.setName "building1") 
                            (.addFloor (Floor.)) (.addFloor (Floor.)))) 
            (.addBuilding (doto (Building.) (.setName "building2") 
-                           (.addFloor (doto (Floor.) (.addRoom (Room. "1"))))))))
+                           (.addFloor (doto (Floor.) (.addRoom (doto (Room.) (.setNumber "1")))))))))
 
 
 ;; Define entity manager.
 
-(use-fixtures :once (tc/setup [son]))
+(use-fixtures :once (tc/setup-son son))
 
 
 ;; Define tests

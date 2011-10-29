@@ -28,18 +28,20 @@
 
 ;; Define model
 
-(def f1_b1 (doto (Floor. 1) 
-             (.addRoom (Room. "101")) 
-             (.addRoom (Room. "102"))))
+(def f1_b1 (doto (Floor.) 
+             (.setNumber (Integer. 1))
+             (.addRoom (doto (Room.) (.setNumber "101"))) 
+             (.addRoom (doto (Room.) (.setNumber "102")))))
 
-(def f2_b1 (doto (Floor. 2) 
-             (.addRoom (Room. "201")) 
-             (.addRoom (Room. "202"))))
+(def f2_b1 (doto (Floor.) 
+             (.setNumber (Integer. 2))
+             (.addRoom (doto (Room.) (.setNumber "201"))) 
+             (.addRoom (doto (Room.) (.setNumber "202")))))
 
-(def f1_b2 (doto (Floor. 1) 
-             (.addRoom (Room. "1001")) 
-             (.addRoom (Room. "1002"))))
-
+(def f1_b2 (doto (Floor.) 
+             (.setNumber (Integer. 1))
+             (.addRoom (doto (Room.) (.setNumber "1001"))) 
+             (.addRoom (doto (Room.) (.setNumber "1002")))))
 
 (def b1 (doto (Building.) (.setName "building") (.addFloor f1_b1) (.addFloor f2_b1)))
 (def b2 (doto (Building.) (.setName "building") (.addFloor f1_b2)))
@@ -50,7 +52,7 @@
 
 ;; Define entity manager.
 
-(use-fixtures :once (tc/setup [son]))
+(use-fixtures :once (tc/setup-son son))
 
 
 ;; Define tests
@@ -109,5 +111,4 @@
          (is (tc/r-query "device (ipnetwork)"))
          (is (tc/r-query "device (linkinterface)"))
          (is (tc/r-query "device (ethernetinterface)")))
-
 

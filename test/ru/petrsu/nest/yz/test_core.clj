@@ -30,7 +30,7 @@
   ^{:doc "Defines the map of the object model (used Nest's model)"}
   (hb/mom-from-file "nest.mom"))
 
-
+(comment
 (deftest t-get-columns
          ^{:doc "Tests 'get-columns' function."}
          (is (= (c/get-columns (p/parse "building", mom)) ["Building"]))
@@ -53,4 +53,4 @@
          (is (= (c/get-columns (p/parse "building[name]", mom)) ["name"]))
          (is (= (c/get-columns (p/parse "building[name]", mom)) ["name"]))
          (is (= (c/get-columns (p/parse "building[name]", mom)) ["name"])))
-
+)

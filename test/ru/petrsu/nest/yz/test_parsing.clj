@@ -25,10 +25,9 @@
         clojure.test)
   (:import (ru.petrsu.nest.son Building Room Floor)))
 
-(def emf (javax.persistence.Persistence/createEntityManagerFactory "nest"))
 (def mom 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
-  (gen-mom-from-metamodel emf))
+  (mom-from-file "nest.mom"))
 
 (def some-v
   ^{:doc "Defines vector with single empty map."}

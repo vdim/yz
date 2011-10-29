@@ -24,8 +24,53 @@
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.core :as c])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
-           (ru.petrsu.nest.son SON Building Room Floor)))
+           (ru.petrsu.nest.son SonBeanUtils SON)
+           (ru.petrsu.nest.yz.core ElementManager)))
 
+;; ElementManager (see ru.petrsu.nest.yz.core/ElementManager for more details).
+(def ^:dynamic *em*)
+
+;; Map of the Object Model.
+(def ^:dynamic *mom*)
+
+;;
+;; Definition memory ElementManager (see ru.petrsu.nest.yz.core/ElementManager).
+;;
+
+(def ^:dynamic *file-mom* "nest.mom")
+
+(def ^{:dynamic true
+       :tag SON}
+  *son*)
+
+(def se-iterator
+  ^{:doc "Implements iterable for working with clojure in usual manner."}
+  (reify Iterable 
+    (^java.util.Iterator iterator [_] 
+       (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. *son*))))
+
+(def em-memory
+  ^{:doc "Implementation of the memory ElementManager."}
+  (reify ElementManager
+    (^java.util.Collection getElements [_ ^Class claz] 
+         (filter #(= (class %) claz) (map identity se-iterator)))
+    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))))
+
+(defn setup-son
+  "Setups specified son and then executes quereis."
+  ([son]
+   (setup-son son *file-mom*))
+  ([son nf]
+   (fn [f]
+     (binding [*son* son
+               *mom* (hb/mom-from-file nf)
+               *em* em-memory]
+       (f)))))
+
+
+;;
+;; Definition of JPA's ElementManager.
+;;
 
 (def ^{:dynamic true} *url* (identity "jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"))
 (def ^{:dynamic true} *dialect* (identity "org.hibernate.dialect.H2Dialect"))
@@ -49,6 +94,23 @@
     em))
 
 
+(defn setup 
+  "Returns function for creating entity manager 
+  and closing it after executing all tests."
+  ([sons]
+   (setup sons nil))
+  ([sons n]
+   (fn [f]
+     (let [em (create-em sons n)]
+       (binding [*em* em
+                 *mom* (hb/gen-mom-from-metamodel (.getEntityManagerFactory em))]
+         (f)
+         (.close *em*))))))
+
+;;
+;; Common helper function.
+;;
+
 (defn- transform-q
   "Transforms query result to corresponding structure."
   [q-seq]
@@ -67,27 +129,6 @@
                  (class %)) 
               q))
     (class q)))
-
-(def ^{:dynamic true
-       :tag EntityManager}
-  *em*)
-
-(def ^{:dynamic true}
-  *mom*)
-
-;(declare *em* *mom*)
-(defn setup 
-  "Returns function for creating entity manager 
-  and closing it after executing all tests."
-  ([sons]
-   (setup sons nil))
-  ([sons n]
-   (fn [f]
-     (let [em (create-em sons n)]
-       (binding [*em* em
-                 *mom* (hb/gen-mom-from-metamodel (.getEntityManagerFactory em))]
-         (f)
-         (.close *em*))))))
 
 
 (defn- do-q
