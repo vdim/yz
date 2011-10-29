@@ -31,8 +31,7 @@
   (:import (javax.persistence.criteria 
              CriteriaQuery CriteriaBuilder Predicate Root)
            (javax.persistence EntityManager)
-           (clojure.lang PersistentArrayMap PersistentVector)
-           (java.util Collection)))
+           (clojure.lang PersistentArrayMap PersistentVector)))
 
 
 (definterface ElementManager
@@ -47,9 +46,8 @@
          
          getClasses returns collection of classes which are entities of the model.
          This method is needed for generating the MOM (Map Of the Model)."}
-  (^Collection getElements [^Class claz])
-  (^Collection getClasses []))
-
+  (^java.util.Collection getElements [^Class claz])
+  (^java.util.Collection getClasses []))
 
 (declare em, mom)
 
