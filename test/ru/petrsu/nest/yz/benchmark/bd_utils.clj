@@ -142,17 +142,13 @@
         (instance? VLANInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :vlan o))
         (instance? UnknownNetworkInterface o) (do (.addNetworkInterface (:li sm) o) (assoc sm :ni o))
         (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) (assoc sm :ipv4 o))
-        (instance? UnknownNetwork o) (do 
+        (instance? UnknownNetwork o) (do
                                  (if (nil? (.getNetwork (:ni sm)))
-                                   (.setNetwork (:ni sm) o)
-                                   (if (nil? (.getNetwork (:ipv4 sm)))
-                                     (.setNetwork (:ipv4 sm))))
+                                   (.setNetwork (:ni sm) o))
                                  (assoc sm :network o))
         (instance? IPNetwork o) (do 
-                                 (if (nil? (.getNetwork (:ni sm)))
-                                   (.setNetwork (:ni sm) o)
-                                   (if (nil? (.getNetwork (:ip4v sm)))
-                                     (.setNetwork (:ip4v sm))))
+                                   (if (nil? (.getNetwork (:ipv4 sm)))
+                                     (.setNetwork (:ipv4 sm) o))
                                  (assoc sm :ipn o))
         :else sm))
 
