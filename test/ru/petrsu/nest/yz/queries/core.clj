@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.queries.core
   ^{:author "Vyacheslav Dimitrov"
     :doc "Helper functions for testing YZ's queries."}
-  (:use ru.petrsu.nest.yz.core clojure.test)
+  (:use clojure.test)
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.core :as c])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
@@ -49,12 +49,14 @@
     (^java.util.Iterator iterator [_] 
        (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. *son*))))
 
+
 (def em-memory
   ^{:doc "Implementation of the memory ElementManager."}
   (reify ElementManager
     (^java.util.Collection getElements [_ ^Class claz] 
          (filter #(= (class %) claz) (map identity se-iterator)))
     (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))))
+
 
 (defn setup-son
   "Setups specified son and then executes quereis."
@@ -66,6 +68,14 @@
                *mom* (hb/mom-from-file nf)
                *em* em-memory]
        (f)))))
+
+
+(defn create-emm
+  "Returns implementation of the memory ElementManager 
+  for specified son."
+  [son]
+  (binding [*son* son]
+    em-memory))
 
 
 ;;
