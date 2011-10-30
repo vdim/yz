@@ -26,7 +26,8 @@
             [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [ru.petrsu.nest.yz.benchmark.hql :as hql]
-            [ru.petrsu.nest.yz.queries.core :as qc]))
+            [ru.petrsu.nest.yz.queries.core :as qc]
+            [clojure.java.io :as cio]))
 
 
 (defn- create-em
@@ -125,4 +126,22 @@
   [n mom]
   (let [son (bu/gen-bd 10000)]
     (println (reduce #(str %1 "q: " %2 \newline (bench n %2 mom son) \newline) "" yz/queries))))
+
+
+(def ^:dynamic f "etc/yz-bench.txt")
+(def ^:dynamic *q* (ref "")) 
+(defn bench-to-file
+  "Writes result of benchmark to file yz-bench.txt."
+  [n mom]
+  (let [son (bu/gen-bd 10000)
+        new-res (reduce #(str %1 (cond (.startsWith %2 ";") (str ";" (dosync (ref-set *q* (.substring %2 1))) \newline)
+                                       (.startsWith %2 "Parsing") 
+                                       (str %2 " " (bench-parsing n @*q* mom) \newline)
+                                       (.startsWith %2 "Quering") 
+                                       (str %2 " " (bench-quering n @*q* mom son) \newline)
+                                       :else (str %2 \newline)))
+                        "" 
+                        (line-seq (cio/reader f)))]
+    (cio/copy new-res (cio/file f))))
+
 
