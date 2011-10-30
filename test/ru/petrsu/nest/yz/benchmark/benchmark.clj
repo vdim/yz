@@ -30,7 +30,7 @@
             [clojure.java.io :as cio]))
 
 
-(defn- create-em
+(defn- ^javax.persistence.EntityManager create-em
   "Returns EntityManager due to specified name (bench is default)."
   ([]
    (create-em "bench"))
@@ -38,7 +38,7 @@
    (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n))))
 
 
-(defn get-clean-bd
+(defn ^javax.persistence.EntityManager get-clean-bd
   "Creates entity manager, clean database 
   and generates some database's structure."
   []
@@ -51,7 +51,7 @@
 (defn run-query
   "Runs specified query ('q') due to specified function ('f')
   which takes string-query and some EntityManager."
-  [f q em]
+  [f q ^javax.persistence.EntityManager em]
   (if (nil? em)
    (let [em (get-clean-bd)
          t (run-query f q em)]
@@ -134,12 +134,14 @@
   "Writes result of benchmark to file yz-bench.txt."
   [n mom]
   (let [son (bu/gen-bd 10000)
-        new-res (reduce #(str %1 (cond (.startsWith %2 ";") (str ";" (dosync (ref-set *q* (.substring %2 1))) \newline)
-                                       (.startsWith %2 "Parsing") 
-                                       (str %2 " " (bench-parsing n @*q* mom) \newline)
-                                       (.startsWith %2 "Quering") 
-                                       (str %2 " " (bench-quering n @*q* mom son) \newline)
-                                       :else (str %2 \newline)))
+        new-res (reduce (fn [^String r, ^String line]
+                          (str r (cond (.startsWith line ";") 
+                                       (str ";" (dosync (ref-set *q* (.substring line 1))) \newline)
+                                       (.startsWith line "Parsing") 
+                                       (str line " " (bench-parsing n @*q* mom) \newline)
+                                       (.startsWith line "Quering") 
+                                       (str line " " (bench-quering n @*q* mom son) \newline)
+                                       :else (str line \newline))))
                         "" 
                         (line-seq (cio/reader f)))]
     (cio/copy new-res (cio/file f))))
