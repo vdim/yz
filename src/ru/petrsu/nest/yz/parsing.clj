@@ -47,20 +47,6 @@
            :cur-pred) ; Current predicate.
 
 
-; Record for parsing data structure in hope impoving performance.
-(defrecord Qyz [
-           remainder ; The rest of input string
-           ^PersistentVector result ; vector of maps
-           ^PersistentArrayMap mom ; The map of the object model some area
-           ^int then-level ; then level, the nubmer of dots.
-           ^int nest-level ; Nest level, level of query (the number of parentthesis).
-           ^PersistentVector preds ; The vector within current predicates structure.
-           ^Keyword f-modificator ; Modificator of function's param.
-           ^PersistentVector function ; Describe current function.
-           ^boolean is-recur ; Defines whether property is recur.
-           ^PersistentVector cur-pred]) ; Current predicate.
-
-
 ;; Helper macros, definitions and functions.
 
 (def empty-res
@@ -611,8 +597,7 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
-  ((query (Qyz. (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
-;  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
 
 
 (defn parse
