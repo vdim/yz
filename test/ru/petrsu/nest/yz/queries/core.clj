@@ -49,13 +49,24 @@
     (^java.util.Iterator iterator [_] 
        (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. *son*))))
 
+;; Map where key is id of object and value is object. 
+;; (Need for testing getById function of ElementManager.)
+(def ^:dynamic *id-cache* {})
+
 
 (def em-memory
   ^{:doc "Implementation of the memory ElementManager."}
   (reify ElementManager
     (^java.util.Collection getElements [_ ^Class claz] 
          (filter #(= (class %) claz) (map identity se-iterator)))
-    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))))
+    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))
+    (getById [_ ^Object id] (get *id-cache* id))))
+
+
+(defn create-id-cache
+  "Creates id's cache."
+  []
+  (reduce #(assoc %1 (.getId %2) %2) {} (map identity se-iterator)))
 
 
 (defn setup-son
@@ -67,7 +78,8 @@
      (binding [*son* son
                *mom* (hb/mom-from-file nf)
                *em* em-memory]
-       (f)))))
+       (binding [*id-cache* (create-id-cache)]
+         (f))))))
 
 
 (defn create-emm
@@ -75,7 +87,8 @@
   for specified son."
   [son]
   (binding [*son* son]
-    em-memory))
+    (binding [*id-cache* (create-id-cache)]
+      em-memory)))
 
 
 ;;

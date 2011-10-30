@@ -47,7 +47,8 @@
          getClasses returns collection of classes which are entities of the model.
          This method is needed for generating the MOM (Map Of the Model)."}
   (^java.util.Collection getElements [^Class claz])
-  (^java.util.Collection getClasses []))
+  (^java.util.Collection getClasses [])
+  (^Object getById [^Object id]))
 
 (declare em, mom)
 
@@ -129,7 +130,10 @@
           (if ch-p
             (filter-by-preds elems (create-string-from-preds preds))
             elems))
-        (try (filter-by-preds (.getElements em cl) (create-string-from-preds preds))
+        (try 
+          (if (and (= (count preds) 1) (= ((:ids (preds 0)) 0) "id") (= (:func (preds 0)) "="))
+            (.getById em (:value (preds 0)))
+            (filter-by-preds (.getElements em cl) (create-string-from-preds preds)))
           (catch IllegalArgumentException e 
             (throw (IllegalArgumentException. 
                      "Don't recognize ElementManager. Do you implement getElements method?"))))))
