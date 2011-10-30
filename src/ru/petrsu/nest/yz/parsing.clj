@@ -151,14 +151,6 @@
              ret (invisi-conc rule (update-info :preds #(conj % (if (nil? f) cur_pred f))))]
             ret)))
 
-(defn- getsupers
-  "Returns vector with superclasses of specified class ('cl')."
-  [cl]
-  (loop [cl- cl res []] 
-    (if (nil? cl-) 
-      res 
-      (recur (.getSuperclass cl-) (conj res cl-)))))
-
 
 (defn- checkfield
   "If 'cl' contains field 'field' then 
@@ -167,7 +159,7 @@
   (contains? (:properties (get mom cl)) field))
 
 
-(declare find-class, find-prop)
+(declare find-class)
 (defn- get-path
   "Returns path from cl-source to class of id
   (search based on the mom.)"
@@ -238,12 +230,6 @@
         mom))
 
 
-(defn find-prop
-  "Returns true if 'prop' is property of 'cl'"
-  [cl prop mom]
-  (contains? (set (:properties (get mom cl))) prop))
-
-
 (defn found-prop
   "This function is called when likely prop is found"
   [res mom id nl tl is-recur]
@@ -308,9 +294,9 @@
   [state]
   (loop [res "" remainder (:remainder state) end-c 0 count-nq 0]
     (let [ch (first remainder)
-          c (cond (or (= ch single-pq) (= ch list-pq) (= ch indep-pq)) (inc end-c)
-                  (= ch end-pq) (dec end-c)
-                  :else end-c)]
+          ^Long c (cond (or (= ch single-pq) (= ch list-pq) (= ch indep-pq)) (inc end-c)
+                       (= ch end-pq) (dec end-c)
+                       :else end-c)]
       (cond (> count-nq limit-nq) (throw (Exception. "Limit of nested queries is exceeded."))
             (and (= ch end-pq) (= c -1)) [res (assoc state :remainder 
                                                      (sdrop (count res) (reduce str (:remainder state))))]
