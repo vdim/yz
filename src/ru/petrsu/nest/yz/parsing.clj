@@ -215,14 +215,14 @@
     - in 'sn' key of each map of mom.
     - as abbreviation class's name."
   [^String id ^PersistentArrayMap mom]
-  (some (fn [[cl, m]] 
-          (let [b (bean cl), l-id (cs/lower-case id)]
-            (if (or (= l-id (cs/lower-case (:name b))) 
-                    (= l-id (cs/lower-case (:simpleName b)))
-;                   (.startsWith (cs/lower-case (:simpleName b)) l-id)
-                    (= l-id (cs/lower-case (:sn m))))
-              cl))) 
-        mom))
+  (let [l-id (cs/lower-case (str id))
+        cl (get-in mom [:sns l-id])]
+    (if (nil? cl)
+      (let [cl (get-in mom [:names l-id])]
+        (if (nil? cl)
+          (get-in mom [:snames l-id])
+          cl))
+      cl)))
 
 
 (defn found-prop
