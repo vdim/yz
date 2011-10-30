@@ -168,7 +168,22 @@
    :properties (vec (get-fields-name cl))})
 
 
-(defn gen-mom
+(defn- get-sns
+  "Creates a map: short names (key) 
+  and classes (value) from MOM as value."
+  [mom]
+  (reduce #(assoc %1 (:sn (%2 1)) (%2 0)) {} mom))
+
+
+(defn- get-names
+  [mom, key]
+  "Creates a map: names (key) 
+  and classes (value) from MOM as value."
+  (reduce #(assoc %1 
+                  (clojure.string/lower-case (key (bean (%2 0)))) 
+                  (%2 0)) {} mom))
+
+(defn- gen-basic-mom
   "Generates mom from list of classes 
   (\"classes\" contains list with Class of name mom's classes.)"
   [classes]
@@ -184,6 +199,14 @@
           {}
           classes))
 
+(defn gen-mom
+  "Generates mom from list of classes."
+  [classes]
+  (let [mom (gen-basic-mom classes)
+        sns (get-sns mom)
+        snames (get-names mom :simpleName)
+        names (get-names mom :name)]
+    (assoc mom :sns sns :names names :snames snames)))
 
 (defn gen-mom-from-cfg
   "Generates MOM from hibernate configuration xml file 
