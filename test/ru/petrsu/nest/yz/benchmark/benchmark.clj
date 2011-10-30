@@ -25,7 +25,8 @@
             [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
-            [ru.petrsu.nest.yz.benchmark.hql :as hql]))
+            [ru.petrsu.nest.yz.benchmark.hql :as hql]
+            [ru.petrsu.nest.yz.queries.core :as qc]))
 
 
 (defn- create-em
@@ -88,9 +89,40 @@
 
 
 (defn bench-parsing
-  "Beanchmark parsing."
+  "Beanchmark parsing. Executes parsing 
+  for specified query 'n' times. "
   [n ^String query mom]
-  (time (dotimes [_ n]
-          (p/parse query mom))))
+  (bu/btime (dotimes [_ n]
+              (p/parse query mom))))
 
+
+(defn bench-quering
+  "Beanchmark quering. Executes parsing 
+  for specified query 'n' times. "
+  ([n ^String query mom]
+   (bench-quering n query mom nil))
+  ([n ^String query mom son]
+   (let [son (if (nil? son) (bu/gen-bd 10000) son)
+         em (qc/create-emm son)]
+     (bu/btime (dotimes [_ n]
+                 (pquery query mom em))))))
+
+
+(defn bench
+  "Returns string with result of parsing and quering."
+  ([n ^String query mom]
+   (bench n query mom nil))
+  ([n ^String query mom son]
+   (let [time-q (bench-quering n query mom son)
+         time-p (bench-parsing n query mom)]
+     (str "Parsing: " time-p \newline
+          "Quering: " time-q))))
+
+
+(defn pr-bench
+  "Prints result of benchmark for list of queries
+  from yz/queries."
+  [n mom]
+  (let [son (bu/gen-bd 10000)]
+    (println (reduce #(str %1 "q: " %2 \newline (bench n %2 mom son) \newline) "" yz/queries))))
 
