@@ -82,7 +82,7 @@
   `(conj (pop (pop ~v)) (~op ~cb (peek ~v) (peek (pop ~v)))))
 
 
-(defn- get-op
+(defn- ^Predicate get-op
   "Finds corresponding value of :func of pred map to some Clojure's function, 
   and then generates code for creating Predicate due to get-p macros."
   [^PersistentArrayMap pred, ^CriteriaBuilder cb, ^Root root]
@@ -333,9 +333,9 @@
   for the specified nest from result of query."
   [^PersistentArrayMap nest]
   (let [then (:then nest)
-        what (:what nest)
+        ^Class what (:what nest)
         props (:props nest)
-        pprops (fn [props parent] 
+        pprops (fn [props ^Class parent] 
                  (map #(let [v (% 0)]
                          (if (= v \&)
                            (.getSimpleName parent)
