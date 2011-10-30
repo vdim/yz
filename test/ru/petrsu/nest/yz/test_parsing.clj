@@ -43,11 +43,13 @@
          (is (= (find-class "room", mom) Room))
          (is (= (find-class "floor", mom) Floor)))
 
+(comment
 (deftest t-find-prop
          ^{:doc "Tests 'find-prop' function."}
          (is (find-prop ru.petrsu.nest.son.Building "name" mom))
          (is (find-prop ru.petrsu.nest.son.Building "floors" mom))
          (is (not (find-prop ru.petrsu.nest.son.Building "rooms" mom))))
+)
 
 (deftest t-get-in-nest
          ^{:doc "Tests 'get-in-nest' function"}

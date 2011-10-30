@@ -21,7 +21,8 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse ru.petrsu.nest.yz.functions)
-  (:require [clojure.string :as cs]))
+  (:require [clojure.string :as cs])
+  (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
 
 (defn ^String sdrop
   "Drops first n characters from s.  Returns an empty string if n is
@@ -152,13 +153,6 @@
             ret)))
 
 
-(defn- checkfield
-  "If 'cl' contains field 'field' then 
-  class of field is returned else nil is returned."
-  [field cl mom]
-  (contains? (:properties (get mom cl)) field))
-
-
 (declare find-class)
 (defn- get-path
   "Returns path from cl-source to class of id
@@ -172,14 +166,13 @@
 
 (defn- get-ids 
   "Returns new value of the :ids key of the pred structure."
-  [ids res mom cl]
+  [ids ^String res ^PersistentArrayMap mom ^Class cl]
   (let [sp-res (cs/split res #"\.")]
     (loop [cl- cl, ids- ids, sp-res- sp-res]
       (if (empty? sp-res-)
         ids-
         (let [id (first sp-res-)
-              cl-target (find-class id mom)
-              cl-target (if (nil? cl-target) (checkfield id cl- mom) cl-target)]
+              ^Class cl-target (find-class id mom)]
           (recur cl-target
                  (vec (flatten (conj ids- (get-path id cl- cl-target mom))))
                  (rest sp-res-)))))))
@@ -190,7 +183,7 @@
   the return value of 'rule'. If 'value' is supplied then
   value of the 'k' is set to 'value' (This is need for 
   true, false, nil and so on special values.). "
-  ([rule, k]
+  ([rule, ^Keyword k]
    (change-pred rule, k, :not-value))
   ([rule, k, value]
    (complex [ret rule
@@ -213,20 +206,21 @@
               ret)))
 
 
-(defn find-class
+(defn ^Class find-class
   "Returns class which is correspended 'id' (search is did in 'mom'). 
   Search is did in the following positions:
     - as full name of class (package+name)
     - as name of class 
     - in 'sn' key of each map of mom.
     - as abbreviation class's name."
-  [id mom]
-  (some (fn [el] (let [[cl m] el, b (bean cl), l-id (cs/lower-case id)]
-                   (if (or (= l-id (cs/lower-case (:name b))) 
-                           (= l-id (cs/lower-case (:simpleName b)))
-;                           (.startsWith (cs/lower-case (:simpleName b)) l-id)
-                           (= l-id (cs/lower-case (:sn m))))
-                     cl))) 
+  [^String id ^PersistentArrayMap mom]
+  (some (fn [[cl, m]] 
+          (let [b (bean cl), l-id (cs/lower-case id)]
+            (if (or (= l-id (cs/lower-case (:name b))) 
+                    (= l-id (cs/lower-case (:simpleName b)))
+;                   (.startsWith (cs/lower-case (:simpleName b)) l-id)
+                    (= l-id (cs/lower-case (:sn m))))
+              cl))) 
         mom))
 
 
@@ -244,8 +238,8 @@
 
 (defn found-id
   "This function is called when id is found in query. Returns new result."
-  [res mom id nl tl is-recur]
-  (let [cl (find-class id, mom)
+  [res ^PersistentArrayMap mom ^String id nl tl is-recur]
+  (let [^Class cl (find-class id, mom)
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
