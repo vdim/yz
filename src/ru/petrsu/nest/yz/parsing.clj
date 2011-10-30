@@ -46,6 +46,21 @@
            :is-recur ; Defines whether property is recur.
            :cur-pred) ; Current predicate.
 
+
+; Record for parsing data structure in hope impoving performance.
+(defrecord Qyz [
+           remainder ; The rest of input string
+           ^PersistentVector result ; vector of maps
+           ^PersistentArrayMap mom ; The map of the object model some area
+           ^int then-level ; then level, the nubmer of dots.
+           ^int nest-level ; Nest level, level of query (the number of parentthesis).
+           ^PersistentVector preds ; The vector within current predicates structure.
+           ^Keyword f-modificator ; Modificator of function's param.
+           ^PersistentVector function ; Describe current function.
+           ^boolean is-recur ; Defines whether property is recur.
+           ^PersistentVector cur-pred]) ; Current predicate.
+
+
 ;; Helper macros, definitions and functions.
 
 (def empty-res
@@ -371,13 +386,13 @@
              (:then-level state)
              (:is-recur state)))])
 
-(defmacro process-id
+
+(defn process-id
   "Processes some id due to functions 'f'"
   [f]
-  `(complex [id# (rep+ alpha)
-             _# (partial set-id (reduce str id#) ~f)]
-            id#))
-
+  (complex [id (rep+ alpha)
+            _ (partial set-id (reduce str id) f)]
+            id))
 
 (def id (process-id found-id))
 
@@ -387,9 +402,8 @@
   (alt
        (invisi-conc (lit \.) (update-info :then-level inc))
        (complex [ret (sur-by-ws (lit \,)) 
-                 res (get-info :result)
                  nl (get-info :nest-level)
-                 _ (set-info :result (add-value res nl (empty-res 0)))
+                 _ (update-info :result #(add-value % nl (empty-res 0)))
                  _ (set-info :then-level 0)]
                 ret)))
 
@@ -596,8 +610,9 @@
 
 (defn parse+
   "Like parse, but returns all structure of result."
-  [q, mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
+  [^String q, ^PersistentArrayMap mom]
+  ((query (Qyz. (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
+;  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
 
 
 (defn parse
