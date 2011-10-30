@@ -45,7 +45,10 @@
             3. Executes restrictions.
          
          getClasses returns collection of classes which are entities of the model.
-         This method is needed for generating the MOM (Map Of the Model)."}
+         This method is needed for generating the MOM (Map Of the Model).
+         
+         Also you can implement getById for more performance access to object by specified id. This
+         function is called in case a query contains structure like this: ...#(id=2)."}
   (^java.util.Collection getElements [^Class claz])
   (^java.util.Collection getClasses [])
   (^Object getById [^Object id]))
