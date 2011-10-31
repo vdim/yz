@@ -13,7 +13,7 @@
 # Notes:
 # 1. I think first result we can ignore and start monitoring with second.
 # 2. First improving performance happens after refactoring find-class function (see forth result).
-# 3. For firth result see last queries because of getById method are implemented.
+# 3. For fifth result see last queries because of getById method are implemented.
 #
 
 ;building
