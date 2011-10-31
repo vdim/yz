@@ -39,34 +39,35 @@
 
 (def ^:dynamic *file-mom* "nest.mom")
 
-(def ^{:dynamic true
-       :tag SON}
-  *son*)
-
-(def se-iterator
-  ^{:doc "Implements iterable for working with clojure in usual manner."}
+(defn se-iterator
+  "Implements iterable for working with clojure in usual manner."
+  [son]
   (reify Iterable 
     (^java.util.Iterator iterator [_] 
-       (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. *son*))))
-
-;; Map where key is id of object and value is object. 
-;; (Need for testing getById function of ElementManager.)
-(def ^:dynamic *id-cache* {})
+       (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. son))))
 
 
-(def em-memory
-  ^{:doc "Implementation of the memory ElementManager."}
+(defn em-memory
+  "Implementation of the memory ElementManager."
+  [son, id-cache]
   (reify ElementManager
     (^java.util.Collection getElements [_ ^Class claz] 
-         (filter #(= (class %) claz) (map identity se-iterator)))
+         (filter #(= (class %) claz) (map identity (se-iterator son))))
     (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))
-    (getById [_ ^Object id] (get *id-cache* id))))
+    (getById [_ ^Object id] (get id-cache id))))
 
 
 (defn create-id-cache
-  "Creates id's cache."
-  []
-  (reduce #(assoc %1 (.getId %2) %2) {} (map identity se-iterator)))
+  "Creates id's cache. This is Map where key is id of 
+  object and value is object. (Need for testing getById 
+  function of ElementManager.)"
+  [son]
+  (reduce #(assoc %1 (.getId %2) %2) 
+          {}
+          (map identity
+               (reify Iterable 
+                 (^java.util.Iterator iterator [_] 
+                    (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. son))))))
 
 
 (defn setup-son
@@ -75,20 +76,16 @@
    (setup-son son *file-mom*))
   ([son nf]
    (fn [f]
-     (binding [*son* son
-               *mom* (hb/mom-from-file nf)
-               *em* em-memory]
-       (binding [*id-cache* (create-id-cache)]
-         (f))))))
+     (binding [*mom* (hb/mom-from-file nf)
+               *em* (em-memory son (create-id-cache son))]
+       (f)))))
 
 
 (defn create-emm
   "Returns implementation of the memory ElementManager 
   for specified son."
   [son]
-  (binding [*son* son]
-    (binding [*id-cache* (create-id-cache)]
-      em-memory)))
+  (em-memory son (create-id-cache son)))
 
 
 ;;
