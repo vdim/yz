@@ -45,6 +45,7 @@
          object model and database."}
   (:require [clojure.xml :as cx] 
             [clojure.set :as cs]
+            [clojure.string :as cst]
             [clojure.java.io :as cio])
   (:import (javax.persistence Transient EntityManagerFactory)))
 
@@ -161,32 +162,34 @@
     - :dp (default property)
     - :superclass (super class)
     - :properties (list of properties)"
-  [cl]
+  [cl, map-cl-old]
   {:sn (get-short-name cl)
-   :dp ""
-   :superclass (:superclass (bean cl))
-   :properties (vec (get-fields-name cl))})
+   :dp (:dp map-cl-old)
+   :superclass (:superclass (bean cl))})
 
 
 (defn- get-sns
   "Creates a map: short names (key) 
   and classes (value) from MOM as value."
-  [mom]
-  (reduce #(assoc %1 (:sn (%2 1)) (%2 0)) {} mom))
+  [mom, old-sns]
+  (reduce #(assoc %1 (:sn (%2 1)) (%2 0)) old-sns mom))
 
 
 (defn- get-names
-  [mom, key]
+  [mom, key, old-names]
   "Creates a map: names (key) 
   and classes (value) from MOM as value."
-  (reduce #(assoc %1 
-                  (clojure.string/lower-case (key (bean (%2 0)))) 
-                  (%2 0)) {} mom))
+  (reduce #(let [cl (%2 0)]
+             (if (instance? Class cl)
+               (assoc %1 
+                      (cst/lower-case (key (bean cl))) 
+                      cl)
+               %1)) old-names mom))
 
 (defn- gen-basic-mom
   "Generates mom from list of classes 
   (\"classes\" contains list with Class of name mom's classes.)"
-  [classes]
+  [classes, mom-old]
   (reduce (fn [m cl]
             (assoc m
                    cl
@@ -194,18 +197,18 @@
                               %1 
                               %2 
                               (get-s-paths cl %2 (set classes)) ) 
-                           (init-map-for-cl cl) 
+                           (init-map-for-cl cl (get mom-old cl)) 
                            classes)))
-          {}
+          mom-old
           classes))
 
 (defn gen-mom
   "Generates mom from list of classes."
-  [classes]
-  (let [mom (gen-basic-mom classes)
-        sns (get-sns mom)
-        snames (get-names mom :simpleName)
-        names (get-names mom :name)]
+  [classes, mom-old]
+  (let [mom (gen-basic-mom classes, mom-old)
+        sns (get-sns mom, (:sns mom-old))
+        snames (get-names mom :simpleName (:snames mom-old))
+        names (get-names mom :name (:names mom-old))]
     (assoc mom :sns sns :names names :snames snames)))
 
 (defn gen-mom-from-cfg
@@ -213,20 +216,14 @@
       (usual named hibernate.cfg.xml) with 'mapping' tags.
       It's usefull in case when you use hibernate as
       implementation of Criteria API 2.0."
-  [hb-name]
-  (gen-mom (map #(Class/forName %) (get-classes hb-name))))
-
-
-(defn gen-mom-from-classes
-  "Searches classes in classpath with annotations javax.persistence.Entity and
-      generates MOM from this list."
-  [])
+  [hb-name, mom-old]
+  (gen-mom (map #(Class/forName %) (get-classes hb-name)), mom-old))
 
 
 (defn gen-mom-from-metamodel
   "Takes EntityManagerFactory and generates mom from metamodel."
-  [emf]
-  (gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities))))
+  [emf, mom-old]
+  (gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities)), mom-old))
 
 
 (defn- to-file
@@ -238,24 +235,27 @@
     (cio/copy (.toString mom) f)))
 
 
-(defn mom-to-file
-  "Writes mom to file. If emf-or-hbcfg-or-mom is 
-  EntityManagerFactory or String (name of hibernate config file) then first
-  mom is generated and then wrote to file"
-  [emf-or-hbcfg-or-mom f]
-  (let [s emf-or-hbcfg-or-mom
-        mom (cond (instance? EntityManagerFactory s) (gen-mom-from-metamodel s)
-                  (instance? String s) (gen-mom-from-cfg s)
-                  (sequential? s) (gen-mom s)
-                  :else s)]
-    (to-file mom f)))
-
-
 (defn mom-from-file
   "Takes a name of the file (resource file) and restores a mom from one."
   [f]
-  (eval (read-string 
-          (nth (line-seq 
-                 (cio/reader (ClassLoader/getSystemResourceAsStream f))) 
-               0))))
+  (let [fl (ClassLoader/getSystemResourceAsStream f)
+        fl (if (nil? fl) (cio/file f) fl)]
+    (eval (read-string (nth (line-seq (cio/reader fl)) 0)))))
+
+
+(defn mom-to-file
+  "Writes mom to file. If emf-or-hbcfg-or-mom is 
+  EntityManagerFactory, String (name of hibernate config file) 
+  or list of classes then first mom is generated and then wrote to file.
+  If 'append' is supplied then information is appended to existing file."
+  ([emf-or-hbcfg-or-mom f]
+   (mom-to-file emf-or-hbcfg-or-mom f false))
+  ([emf-or-hbcfg-or-mom f ^Boolean append]
+   (let [mom-old (if (and append (.exists (cio/file f))) (mom-from-file f) {})
+         s emf-or-hbcfg-or-mom
+         mom (cond (instance? EntityManagerFactory s) (gen-mom-from-metamodel s, mom-old)
+                   (instance? String s) (gen-mom-from-cfg s, mom-old)
+                   (sequential? s) (gen-mom s, mom-old)
+                   :else s)]
+     (to-file mom f))))
 
