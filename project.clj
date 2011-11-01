@@ -13,4 +13,4 @@
   :java-source-path "test"
   :jar-exclusions [#"\.swp$|\.clj$"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
-  :warn-on-reflection true)
+  :warn-on-reflection false)
