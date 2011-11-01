@@ -244,7 +244,7 @@
          ^{:doc "Tests parsing queries with properties."}
          (is (= (parse "building.name", mom)
                  [{:what ru.petrsu.nest.son.Building 
-                   :props [["name" false]]
+                   :props [[:name false]]
                    :preds nil
                    :then nil
                    :nest nil}]))
@@ -258,7 +258,7 @@
                           :props []
                           :preds nil 
                           :then {:what ru.petrsu.nest.son.Floor 
-                                 :props [["rooms" false]]
+                                 :props [[:rooms false]]
                                  :preds nil 
                                  :then nil}}
                    :nest nil}]))
@@ -278,7 +278,7 @@
                                         :props []
                                         :preds nil 
                                         :then {:what ru.petrsu.nest.son.Device
-                                               :props [["forwarding" false]] 
+                                               :props [[:forwarding false]] 
                                                :preds nil 
                                                :then nil}}}}
                    :nest nil}]))
@@ -286,7 +286,7 @@
 
          (is (= (parse "simpleou[*parent]", mom)
                  [{:what ru.petrsu.nest.son.SimpleOU 
-                   :props [["parent" true]]
+                   :props [[:parent true]]
                    :preds nil
                    :then nil 
                    :nest nil}]))
@@ -294,7 +294,7 @@
 
          (is (= (parse "compositeou[*parent OUs]", mom)
                  [{:what ru.petrsu.nest.son.CompositeOU 
-                   :props [["parent" true] ["OUs" false]]
+                   :props [[:parent true] [:OUs false]]
                    :preds nil
                    :then nil 
                    :nest nil}]))
@@ -302,7 +302,7 @@
 
          (is (= (parse "compositeou[OUs *parent]", mom)
                  [{:what ru.petrsu.nest.son.CompositeOU 
-                   :props [["OUs" false] ["parent" true]]
+                   :props [[:OUs false] [:parent true]]
                    :preds nil
                    :then nil 
                    :nest nil}]))
@@ -313,7 +313,7 @@
                    :props []
                    :preds nil
                    :then {:what ru.petrsu.nest.son.Room 
-                          :props [["number" false]]
+                          :props [[:number false]]
                           :preds nil 
                           :then nil}
                    :nest nil}]))))

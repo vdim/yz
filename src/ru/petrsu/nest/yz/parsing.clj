@@ -229,7 +229,10 @@
   "This function is called when likely prop is found"
   [res mom id nl tl is-recur]
   (let [tl- (dec tl)
-        last-then (get-in-nest res nl :then)]
+        last-then (get-in-nest res nl :then)
+        id (cond (= id \&) :self-object 
+                 (map? id) id
+                 :else (keyword (str id)))]
       (if (> tl- 0)
         (assoc-in-nest res nl :then (update-in last-then 
                                                (conj (vec (repeat (dec tl-) :then)) :props) 

@@ -31,7 +31,7 @@
   (:import (javax.persistence.criteria 
              CriteriaQuery CriteriaBuilder Predicate Root)
            (javax.persistence EntityManager)
-           (clojure.lang PersistentArrayMap PersistentVector)))
+           (clojure.lang PersistentArrayMap PersistentVector Keyword)))
 
 
 (definterface ElementManager
@@ -146,18 +146,22 @@
   "Returns value of field. First we try to find property
   due to bean function, if is failed then we try to using
   reflection (e.g. getDeclaredField)."
-  [o, ^String field-name]
+  [o, ^Keyword field-name]
   (if (nil? o)
     nil
-    (let [v (get (bean o) (keyword field-name) :not-found)]
+    (let [v (get (bean o) field-name :not-found)]
       (cond (nil? v) v
+
             (= v :not-found)
-            (loop [^Class cl (class o)]
-              (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
-                    (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-                    (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-                    :else (recur (:superclass (bean cl)))))
+            (let [field-name (name field-name)]
+              (loop [^Class cl (class o)]
+                (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
+                      (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+                      (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+                      :else (recur (:superclass (bean cl))))))
+
             (and (.isArray (class v)) (get mom (.getComponentType (class v)))) (map identity v)
+
             :else v))))
 
 
@@ -177,7 +181,7 @@
                                    :else (get-rows rq)))
                            (map? %) (process-func % obj)
                            (= "&" %) obj
-                           (and (instance? String %) (.startsWith % "&."))  (get-fv obj (.substring % 2))
+                           (and (instance? String %) (.startsWith % "&."))  (get-fv obj (keyword (.substring % 2)))
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
@@ -192,7 +196,7 @@
   [^String field-name, objs]
   (flatten
     (map (fn [o] 
-           (if-let [fv (get-fv o field-name)]
+           (if-let [fv (get-fv o (keyword field-name))]
              (if (instance? java.util.Collection fv)
                (map identity fv)
                fv)))
@@ -267,7 +271,7 @@
   "Processes property."
   [[prop ^Boolean is-recur] obj]
   (cond (map? prop) (process-func prop, obj)
-        (= prop \&) obj
+        (= prop :self-object) obj
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
                      res
