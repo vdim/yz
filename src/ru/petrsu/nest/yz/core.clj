@@ -150,19 +150,25 @@
   (if (nil? o)
     nil
     (let [v (get (bean o) field-name :not-found)]
-      (cond (nil? v) v
+      (cond 
+        ; If value is nil then function return nil.
+        (nil? v) v
 
-            (= v :not-found)
-            (let [field-name (name field-name)]
-              (loop [^Class cl (class o)]
-                (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
-                      (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-                      (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-                      :else (recur (:superclass (bean cl))))))
+        ; If value not found into bean map then we try find this value due to java reflection.
+        (= v :not-found)
+        (let [field-name (name field-name)]
+          (loop [^Class cl (class o)]
+            (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
+                  (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+                  (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+                  :else (recur (:superclass (bean cl))))))
 
-            (and (.isArray (class v)) (get mom (.getComponentType (class v)))) (map identity v)
+        ; If value is an array then we check whether a type of the array from the MOM, If true then
+        ; we returns a collection from this array.
+        (and (.isArray (class v)) (get mom (.getComponentType (class v)))) (map identity v)
 
-            :else v))))
+        ; Returns value.
+        :else v))))
 
 
 (declare process-nests, get-rows, run-query)
@@ -266,18 +272,25 @@
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects (search is based on mom)."
   [sources ^Class cl-target ^String preds ^Class cl-source]
-  (loop [cl- cl-target]
-    (let [paths (get (get mom cl-source) cl-)]
-      (if (empty? paths)
-        (if (nil? cl-)
-          (throw (Exception. (str "Not found path between " cl-source " and " cl-target ".")))
-          (recur (:superclass (get mom cl-))))
-        (mapcat 
-          #(loop [ps % res sources]
-             (if (empty? ps)
-               (filter-by-preds res preds)
-               (recur (rest ps) (get-objs (first ps) res))))
-           paths)))))
+  (let [g-objs 
+        (fn [paths] 
+          (mapcat #(loop [ps % res sources]
+                     (if (empty? ps)
+                       (filter-by-preds res preds)
+                       (recur (rest ps) (get-objs (first ps) res))))
+                  paths))]
+    (loop [cl- cl-target]
+      (let [paths (get (get mom cl-source) cl-)]
+        (if (empty? paths)
+          (if (nil? cl-)
+            (let [paths (some #(let [ps (get (get mom cl-source) %)]
+                                 (if (not (empty? ps)) ps)) 
+                              (ancestors cl-target))]
+              (if (empty? paths)
+                (throw (Exception. (str "Not found path between " cl-source " and " cl-target ".")))
+                (g-objs paths)))
+            (recur (:superclass (get mom cl-))))
+          (g-objs paths))))))
 
 
 (defn- process-prop
