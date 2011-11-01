@@ -23,7 +23,7 @@
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
-  (:import (ru.petrsu.nest.son SON Building Room Floor)))
+  (:import (ru.petrsu.nest.son SonElement SON Building Room Floor)))
 
 
 ;; Define model
@@ -140,3 +140,39 @@
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 1))")) 2))
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 1 or 0))")) 3))
          (is (= (count (tc/rows-query "building#(@(count `floor')=(4 or 0))")) 2)))
+
+
+(defn get-name
+  "Function for testing support calling function
+  with parameter as self object.
+  Returns name of specified SonElement."
+  [^SonElement se]
+  (.getName se))
+
+
+(defn to-upper
+  "Function for testing support calling function
+  with parameter as property of self object.
+  Returns name of specified SonElement."
+  [^String s]
+  (.toUpperCase s))
+
+
+(deftest t-pself-param
+         ^{:doc "Testing self object as param of function."}
+         (let [f-c #(= (nth (nth (tc/rows-query %1) 0) %2) %3)]
+           (is (f-c "building[@(get-name &)]#(name=\"b1\")" 0 "b1"))
+           (is (f-c "building[name @(get-name &)]#(name=\"b1\")" 0 "b1"))
+           (is (f-c "building[name @(get-name &)]#(name=\"b1\")" 1 "b1"))
+           (is (f-c "building[@(get-name &) name]#(name=\"b2\")" 0 "b2"))
+           (is (f-c "building[@(get-name &) name]#(name=\"b2\")" 1 "b2"))
+           (is (f-c "building[@(get-name &)]#(name=\"b2\")" 0 "b2"))
+           (is (f-c "building[@(to-upper &.name)]#(name=\"b2\")" 0 "B2"))
+           (is (f-c "building[@(to-upper &.address)]#(name=\"b2\")" 0 "STREET2"))
+           (is (f-c "building[@(to-upper &.name) @(to-upper &.address)]#(name=\"b2\")" 0 "B2"))
+           (is (f-c "building[@(to-upper &.name) @(to-upper &.address)]#(name=\"b2\")" 1 "STREET2"))
+           (is (f-c "building[@(to-upper &.address) @(to-upper &.name)]#(name=\"b2\")" 0 "STREET2"))
+           (is (f-c "building[@(to-upper &.address) @(to-upper &.name)]#(name=\"b2\")" 1 "B2"))
+           (is (f-c "building[@(to-upper &.address) @(get-name &)]#(name=\"b2\")" 0 "STREET2"))
+           (is (f-c "building[@(to-upper &.address) @(get-name &)]#(name=\"b2\")" 1 "b2"))))
+
