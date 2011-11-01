@@ -170,7 +170,9 @@
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
   [f-map, obj]
-  (let [params (map #(cond (vector? %)
+  (let [params (map #(cond 
+                           ; param is result of a query.
+                           (vector? %)
                            (let [[fmod q] %
                                  rq (if (or (= fmod :indep) (nil? obj))
                                         (run-query q)
@@ -179,9 +181,20 @@
                                                      :res (map (fn [p] (get-rows [p])) 
                                                                (mapcat (fn [r] (map vec (partition 2 r))) rq))}
                                    :else (get-rows rq)))
+
+                           ; param is another function.
                            (map? %) (process-func % obj)
-                           (= "&" %) obj
+
+                           ; param is self object
+                           (= "&" %) obj 
+
+                           ; param is value of the default property.
+                           (= "&." %) (get-fv obj (keyword (:dp (get mom (class obj)))))
+
+                           ; param is value of some property of the object.
                            (and (instance? String %) (.startsWith % "&."))  (get-fv obj (keyword (.substring % 2)))
+
+                           ; param is string or number.
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
