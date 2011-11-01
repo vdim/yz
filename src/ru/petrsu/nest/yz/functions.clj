@@ -46,7 +46,7 @@
     (.getAddress (InetAddress/getByName ip))))
 
 
-(defn ip2name
+(defn ^String ip2name
   "Transforms a byte representation of 
   the IP address to a host name."
   [ip]
@@ -55,7 +55,7 @@
     (.getHostName (InetAddress/getByAddress ip))))
 
 
-(defn ip
+(defn ^String ip
   "Transforms a byte representation of 
   the IP address to a string representation."
   [ip]
@@ -63,14 +63,15 @@
     nil
     (.getHostAddress (InetAddress/getByAddress ip))))
 
-(defn mac
+
+(defn ^String mac
   "Transforms a byte representation of 
   the MAC address to a string representation."
-  [ip]
-  (if (nil? ip)
+  [mac]
+  (if (nil? mac)
     nil
     (reduce #(str %1 ":" %2) 
             (map #(String/format 
                     "%02x" 
-                    (into-array [(bit-and 0xFF %)])) ip))))
+                    (into-array [(bit-and 0xFF %)])) mac))))
 
