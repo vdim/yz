@@ -266,12 +266,15 @@
         last-then (get-in-nest res nl :then)
         id (cond (= id \&) :self-object 
                  (map? id) id
-                 :else (keyword (str id)))]
+                 :else (keyword (str id)))
+        what (get-in-nest res nl :what)]
+    (if (nil? what)
+      (throw (Exception. (str "Not found element: " id)))
       (if (> tl- 0)
         (assoc-in-nest res nl :then (update-in last-then 
                                                (conj (vec (repeat (dec tl-) :then)) :props) 
                                                #(conj % [id is-recur])))
-        (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) [id is-recur])))))
+        (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) [id is-recur]))))))
 
 
 (defn found-id
