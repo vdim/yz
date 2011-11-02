@@ -323,8 +323,8 @@
    "building (room (device (networkinterface)))"
    "building (room.floor (device))"
    "building (room.floor (device), occupancy)"
-   "building.floor.room (room.floor.building, network (device.building), occupancy)"
-   "building.floor.room (room.floor.building (device.building), occupancy)"
+   "building.floor (room.floor.building, network (device.building), occupancy)"
+   "building.floor (room.floor.building (device.building), occupancy)"
    "building.name"
    "building.floors"
    "building.room.floor.rooms"
@@ -334,7 +334,6 @@
    "building (room.device.forwarding, floor)"
    "building (room.device.forwarding, floor, network.building.floors)"
    "building (room.device.forwarding, floor (network.building.floors))"
-
 ;; Restrictions.
    "floor#(number=1)"
    "floor#(number=1 or number=2)"
@@ -483,6 +482,12 @@
    "device#(forwarding!= true)"
    "device#(forwarding!= false)"
    "device#(forwarding!= nil)"
+
+;; Default property
+   "ni[@(ip &.inetAddress)]"
+   "ni[@(ip &.)]"
+   "ni[@(ip &)]"
+   "ni[&.]"
    "room"])
 
 (def qlist-list
@@ -520,19 +525,20 @@
   "Generates code for checking remainder about specified list with queries."
   [l]
   `(is (nil? (some #(not (nil? %)) (map #(:remainder (parse+ % mom)) ~l)))))
-(comment
+
 (deftest parse-remainder
          ^{:doc "Checks remainder after parsing for queries in 'qlist' vector.
                 It must be nil for all queries, because qlist contains
                 only correct queries."}
-         (premainder qlist)
-         (premainder qlist-list)
-         (premainder qlist-indep)
-         (premainder qlist-prop)
-         (premainder qlist-pred)
-         (premainder qlist-single))
+         (premainder qlist))
+;         (premainder qlist-list)
+;         (premainder qlist-indep)
+;         (premainder qlist-prop)
+;         (premainder qlist-pred)
+;         (premainder qlist-single))
 
 
+(comment
 (deftest t-parse-remainder
          ^{:doc "Generates 'is' for each query from qlist. 
                 Like 'parse-remainder, but it can show remainder.'"}
