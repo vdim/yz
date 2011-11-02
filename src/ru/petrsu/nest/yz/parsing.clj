@@ -264,7 +264,8 @@
   [res mom id nl tl is-recur]
   (let [tl- (dec tl)
         last-then (get-in-nest res nl :then)
-        id (cond (= id \&) :self-object 
+        id (cond (= id \&) :#self-object#
+                 (= id "&.") :#default-property#
                  (map? id) id
                  :else (keyword (str id)))
         what (get-in-nest res nl :what)]
@@ -428,8 +429,8 @@
 (defn process-id
   "Processes some id due to functions 'f'"
   [f]
-  (complex [id (rep+ alpha)
-            _ (partial set-id (reduce str id) f)]
+  (complex [id (alt (lit-conc-seq "&.") (rep+ alpha))
+            _ (partial set-id (reduce str (flatten id)) f)]
             id))
 
 (def id (process-id found-id))

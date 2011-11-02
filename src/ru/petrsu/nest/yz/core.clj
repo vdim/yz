@@ -277,7 +277,8 @@
   "Processes property."
   [[prop ^Boolean is-recur] obj]
   (cond (map? prop) (process-func prop, obj)
-        (= prop :self-object) obj
+        (= prop :#self-object#) obj
+        (= prop :#default-property#) (get-fv obj (:dp (get mom (class obj))))
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
                      res
