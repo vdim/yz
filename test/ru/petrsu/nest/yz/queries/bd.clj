@@ -1,4 +1,3 @@
-
 ;;
 ;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
@@ -22,11 +21,14 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Pretty BD with Nest model for testing."}
   (:use ru.petrsu.nest.yz.core)
+  (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
-  (:import (ru.petrsu.nest.son SON Building Room Floor)))
+  (:import (ru.petrsu.nest.son SON Building Room Floor
+                               Device, IPNetwork, EthernetInterface, IPv4Interface)))
 
 ;; Define model
 
+;Spatial Structure
 (def f1_b1 (doto (Floor.) 
              (.setNumber (Integer. 1))
              (.addRoom (doto (Room.) (.setNumber "101"))) 
@@ -45,9 +47,51 @@
 (def b1 (doto (Building.) (.setName "MB") (.addFloor f1_b1) (.addFloor f2_b1)))
 (def b2 (doto (Building.) (.setName "TK") (.addFloor f1_b2)))
 
+
+;Network Structure
+
+(def net1 (doto (IPNetwork.) 
+           (.setAddress (ip2b "192.168.112.32")) 
+           (.setMask (ip2b "255.255.255.224"))))
+(def net2 (doto (IPNetwork.) 
+           (.setAddress (ip2b "172.20.255.108")) 
+           (.setMask (ip2b "255.255.255.252"))))
+
+(def rd_ei1_ni1 (doto (IPv4Interface.) 
+                  (.setInetAddress (ip2b "192.168.112.50")) 
+                  (.setNetwork net1)))
+(def rd_ei1_ni2 (doto (IPv4Interface.) 
+                  (.setInetAddress (ip2b "172.20.255.109"))
+                  (.setNetwork net2)))
+(def d1_ei1_ni1 (doto (IPv4Interface.) 
+                  (.setInetAddress (ip2b "192.168.112.51"))
+                  (.setNetwork net1)))
+
+(def rd_ei1 (doto (EthernetInterface.) 
+              (.setMACAddress (mac2b "0015f90524c5")) 
+              (.addNetworkInterface rd_ei1_ni1)))
+(def rd_ei2 (doto (EthernetInterface.) 
+              (.setMACAddress (mac2b "001563a0ae0e"))
+              (.addNetworkInterface rd_ei1_ni2)))
+(def d1_ei1 (doto (EthernetInterface.) 
+              (.setMACAddress (mac2b "001563a0ae1e"))
+              (.addNetworkInterface d1_ei1_ni1)))
+(def rd_ei3 (doto (EthernetInterface.) (.setMACAddress (mac2b "0015f90524c4"))))
+(def rd_ei4 (doto (EthernetInterface.) (.setMACAddress (mac2b "001563a0ae0f"))))
+
+(def d1 (doto (Device.)
+          (.addLinkInterface d1_ei1)))
+(def rootDevice (doto (Device.) 
+                  (.addLinkInterface rd_ei1)
+                  (.addLinkInterface rd_ei2)
+                  (.addLinkInterface rd_ei3)
+                  (.addLinkInterface rd_ei4)))
+
+  
 (def son (doto (SON.)
            (.addBuilding b1) 
-           (.addBuilding b2)))
+           (.addBuilding b2)
+           (.setRootDevice rootDevice)))
 
 ;; Memory Element Manager.
 (def mem (tc/create-emm son))
