@@ -23,8 +23,12 @@
          object1 (object2 (object3))."}
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
-  (:require [ru.petrsu.nest.yz.queries.core :as tc])
-  (:import (ru.petrsu.nest.son SON Building Room Floor)))
+  (:require [ru.petrsu.nest.yz.queries.core :as tc]
+            [ru.petrsu.nest.yz.functions :as f]
+            [ru.petrsu.nest.yz.queries.bd :as bd])
+  (:import (ru.petrsu.nest.son 
+             SON Building Room Floor Network
+             Device, IPNetwork, EthernetInterface)))
 
 ;; Define model
 
@@ -48,7 +52,8 @@
 
 (def son (doto (SON.)
            (.addBuilding b1) 
-           (.addBuilding b2)))
+           (.addBuilding b2)
+           (.setRootDevice bd/rootDevice)))
 
 ;; Define entity manager.
 
@@ -107,8 +112,10 @@
 
 (deftest select-inheritance
          ^{:doc "Tests inheritance queries."}
-         (is (tc/r-query "device (network)"))
-         (is (tc/r-query "device (ipnetwork)"))
-         (is (tc/r-query "device (linkinterface)"))
-         (is (tc/r-query "device (ethernetinterface)")))
+         (is (tc/qstruct? "device (network)" [[Device [[IPNetwork []]]]]))
+         (is (tc/qstruct? "device (ipnetwork)" [[Device [[IPNetwork []]]]]))
+         (is (tc/qstruct? "ipnetwork (device)" [[IPNetwork [[Device []]]]]))
+         (is (tc/qstruct? "device (linkinterface)" [[Device [[EthernetInterface []]]]]))
+         (is (tc/qstruct? "device (ethernetinterface)" [[Device [[EthernetInterface []]]]]))
+         (is (tc/qstruct? "ethernetinterface (device)" [[EthernetInterface [[Device []]]]])))
 
