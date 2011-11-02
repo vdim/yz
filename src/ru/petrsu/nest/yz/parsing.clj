@@ -51,19 +51,19 @@
 
 (def empty-res
   ^{:doc "Defines vector within one empty map. 
-         The vector is initial result of 'parse' function."}
-  [{:what nil
-   :props []
-   :preds nil
-   :then nil
-   :nest nil}])
+         The vector is initial result of 'parse' function.
+         Vector may contains the following key:
+            :props - vector with properties (empty).
+            :what - class for selecting.
+            :preds - list with predicates.
+            :nest - nested vector with definition of linking objects: building (room)
+            :then - nested map with definition of linking objects: building.room
+            :where - path to parent objects."}
+  [{:props []}])
 
 (def empty-then
   ^{:doc "Defines then structure"}
-  {:what nil
-   :props []
-   :preds nil
-   :then nil})
+  (empty-res 0))
 
 (def empty-pred
   ^{:doc "Defines pred structure"}
