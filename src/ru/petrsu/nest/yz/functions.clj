@@ -75,3 +75,10 @@
                     "%02x" 
                     (into-array [(bit-and 0xFF %)])) mac))))
 
+
+(defn mac2b
+  "Transforms a string representation of the
+  MAC address to a byte representation.
+  Example: (mac2b \"000102AA0F12\")."
+  [^String mac]
+  (.toByteArray (org.snmp4j.smi.OctetString/fromString mac 16)))
