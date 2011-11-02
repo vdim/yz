@@ -27,11 +27,13 @@
 
 ;; Define model
 
+(def f1_b2 (doto (Floor.) (.addRoom (doto (Room.) (.setNumber "1")))))
+
 (def son (doto (SON.)
            (.addBuilding (doto (Building.) (.setName "building1") 
                            (.addFloor (Floor.)) (.addFloor (Floor.)))) 
            (.addBuilding (doto (Building.) (.setName "building2") 
-                           (.addFloor (doto (Floor.) (.addRoom (doto (Room.) (.setNumber "1")))))))))
+                           (.addFloor f1_b2)))))
 
 
 ;; Define entity manager.
@@ -62,17 +64,26 @@
            (is (or (= q [['("building1") [] '("building2") []]])
                    (= q [['("building2") [] '("building1") []]])))))
 
+
 (deftest select-prop
          ^{:doc "Checks props"}
-         (is (= (tc/check-query "floor.number" [['(0) [] '(0) [] '(0) []]])))
-         (is (= (tc/check-query "floor.name" [['(nil) [] '(nil) [] '(nil) []]])))
-         (is (= (tc/check-query "building.floor.number" [['(0) [] '(0) [] '(0) []]]))))
+         (is (= (tc/r-query "floor.number") [['(nil) [] '(nil) [] '(nil) []]]))
+         (is (= (tc/r-query "floor.name") [['(nil) [] '(nil) [] '(nil) []]]))
+         (is (= (tc/r-query "building.floor.number") [['(nil) [] '(nil) [] '(nil) []]])))
+
 
 (deftest select-props
          ^{:doc "Checks props"}
-         (is (= (tc/check-query "floor[number name]" [['(0 nil) [] '(0 nil) [] '(0 nil) []]])))
-         (is (= (tc/check-query "floor[name number]" [['(nil 0) [] '(nil 0) [] '(nil 0) []]])))
-         (is (= (tc/check-query "room[number]" [['("1") []]]))))
+         (is (= (tc/r-query "floor[number name]") [['(nil nil) [] '(nil nil) [] '(nil nil) []]]))
+         (is (= (tc/r-query "floor[name number]") [['(nil nil) [] '(nil nil) [] '(nil nil) []]]))
+         (is (= (tc/r-query "room[number]") [['("1") []]])))
+
+
+(deftest select-self-and-dp
+         ^{:doc "Checks selecting default property and self object."}
+         (is (= (tc/qstruct? "floor[&]" [[Floor []]])))
+         (is (= (tc/r-query "room[&.]") [['("1") []]])))
+
 
 (deftest select-by-short-name
          ^{:doc "Selects object by short name"}
