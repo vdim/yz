@@ -133,13 +133,7 @@
           (if ch-p
             (filter-by-preds elems (create-string-from-preds preds))
             elems))
-        (try 
-          (if (and (= (count preds) 1) (= ((:ids (preds 0)) 0) "id") (= (:func (preds 0)) "="))
-            (.getById em (:value (preds 0)))
-            (filter-by-preds (.getElements em cl) (create-string-from-preds preds)))
-          (catch IllegalArgumentException e 
-            (throw (IllegalArgumentException. 
-                     "Don't recognize ElementManager. Do you implement getElements method?"))))))
+    (filter-by-preds (.getElements em cl) (create-string-from-preds preds))))
 
 
 (defn get-fv
