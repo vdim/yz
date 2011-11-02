@@ -182,7 +182,7 @@
                            (let [[fmod q] %
                                  rq (if (or (= fmod :indep) (nil? obj))
                                         (run-query q)
-                                        (process-nests q obj (class obj)))]
+                                        (process-nests q obj))]
                              (cond (= fmod :single) {:mode :single 
                                                      :res (map (fn [p] (get-rows [p])) 
                                                                (mapcat (fn [r] (map vec (partition 2 r))) rq))}
@@ -270,27 +270,13 @@
 
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
-  belonged to 'sources' objects (search is based on mom)."
-  [sources ^Class cl-target ^String preds ^Class cl-source]
-  (let [g-objs 
-        (fn [paths] 
-          (mapcat #(loop [ps % res sources]
-                     (if (empty? ps)
-                       (filter-by-preds res preds)
-                       (recur (rest ps) (get-objs (first ps) res))))
-                  paths))]
-    (loop [cl- cl-target]
-      (let [paths (get (get mom cl-source) cl-)]
-        (if (empty? paths)
-          (if (nil? cl-)
-            (let [paths (some #(let [ps (get (get mom cl-source) %)]
-                                 (if (not (empty? ps)) ps)) 
-                              (ancestors cl-target))]
-              (if (empty? paths)
-                (throw (Exception. (str "Not found path between " cl-source " and " cl-target ".")))
-                (g-objs paths)))
-            (recur (:superclass (get mom cl-))))
-          (g-objs paths))))))
+  belonged to 'sources' objects."
+  [sources ^String preds paths]
+  (mapcat #(loop [ps % res sources]
+             (if (empty? ps)
+               (filter-by-preds res preds)
+               (recur (rest ps) (get-objs (first ps) res))))
+          paths))
 
 
 (defn- process-prop
@@ -318,33 +304,36 @@
   "Processes :then value of query structure.
   Returns sequence of objects."
   [then, objs, props, cl]
-  (loop [then- then, objs- objs, props- props, cl- cl]
+  (loop [then- then, objs- objs, props- props]
     (if (or (nil? then-) (every? nil? objs-))
-      (map (fn [o] [o, (process-props o props-), cl-]) objs-)
+      (map (fn [o] [o, (process-props o props-)]) objs-)
       (recur (:then then-) 
-             (get-objs-by-path objs- (:what then-) (create-string-from-preds (:preds then-)) cl-)
-             (:props then-)
-             (:what then-)))))
+             (get-objs-by-path objs- (create-string-from-preds (:preds then-)) (:where then-))
+             (:props then-)))))
 
 
 (declare process-nests)
 (defmacro p-nest
   "Generates code for process :nest value with some objects."
   [^PersistentArrayMap nest, objs]
-  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0) (%2 2)))
+  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0)))
           []
           (process-then (:then ~nest) ~objs (:props ~nest) (:what ~nest))))
 
 
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
-  [^PersistentArrayMap nest, objs, ^Class cl]
-  (p-nest nest (get-objs-by-path objs (:what nest) (create-string-from-preds (:preds nest)) cl)))
+  [^PersistentArrayMap nest, objs]
+  (p-nest nest (get-objs-by-path 
+                 objs  
+                 (create-string-from-preds (:preds nest)) 
+                 (:where nest))))
+
 
 (defn- process-nests
   "Processes :nest value of query structure"
-  [nests obj cl]
-  (vec (map #(process-nest % [obj] cl) nests)))
+  [nests obj]
+  (vec (map #(process-nest % [obj]) nests)))
 
 
 (defn- do-query

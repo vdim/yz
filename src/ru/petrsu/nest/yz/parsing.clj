@@ -113,7 +113,7 @@
   nest-level times, then k is."
   [res nest-level k]
   (loop [res- res nl nest-level]
-    (if (= nl 0)
+    (if (<= nl 0)
       (get (last res-) k)
       (recur (:nest (last res-)) (dec nl)))))
 
@@ -124,6 +124,40 @@
   (if (= tl 0) 
     (get-in-nest res nl k) 
     (get-in (get-in-nest res nl :then) (conj (vec (repeat (dec tl) :then)) k))))
+
+
+(defn get-in-nest-or-then
+  "If last then is nil, then returns result
+  of get-in-nest, otherwise returns result get-in-then."
+  [res nl tl k]
+  (let [last-then (get-in-nest res nl :then)]
+    (if (nil? last-then)
+      (let [then (get-in-nest res (dec nl) :then)]
+        (if (nil? then)
+          (get-in-nest res (dec nl) k)
+          (loop [then- then, what (:what then)]
+            (if (nil? then-)
+              what
+              (recur (:then then-) (:what then-))))))
+      (get-in-then res nl tl k))))
+
+(defn- get-paths
+  "Returns list of paths beetwen cl-target and cl-source."
+  [^Class cl-target, ^Class cl-source, mom]
+  (if (or (nil? cl-target) (nil? cl-source))
+    nil
+    (loop [cl- cl-target]
+      (let [paths (get (get mom cl-source) cl-)]
+        (if (empty? paths)
+          (if (nil? cl-)
+            (let [paths (some #(let [ps (get (get mom cl-source) %)]
+                                 (if (not (empty? ps)) ps)) 
+                              (ancestors cl-target))]
+              (if (empty? paths)
+                (throw (Exception. (str "Not found path between " cl-source " and " cl-target ".")))
+                paths))
+            (recur (:superclass (get mom cl-))))
+          paths)))))
 
 
 (defn change-preds
@@ -201,7 +235,7 @@
                                k 
                                (let [res- (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret)]
                                  (cond (not= value :not-value) value
-                                       (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res nl tl :what))
+                                       (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res  nl tl :what))
                                        (and (= k :func) (= (cs/trim res-) "!=")) "not="
                                        :else res-)))))]
               ret)))
@@ -250,9 +284,18 @@
       (found-prop res mom id nl tl is-recur)
       (if (> tl 0)
         (if (nil? last-then)
-          (assoc-in-nest res nl :then (assoc empty-then :what cl))
-          (assoc-in-nest res nl :then (assoc-in last-then (repeat tl- :then) (assoc empty-then :what cl))))
-        (assoc-in-nest res nl :what cl)))))
+          (assoc-in-nest res nl :then (assoc empty-then 
+                                             :what cl 
+                                             :where (get-paths cl, (get-in-nest res nl :what), mom)))
+          (assoc-in-nest 
+            res nl 
+            :then (assoc-in last-then 
+                            (repeat tl- :then) 
+                            (assoc empty-then 
+                                   :what cl
+                                   :where (get-paths cl, (:what last-then), mom)))))
+        (assoc-in-nest (assoc-in-nest res nl :what cl) 
+                       nl :where (get-paths cl, (get-in-nest-or-then res nl tl :what), mom))))))
 
 
 (defn update-preds
@@ -532,7 +575,13 @@
              (f-mod indep-pq :indep))
         (complex [ret textq 
                   mom (get-info :mom)
+                  nl (get-info :nest-level)
+                  tl (get-info :then-level)
+                  res (get-info :result)
                   q (effects (:result (parse+ ret mom)))
+                  q (effects (vec (map #(assoc % 
+                                               :where 
+                                               (get-paths (:what %) (get-in-nest res nl :what) mom)) q)))
                   fm (get-info :f-modificator)
                   _ (update-param [fm q])]
                  ret)
