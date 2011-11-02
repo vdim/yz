@@ -291,9 +291,12 @@
             res nl 
             :then (assoc-in last-then 
                             (repeat tl- :then) 
-                            (assoc empty-then 
-                                   :what cl
-                                   :where (get-paths cl, (:what last-then), mom)))))
+                            (let [what (if (> tl- 1) 
+                                         (get-in last-then (conj (vec (repeat (dec tl-) :then)) :what))
+                                         (:what last-then))]
+                              (assoc empty-then 
+                                     :what cl
+                                     :where (get-paths cl, what, mom))))))
         (assoc-in-nest (assoc-in-nest res nl :what cl) 
                        nl :where (get-paths cl, (get-in-nest-or-then res nl tl :what), mom))))))
 
