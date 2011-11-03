@@ -10,7 +10,7 @@
         ru.petrsu.nest.yz.hb-utils 
         ru.petrsu.nest.yz.functions 
         ru.petrsu.nest.yz.yz]
-  :java-source-path "test"
+  :java-source-path "."
   :jar-exclusions [#"\.swp$|\.clj$"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false)

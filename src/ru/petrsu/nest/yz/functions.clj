@@ -20,7 +20,8 @@
 (ns ru.petrsu.nest.yz.functions
   ^{:author "Vyacheslav Dimitrov"
     :doc "Set of functions which is build-in YZ."}
-  (:import (java.net InetAddress)))
+  (:import (java.net InetAddress)
+           (ru.petrsu.nest.yz YZUtils)))
 
 
 (defn maxl
@@ -79,6 +80,6 @@
 (defn mac2b
   "Transforms a string representation of the
   MAC address to a byte representation.
-  Example: (mac2b \"000102AA0F12\")."
+  Example: (mac2b \"00:01:02:AA:0F:12\")."
   [^String mac]
-  (.toByteArray (org.snmp4j.smi.OctetString/fromString mac 16)))
+  (YZUtils/getMACfromString mac))
