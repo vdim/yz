@@ -39,12 +39,15 @@
              (.addRoom (doto (Room.) (.setNumber "201"))) 
              (.addRoom (doto (Room.) (.setNumber "202")))))
 
+(def f3_b1 (doto (Floor.) 
+             (.setNumber (Integer. 3))))
+
 (def f1_b2 (doto (Floor.) 
              (.setNumber (Integer. 1))
              (.addRoom (doto (Room.) (.setNumber "1001"))) 
              (.addRoom (doto (Room.) (.setNumber "1002")))))
 
-(def b1 (doto (Building.) (.setName "MB") (.addFloor f1_b1) (.addFloor f2_b1)))
+(def b1 (doto (Building.) (.setName "MB") (.addFloor f1_b1) (.addFloor f2_b1) (.addFloor f3_b1)))
 (def b2 (doto (Building.) (.setName "TK") (.addFloor f1_b2)))
 
 
@@ -68,16 +71,16 @@
                   (.setNetwork net1)))
 
 (def rd_ei1 (doto (EthernetInterface.) 
-              (.setMACAddress (mac2b "0015f90524c5")) 
+              (.setMACAddress (mac2b "00:15:f9:05:24:c5"))
               (.addNetworkInterface rd_ei1_ni1)))
 (def rd_ei2 (doto (EthernetInterface.) 
-              (.setMACAddress (mac2b "001563a0ae0e"))
+              (.setMACAddress (mac2b "00:15:63:a0:ae:0e"))
               (.addNetworkInterface rd_ei1_ni2)))
 (def d1_ei1 (doto (EthernetInterface.) 
-              (.setMACAddress (mac2b "001563a0ae1e"))
+              (.setMACAddress (mac2b "00:15:63:a0:ae:1e"))
               (.addNetworkInterface d1_ei1_ni1)))
-(def rd_ei3 (doto (EthernetInterface.) (.setMACAddress (mac2b "0015f90524c4"))))
-(def rd_ei4 (doto (EthernetInterface.) (.setMACAddress (mac2b "001563a0ae0f"))))
+(def rd_ei3 (doto (EthernetInterface.) (.setMACAddress (mac2b "00:15:f9:05:24:c4"))))
+(def rd_ei4 (doto (EthernetInterface.) (.setMACAddress (mac2b "00:15:63:a0:ae:0f"))))
 
 (def d1 (doto (Device.)
           (.addLinkInterface d1_ei1)))
