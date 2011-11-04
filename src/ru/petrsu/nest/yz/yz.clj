@@ -28,6 +28,7 @@
               :constructors {[Object] [], [Object String] []}
               :methods [[getResultList [String] java.util.List]
                         [getResult [String] java.util.Map]
+                        [getStructuredResult [] java.util.List]
                         [getError [] String]
                         [getColumnsName [] java.util.List]]
               :state state
@@ -84,6 +85,12 @@
   "Returns rows of query's result."
   [this, ^String query]
   (:rows (pq this query)))
+
+
+(defn -getStructuredResult
+  "Returns a value of :result key from map of the result query."
+  [this]
+  (:result (get-by-key :res this)))
 
 
 (defn -getError
