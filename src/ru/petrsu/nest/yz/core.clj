@@ -447,7 +447,7 @@
                                                    (catch Throwable e (.getMessage e)))
                                 :else (try
                                         (let [rq (run-query parse-res)]
-                                          [rq (get-rows rq)])
+                                          [rq (sequence (set (get-rows rq)))])
                                         (catch Throwable e (.getMessage e))))]
         (if (string? run-query-res)
           (def-result [] run-query-res [] ())
