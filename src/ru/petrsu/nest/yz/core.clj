@@ -308,13 +308,13 @@
 
 
 (declare process-nests)
-(defmacro p-nest
+
+(defn p-nest
   "Generates code for process :nest value with some objects."
   [^PersistentArrayMap nest, objs]
-  `(reduce #(conj %1 (%2 1) (process-nests (:nest ~nest) (%2 0)))
+  (reduce #(conj %1 (%2 1) (process-nests (:nest nest) (%2 0)))
           []
-          (process-then (:then ~nest) ~objs (:props ~nest) (:what ~nest))))
-
+          (process-then (:then nest) objs (:props nest) (:what nest))))
 
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
