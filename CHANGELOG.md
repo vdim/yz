@@ -1,3 +1,11 @@
+## 0.0.1-alpha9 / 05.11.2011
+
+* Fixed problem with inheritance from interface.
+* A little bit improving performance.
+* Added support default property (for list with properties and parameter in function).
+* Removed duplicate rows from value of :rows key from result of pquery function.
+* Added getStructuredResult to Java`s YZ wrapper.
+
 ## 0.0.1-alpha8 / 28.10.2011
 
 * Fixed problems with interfaces and properties.
