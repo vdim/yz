@@ -76,7 +76,7 @@
   [f]
   (resolve (symbol (str "ru.petrsu.nest.yz.benchmark." f "/do-q"))))
 
-
+(comment
 (defn -main
   "Takes a number of query and some settings and prints time of executing query."
   ([num, n, url, dialect, driver, ql]
@@ -87,7 +87,7 @@
        "hibernate.connection.driver_class" driver}))
   ([num, n, ql]
    ((getf ql) num, n, {})))
-
+)
 
 (defn bench-parsing
   "Beanchmark parsing. Executes parsing 
@@ -146,4 +146,12 @@
                         (line-seq (cio/reader f)))]
     (cio/copy new-res (cio/file f))))
 
+
+(defn -main
+  "Main function for running benchmark from command 
+  line (not repl). Need for jvisualvm."
+  []
+  (let [son (bu/gen-bd 10000)
+        mom (hb/mom-from-file "nest.mom")]
+    (reduce #(str %1 (bench 15 %2 mom son)) "" yz/queries)))
 
