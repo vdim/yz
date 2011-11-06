@@ -22,7 +22,8 @@
     :doc "This code implements GUI for the demonstration using YZ."}
   (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.core :as c]
-            [ru.petrsu.nest.yz.hb-utils :as hb])
+            [ru.petrsu.nest.yz.hb-utils :as hb]
+            [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (javax.swing JPanel JTable JScrollPane 
                         JFrame JTextField JOptionPane)
            (java.awt Insets GridBagConstraints GridBagLayout)
@@ -83,8 +84,7 @@
       listener))
 
 (def mom (hb/mom-from-file "nest.mom"))
-(def em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest")))
-
+(def em bd/mem)
 
 (defn- create-qtext
   "Create jtextfield for the input query."
