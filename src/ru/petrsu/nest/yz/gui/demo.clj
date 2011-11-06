@@ -138,4 +138,9 @@
     (.setVisible true)))
 
 
+(defn -main
+  "Main function for running demo from command 
+  line (not repl). Need for jvisualvm."
+  []
+  (demo))
 
