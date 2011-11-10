@@ -27,8 +27,9 @@
             [ru.petrsu.nest.yz.functions :as f]
             [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (ru.petrsu.nest.son 
-             SON Building Room Floor Network
-             Device, IPNetwork, EthernetInterface)))
+             SON, Building, Room, Floor, Network,
+             Device, IPNetwork, EthernetInterface, NetworkInterface,
+             LinkInterface, IPv4Interface, UnknownLinkInterface)))
 
 ;; Define model
 
@@ -115,7 +116,30 @@
          (is (tc/qstruct? "device (network)" [[Device [[IPNetwork []]]]]))
          (is (tc/qstruct? "device (ipnetwork)" [[Device [[IPNetwork []]]]]))
          (is (tc/qstruct? "ipnetwork (device)" [[IPNetwork [[Device []]]]]))
-         (is (tc/qstruct? "device (linkinterface)" [[Device [[EthernetInterface []]]]]))
          (is (tc/qstruct? "device (ethernetinterface)" [[Device [[EthernetInterface []]]]]))
          (is (tc/qstruct? "ethernetinterface (device)" [[EthernetInterface [[Device []]]]])))
+
+
+(deftest select-inheritance-2
+         ^{:doc "Tests query like this device (ei). (Problem with inheritance.)"}
+         (let [f (fn [cl, query, n] 
+                   (every? true? (map #(if (< (count %) (inc n)) 
+                                         true 
+                                         (= cl (.getClass (% n)))) 
+                                      (tc/rows-query query))))]
+           (is (f EthernetInterface "device (ei)" 1))
+           (is (f Device "ei (device)" 1))
+           (is (f EthernetInterface "ei (device)" 0))
+           (is (f UnknownLinkInterface "device (uli)" 1))
+           (is (f IPv4Interface "device (ip4i)" 1))
+           (is (f IPNetwork "device (ipnetwork)" 1)))
+         (let [f (fn [cl, query] 
+                   (every? true? (map #(if (< (count %) 2) 
+                                         true 
+                                         (instance? cl (% 1))) 
+                                      (tc/rows-query query))))]
+           (is (f LinkInterface "device (li)"))
+           (is (f NetworkInterface "device (ni)"))
+           (is (f Network "device (network)"))))
+
 

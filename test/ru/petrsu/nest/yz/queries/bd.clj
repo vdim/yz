@@ -24,7 +24,8 @@
   (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
   (:import (ru.petrsu.nest.son SON Building Room Floor
-                               Device, IPNetwork, EthernetInterface, IPv4Interface)))
+                               Device, IPNetwork, EthernetInterface, 
+                               IPv4Interface, UnknownLinkInterface)))
 
 ;; Define model
 
@@ -88,7 +89,8 @@
                   (.addLinkInterface rd_ei1)
                   (.addLinkInterface rd_ei2)
                   (.addLinkInterface rd_ei3)
-                  (.addLinkInterface rd_ei4)))
+                  (.addLinkInterface rd_ei4)
+                  (.addLinkInterface (UnknownLinkInterface.))))
 
   
 (def son (doto (SON.)
