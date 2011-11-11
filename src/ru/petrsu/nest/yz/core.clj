@@ -24,8 +24,9 @@
 
          The Parsing of queries does due to the fnparse library.
          See the code for the parsing queries in the parsing.clj file.
-
-         Criteria API 2.0 is used as API for access to a storage."}
+         
+         You must have some implementation of the ElementManager (see below definterface) and
+         pass it to the pquery function."}
   (:require [ru.petrsu.nest.yz.parsing :as p] [clojure.string :as cs])
   (:use ru.petrsu.nest.yz.functions)
   (:import (javax.persistence.criteria 

@@ -75,7 +75,7 @@
   [^List classes]
   (reify ElementManager
     (^java.util.Collection getElems [_ ^Class claz] 
-       (throw (UnsupportedOperationException. "Not supported.")))
+       (throw (UnsupportedOperationException. "Not supported yet.")))
     (getClasses [_] classes)))
 
 
