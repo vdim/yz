@@ -23,9 +23,11 @@
   (:require
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
-    (javax.persistence EntityManager))
+    (javax.persistence EntityManager)
+    (ru.petrsu.nest.yz.core ElementManager))
   (:gen-class :name ru.petrsu.nest.yz.QueryYZ
-              :constructors {[Object] [], [Object String] []}
+              :constructors {[ru.petrsu.nest.yz.core.ElementManager] [], 
+                             [ru.petrsu.nest.yz.core.ElementManager String] []}
               :methods [[getResultList [String] java.util.List]
                         [getSingleResult [String] Object]
                         [getResult [String] java.util.Map]
@@ -47,12 +49,12 @@
 (defn- create-state
   "Creates state due to em. If f-mom is'not nil then
   mom is extracted from file."
-  [em, f-mom]
+  [^ElementManager em, f-mom]
   (atom {:em em 
          :mom (if (nil? @*mom*) 
                 (reset! *mom* 
                         (if (nil? f-mom)
-                          (hu/gen-mom-from-metamodel (.getEntityManagerFactory em))
+                          (hu/gen-mom (.getClasses em) {})
                           (hu/mom-from-file f-mom)))
                 @*mom*)
          :res nil}))
@@ -60,10 +62,10 @@
 
 (defn -init
   "Defines constructors."
-  ([em]
+  ([^ElementManager em]
    [[] (create-state em nil)])
 
-  ([em ^String f]
+  ([^ElementManager em ^String f]
    [[] (create-state em f)]))
 
 (defn- pq

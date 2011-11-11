@@ -36,24 +36,22 @@
 
 (definterface ElementManager
   ^{:doc "This interface is needed for abstraction of any persistence storage. 
-         You should implement getElements which takes specified class ('claz')
+         You must implement getElems which takes specified class ('claz')
          and returns collection of objects which have this class.
          The YZ implements the next algorithm 
          (let's consider query: \"building (device#(forwarding=true))\"):
             1. Gets root elements (building) due to the implementation of this interface.
             2. Finds elements (device) which are connected with root elements (building) due to the MOM.
-            3. Executes restrictions.
+            3. Filters device due to restrictions.
          
          getClasses returns collection of classes which are entities of the model.
-         This method is needed for generating the MOM (Map Of the Model).
-         
-         Also you can implement getById for more performance access to object by specified id. This
-         function is called in case a query contains structure like this: ...#(id=2)."}
-  (^java.util.Collection getElements [^Class claz])
-  (^java.util.Collection getClasses [])
-  (^Object getById [^Object id]))
+         This method is needed for generating the MOM (Map Of the Model)."}
+  (^java.util.Collection getElems [^Class claz])
+  (^java.util.Collection getClasses []))
 
-(declare em, mom)
+(def ^{:dynamic true
+       :tag ElementManager} *em*)
+(def ^{:dynamic true} *mom*)
 
 (defn ^String tr-pred
   "Transforms 'pred' map into string"
@@ -119,21 +117,21 @@
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
   [^Class cl, ^PersistentVector preds]
-  (if (instance? EntityManager em)
-        (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
+  (if (instance? EntityManager *em*)
+        (let [^CriteriaBuilder cb (.getCriteriaBuilder *em*)
               cr (.createTupleQuery cb)
               ^Root root (. cr (from cl))
               cr (.. cr (multiselect [root]) (distinct true))
               ch-p (contains-f? preds) ; ch-p defines whether "preds" contains function.
               elems (map #(.get % 0) 
-                         (.. em (createQuery (if (or (nil? preds) ch-p)
+                         (.. *em* (createQuery (if (or (nil? preds) ch-p)
                                                  cr 
                                                  (.where cr (create-predicate preds cb root))))
                            getResultList))]
           (if ch-p
             (filter-by-preds elems (create-string-from-preds preds))
             elems))
-    (filter-by-preds (.getElements em cl) (create-string-from-preds preds))))
+    (filter-by-preds (.getElems *em* cl) (create-string-from-preds preds))))
 
 
 (defn get-fv
@@ -159,7 +157,7 @@
 
         ; If value is an array then we check whether a type of the array from the MOM, If true then
         ; we returns a collection from this array.
-        (and (.isArray (class v)) (get mom (.getComponentType (class v)))) (map identity v)
+        (and (.isArray (class v)) (get *mom* (.getComponentType (class v)))) (map identity v)
 
         ; Returns value.
         :else v))))
@@ -189,7 +187,7 @@
                            (= "&" %) obj 
 
                            ; param is value of the default property.
-                           (= "&." %) (get-fv obj (keyword (:dp (get mom (class obj)))))
+                           (= "&." %) (get-fv obj (keyword (:dp (get *mom* (class obj)))))
 
                            ; param is value of some property of the object.
                            (and (instance? String %) (.startsWith % "&."))  (get-fv obj (keyword (.substring % 2)))
@@ -279,7 +277,7 @@
   [[prop ^Boolean is-recur] obj]
   (cond (map? prop) (process-func prop, obj)
         (= prop :#self-object#) obj
-        (= prop :#default-property#) (get-fv obj (:dp (get mom (class obj))))
+        (= prop :#default-property#) (get-fv obj (:dp (get *mom* (class obj))))
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
                      res
@@ -434,13 +432,13 @@
     :result - a result of a query
     :columns - vector with column's names.
     :rows - rows of the result of a query."
-  [^String query ^PersistentArrayMap mom em]
-  (do (def mom mom)
-    (def em em)
+  [^String query ^PersistentArrayMap mom ^ElementManager em]
+  (binding [*mom* mom
+            *em* em]
     (if (empty? query)
       (def-result [[]] nil [] ())
       (let [parse-res (try
-                        (p/parse query mom)
+                        (p/parse query *mom*)
                         (catch Throwable e (.getMessage e)))
             run-query-res (cond (string? parse-res) parse-res
                                 (map? parse-res) (try

@@ -51,10 +51,10 @@
   "Implementation of the memory ElementManager."
   [son, id-cache]
   (reify ElementManager
-    (^java.util.Collection getElements [_ ^Class claz] 
+    (^java.util.Collection getElems [_ ^Class claz] 
          (filter #(= (class %) claz) (map identity (se-iterator son))))
-    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))
-    (getById [_ ^Object id] (get id-cache id))))
+    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))))
+    ;(getById [_ ^Object id] (get id-cache id))))
 
 
 (defn create-id-cache
