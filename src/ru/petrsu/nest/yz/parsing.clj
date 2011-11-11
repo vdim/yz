@@ -202,7 +202,7 @@
 (defn- get-path
   "Returns path from cl-source to cl-target (search based on the mom)."
   [id, cl-source, cl-target, mom]
-  (let [paths (get (get mom cl-source) cl-target)]
+  (let [paths (get-paths cl-target cl-source mom)]
     (if (empty? paths)
       ;; If path is not found then function returns self id. 
       ;; We can't throw exception, because we don't know whether 
