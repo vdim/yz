@@ -27,6 +27,7 @@
   (:gen-class :name ru.petrsu.nest.yz.QueryYZ
               :constructors {[Object] [], [Object String] []}
               :methods [[getResultList [String] java.util.List]
+                        [getSingleResult [String] Object]
                         [getResult [String] java.util.Map]
                         [getStructuredResult [] java.util.List]
                         [getError [] String]
@@ -103,3 +104,13 @@
   "Returns value of :columns key from query's result."
   [this]
   (:columns (get-by-key :res this)))
+
+
+(defn -getSingleResult
+  "Returns single result. If result is not single then
+  exception is thrown."
+  [this, ^String query]
+  (let [rows (:rows (pq this query))]
+    (if (or (not= (count rows) 1) (not= (count (nth rows 0)) 1))
+      (throw (Exception. "Result is not single."))
+      (nth (nth rows 0) 0))))
