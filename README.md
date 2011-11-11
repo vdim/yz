@@ -1,7 +1,18 @@
 Implementation of the YZ query language specification.
 
-## Restriction
-It is just prototype, not for production using.
+## About
+The YZ is supplied an user with tool for getting information about an
+object model. It is not tool for programmers, because
+they have full information and different tools for quering 
+(LINQ for example, and its numerous children) about object model from their code. 
+But there is case where programmers can not predict tasks of users about quering of data
+(of course in case advanced system and its advanced users), 
+so for solving this problem programmers can build into their system the YZ. (Of course
+if programmers use JPA (and its implementataion: Hibernate, OpenJPA and so on) 
+system for persistence storage they can offers to their users a JP-QL or )
+
+Idee fixe of the YZ is brevity.
+
 
 ## Installation
 
@@ -30,9 +41,12 @@ if you use some dependency manager ([ivy] (http://ant.apache.org/ivy/),
 [maven] (http://maven.apache.org/), [leiningen] (https://github.com/technomancy/leiningen) and so on) you
 can use it for getting the YZ. For example, you can write for ivy 
 something like this:
+	
 	&lt;dependency org="ru.petrsu.nest" name="yz" rev="0.0.1-ver"/&gt;
 
 Direct link: [http://clojars.org/ru.petrsu.nest/yz] (http://clojars.org/ru.petrsu.nest/yz)
+
+
 
 ## Usage
 ### Clojure
@@ -163,18 +177,12 @@ The complexity of restrictions is not limit:
 	category#(version=0 || (name="some cat" && parentCategory.name="p_cat"))
 
 
-## Notes about implementation of the YZ
-This implementation of the YZ is based on Criteria API 2.0 
-(it is part of the [JSR 220] (http://jcp.org/aboutJava/communityprocess/final/jsr220/index.html)) so you can use it in
-case if you use some implementation of this API (for example, [OpenJPA] (http://openjpa.apache.org/), 
-[Hibernate] (http://www.hibernate.org/), [ObjectBD] (http://www.objectdb.com/)).
-
-## BNF 
-
+## Restriction
+It is just prototype, not for production using.
 
 ## Copyright
 
-Copyright 2011 Vyacheslav Dimitrov, Petrozavodsk State University
+Copyright 2011 Vyacheslav Dimitrov, Petrozavodsk State University.
 
 YZ is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License version 3
