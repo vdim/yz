@@ -8,8 +8,9 @@ they have full information and different tools for quering
 But there is case where programmers can not predict tasks of users about quering of data
 (of course in case advanced system and its advanced users), 
 so for solving this problem programmers can build into their system the YZ. (Of course
-if programmers use JPA (and its implementataion: Hibernate, OpenJPA and so on) 
-system for persistence storage they can offers to their users a JP-QL or )
+if programmers use JPA (and its implementatation: Hibernate, OpenJPA and so on) 
+system for persistence storage they can offers to their users JP-QL or HQL or something else
+languages.)
 
 Idee fixe of the YZ is brevity.
 
@@ -42,7 +43,7 @@ if you use some dependency manager ([ivy] (http://ant.apache.org/ivy/),
 can use it for getting the YZ. For example, you can write for ivy 
 something like this:
 	
-	&lt;dependency org="ru.petrsu.nest" name="yz" rev="0.0.1-ver"/&gt;
+	<code>&lt;dependency org="ru.petrsu.nest" name="yz" rev="0.0.1-ver"/&gt;</code>
 
 Direct link: [http://clojars.org/ru.petrsu.nest/yz] (http://clojars.org/ru.petrsu.nest/yz)
 
