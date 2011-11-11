@@ -93,7 +93,7 @@
         path (get-path root (:ids pred))
         ;v  (cs/trim (:value pred))
         v (:value pred)
-        v (if (and (instance? String v) (= \" (nth v 0))) (subs v 1 (- (count v) 1)) v)]
+        v (if (and (instance? String v) (= \" (nth v 0))) (subs v 1 (dec (count v))) v)]
     (cond (and (= "=" op) (nil? v)) (.isNull cb path)
           (= "=" op) (.equal cb path v)
           (= ">" op) (.gt cb path (Double/parseDouble v))
@@ -145,7 +145,7 @@
     nil
     (let [v (get (bean o) field-name :not-found)]
       (cond 
-        ; If value is nil then function return nil.
+        ; If value is nil then function returns nil.
         (nil? v) v
 
         ; If value not found into bean map then we try find this value due to java reflection.
@@ -240,7 +240,7 @@
 
 (defn- ^String create-string-from-preds
   "Creates string from preds vector for 
-  checking object due to restriction"
+  checking object due to restriction."
   [^PersistentVector preds]
   (if (nil? preds)
     nil
@@ -266,12 +266,12 @@
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects."
   [sources ^String preds paths ^Class what]
-  (let [objs (mapcat #(loop [ps % res sources]
-                        (if (empty? ps)
-                          (filter-by-preds res preds)
-                          (recur (rest ps) (get-objs (first ps) res))))
-                     paths)]
-    (filter #(instance? what %) objs)))
+  (mapcat #(loop [ps % res sources]
+             (if (empty? ps)
+               (let [res (filter (fn [o] (instance? what o)) res)]
+                 (filter-by-preds res preds))
+               (recur (rest ps) (get-objs (first ps) res))))
+          paths))
 
 
 (defn- process-prop

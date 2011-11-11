@@ -17,6 +17,15 @@
 ;; <http://www.gnu.org/licenses/>.
 ;;
 
+;; 
+;; Abridgements into comments:
+;;    MOM - The Map of the Object Model 
+;;    RCP - Reduced Complicated Predicates 
+;;      (The YZ allows using the following syntax 
+;;      for reducing complicated predicates: floor#(number = (1 || 2)) 
+;;      instead of floor#(number=1 || number=2))
+;;      
+
 (ns ru.petrsu.nest.yz.parsing
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
@@ -44,7 +53,8 @@
            :f-modificator ; Modificator of function's param.
            :function ; Describe current function.
            :is-recur ; Defines whether property is recur.
-           :cur-pred) ; Current predicate.
+           :cur-pred ; Current predicate.
+           :pp) ; Define process property.
 
 
 ;; Helper macros, definitions and functions.
@@ -52,7 +62,7 @@
 (def empty-res
   ^{:doc "Defines vector within one empty map. 
          The vector is initial result of 'parse' function.
-         Vector may contains the following key:
+         Vector may contains the following keys:
             :props - vector with properties (empty).
             :what - class for selecting.
             :preds - list with predicates.
@@ -190,11 +200,15 @@
 
 (declare find-class)
 (defn- get-path
-  "Returns path from cl-source to class of id
-  (search based on the mom.)"
+  "Returns path from cl-source to cl-target (search based on the mom)."
   [id, cl-source, cl-target, mom]
   (let [paths (get (get mom cl-source) cl-target)]
     (if (empty? paths)
+      ;; If path is not found then function returns self id. 
+      ;; We can't throw exception, because we don't know whether 
+      ;; cl-target is some interface and there is path between 
+      ;; cl-source and some implementation of this interface.
+      ;; This behaviour is processed into core.clj.
       [id]
       (nth paths 0))))
 
@@ -203,14 +217,15 @@
   "Returns new value of the :ids key of the pred structure."
   [ids ^String res ^PersistentArrayMap mom ^Class cl]
   (let [sp-res (cs/split res #"\.")]
-    (loop [cl- cl, ids- ids, sp-res- sp-res]
+    (loop [cl- cl, ids- ids, sp-res- sp-res pp nil]
       (if (empty? sp-res-)
-        ids-
+        [ids- pp]
         (let [id (first sp-res-)
               ^Class cl-target (find-class id mom)]
           (recur cl-target
                  (vec (flatten (conj ids- (get-path id cl- cl-target mom))))
-                 (rest sp-res-)))))))
+                 (rest sp-res-)
+                 ((keyword id) (:p-properties (get mom cl-)))))))))
 
 
 (defn change-pred
@@ -227,18 +242,47 @@
              nl (get-info :nest-level)
              tl (get-info :then-level)
              preds (get-info :preds)
-             _ (update-info :cur-pred #(if (nil? (last preds)) % (last preds)))
+             cpp (get-info :pp)
+             res- (effects (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret))
+             [ids pp] (effects (if (= k :ids) 
+                                 (get-ids (:ids (peek preds)) res- mom (get-in-then res  nl tl :what))
+                                 [nil nil]))
+             _ (if (nil? pp) (effects ()) (set-info :pp pp))
+             _ (if (= k :value) (set-info :pp nil) (effects ()))
              _ (update-info 
                  :preds 
                  #(conj (pop %) 
                         (assoc (peek %) 
                                k 
-                               (let [res- (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret)]
-                                 (cond (not= value :not-value) value
-                                       (= k :ids) (get-ids (:ids (peek %)) res- mom (get-in-then res  nl tl :what))
-                                       (and (= k :func) (= (cs/trim res-) "!=")) "not="
-                                       :else res-)))))]
-              ret)))
+                                 (cond
+
+                                   ;; If RCP is part of predicate (like this: ei#(MACAddress="1" || "2"))
+                                   ;; with processing properties from MOM, then we should just change parameter.
+                                   (and (= k :value) (map? (:value (peek %)))) 
+                                   (assoc (:value (peek %)) :params [(subs res- 1 (dec (count res-)))])
+
+                                   ;; If predicate contains processing properties from MOM, then we should 
+                                   ;; replace value which is received by value with map where :func key is function 
+                                   ;; from MOM and :params key is vector with value which is received.
+                                   (and (= k :value) (not (nil? cpp)) (= (first res-) \"))
+                                   (let [stor (:s-to-r cpp)]
+                                     {:func (some (fn [ns-] (ns-resolve ns- (symbol stor))) (all-ns)), 
+                                      :params [(subs res- 1 (dec (count res-)))]})
+
+                                   ;; If value is defined then we should return this value without processing (true, false, nil).
+                                   (not= value :not-value) value
+
+                                   ;; If key is :ids then we should get vector with ids due to get-ids function.
+                                   (= k :ids) ids 
+
+                                   ;; Because of clojure does not function "!=", we replaced it by funciton "not="
+                                   (and (= k :func) (= (cs/trim res-) "!=")) "not="
+                                   
+                                   ;; Strings, numbers are not needed in any processing.
+                                   :else res-))))
+             preds (get-info :preds)
+             _ (update-info :cur-pred #(if (nil? (last preds)) % (last preds)))]
+            ret)))
 
 
 (defn ^Class find-class
@@ -656,7 +700,7 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred)) 1))
+  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred nil)) 1))
 
 
 (defn parse
