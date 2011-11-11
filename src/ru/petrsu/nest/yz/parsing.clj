@@ -41,12 +41,13 @@
     ""
     (.substring s n)))
 
+;; The map of the object model some area
+(declare mom)
 
 ; The parsing state data structure. 
 (defstruct q-representation 
            :remainder ; The rest of input string
            :result ; vector of maps
-           :mom ; The map of the object model some area
            :then-level ; then level, the nubmer of dots.
            :nest-level ; Nest level, level of query (the number of parentthesis).
            :preds ; The vector within current predicates structure.
@@ -153,7 +154,7 @@
 
 (defn- get-paths
   "Returns list of paths beetwen cl-target and cl-source."
-  [^Class cl-target, ^Class cl-source, mom]
+  [^Class cl-target, ^Class cl-source]
   (if (or (nil? cl-target) (nil? cl-source))
     nil
     (loop [cl- cl-target]
@@ -201,8 +202,8 @@
 (declare find-class)
 (defn- get-path
   "Returns path from cl-source to cl-target (search based on the mom)."
-  [id, cl-source, cl-target, mom]
-  (let [paths (get-paths cl-target cl-source mom)]
+  [id, cl-source, cl-target]
+  (let [paths (get-paths cl-target cl-source)]
     (if (empty? paths)
       ;; If path is not found then function returns self id. 
       ;; We can't throw exception, because we don't know whether 
@@ -215,15 +216,15 @@
 
 (defn- get-ids 
   "Returns new value of the :ids key of the pred structure."
-  [ids ^String res ^PersistentArrayMap mom ^Class cl]
+  [ids ^String res ^Class cl]
   (let [sp-res (cs/split res #"\.")]
     (loop [cl- cl, ids- ids, sp-res- sp-res pp nil]
       (if (empty? sp-res-)
         [ids- pp]
         (let [id (first sp-res-)
-              ^Class cl-target (find-class id mom)]
+              ^Class cl-target (find-class id)]
           (recur cl-target
-                 (vec (flatten (conj ids- (get-path id cl- cl-target mom))))
+                 (vec (flatten (conj ids- (get-path id cl- cl-target))))
                  (rest sp-res-)
                  ((keyword id) (:p-properties (get mom cl-)))))))))
 
@@ -237,7 +238,6 @@
    (change-pred rule, k, :not-value))
   ([rule, k, value]
    (complex [ret rule
-             mom (get-info :mom)
              res (get-info :result)
              nl (get-info :nest-level)
              tl (get-info :then-level)
@@ -245,7 +245,7 @@
              cpp (get-info :pp)
              res- (effects (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret))
              [ids pp] (effects (if (= k :ids) 
-                                 (get-ids (:ids (peek preds)) res- mom (get-in-then res  nl tl :what))
+                                 (get-ids (:ids (peek preds)) res- (get-in-then res  nl tl :what))
                                  [nil nil]))
              _ (if (nil? pp) (effects ()) (set-info :pp pp))
              _ (if (= k :value) (set-info :pp nil) (effects ()))
@@ -285,14 +285,14 @@
             ret)))
 
 
-(defn ^Class find-class
+(defn- ^Class find-class
   "Returns class which is correspended 'id' (search is did in 'mom'). 
   Search is did in the following positions:
     - as full name of class (package+name)
     - as name of class 
     - in 'sn' key of each map of mom.
     - as abbreviation class's name."
-  [^String id ^PersistentArrayMap mom]
+  [^String id]
   (let [l-id (cs/lower-case (str id))
         cl (get-in mom [:sns l-id])]
     (if (nil? cl)
@@ -303,9 +303,9 @@
       cl)))
 
 
-(defn found-prop
+(defn- found-prop
   "This function is called when likely prop is found"
-  [res mom id nl tl is-recur]
+  [res id nl tl is-recur]
   (let [tl- (dec tl)
         last-then (get-in-nest res nl :then)
         id (cond (= id \&) :#self-object#
@@ -322,19 +322,19 @@
         (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) [id is-recur]))))))
 
 
-(defn found-id
+(defn- found-id
   "This function is called when id is found in query. Returns new result."
-  [res ^PersistentArrayMap mom ^String id nl tl is-recur]
-  (let [^Class cl (find-class id, mom)
+  [res ^String id nl tl is-recur]
+  (let [^Class cl (find-class id)
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
-      (found-prop res mom id nl tl is-recur)
+      (found-prop res id nl tl is-recur)
       (if (> tl 0)
         (if (nil? last-then)
           (assoc-in-nest res nl :then (assoc empty-then 
                                              :what cl 
-                                             :where (get-paths cl, (get-in-nest res nl :what), mom)))
+                                             :where (get-paths cl, (get-in-nest res nl :what))))
           (assoc-in-nest 
             res nl 
             :then (assoc-in last-then 
@@ -344,9 +344,9 @@
                                          (:what last-then))]
                               (assoc empty-then 
                                      :what cl
-                                     :where (get-paths cl, what, mom))))))
+                                     :where (get-paths cl, what))))))
         (assoc-in-nest (assoc-in-nest res nl :what cl) 
-                       nl :where (get-paths cl, (get-in-nest-or-then res nl tl :what), mom))))))
+                       nl :where (get-paths cl, (get-in-nest-or-then res nl tl :what)))))))
 
 
 (defn update-preds
@@ -463,7 +463,6 @@
   [(:remainder state) 
    (assoc state :result 
           (f (:result state) 
-             (:mom state)
              id
              (:nest-level state)
              (:then-level state)
@@ -625,14 +624,13 @@
              (f-mod list-pq :list)
              (f-mod indep-pq :indep))
         (complex [ret textq 
-                  mom (get-info :mom)
                   nl (get-info :nest-level)
                   tl (get-info :then-level)
                   res (get-info :result)
                   q (effects (:result (parse+ ret mom)))
                   q (effects (vec (map #(assoc % 
                                                :where 
-                                               (get-paths (:what %) (get-in-nest res nl :what) mom)) q)))
+                                               (get-paths (:what %) (get-in-nest res nl :what))) q)))
                   fm (get-info :f-modificator)
                   _ (update-param [fm q])]
                  ret)
@@ -700,7 +698,8 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
-  ((query (struct q-representation (seq q) empty-res mom 0 0 [] nil [] false empty-pred nil)) 1))
+  (do (def mom mom)
+    ((query (struct q-representation (seq q) empty-res 0 0 [] nil [] false empty-pred nil)) 1)))
 
 
 (defn parse

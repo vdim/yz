@@ -25,7 +25,7 @@
         clojure.test)
   (:import (ru.petrsu.nest.son Building Room Floor)))
 
-(def mom 
+(def mom- 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
   (mom-from-file "nest.mom"))
 
@@ -35,20 +35,20 @@
    :then nil
    :nest nil}])
 
+(comment
 (deftest t-find-class
          ^{:doc "Tests 'find-class' function."}
-         (is (= (find-class "ru.petrsu.nest.son.Building", mom) Building))
-         (is (= (find-class "ru.petrsu.nest.son.building", mom) Building))
-         (is (= (find-class "building", mom) Building))
-         (is (= (find-class "room", mom) Room))
-         (is (= (find-class "floor", mom) Floor)))
+         (is (= (find-class "ru.petrsu.nest.son.Building", mom-) Building))
+         (is (= (find-class "ru.petrsu.nest.son.building", mom-) Building))
+         (is (= (find-class "building", mom-) Building))
+         (is (= (find-class "room", mom-) Room))
+         (is (= (find-class "floor", mom-) Floor)))
 
-(comment
 (deftest t-find-prop
          ^{:doc "Tests 'find-prop' function."}
-         (is (find-prop ru.petrsu.nest.son.Building "name" mom))
-         (is (find-prop ru.petrsu.nest.son.Building "floors" mom))
-         (is (not (find-prop ru.petrsu.nest.son.Building "rooms" mom))))
+         (is (find-prop ru.petrsu.nest.son.Building "name" mom-))
+         (is (find-prop ru.petrsu.nest.son.Building "floors" mom-))
+         (is (not (find-prop ru.petrsu.nest.son.Building "rooms" mom-))))
 )
 
 (deftest t-get-in-nest
@@ -71,13 +71,13 @@
 
 (deftest t-parse
          ^{:doc "Tests 'parse' function."}
-          (is (= (parse "building", mom)
+          (is (= (parse "building", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil}]))
 
 
-         (is (= (parse "building (room)", mom)
+         (is (= (parse "building (room)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -86,7 +86,7 @@
                            :where [["floors" "rooms"]]}]}]))
 
 
-         (is (= (parse "building (room (device))", mom)
+         (is (= (parse "building (room (device))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -98,7 +98,7 @@
                                    :where [["occupancies" "devices"]]}]}]}]))
 
 
-         (is (= (parse "building (room (device (network)))", mom)
+         (is (= (parse "building (room (device (network)))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -113,7 +113,7 @@
                                            :where [["linkInterfaces" "networkInterfaces" "network"]]}]}]}]}]))
 
 
-         (is (= (parse "building (room (device (network (floor))))", mom)
+         (is (= (parse "building (room (device (network (floor))))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -135,7 +135,7 @@
                                                             "room" "floor"]]}]}]}]}]}]))
 
          
-         (is (= (parse "building (room (device, floor), network)", mom)
+         (is (= (parse "building (room (device, floor), network)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -153,7 +153,7 @@
                            :where [["floors" "rooms" "occupancies" "devices" "linkInterfaces" "networkInterfaces" "network"]]}]}]))
 
 
-         (is (= (parse "building (room, device)", mom)
+         (is (= (parse "building (room, device)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -164,7 +164,7 @@
                            :props []
                            :where [["floors" "rooms" "occupancies" "devices"]]}]}]))
 
-         (is (= (parse "building (room, occupancy (device (network (floor)), networkinterface))", mom)
+         (is (= (parse "building (room, occupancy (device (network (floor)), networkinterface))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -191,7 +191,7 @@
                                    :props []
                                    :where [["devices" "linkInterfaces" "networkInterfaces"]]}]}]}]))
 
-         (is (= (parse "building, room", mom)
+         (is (= (parse "building, room", mom-)
                  [{:where nil
                    :what ru.petrsu.nest.son.Building
                    :props []}
@@ -201,13 +201,13 @@
 
 (deftest t-parse-props
          ^{:doc "Tests parsing queries with properties."}
-         (is (= (parse "building.name", mom)
+         (is (= (parse "building.name", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props [[:name false]]
                    :where nil}]))
 
 
-         (is (= (parse "building.room.floor.rooms", mom)
+         (is (= (parse "building.room.floor.rooms", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :then {:what ru.petrsu.nest.son.Room 
@@ -219,7 +219,7 @@
                    :where nil}]))
 
 
-         (is (= (parse "building.floor.room.occupancy.device.forwarding", mom)
+         (is (= (parse "building.floor.room.occupancy.device.forwarding", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :then {:what ru.petrsu.nest.son.Floor 
@@ -237,25 +237,25 @@
                    :where nil}]))
 
 
-         (is (= (parse "simpleou[*parent]", mom)
+         (is (= (parse "simpleou[*parent]", mom-)
                  [{:what ru.petrsu.nest.son.SimpleOU 
                    :props [[:parent true]]
                    :where nil}]))
 
 
-         (is (= (parse "compositeou[*parent OUs]", mom)
+         (is (= (parse "compositeou[*parent OUs]", mom-)
                  [{:what ru.petrsu.nest.son.CompositeOU 
                    :props [[:parent true] [:OUs false]]
                    :where nil}]))
 
 
-         (is (= (parse "compositeou[OUs *parent]", mom)
+         (is (= (parse "compositeou[OUs *parent]", mom-)
                  [{:what ru.petrsu.nest.son.CompositeOU 
                    :props [[:OUs false] [:parent true]]
                    :where nil}]))
 
 
-         (is (= (parse "building.room.number", mom)
+         (is (= (parse "building.room.number", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
@@ -266,40 +266,40 @@
 
 (deftest t-parse-predicates
          ^{:doc "Tests parsing queries with some restrictions."}
-          (is (= (parse "building#(name=1)", mom)
+          (is (= (parse "building#(name=1)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :preds [{:ids ["name"], :func "=", :value "1"}]
                    :where nil}]))
-          (is (= (parse "building#(name=1 and address=2)", mom)
+          (is (= (parse "building#(name=1 and address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} :and]
                    :where nil}]))
-          (is (= (parse "building#(name=1 or address=2)", mom)
+          (is (= (parse "building#(name=1 or address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} :or]
                    :where nil}]))
-          (is (= (parse "building#(name=1 and address=2 and floor.number=3)", mom)
+          (is (= (parse "building#(name=1 and address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
                            :and {:ids ["floors", "number"], :func "=", :value "3"} :and]
                    :where nil}]))
-          (is (= (parse "building#(name=1 and address=2 or floor.number=3)", mom)
+          (is (= (parse "building#(name=1 and address=2 or floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
                            :and {:ids ["floors", "number"], :func "=", :value "3"} :or]
                    :where nil}]))
-          (is (= (parse "building#(name=1 or address=2 and floor.number=3)", mom)
+          (is (= (parse "building#(name=1 or address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
                            {:ids ["floors", "number"], :func "=", :value "3"} :and :or]
                    :where nil}]))
-          (is (= (parse "building#(name=1 and (address=2 or floor.number=3))", mom)
+          (is (= (parse "building#(name=1 and (address=2 or floor.number=3))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
@@ -307,7 +307,7 @@
                    :where nil}])))
 
 
-(defmacro create-is [q mom] `(is (nil? (:remainder (parse+ ~q ~mom)))))
+(defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
 (def qlist
   ^{:doc "Defines list of YZ's queries (used Nest's model)."}
@@ -524,7 +524,7 @@
 (defmacro premainder
   "Generates code for checking remainder about specified list with queries."
   [l]
-  `(is (nil? (some #(not (nil? %)) (map #(:remainder (parse+ % mom)) ~l)))))
+  `(is (nil? (some #(not (nil? %)) (map #(:remainder (parse+ % mom-)) ~l)))))
 
 (deftest parse-remainder
          ^{:doc "Checks remainder after parsing for queries in 'qlist' vector.
@@ -543,7 +543,7 @@
          ^{:doc "Generates 'is' for each query from qlist. 
                 Like 'parse-remainder, but it can show remainder.'"}
          (let [f #(dotimes [n (count %)]
-                   (create-is (% n) mom))]
+                   (create-is (% n) mom-))]
            (f qlist)
            (f qlist-indep)
            (f qlist-single)
