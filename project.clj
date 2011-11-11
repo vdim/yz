@@ -9,7 +9,8 @@
   :aot [ru.petrsu.nest.yz.core 
         ru.petrsu.nest.yz.hb-utils 
         ru.petrsu.nest.yz.functions 
-        ru.petrsu.nest.yz.yz]
+        ru.petrsu.nest.yz.yz
+        ru.petrsu.nest.yz.yz-factory]
   :java-source-path "."
   :jar-exclusions [#"\.swp$|\.clj$"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
