@@ -43,7 +43,7 @@ if you use some dependency manager ([ivy] (http://ant.apache.org/ivy/),
 can use it for getting the YZ. For example, you can write for ivy 
 something like this:
 	
-	<code>&lt;dependency org="ru.petrsu.nest" name="yz" rev="0.0.1-ver"/&gt;</code>
+	<dependency org="ru.petrsu.nest" name="yz" rev="0.0.1-ver"/>
 
 Direct link: [http://clojars.org/ru.petrsu.nest/yz] (http://clojars.org/ru.petrsu.nest/yz)
 
