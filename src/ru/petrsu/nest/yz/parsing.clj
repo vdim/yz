@@ -201,7 +201,26 @@
 
 (declare find-class)
 (defn- get-path
-  "Returns path from cl-source to cl-target (search based on the mom)."
+  "Returns map where 
+    - value of key :id is path from objects
+      which have 'cl-source' class to objects which have 
+      'cl-target' class (search based on the MOM). 
+    - value of key :cl is cl-target. :cl is needed for filtering
+      a set of objects by this class. It may be usefull where some 
+      class has a link to another class over some superclass, but
+      user use this link and use a property which belongs only to 
+      the child class. 
+  
+      Let's consider example: we have SomeClass (sc),
+      AnotherClass (ac) which extends SuperAnotherClass (sac, it may 
+      be interface or abstract class). The AnotherClass has the property
+      \"somep\" (SuperAnotherClass does not). SomeClass is linked with
+      AnotherClass over List<SuperAnotherClass>. So user make query
+      something like this sc#(ac.somep=1). YZ gets ac over list with the sac
+      and then tries to get value of somep, but somep belongs only to
+      ac, so error is occured in case another implementation of the sac is added to list. 
+      But if we have :cl, we can filter list with sac
+      and avoid error."
   [id, cl-source, cl-target]
   (let [paths (get-paths cl-target cl-source)]
     (if (empty? paths)
@@ -210,8 +229,8 @@
       ;; cl-target is some interface and there is path between 
       ;; cl-source and some implementation of this interface.
       ;; This behaviour is processed into core.clj.
-      [id]
-      (nth paths 0))))
+      [{:id [id] :cl cl-target}]
+      {:id (nth paths 0) :cl cl-target})))
 
 
 (defn- get-ids 

@@ -55,7 +55,7 @@
 (def ^{:dynamic true} *mom*)
 
 (defn ^String tr-pred
-  "Transforms 'pred' map into string"
+  "Transforms a 'pred' map into the string."
   [pred]
   (let [v (:value pred)
         v (if (nil? v) "nil" v)]
@@ -203,15 +203,14 @@
 
 
 (defn- get-objs
-  "Returns sequence of objects which are belonged to 'objs' 
-  by specified 'field-name'"
+  "Returns sequence of objects which belong to 'objs' 
+  by specified 'field-name'."
   [^String field-name, objs]
   (flatten
-    (map (fn [o] 
-           (if-let [fv (get-fv o (keyword field-name))]
-             (if (instance? java.util.Collection fv)
-               (map identity fv)
-               fv)))
+    (map #(if-let [fv (get-fv % (keyword field-name))]
+           (if (instance? java.util.Collection fv)
+             (map identity fv)
+             fv))
            objs)))
 
 
@@ -225,8 +224,18 @@
 
 (defn process-preds
   "Processes restrictions."
-  [o, l-side, f, value]
-  (let [objs (cond (vector? l-side) (reduce #(get-objs %2 %1) [o] l-side)
+  [o, l-side, f, value] 
+  (let [objs (cond (vector? l-side) 
+                   (reduce #(let [objs- (reduce 
+                                          (fn [objs-, field-name] 
+                                            (get-objs  field-name objs-)) 
+                                          %1
+                                          (:id %2))]
+                              (if (nil? (:cl %2))
+                                objs-
+                                (filter (fn [obj] (instance? (:cl %2) obj)) objs-)))
+                           [o]
+                           l-side)
                    (map? l-side) (process-func l-side o))
 
         ;; If objects from objs are arrays then we must compare two arrays.
