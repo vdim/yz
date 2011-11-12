@@ -25,15 +25,20 @@
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 
-                               IPv4Interface, UnknownLinkInterface)))
+                               IPv4Interface, UnknownLinkInterface,
+                               CompositeOU, SimpleOU, Occupancy)))
 
 ;; Define model
 
 ;Spatial Structure
+
+(def r101_f1_b1 (doto (Room.) (.setNumber "101")))
+(def r102_f1_b1 (doto (Room.) (.setNumber "102")))
+
 (def f1_b1 (doto (Floor.) 
              (.setNumber (Integer. 1))
-             (.addRoom (doto (Room.) (.setNumber "101"))) 
-             (.addRoom (doto (Room.) (.setNumber "102")))))
+             (.addRoom r101_f1_b1) 
+             (.addRoom r102_f1_b1)))
 
 (def f2_b1 (doto (Floor.) 
              (.setNumber (Integer. 2))
@@ -43,9 +48,11 @@
 (def f3_b1 (doto (Floor.) 
              (.setNumber (Integer. 3))))
 
+
+(def r1001_f1_b2 (doto (Room.) (.setNumber "1001")))
 (def f1_b2 (doto (Floor.) 
              (.setNumber (Integer. 1))
-             (.addRoom (doto (Room.) (.setNumber "1001"))) 
+             (.addRoom r1001_f1_b2) 
              (.addRoom (doto (Room.) (.setNumber "1002")))))
 
 (def b1 (doto (Building.) (.setName "MB") (.addFloor f1_b1) (.addFloor f2_b1) (.addFloor f3_b1)))
@@ -92,11 +99,48 @@
                   (.addLinkInterface rd_ei4)
                   (.addLinkInterface (UnknownLinkInterface.))))
 
-  
+;Organisation Structure
+
+(def sou1_d1 (doto (SimpleOU.) (.setName "S1_D1")))
+(def sou2_d1 (doto (SimpleOU.) (.setName "S2_D1")))
+(def cou_d1 (doto (CompositeOU.) 
+              (.setName "Departure1")
+              (.addOU sou1_d1)
+              (.addOU sou2_d1)))
+
+(def sou1_d2 (doto (SimpleOU.) (.setName "S1_D2")))
+(def sou2_d2 (doto (SimpleOU.) (.setName "S2_D2")))
+(def cou_d2 (doto (CompositeOU.) 
+              (.setName "Departure2")
+              (.addOU sou1_d2)
+              (.addOU sou2_d2)))
+
+
+(def rootCompositeOU (doto (CompositeOU.)
+                       (.setName "Test Enterprise")
+                       (.addOU cou_d1)
+                       (.addOU cou_d2)))
+
+; Occupancies for linking all structure.
+
+(def o1 (doto (Occupancy.)
+         (.addDevice d1)
+         (.setOU sou1_d1)
+         (.setRoom r102_f1_b1)))
+
+(def o2 (doto (Occupancy.)
+         (.addDevice rootDevice)
+         (.setOU sou2_d2)
+         (.setRoom r1001_f1_b2)))
+
+
+; SON.
+
 (def son (doto (SON.)
            (.addBuilding b1) 
            (.addBuilding b2)
-           (.setRootDevice rootDevice)))
+           (.setRootDevice rootDevice)
+           (.setRootOU rootCompositeOU)))
 
 ;; Memory Element Manager.
 (def mem (tc/create-emm son))
