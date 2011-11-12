@@ -269,41 +269,53 @@
           (is (= (parse "building#(name=1)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids ["name"], :func "=", :value "1"}]
+                   :preds [{:ids [{:id ["name"] :cl nil}], :func "=", :value "1"}]
+                   :where nil}]))
+          (is (= (parse "building#(room.number=\"215\")", mom-)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :props []
+                   :preds [{:ids [{:id ["floors" "rooms"] :cl Room} 
+                                  {:id ["number"] :cl nil}], :func "=", :value "\"215\""}]
                    :where nil}]))
           (is (= (parse "building#(name=1 and address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} :and]
+                   :preds [{:ids [{:id ["name"] :cl nil}], :func "=", :value "1"} 
+                           {:ids [{:id ["address"] :cl nil}], :func "=", :value "2"} :and]
                    :where nil}]))
           (is (= (parse "building#(name=1 or address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} :or]
+                   :preds [{:ids [{:id ["name"] :cl nil}], :func "=", :value "1"} 
+                           {:ids [{:id ["address"] :cl nil}], :func "=", :value "2"} :or]
                    :where nil}]))
           (is (= (parse "building#(name=1 and address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
-                           :and {:ids ["floors", "number"], :func "=", :value "3"} :and]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
+                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
+                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :and]
                    :where nil}]))
           (is (= (parse "building#(name=1 and address=2 or floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
-                           :and {:ids ["floors", "number"], :func "=", :value "3"} :or]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
+                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
+                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :or]
                    :where nil}]))
           (is (= (parse "building#(name=1 or address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
-                           {:ids ["floors", "number"], :func "=", :value "3"} :and :or]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
+                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
+                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :and :or]
                    :where nil}]))
           (is (= (parse "building#(name=1 and (address=2 or floor.number=3))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids ["name"], :func "=", :value "1"} {:ids ["address"], :func "=", :value "2"} 
-                           {:ids ["floors" "number"], :func "=", :value "3"} :or :and]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
+                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
+                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :or :and]
                    :where nil}])))
 
 
