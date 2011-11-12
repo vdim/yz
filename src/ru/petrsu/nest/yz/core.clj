@@ -29,10 +29,7 @@
          pass it to the pquery function."}
   (:require [ru.petrsu.nest.yz.parsing :as p] [clojure.string :as cs])
   (:use ru.petrsu.nest.yz.functions)
-  (:import (javax.persistence.criteria 
-             CriteriaQuery CriteriaBuilder Predicate Root)
-           (javax.persistence EntityManager)
-           (clojure.lang PersistentArrayMap PersistentVector Keyword)))
+  (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
 
 
 (definterface ElementManager
@@ -59,7 +56,9 @@
          first set of objects which is selected. For example, for JPA's storage
          it may be more better filters objects using DataBase engine, than
          gets all objects and then filters it manual. For more details see
-         implementation ElementManager for JPA's storage in the yz-factory.clj file."}
+         implementation ElementManager for JPA's storage in the yz-factory.clj file.
+         So If you implement ExtendedElementManager you must filter first set of 
+         objects due to preds parameter."}
   (getElems [this claz preds]))
 
 
@@ -75,77 +74,14 @@
     (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
          ", " (:func pred) ", " v ")")))
 
-(defn- contains-f?
-  "Checks whether vector with predicates contains 
-  function as a value of the key :value."
-  [^PersistentArrayMap pred]
-  (some #(or (map? (:value %)) (map? (:ids %))) pred))
-
-(defn- get-path
-  "Returns Path for specified vector with names of properties and
-  the root element."
-  [^Root root, ids]
-  (reduce #(try (.join %1 %2)
-             (catch Exception e (.get %1 %2))) root ids))
-
-
-(defmacro complex-predicate
-  "Creates complex predicate for specified operator ('.and' or '.or')
-  from stack ('v') with set of Predicate. Adds new predicate to the 
-  top of stack and returns new stack."
-  [v, op, cb]
-  `(conj (pop (pop ~v)) (~op ~cb (peek ~v) (peek (pop ~v)))))
-
-
-(defn- ^Predicate get-op
-  "Finds corresponding value of :func of pred map to some Clojure's function, 
-  and then generates code for creating Predicate due to get-p macros."
-  [^PersistentArrayMap pred, ^CriteriaBuilder cb, ^Root root]
-  (let [op (:func pred)
-        path (get-path root (:ids pred))
-        ;v  (cs/trim (:value pred))
-        v (:value pred)
-        v (if (and (instance? String v) (= \" (nth v 0))) (subs v 1 (dec (count v))) v)]
-    (cond (and (= "=" op) (nil? v)) (.isNull cb path)
-          (= "=" op) (.equal cb path v)
-          (= ">" op) (.gt cb path (Double/parseDouble v))
-          (= "<" op) (.lt cb path (Double/parseDouble v))
-          (= ">=" op) (.ge cb path (Double/parseDouble v))
-          (= "<=" op) (.le cb path (Double/parseDouble v))
-          (and (= "not=" op) (nil? v)) (.isNotNull cb path)
-          (= "not=" op) (.notEqual cb path v)
-          :else (throw (Exception. (str "No find function " op))))))
-
-
-(defn- ^Predicate create-predicate
-  "Takes stack with definition of restrictions 
-  and CriteriaBuilding's instance. Returns Predicate."
-  [^PersistentVector preds, ^CriteriaBuilder cb, ^Root root]
-  ((reduce #(cond (map? %2) (conj %1 (get-op %2 cb root))
-                  (= :and %2) (complex-predicate %1 .and cb)
-                  (= :or %2) (complex-predicate %1 .or cb)
-                  :else %2) [] preds) 0))
-
 
 (declare filter-by-preds, create-string-from-preds)
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
   [^Class cl, ^PersistentVector preds]
-  (if (instance? EntityManager *em*)
-        (let [^CriteriaBuilder cb (.getCriteriaBuilder *em*)
-              cr (.createTupleQuery cb)
-              ^Root root (. cr (from cl))
-              cr (.. cr (multiselect [root]) (distinct true))
-              ch-p (contains-f? preds) ; ch-p defines whether "preds" contains function.
-              elems (map #(.get % 0) 
-                         (.. *em* (createQuery (if (or (nil? preds) ch-p)
-                                                 cr 
-                                                 (.where cr (create-predicate preds cb root))))
-                           getResultList))]
-          (if ch-p
-            (filter-by-preds elems (create-string-from-preds preds))
-            elems))
-    (filter-by-preds (.getElems *em* cl) (create-string-from-preds preds))))
+  (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
+    (.getElems *em* cl preds))
+    (filter-by-preds (.getElems *em* cl) (create-string-from-preds preds)))
 
 
 (defn get-fv
@@ -259,7 +195,7 @@
       (some #(f % value) objs))))
 
 
-(defn- ^String create-string-from-preds
+(defn ^String create-string-from-preds
   "Creates string from preds vector for 
   checking object due to restriction."
   [^PersistentVector preds]
@@ -273,7 +209,7 @@
                   preds) 0) "))")))
 
 
-(defn- filter-by-preds
+(defn filter-by-preds
   "Gets sequence of objects and string of restrictions and
   returns new sequence of objects which are filtered by specified preds."
   [objs, ^String preds]

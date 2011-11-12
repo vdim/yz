@@ -34,7 +34,7 @@
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
     (javax.persistence EntityManager)
-    (javax.persistence.criteria Root CriteriaBuilder)
+    (javax.persistence.criteria CriteriaQuery CriteriaBuilder Predicate Root)
     (ru.petrsu.nest.yz.core ElementManager ExtendedElementManager)
     (java.util List)
     (clojure.lang PersistentArrayMap PersistentVector Keyword))
@@ -54,6 +54,58 @@
 
 
 
+(defn- contains-f?
+  "Checks whether vector with predicates contains 
+  function as a value of the key :value."
+  [^PersistentArrayMap pred]
+  (some #(or (map? (:value %)) (map? (:ids %))) pred))
+
+(defn- get-path
+  "Returns Path for specified vector with names of properties and
+  the root element."
+  [^Root root, ids]
+  (reduce #(try (.join %1 %2)
+             (catch Exception e (.get %1 %2))) root ids))
+
+
+(defmacro complex-predicate
+  "Creates complex predicate for specified operator ('.and' or '.or')
+  from stack ('v') with set of Predicate. Adds new predicate to the 
+  top of stack and returns new stack."
+  [v, op, cb]
+  `(conj (pop (pop ~v)) (~op ~cb (peek ~v) (peek (pop ~v)))))
+
+
+(defn- ^Predicate get-op
+  "Finds corresponding value of :func of pred map to some Clojure's function, 
+  and then generates code for creating Predicate due to get-p macros."
+  [^PersistentArrayMap pred, ^CriteriaBuilder cb, ^Root root]
+  (let [op (:func pred)
+        path (get-path root (:ids pred))
+        ;v  (cs/trim (:value pred))
+        v (:value pred)
+        v (if (and (instance? String v) (= \" (nth v 0))) (subs v 1 (dec (count v))) v)]
+    (cond (and (= "=" op) (nil? v)) (.isNull cb path)
+          (= "=" op) (.equal cb path v)
+          (= ">" op) (.gt cb path (Double/parseDouble v))
+          (= "<" op) (.lt cb path (Double/parseDouble v))
+          (= ">=" op) (.ge cb path (Double/parseDouble v))
+          (= "<=" op) (.le cb path (Double/parseDouble v))
+          (and (= "not=" op) (nil? v)) (.isNotNull cb path)
+          (= "not=" op) (.notEqual cb path v)
+          :else (throw (Exception. (str "No find function " op))))))
+
+
+(defn- ^Predicate create-predicate
+  "Takes stack with definition of restrictions 
+  and CriteriaBuilding's instance. Returns Predicate."
+  [^PersistentVector preds, ^CriteriaBuilder cb, ^Root root]
+  ((reduce #(cond (map? %2) (conj %1 (get-op %2 cb root))
+                  (= :and %2) (complex-predicate %1 .and cb)
+                  (= :or %2) (complex-predicate %1 .or cb)
+                  :else %2) [] preds) 0))
+
+
 ;; Implementation of JPA's ElementManager.
 (deftype JPAElementManager [em]
   ElementManager
@@ -68,13 +120,21 @@
 
 
   ExtendedElementManager
-  (getElems [this claz preds]
-      (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
-           cr (.createTupleQuery cb)
-           ^Root root (. cr (from claz))
-           cr (.. cr (multiselect [root]) (distinct true))]
-       (map #(.get % 0) (.. em (createQuery cr) getResultList)))))
-
+  (getElems [_ claz preds]
+         (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
+              cr (.createTupleQuery cb)
+              ^Root root (. cr (from claz))
+              cr (.. cr (multiselect [root]) (distinct true))
+              ch-p (contains-f? preds) ; ch-p defines whether "preds" contains function.
+              elems (map #(.get % 0) 
+                         (.. em (createQuery (if (or (nil? preds) ch-p)
+                                                 cr 
+                                                 (.where cr (create-predicate preds cb root))))
+                           getResultList))]
+          (if ch-p
+            (yz/filter-by-preds elems (yz/create-string-from-preds preds))
+            elems))))
+            
 
 (defn ^ElementManager -createJPAElementManager
   "Returns implementation of JPA's ElementManager."
