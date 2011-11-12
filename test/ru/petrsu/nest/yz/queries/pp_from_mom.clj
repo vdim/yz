@@ -30,7 +30,8 @@
 ;; Define model
 
 (def son (doto (SON.)
-           (.setRootDevice bd/rootDevice)))
+           (.setRootDevice bd/rootDevice)
+           (.setRootOU bd/rootCompositeOU)))
 
 ;; Define entity manager.
 
@@ -141,4 +142,49 @@
                      (ip= (nth (nth rows 0) 0) "192.168.112.51"))
                  (or (ip= (nth (nth rows 1) 0) "192.168.112.50") 
                      (ip= (nth (nth rows 1) 0) "192.168.112.51"))))))
+
+(deftest select-inheritance-preds
+         ^{:doc "Tests query like this device#(ei.MACAddress=...). 
+                (Problem with inheritance into predicates.)"}
+         (let [rows (tc/rows-query "device#(ei.MACAddress=\"00:15:63:a0:ae:0e\")")]
+           (is (= (count rows) 1)))
+         (let [rows (tc/rows-query "device#(ei.MACAddress=\"00:15:63:a0:ae:2e\")")]
+           (is (= (count rows) 0)))
+         (let [f #(let [rows (tc/rows-query %)]
+                    (and (= (count rows) 1) (= (nth (nth rows 0) 0) bd/b2)))]
+           (is (f "building#(ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+           (is (f "building#(device.ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+           (is (f "building#(occupancy.ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+           (is (f "building#(room.device.ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+           (is (f "building#(floor.device.ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+           (is (f "building#(room.floor.ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+           (is (f "building#(floor.room.device.ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+           (is (f "building#(floor.room.ei.MACAddress=\"00:15:63:a0:ae:0e\")"))
+
+           (is (f "building#(ip4i.inetAddress=\"192.168.112.50\")"))
+           (is (f "building#(room.ip4i.inetAddress=\"192.168.112.50\")"))
+           (is (f "building#(floor.room.ip4i.inetAddress=\"192.168.112.50\")"))
+           (is (f "building#(room.floor.ip4i.inetAddress=\"192.168.112.50\")"))
+           (is (f "building#(device.ip4i.inetAddress=\"192.168.112.50\")"))
+           (is (f "building#(floor.device.ip4i.inetAddress=\"192.168.112.50\")"))
+           (is (f "building#(floor.room.device.ip4i.inetAddress=\"192.168.112.50\")"))
+           (is (f "building#(floor.building.room.ip4i.inetAddress=\"192.168.112.50\")"))
+          
+           (is (f "building#(ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+           (is (f "building#(room.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+           (is (f "building#(floor.room.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+           (is (f "building#(room.floor.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+           (is (f "building#(device.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+           (is (f "building#(floor.device.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+           (is (f "building#(floor.room.device.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+           (is (f "building#(floor.building.room.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\"))"))
+
+           (is (f "building#(ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))
+           (is (f "building#(room.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))
+           (is (f "building#(floor.room.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))
+           (is (f "building#(room.floor.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))
+           (is (f "building#(device.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))
+           (is (f "building#(floor.device.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))
+           (is (f "building#(floor.room.device.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))
+           (is (f "building#(floor.building.room.ip4i.inetAddress=(\"192.168.112.50\" || \"192.168.112.55\" || \"192.168.112.56\"))"))))
 
