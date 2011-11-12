@@ -35,8 +35,9 @@
   (:import
     (javax.persistence EntityManager)
     (javax.persistence.criteria Root CriteriaBuilder)
-    (ru.petrsu.nest.yz.core ElementManager)
-    (java.util List))
+    (ru.petrsu.nest.yz.core ElementManager ExtendedElementManager)
+    (java.util List)
+    (clojure.lang PersistentArrayMap PersistentVector Keyword))
   (:gen-class :name ru.petrsu.nest.yz.ElementManagerFactory
               :methods [;; JPA's element manager.
                         ^{:static true} 
@@ -51,27 +52,37 @@
                          ru.petrsu.nest.yz.core.ElementManager]]))
 
 
-(defn ^EntityManager -createJPAElementManager
-  "Implementation of JPA's ElementManager."
+
+
+;; Implementation of JPA's ElementManager.
+(deftype JPAElementManager [em]
+  ElementManager
+  ;; Implementation getElems's method. Root is created for 
+  ;; specified class
+  (^java.util.Collection getElems [this ^Class claz] 
+     (.getElems this claz nil))
+
+  ;; Implementation getClasses's method. Gets all classes from JPA's metamodel.
+  (getClasses [_] (map #(.getJavaType %) 
+                       (.. em getEntityManagerFactory getMetamodel getEntities)))
+
+
+  ExtendedElementManager
+  (getElems [this claz preds]
+      (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
+           cr (.createTupleQuery cb)
+           ^Root root (. cr (from claz))
+           cr (.. cr (multiselect [root]) (distinct true))]
+       (map #(.get % 0) (.. em (createQuery cr) getResultList)))))
+
+
+(defn ^ElementManager -createJPAElementManager
+  "Returns implementation of JPA's ElementManager."
   [^EntityManager em]
-  (reify ElementManager
-
-    ;; Implementation getElems's method. Root is created for 
-    ;; specified class
-    (^java.util.Collection getElems [_ ^Class claz] 
-       (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
-             cr (.createTupleQuery cb)
-             ^Root root (. cr (from claz))
-             cr (.. cr (multiselect [root]) (distinct true))]
-         (map #(.get % 0) (.. em (createQuery cr) getResultList))))
-
-    ;; Implementation getClasses's method. Gets all classes from JPA's metamodel.
-    (getClasses [_] (map #(.getJavaType %) 
-                         (.. em getEntityManagerFactory getMetamodel getEntities)))))
-
+  (JPAElementManager. em))
 
 (defn ^EntityManager -createMemoryElementManager
-  "Implementation of memory's ElementManager."
+  "Returns implementation of memory's ElementManager."
   [^List classes]
   (reify ElementManager
     (^java.util.Collection getElems [_ ^Class claz] 

@@ -50,6 +50,19 @@
   (^java.util.Collection getElems [^Class claz])
   (^java.util.Collection getClasses []))
 
+
+(defprotocol ExtendedElementManager
+  ^{:doc "Extends ElementManager. 
+         
+         Method getElems takes addition parameter in comparison with getElems 
+         from ElementManager. The parameter is vector with predicates for 
+         first set of objects which is selected. For example, for JPA's storage
+         it may be more better filters objects using DataBase engine, than
+         gets all objects and then filters it manual. For more details see
+         implementation ElementManager for JPA's storage in the yz-factory.clj file."}
+  (getElems [this claz preds]))
+
+
 (def ^{:dynamic true
        :tag ElementManager} *em*)
 (def ^{:dynamic true} *mom*)
