@@ -66,6 +66,7 @@
        :tag ElementManager} *em*)
 (def ^{:dynamic true} *mom*)
 
+
 (defn ^String tr-pred
   "Transforms a 'pred' map into the string."
   [pred]
@@ -75,7 +76,30 @@
          ", " (:func pred) ", " v ")")))
 
 
-(declare filter-by-preds, create-string-from-preds)
+(defn ^String create-string-from-preds
+  "Creates string from preds vector for 
+  checking object due to restriction."
+  [^PersistentVector preds]
+  (if (nil? preds)
+    nil
+    (str "#=(eval (fn [o] " 
+         ((reduce #(cond (keyword? %2) (conj (pop (pop %1)) 
+                                             (str " (" (name %2) " " (peek %1) " " (peek (pop %1)) " )") )
+                  :else (conj %1 (tr-pred %2)))
+                  [] 
+                  preds) 0) "))")))
+
+
+(defn filter-by-preds
+  "Gets sequence of objects and string of restrictions and
+  returns new sequence of objects which are filtered by specified preds."
+  [objs, ^String preds]
+  (if (nil? preds) 
+    objs 
+    (let [f (read-string preds)]
+      (filter #(f %) objs))))
+
+
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
   [^Class cl, ^PersistentVector preds]
@@ -195,28 +219,6 @@
       (some #(f % value) objs))))
 
 
-(defn ^String create-string-from-preds
-  "Creates string from preds vector for 
-  checking object due to restriction."
-  [^PersistentVector preds]
-  (if (nil? preds)
-    nil
-    (str "#=(eval (fn [o] " 
-         ((reduce #(cond (keyword? %2) (conj (pop (pop %1)) 
-                                             (str " (" (name %2) " " (peek %1) " " (peek (pop %1)) " )") )
-                  :else (conj %1 (tr-pred %2)))
-                  [] 
-                  preds) 0) "))")))
-
-
-(defn filter-by-preds
-  "Gets sequence of objects and string of restrictions and
-  returns new sequence of objects which are filtered by specified preds."
-  [objs, ^String preds]
-  (if (nil? preds) 
-    objs 
-    (let [f (read-string preds)]
-      (filter #(f %) objs))))
 
 
 (defn- get-objs-by-path
