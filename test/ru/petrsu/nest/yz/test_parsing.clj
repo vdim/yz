@@ -533,21 +533,28 @@
                   (map #(str "building#(@(str `" % "') = @(str $" % "'))") qlist)
                   (map #(str "building#(@(str $" % "') = @(str %" % "'))") qlist)))))
 
+
 (defmacro premainder
   "Generates code for checking remainder about specified list with queries."
   [l]
   `(is (nil? (some #(not (nil? %)) (map #(:remainder (parse+ % mom-)) ~l)))))
 
+
 (deftest parse-remainder
          ^{:doc "Checks remainder after parsing for queries in 'qlist' vector.
                 It must be nil for all queries, because qlist contains
                 only correct queries."}
-         (premainder qlist))
-;         (premainder qlist-list)
-;         (premainder qlist-indep)
-;         (premainder qlist-prop)
-;         (premainder qlist-pred)
-;         (premainder qlist-single))
+
+         ; If all queries are success, then results is nil, 
+         ; otherwise results is query which is failed and
+         ; clojure.test prints something like this: 
+         ;   expected: (nil? results)
+         ;   actual: (not (nil? "room[name number floor].floor"))
+         ;
+         ; It is all I need.
+         (let [results (some #(let [r (:remainder (parse+ % mom-))]
+                                (if r %)) qlist)]
+           (is (nil? results))))
 
 
 (comment
