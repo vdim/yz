@@ -12,3 +12,5 @@ db-auction/
 ddl.sql
 *.jar
 logs/
+.lein-deps-sum
+.lein-failures
