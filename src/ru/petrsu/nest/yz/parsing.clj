@@ -75,7 +75,6 @@
             :then - nested map with definition of linking objects: building.room
             :where - path to parent objects."}
   [{:props []}])
-;    :sorts []}])
 
 (def empty-then
   ^{:doc "Defines then structure"}
@@ -102,13 +101,13 @@
 (defn assoc-in-nest
   "Like assoc-in, but takes into account structure :result.
   Inserts some value 'v' in 'res' map to :nest key."
-  [res nest-level l-tag v]
+  [res nest-level l-tag v & kvs]
   (if (<= nest-level 0)
-    (conj (pop res) (assoc (peek res) l-tag v))
+    (conj (pop res) (apply assoc (peek res) l-tag v kvs))
     (conj (pop res)
            (assoc (peek res) 
                   :nest 
-                  (assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v)))))
+                  (apply assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v kvs)))))
 
 
 (defn add-value
@@ -330,7 +329,7 @@
 
 (defn- found-prop
   "This function is called when likely prop is found"
-  [res id nl tl is-recur]
+  [res id nl tl is-recur tsort]
   (let [tl- (dec tl)
         last-then (get-in-nest res nl :then)
         id (cond (= id \&) :#self-object#
@@ -341,25 +340,31 @@
     (if (nil? what)
       (throw (Exception. (str "Not found element: " id)))
       (if (> tl- 0)
-        (assoc-in-nest res nl :then (update-in last-then 
-                                               (conj (vec (repeat (dec tl-) :then)) :props) 
-                                               #(conj % [id is-recur])))
-        (assoc-in-nest res nl :props (conj (get-in-nest res nl :props) [id is-recur]))))))
+        (let [f #(update-in %1 
+                           (conj (vec (repeat (dec tl-) :then)) %2) 
+                           (fn [v] (conj v %3)))
+              last-then (f last-then :sorts tsort)]
+          (assoc-in-nest res nl :then (f last-then :props [id is-recur])))
+        (let [f #(conj (get-in-nest res nl %1) %2)]
+          (assoc-in-nest res nl 
+                         :props (f :props [id is-recur])
+                         :sorts (f :sorts tsort)))))))
 
 
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
-  [res ^String id nl tl is-recur]
+  [res ^String id nl tl is-recur tsort]
   (let [^Class cl (find-class id)
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
-      (found-prop res id nl tl is-recur)
+      (found-prop res id nl tl is-recur tsort)
       (if (> tl 0)
         (if (nil? last-then)
           (assoc-in-nest res nl :then (assoc empty-then 
                                              :what cl 
-                                             :where (get-paths cl, (get-in-nest res nl :what))))
+                                             :where (get-paths cl, (get-in-nest res nl :what))
+                                             :sorts [tsort]))
           (assoc-in-nest 
             res nl 
             :then (assoc-in last-then 
@@ -369,9 +374,12 @@
                                          (:what last-then))]
                               (assoc empty-then 
                                      :what cl
-                                     :where (get-paths cl, what))))))
-        (assoc-in-nest (assoc-in-nest res nl :what cl) 
-                       nl :where (get-paths cl, (get-in-nest-or-then res nl tl :what)))))))
+                                     :where (get-paths cl, what)
+                                     :sorts [tsort])))))
+        (assoc-in-nest  res nl
+                       :what cl
+                       :where (get-paths cl, (get-in-nest-or-then res nl tl :what)) 
+                       :sorts [tsort])))))
 
 
 (defn update-preds
@@ -499,7 +507,8 @@
              id
              (:nest-level state)
              (:then-level state)
-             (:is-recur state)))])
+             (:is-recur state)
+             (:cur-sort state)))])
 
 
 (defn process-id
@@ -513,7 +522,7 @@
 
 
 (def delimiter
-  ^{:doc "Defines delimiter (now it is comma) of queries into one level.
+  ^{:doc "Defines delimiter (now it is comma) for queries into one level.
          Examples: 
           room, building
           room (floor, building)
@@ -558,6 +567,7 @@
         props-and-where
         (rep* (conc (invisi-conc (lit \.) 
                                  (update-info :then-level inc)) 
+                    idsort
                     id 
                     props-and-where))))
 
