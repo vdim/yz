@@ -33,6 +33,7 @@
   (:require [clojure.string :as cs])
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
 
+
 (defn ^String sdrop
   "Drops first n characters from s.  Returns an empty string if n is
    greater than the length of s."
@@ -41,7 +42,9 @@
     ""
     (.substring s n)))
 
+
 ;; The map of the object model some area
+;; We factor out it from q-representation because of it is not changed.
 (declare mom)
 
 ; The parsing state data structure. 
@@ -55,6 +58,7 @@
            :function ; Describe current function.
            :is-recur ; Defines whether property is recur.
            :cur-pred ; Current predicate.
+           :cur-sort ; Current indicator of sorting.
            :pp) ; Define process property.
 
 
@@ -71,6 +75,7 @@
             :then - nested map with definition of linking objects: building.room
             :where - path to parent objects."}
   [{:props []}])
+;    :sorts []}])
 
 (def empty-then
   ^{:doc "Defines then structure"}
@@ -99,23 +104,23 @@
   Inserts some value 'v' in 'res' map to :nest key."
   [res nest-level l-tag v]
   (if (<= nest-level 0)
-    (conj (vec (butlast res)) (assoc (last res) l-tag v))
-    (conj (vec (butlast res)) 
-           (assoc (last res) 
+    (conj (pop res) (assoc (peek res) l-tag v))
+    (conj (pop res)
+           (assoc (peek res) 
                   :nest 
-                  (assoc-in-nest (:nest (last res)) (dec nest-level) l-tag v)))))
+                  (assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v)))))
 
 
 (defn add-value
   "Conjs some value 'v' to :nest array which has nest-level 
   of level."
   [res nest-level v]
-  (if (= nest-level 0)
+  (if (<= nest-level 0)
     (conj res v)
-    (conj (vec (butlast res)) 
-           (assoc (last res) 
+    (conj (pop res)
+           (assoc (peek res) 
                   :nest 
-                  (add-value (:nest (last res)) (dec nest-level) v)))))
+                  (add-value (:nest (peek res)) (dec nest-level) v)))))
 
 
 (defn get-in-nest
@@ -125,8 +130,8 @@
   [res nest-level k]
   (loop [res- res nl nest-level]
     (if (<= nl 0)
-      (get (last res-) k)
-      (recur (:nest (last res-)) (dec nl)))))
+      (get (peek res-) k)
+      (recur (:nest (peek res-)) (dec nl)))))
 
 
 (defn get-in-then
@@ -146,11 +151,12 @@
       (let [then (get-in-nest res (dec nl) :then)]
         (if (nil? then)
           (get-in-nest res (dec nl) k)
-          (loop [then- then, what (:what then)]
+          (loop [then- then, value (k then)]
             (if (nil? then-)
-              what
-              (recur (:then then-) (:what then-))))))
+              value
+              (recur (:then then-) (k then-))))))
       (get-in-then res nl tl k))))
+
 
 (defn- get-paths
   "Returns list of paths beetwen cl-target and cl-source."
@@ -477,6 +483,14 @@
   (conc (lit \") (partial text \") (lit \")))
 
 
+(def idsort
+  ^{:doc "Defines sort and its type."}
+  (let [ch-sort #(invisi-conc %1 (set-info :cur-sort %2))]
+    (alt (ch-sort (lit \↓) :asc)
+         (ch-sort (lit \↑) :desc)
+         (ch-sort emptiness nil))))
+
+
 (defn set-id
   [id, f, state]
   [(:remainder state) 
@@ -497,16 +511,18 @@
 
 (def id (process-id found-id))
 
+
 (def delimiter
-  ^{:doc "Defines delimiter of ids: there are comma (for queries) 
-  and dot (for property or link and so on)."}
-  (alt
-       (invisi-conc (lit \.) (update-info :then-level inc))
-       (complex [ret (sur-by-ws (lit \,)) 
-                 nl (get-info :nest-level)
-                 _ (update-info :result #(add-value % nl (empty-res 0)))
-                 _ (set-info :then-level 0)]
-                ret)))
+  ^{:doc "Defines delimiter (now it is comma) of queries into one level.
+         Examples: 
+          room, building
+          room (floor, building)
+          room (floor, building), device"}
+  (complex [ret (sur-by-ws (lit \,)) 
+            nl (get-info :nest-level)
+            _ (update-info :result #(add-value % nl (empty-res 0)))
+            _ (set-info :then-level 0)]
+           ret))
 
 
 (declare query, function)
@@ -520,8 +536,30 @@
         query 
         (sur-by-ws (invisi-conc (lit \)) (update-info :nest-level dec)))))
 
+
+
+(declare block-where, props)
+(def props-and-where
+  ^{:doc "Defines block from properties or predicates.
+         It may be emptiness or contains only block with
+         properties or only block with predicates or both.
+         Also an order of blocks is not important:
+          floor#(number=1)[name]
+          floor[name]#(number=1)"}
+  (alt 
+    (conc (opt props) (opt block-where) (opt props))))
+
+
 (def bid
-  (conc id (rep* (conc delimiter id))))
+  ^{:doc "Defines sequence from ids: room.floor.number
+         Each id may contains block from properties or predicates."}
+  (conc idsort 
+        id
+        props-and-where
+        (rep* (conc (invisi-conc (lit \.) 
+                                 (update-info :then-level inc)) 
+                    id 
+                    props-and-where))))
 
 (def sign
   ^{:doc "Defines sing of where's expression."}
@@ -601,15 +639,14 @@
   ^{:doc "Defines where clause."}
   (conc (add-pred (lit \#)) (invisi-conc where change-preds)))
 
-
 (def props
   ^{:doc "Defines sequences of properties of an object."}
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
-        (rep+ (alt (sur-by-ws (pfunction
-                                #(partial set-id (peek %) found-prop) 
-                                (update-info :function #(pop %))))
+        (rep+ (alt (sur-by-ws (conc idsort (pfunction
+                                      #(partial set-id (peek %) found-prop) 
+                                      (update-info :function #(pop %)))))
                    (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))
-                                    (invisi-conc (process-id found-prop) (set-info :is-recur false))))))
+                                    (invisi-conc (conc idsort (process-id found-prop)) (set-info :is-recur false))))))
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 
@@ -704,6 +741,7 @@
                               (throw (Exception. (str "Could not found function " (reduce str "" n) ".")))))]
            n))
 
+
 (def funcq
   ^{:doc "Defines rule for query as function."}
   (pfunction #(set-info :result (peek %)) 
@@ -711,14 +749,20 @@
 
 
 (def query
-  (alt funcq (rep+ (alt bid nest-query (conc delimiter bid) block-where props))))
+  ^{:doc "Defines start symbol for parsing query."}
+  (alt funcq ; Query may be simple function: @(count `room')
+       (rep+ ; or  sequence from the following parts.
+         (alt 
+           bid ; Id's sequence with properties or predicates: room; room.floor; room[name]; room#(name="MB") and so on.
+           nest-query ; Nested query: room (floor)
+           (conc delimiter query))))) 
 
 
 (defn parse+
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
   (do (def mom mom)
-    ((query (struct q-representation (seq q) empty-res 0 0 [] nil [] false empty-pred nil)) 1)))
+    ((query (struct q-representation (seq q) empty-res 0 0 [] nil [] false empty-pred nil nil)) 1)))
 
 
 (defn parse
