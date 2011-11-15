@@ -327,6 +327,34 @@
       cl)))
 
 
+(defn update-sorts
+  ([res, tsort]
+   (update-sorts res, tsort false))
+  ([res, tsort, fp]
+   "Takes value of the :result (vector res) and type of sort and then
+   updates value of :sorts into last map from vector res. Returns
+   new res. fp defines whether updates-sorts is called from found-prop.
+   Examples:
+      floor : [nil]
+      ↓floor : [:asc]
+      floor[↓number] : [[nil :asc]]
+      floor[↓number name] : [[nil :asc nil]]
+      floor[↓number ↑name] : [[nil :asc :desc]]
+      floor (room[↓number ↑name]) : [nil [nil :asc :desc]]
+      ↑floor (room[↓number ↑name]) : [:desc [nil :asc :desc]]"
+   (conj (pop res) 
+         (update-in (peek res) [:sorts] 
+                    #(vec (if fp
+
+                            ;; If fp is true it is means that update-sorts is called
+                            ;; from found-prop. So we must create vector from sort's type
+                            ;; of this properties.
+                            (if (vector? (peek %1))
+                              (conj (pop %1) (conj (peek %1) tsort))
+                              (conj (pop %1) [(peek %1) tsort]))
+                            (conj %1 tsort)))))))
+
+
 (defn- found-prop
   "This function is called when likely prop is found"
   [res id nl tl is-recur tsort]
@@ -339,16 +367,13 @@
         what (get-in-nest res nl :what)]
     (if (nil? what)
       (throw (Exception. (str "Not found element: " id)))
-      (if (> tl- 0)
-        (let [f #(update-in %1 
-                           (conj (vec (repeat (dec tl-) :then)) %2) 
-                           (fn [v] (conj v %3)))
-              last-then (f last-then :sorts tsort)]
-          (assoc-in-nest res nl :then (f last-then :props [id is-recur])))
-        (let [f #(conj (get-in-nest res nl %1) %2)]
-          (assoc-in-nest res nl 
-                         :props (f :props [id is-recur])
-                         :sorts (f :sorts tsort)))))))
+      (let [res (update-sorts res tsort true)
+            f #(assoc-in-nest res nl %1 %2)]
+        (if (> tl- 0)
+          (f :then (update-in last-then 
+                              (conj (vec (repeat (dec tl-) :then)) :props) 
+                              (fn [v] (conj v [id is-recur]))))
+          (f :props (conj (get-in-nest res nl :props) [id is-recur])))))))
 
 
 (defn- found-id
@@ -359,27 +384,25 @@
         tl- (dec tl)]
     (if (nil? cl)
       (found-prop res id nl tl is-recur tsort)
-      (if (> tl 0)
-        (if (nil? last-then)
-          (assoc-in-nest res nl :then (assoc empty-then 
-                                             :what cl 
-                                             :where (get-paths cl, (get-in-nest res nl :what))
-                                             :sorts [tsort]))
+      (let [res (update-sorts res tsort)
+            f #(assoc-in-nest res nl :then %)]
+        (if (> tl 0)
+          (if (nil? last-then)
+            (f (assoc empty-then 
+                      :what cl 
+                      :where (get-paths cl, (get-in-nest res nl :what))))
+            (f (assoc-in last-then 
+                         (repeat tl- :then) 
+                         (let [what (if (> tl- 1) 
+                                      (get-in last-then (conj (vec (repeat (dec tl-) :then)) :what))
+                                      (:what last-then))]
+                           (assoc empty-then 
+                                  :what cl
+                                  :where (get-paths cl, what))))))
           (assoc-in-nest 
-            res nl 
-            :then (assoc-in last-then 
-                            (repeat tl- :then) 
-                            (let [what (if (> tl- 1) 
-                                         (get-in last-then (conj (vec (repeat (dec tl-) :then)) :what))
-                                         (:what last-then))]
-                              (assoc empty-then 
-                                     :what cl
-                                     :where (get-paths cl, what)
-                                     :sorts [tsort])))))
-        (assoc-in-nest  res nl
-                       :what cl
-                       :where (get-paths cl, (get-in-nest-or-then res nl tl :what)) 
-                       :sorts [tsort])))))
+            res nl
+            :what cl
+            :where (get-paths cl, (get-in-nest-or-then res nl tl :what))))))))
 
 
 (defn update-preds
