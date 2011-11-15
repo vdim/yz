@@ -240,7 +240,7 @@
   [f]
   (let [fl (ClassLoader/getSystemResourceAsStream f)
         fl (if (nil? fl) (cio/file f) fl)]
-    (eval (read-string (nth (line-seq (cio/reader fl)) 0)))))
+    (load-reader (cio/reader fl))))
 
 
 (defn mom-to-file
