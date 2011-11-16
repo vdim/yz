@@ -300,15 +300,6 @@
                                      {:func (some (fn [ns-] (ns-resolve ns- (symbol stor))) (all-ns)), 
                                       :params [res-]})
 
-                                   ;; Number
-                                   ;(= value :number) 
-                                   ;(try (Integer/parseInt res-)
-                                   ;  (catch Exception e (Double/parseDouble res-)))
-
-                                   ;; String
-                                   ;(= value :string)
-                                   ;(subs res- 1 (dec (count res-)))
-
                                    ;; If value is defined then we should return this value without processing (true, false, nil).
                                    (not= value :not-value) value
 
@@ -362,7 +353,6 @@
   "This function is called when likely prop is found"
   [res id nl tl is-recur tsort]
   (let [tl- (dec tl)
-        last-then (get-in-nest res nl :then)
         id (cond (= id \&) :#self-object#
                  (= id "&.") :#default-property#
                  (map? id) id
@@ -370,13 +360,18 @@
         what (get-in-nest res nl :what)]
     (if (nil? what)
       (throw (Exception. (str "Not found element: " id)))
-      (let [sorts (get-in-nest-or-then res nl tl :sort)
+      (let [sorts (get-in-nest-or-then res nl tl- :sort)
             sorts (if (every? vector? sorts) sorts [sorts])
             f #(assoc-in-nest res nl %1 %2 :sort (conj sorts (get-sort tsort, what, id)))]
         (if (> tl- 0)
-          (f :then (update-in last-then 
-                              (conj (vec (repeat (dec tl-) :then)) :props) 
-                              (fn [v] (conj v [id is-recur]))))
+          (let [v #(conj (vec (repeat (dec tl-) :then)) %)
+                last-then (get-in-nest res nl :then)
+                last-then (update-in last-then (v :sort)
+                                     (fn [_] (conj sorts (get-sort tsort, what, id))))]
+            (assoc-in-nest 
+              res nl :then
+              (update-in last-then (v :props)
+                         #(conj % [id is-recur]))))
           (f :props (conj (get-in-nest res nl :props) [id is-recur])))))))
 
 
@@ -814,7 +809,7 @@
   [q, mom]
   (let [r (parse+ q, mom)]
     (if (nil? (:remainder r))
-      (:result (parse+ q, mom))
+      (:result r)
       (throw (Exception. (str "Syntax error near: " (reduce str "" (:remainder r))))))))
 
 
