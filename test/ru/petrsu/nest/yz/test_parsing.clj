@@ -62,27 +62,32 @@
            (is (= "3" (get-in-nest (assoc-in-nest some-vvv 2 :what "3") 2 :what)))
            (is (= "4" (get-in-nest (assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
 
-(def st-fun
-;  ^{:doc "Defines start of 'preds' function."}
-  "#=(eval (fn [o] ")
 
-(def fun
-  "ru.petrsu.nest.yz.core/process-preds ")
+(defn sort-to-nil
+  "Takes the MOM and associates with the :sort key 
+  the [nil nil nil] value. Returns new MOM."
+  [mom]
+  (reduce (fn [m [k v]] (assoc m k (assoc v :sort [nil nil nil]))) {} mom))
+
 
 (deftest t-parse
          ^{:doc "Tests 'parse' function."}
+         (let [mom- (sort-to-nil mom-)]
           (is (= (parse "building", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
+                   :sort [nil nil nil]
                    :where nil}]))
 
 
          (is (= (parse "building (room)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
+                   :sort [nil nil nil]
                    :where nil
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props []
+                           :sort [nil nil nil]
                            :where [["floors" "rooms"]]}]}]))
 
 
@@ -90,11 +95,14 @@
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
+                   :sort [nil nil nil]
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props []
+                           :sort [nil nil nil]
                            :where [["floors" "rooms"]]
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props []
+                                   :sort [nil nil nil]
                                    :where [["occupancies" "devices"]]}]}]}]))
 
 
@@ -102,14 +110,18 @@
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
+                   :sort [nil nil nil]
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props []
-                           :where [["floors" "rooms"]]
+                           :where [["floors" "rooms"]] 
+                           :sort [nil nil nil]
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props []
                                    :where [["occupancies" "devices"]]
+                                   :sort [nil nil nil]
                                    :nest [{:what ru.petrsu.nest.son.Network
-                                           :props []
+                                           :props [] 
+                                           :sort [nil nil nil]
                                            :where [["linkInterfaces" "networkInterfaces" "network"]]}]}]}]}]))
 
 
@@ -117,17 +129,22 @@
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
                    :where nil
+                   :sort [nil nil nil]
                    :nest [{:what ru.petrsu.nest.son.Room
                            :props []
                            :where [["floors" "rooms"]]
+                           :sort [nil nil nil]
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :props []
-                                   :where [["occupancies" "devices"]]
+                                   :where [["occupancies" "devices"]] 
+                                   :sort [nil nil nil]
                                    :nest [{:what ru.petrsu.nest.son.Network
-                                           :props []
+                                           :props [] 
+                                           :sort [nil nil nil]
                                            :where [["linkInterfaces" "networkInterfaces" "network"]]
                                            :nest [{:what ru.petrsu.nest.son.Floor
-                                                   :props []
+                                                   :props [] 
+                                                   :sort [nil nil nil]
                                                    :where [["networkInterfaces" 
                                                             "linkInterface" 
                                                             "device" 
@@ -138,101 +155,128 @@
          (is (= (parse "building (room (device, floor), network)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :where nil
+                   :where nil 
+                   :sort [nil nil nil]
                    :nest [{:what ru.petrsu.nest.son.Room
                            :where [["floors" "rooms"]]
-                           :props []
+                           :props [] 
+                           :sort [nil nil nil]
                            :nest [{:what ru.petrsu.nest.son.Device
-                                   :props []
+                                   :props [] 
+                                   :sort [nil nil nil]
                                    :where [["occupancies" "devices"]]}
                                   {:what ru.petrsu.nest.son.Floor
-                                   :props []
+                                   :props [] 
+                                   :sort [nil nil nil]
                                    :where [["floor"]]}]} 
                           {:what ru.petrsu.nest.son.Network
-                           :props []
+                           :props [] 
+                           :sort [nil nil nil]
                            :where [["floors" "rooms" "occupancies" "devices" "linkInterfaces" "networkInterfaces" "network"]]}]}]))
 
 
          (is (= (parse "building (room, device)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :where nil
+                   :where nil 
+                   :sort [nil nil nil]
                    :nest [{:what ru.petrsu.nest.son.Room
-                           :props []
+                           :props [] 
+                           :sort [nil nil nil]
                            :where [["floors" "rooms"]]}
                           {:what ru.petrsu.nest.son.Device
-                           :props []
+                           :props [] 
+                           :sort [nil nil nil]
                            :where [["floors" "rooms" "occupancies" "devices"]]}]}]))
 
          (is (= (parse "building (room, occupancy (device (network (floor)), networkinterface))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :where nil
+                   :where nil 
+                   :sort [nil nil nil]
                    :nest [{:what ru.petrsu.nest.son.Room
-                           :props []
+                           :props [] 
+                           :sort [nil nil nil]
                            :where [["floors", "rooms"]]}
                           {:what ru.petrsu.nest.son.Occupancy
-                           :props []
+                           :props [] 
+                           :sort [nil nil nil]
                            :where [["floors" "rooms" "occupancies"]]
                            :nest [{:what ru.petrsu.nest.son.Device
-                                   :props []
+                                   :props [] 
+                                   :sort [nil nil nil]
                                    :where [["devices"]]
                                    :nest [{:what ru.petrsu.nest.son.Network
-                                           :props []
+                                           :props [] 
+                                           :sort [nil nil nil]
                                            :where [["linkInterfaces" "networkInterfaces" "network"]]
                                            :nest [{:what ru.petrsu.nest.son.Floor
-                                                   :props []
+                                                   :props [] 
+                                                   :sort [nil nil nil]
                                                    :where [["networkInterfaces" 
                                                             "linkInterface" 
                                                             "device" 
                                                             "occupancy" 
                                                             "room" "floor"]]}]}]}
                                   {:what ru.petrsu.nest.son.NetworkInterface
-                                   :props []
+                                   :props [] 
+                                   :sort [nil nil nil]
                                    :where [["devices" "linkInterfaces" "networkInterfaces"]]}]}]}]))
 
          (is (= (parse "building, room", mom-)
-                 [{:where nil
+                 [{:where nil 
+                   :sort [nil nil nil]
                    :what ru.petrsu.nest.son.Building
                    :props []}
-                  {:where nil
+                  {:where nil 
+                   :sort [nil nil nil]
                    :what ru.petrsu.nest.son.Room 
-                   :props []}])))
+                   :props []}]))))
 
 (deftest t-parse-props
          ^{:doc "Tests parsing queries with properties."}
+         (let [mom- (sort-to-nil mom-)]
          (is (= (parse "building.name", mom-)
                  [{:what ru.petrsu.nest.son.Building 
+                   :sort [[nil nil nil] [nil nil nil]]
                    :props [[:name false]]
                    :where nil}]))
 
 
          (is (= (parse "building.room.floor.rooms", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :props []
+                   :props [] 
+                   :sort [nil nil nil]
                    :then {:what ru.petrsu.nest.son.Room 
-                          :props []
+                          :props [] 
+                          :sort [nil nil nil]
                           :where [["floors" "rooms"]]
                           :then {:what ru.petrsu.nest.son.Floor 
-                                 :where [["floor"]]
+                                 :where [["floor"]] 
+                                 :sort [[nil nil nil] [nil nil nil]]
                                  :props [[:rooms false]]}}
                    :where nil}]))
 
 
          (is (= (parse "building.floor.room.occupancy.device.forwarding", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :props []
+                   :props [] 
+                   :sort [nil nil nil]
                    :then {:what ru.petrsu.nest.son.Floor 
                           :props []
-                          :where [["floors"]]
+                          :where [["floors"]] 
+                          :sort [nil nil nil]
                           :then {:what ru.petrsu.nest.son.Room
-                                 :props [] 
+                                 :props []  
+                                 :sort [nil nil nil]
                                  :where [["rooms"]]
                                  :then {:what ru.petrsu.nest.son.Occupancy
-                                        :props []
+                                        :props []  
+                                        :sort [nil nil nil]
                                         :where [["occupancies"]]
                                         :then {:what ru.petrsu.nest.son.Device
-                                               :props [[:forwarding false]] 
+                                               :props [[:forwarding false]]  
+                                               :sort [[nil nil nil] [nil nil nil]]
                                                :where [["devices"]]}}}}
                    :where nil}]))
 
@@ -240,83 +284,97 @@
          (is (= (parse "simpleou[*parent]", mom-)
                  [{:what ru.petrsu.nest.son.SimpleOU 
                    :props [[:parent true]]
+                   :sort [[nil nil nil] [nil nil nil]]
                    :where nil}]))
 
 
          (is (= (parse "compositeou[*parent OUs]", mom-)
                  [{:what ru.petrsu.nest.son.CompositeOU 
                    :props [[:parent true] [:OUs false]]
+                   :sort [[nil nil nil] [nil nil nil] [nil nil nil]]
                    :where nil}]))
 
 
          (is (= (parse "compositeou[OUs *parent]", mom-)
                  [{:what ru.petrsu.nest.son.CompositeOU 
                    :props [[:OUs false] [:parent true]]
+                   :sort [[nil nil nil] [nil nil nil] [nil nil nil]]
                    :where nil}]))
 
 
          (is (= (parse "building.room.number", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :props []
+                   :props [] 
+                   :sort [nil nil nil]
                    :where nil
                    :then {:what ru.petrsu.nest.son.Room 
-                          :props [[:number false]]
-                          :where [["floors" "rooms"]]}}])))
+                          :props [[:number false]] 
+                          :sort [[nil nil nil] [nil nil nil]]
+                          :where [["floors" "rooms"]]}}]))))
 
 
 (deftest t-parse-predicates
          ^{:doc "Tests parsing queries with some restrictions."}
+         (let [mom- (sort-to-nil mom-)]
           (is (= (parse "building#(name=1)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids [{:id ["name"] :cl nil}], :func "=", :value "1"}]
+                   :sort [nil nil nil]
+                   :preds [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}]
                    :where nil}]))
           (is (= (parse "building#(room.number=\"215\")", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
+                   :sort [nil nil nil]
                    :preds [{:ids [{:id ["floors" "rooms"] :cl Room} 
-                                  {:id ["number"] :cl nil}], :func "=", :value "\"215\""}]
+                                  {:id ["number"] :cl nil}], :func #'clojure.core/=, :value "215"}]
                    :where nil}]))
           (is (= (parse "building#(name=1 and address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids [{:id ["name"] :cl nil}], :func "=", :value "1"} 
-                           {:ids [{:id ["address"] :cl nil}], :func "=", :value "2"} :and]
+                   :sort [nil nil nil]
+                   :preds [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id ["address"] :cl nil}], :func #'clojure.core/=, :value 2} :and]
                    :where nil}]))
           (is (= (parse "building#(name=1 or address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids [{:id ["name"] :cl nil}], :func "=", :value "1"} 
-                           {:ids [{:id ["address"] :cl nil}], :func "=", :value "2"} :or]
+                   :sort [nil nil nil]
+                   :preds [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id ["address"] :cl nil}], :func #'clojure.core/=, :value 2} :or]
                    :where nil}]))
           (is (= (parse "building#(name=1 and address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
-                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
-                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :and]
+                   :sort [nil nil nil]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :and]
                    :where nil}]))
           (is (= (parse "building#(name=1 and address=2 or floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
-                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
-                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :or]
+                   :sort [nil nil nil]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :or]
                    :where nil}]))
           (is (= (parse "building#(name=1 or address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
-                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
-                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :and :or]
+                   :sort [nil nil nil]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :and :or]
                    :where nil}]))
           (is (= (parse "building#(name=1 and (address=2 or floor.number=3))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :props []
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func "=", :value "1"} 
-                           {:ids [{:id ["address"], :cl nil}], :func "=", :value "2"} 
-                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func "=", :value "3"} :or :and]
-                   :where nil}])))
+                   :sort [nil nil nil]
+                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :or :and]
+                   :where nil}]))))
 
 
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
