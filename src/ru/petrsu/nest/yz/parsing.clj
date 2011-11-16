@@ -260,7 +260,7 @@
   true, false, nil and so on special values.). "
   ([rule, ^Keyword k]
    (change-pred rule, k, :not-value))
-  ([rule, k, value]
+  ([rule, ^Keyword k, value]
    (complex [ret rule
              res (get-info :result)
              nl (get-info :nest-level)
@@ -273,25 +273,41 @@
                                  [nil nil]))
              _ (if (nil? pp) (effects ()) (set-info :pp pp))
              _ (if (= k :value) (set-info :pp nil) (effects ()))
+             [value res-] (effects 
+                            (cond (= value :number)
+                                  [:not-value
+                                   (try (Integer/parseInt res-)
+                                     (catch Exception e (Double/parseDouble res-)))]
+                                  (= value :string) [:not-value (subs res- 1 (dec (count res-)))]
+                                  :else [value res-]))
              _ (update-info 
                  :preds 
                  #(conj (pop %) 
                         (assoc (peek %) 
                                k 
                                  (cond
-
                                    ;; If RCP is part of predicate (like this: ei#(MACAddress="1" || "2"))
                                    ;; with processing properties from MOM, then we should just change parameter.
                                    (and (= k :value) (map? (:value (peek %)))) 
-                                   (assoc (:value (peek %)) :params [(subs res- 1 (dec (count res-)))])
+                                   ;(assoc (:value (peek %)) :params [(subs res- 1 (dec (count res-)))])
+                                   (assoc (:value (peek %)) :params [res-])
 
                                    ;; If predicate contains processing properties from MOM, then we should 
                                    ;; replace value which is received by value with map where :func key is function 
                                    ;; from MOM and :params key is vector with value which is received.
-                                   (and (= k :value) (not (nil? cpp)) (= (first res-) \"))
+                                   (and (= k :value) (not (nil? cpp))) ;(= (first res-) \"))
                                    (let [stor (:s-to-r cpp)]
                                      {:func (some (fn [ns-] (ns-resolve ns- (symbol stor))) (all-ns)), 
-                                      :params [(subs res- 1 (dec (count res-)))]})
+                                      :params [res-]})
+
+                                   ;; Number
+                                   ;(= value :number) 
+                                   ;(try (Integer/parseInt res-)
+                                   ;  (catch Exception e (Double/parseDouble res-)))
+
+                                   ;; String
+                                   ;(= value :string)
+                                   ;(subs res- 1 (dec (count res-)))
 
                                    ;; If value is defined then we should return this value without processing (true, false, nil).
                                    (not= value :not-value) value
@@ -300,8 +316,11 @@
                                    (= k :ids) ids 
 
                                    ;; Because of clojure does not function "!=", we replaced it by funciton "not="
-                                   (and (= k :func) (= (cs/trim res-) "!=")) "not="
-                                   
+                                   (and (= k :func) (= (cs/trim res-) "!=")) (resolve (symbol "not="))
+
+                                   ;; Resolve function.
+                                   (= k :func) (resolve (symbol res-))
+
                                    ;; Strings, numbers are not needed in any processing.
                                    :else res-))))
              preds (get-info :preds)
@@ -604,8 +623,9 @@
 ;;    v-f -> (value) | some-value
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
-              (alt (conc (opt (change-pred sign :func)) (change-pred number :value)) 
-                   (change-pred string :value)
+              (alt (conc (opt (change-pred sign :func)) 
+                         (change-pred number :value :number)) 
+                   (change-pred string :value :string)
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)

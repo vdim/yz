@@ -67,42 +67,33 @@
 (def ^{:dynamic true} *mom*)
 
 
-(defn ^String tr-pred
-  "Transforms a 'pred' map into the string."
-  [pred]
-  (let [v (:value pred)
-        v (if (nil? v) "nil" v)]
-    (str "(ru.petrsu.nest.yz.core/process-preds o, " (:ids pred) 
-         ", " (:func pred) ", " v ")")))
-
-
-(defn ^String create-string-from-preds
-  "Creates string from preds vector for 
-  checking object due to restriction."
-  [^PersistentVector preds]
-  (if (nil? preds)
-    nil
-    (str "#=(eval (fn [o] " 
-         ((reduce #(cond (keyword? %2) (conj (pop (pop %1)) 
-                                             (str " (" (name %2) " " (peek %1) " " (peek (pop %1)) " )") )
-                  :else (conj %1 (tr-pred %2)))
-                  [] 
-                  preds) 0) "))")))
+(declare process-preds)
+(defn- pp-func
+  "Defines whether specified object o satisfies to specified
+  vector with predicates preds."
+  [o, ^PersistentVector preds]
+  (first 
+    (reduce #(if (map? %2) 
+               (conj %1 (process-preds o (:ids %2) (:func %2) (:value %2))) 
+                (let [op (if (= %2 :and) 
+                           (and (peek %1) (peek (pop %1)))
+                           (or (peek %1) (peek (pop %1))))]
+                  (conj (pop (pop %1)) op))) [] preds)))
 
 
 (defn filter-by-preds
-  "Gets sequence of objects and string of restrictions and
-  returns new sequence of objects which are filtered by specified preds."
-  [objs, ^String preds]
+  "Gets sequence of objects and vector with predicates and
+  returns new sequence of objects which are filtered by this predicates."
+  [objs, preds]
   (if (nil? preds) 
     objs 
-    (let [f (read-string preds)]
-      (filter #(f %) objs))))
+    (filter #(pp-func % preds) objs)))
 
 
 (defn- sort-rq
   "Sorts results of query due to specified type of sorting
-  and its comparator and keyfn."
+  and its comparator and keyfn (vector vsort). prop? defines
+  whether rq is sequence of sequences from properties."
   [rq vsort prop?]
   (let [
         ;; Function for getting comparator.
@@ -139,7 +130,7 @@
   [^Class cl, ^PersistentVector preds, tsort]
   (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
     (.getElems *em* cl preds))
-    (sort-rq (filter-by-preds (.getElems *em* cl) (create-string-from-preds preds)) tsort false))
+    (sort-rq (filter-by-preds (.getElems *em* cl) preds) tsort false))
 
 
 (defn get-fv
@@ -256,7 +247,7 @@
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects."
-  [sources ^String preds paths ^Class what tsort]
+  [sources preds paths ^Class what tsort]
   (mapcat #(loop [ps % res sources]
              (if (empty? ps)
                (let [res (filter (fn [o] (instance? what o)) res)]
@@ -298,7 +289,7 @@
           pp
           (sort-rq pp tsort true)))
       (recur (:then then-) 
-             (get-objs-by-path objs- (create-string-from-preds (:preds then-)) 
+             (get-objs-by-path objs- (:preds then-)
                                (:where then-) (:what then-) (:sort then-))
              (:props then-)
              (:sort then-)))))
@@ -318,11 +309,9 @@
   "Processes one element from vector from :nest value of query structure."
   [^PersistentArrayMap nest, objs]
   (p-nest nest (get-objs-by-path 
-                 objs  
-                 (create-string-from-preds (:preds nest)) 
-                 (:where nest)
-                 (:what nest)
-                 (:sort nest))))
+                 objs 
+                 (:preds nest) (:where nest)
+                 (:what nest) (:sort nest))))
 
 
 (defn- process-nests
@@ -453,10 +442,10 @@
                                                    (let [pc (process-func parse-res nil)]
                                                      [pc (reduce #(cons [%2] %1) () pc)])
                                                    (catch Throwable e (.getMessage e)))
-                                :else ;(try
+                                :else (try
                                         (let [rq (run-query parse-res)]
-                                          [rq (remove-repeated (get-rows rq))]))]
-                                        ;(catch Throwable e (.getMessage e))))]
+                                          [rq (remove-repeated (get-rows rq))])
+                                        (catch Throwable e (.getMessage e))))]
         (if (string? run-query-res)
           (def-result [] run-query-res [] ())
           (def-result (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))
