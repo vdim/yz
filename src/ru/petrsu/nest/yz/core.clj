@@ -100,12 +100,46 @@
       (filter #(f %) objs))))
 
 
+(defn- sort-rq
+  "Sorts results of query due to specified type of sorting
+  and its comparator and keyfn."
+  [rq vsort prop?]
+  (let [
+        ;; Function for getting comparator.
+        get-comp #(let [tcomp (if %1 %1 compare)]
+                    (cond (nil? %2) nil
+                          (= %2 :asc) tcomp
+                          (= %2 :desc) (fn [v1, v2] (* -1 (tcomp v1 v2)))))
+        ;; Function for sorting.
+        s #(cond 
+             (and %3 %2) (sort-by %3 %2 %4)
+             %1 (sort %2 %4)
+             :else %4)]
+    (cond 
+      (and prop? (every? vector? vsort))
+      (loop [rq- rq i 0 [tsort tcomp keyfn] (second vsort) vsort (next vsort)]
+        (if (nil? vsort)
+          rq-
+          (recur 
+            (let [tcomp (get-comp tcomp tsort)
+                  keyfn (if keyfn #(keyfn (nth (% 1) i)) #(nth (% 1) i))]
+              (s tsort tcomp keyfn rq-))
+            (inc i) (second vsort) (next vsort))))
+
+      (every? vector? vsort) rq
+
+      :else 
+      (let [[tsort tcomp keyfn] vsort
+            tcomp (get-comp tcomp tsort)]
+        (s tsort tcomp keyfn rq)))))
+
+
 (defn- select-elems
   "Returns from storage objects which have 'cl' class."
-  [^Class cl, ^PersistentVector preds]
+  [^Class cl, ^PersistentVector preds, tsort]
   (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
     (.getElems *em* cl preds))
-    (filter-by-preds (.getElems *em* cl) (create-string-from-preds preds)))
+    (sort-rq (filter-by-preds (.getElems *em* cl) (create-string-from-preds preds)) tsort false))
 
 
 (defn get-fv
@@ -219,16 +253,14 @@
       (some #(f % value) objs))))
 
 
-
-
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects."
-  [sources ^String preds paths ^Class what]
+  [sources ^String preds paths ^Class what tsort]
   (mapcat #(loop [ps % res sources]
              (if (empty? ps)
                (let [res (filter (fn [o] (instance? what o)) res)]
-                 (filter-by-preds res preds))
+                 (sort-rq (filter-by-preds res preds) tsort false))
                (recur (rest ps) (get-objs (first ps) res))))
           paths))
 
@@ -258,13 +290,18 @@
 (defn process-then
   "Processes :then value of query structure.
   Returns sequence of objects."
-  [then, objs, props, cl]
-  (loop [then- then, objs- objs, props- props]
+  [then, objs, props, cl, tsort]
+  (loop [then- then, objs- objs, props- props, tsort tsort]
     (if (or (nil? then-) (every? nil? objs-))
-      (map (fn [o] [o, (process-props o props-)]) objs-)
+      (let [pp (map (fn [o] [o, (process-props o props-)]) objs-)]
+        (if (and (not (empty? pp)) (= ((first pp) 0) ((first pp) 1)))
+          pp
+          (sort-rq pp tsort true)))
       (recur (:then then-) 
-             (get-objs-by-path objs- (create-string-from-preds (:preds then-)) (:where then-) (:what then-))
-             (:props then-)))))
+             (get-objs-by-path objs- (create-string-from-preds (:preds then-)) 
+                               (:where then-) (:what then-) (:sort then-))
+             (:props then-)
+             (:sort then-)))))
 
 
 (declare process-nests)
@@ -274,7 +311,8 @@
   [^PersistentArrayMap nest, objs]
   (reduce #(conj %1 (%2 1) (process-nests (:nest nest) (%2 0)))
           []
-          (process-then (:then nest) objs (:props nest) (:what nest))))
+          (process-then (:then nest) objs (:props nest) (:what nest) (:sort nest))))
+
 
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
@@ -283,7 +321,8 @@
                  objs  
                  (create-string-from-preds (:preds nest)) 
                  (:where nest)
-                 (:what nest))))
+                 (:what nest)
+                 (:sort nest))))
 
 
 (defn- process-nests
@@ -296,7 +335,7 @@
   "Gets structure of query getting from parser and returns
   structure of user's result."
   [q]
-  (p-nest q (select-elems (:what q) (:preds q))))
+  (p-nest q (select-elems (:what q) (:preds q) (:sort q))))
 
 
 (defn- run-query
@@ -386,6 +425,14 @@
    :rows rows})
 
 
+(defn- remove-repeated
+  "Removed repeated (due to equals) elements
+  from specified collection. We can't use clojure.core/set,
+  because of it mixs our sorted sequence."
+  [coll]
+  (reduce #(if (some (fn [v1] (= v1 %2)) %1) %1 (conj %1 %2)) [] coll))
+
+
 (defn pquery
   "Returns map where
     :error - defines message of an error 
@@ -406,10 +453,10 @@
                                                    (let [pc (process-func parse-res nil)]
                                                      [pc (reduce #(cons [%2] %1) () pc)])
                                                    (catch Throwable e (.getMessage e)))
-                                :else (try
+                                :else ;(try
                                         (let [rq (run-query parse-res)]
-                                          [rq (sequence (set (get-rows rq)))])
-                                        (catch Throwable e (.getMessage e))))]
+                                          [rq (remove-repeated (get-rows rq))]))]
+                                        ;(catch Throwable e (.getMessage e))))]
         (if (string? run-query-res)
           (def-result [] run-query-res [] ())
           (def-result (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))

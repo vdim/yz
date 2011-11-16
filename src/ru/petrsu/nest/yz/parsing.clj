@@ -327,32 +327,16 @@
       cl)))
 
 
-(defn update-sorts
-  ([res, tsort]
-   (update-sorts res, tsort false))
-  ([res, tsort, fp]
-   "Takes value of the :result (vector res) and type of sort and then
-   updates value of :sorts into last map from vector res. Returns
-   new res. fp defines whether updates-sorts is called from found-prop.
-   Examples:
-      floor : [nil]
-      ↓floor : [:asc]
-      floor[↓number] : [[nil :asc]]
-      floor[↓number name] : [[nil :asc nil]]
-      floor[↓number ↑name] : [[nil :asc :desc]]
-      floor (room[↓number ↑name]) : [nil [nil :asc :desc]]
-      ↑floor (room[↓number ↑name]) : [:desc [nil :asc :desc]]"
-   (conj (pop res) 
-         (update-in (peek res) [:sorts] 
-                    #(vec (if fp
-
-                            ;; If fp is true it is means that update-sorts is called
-                            ;; from found-prop. So we must create vector from sort's type
-                            ;; of this properties.
-                            (if (vector? (peek %1))
-                              (conj (pop %1) (conj (peek %1) tsort))
-                              (conj (pop %1) [(peek %1) tsort]))
-                            (conj %1 tsort)))))))
+(defn- get-sort
+  "Returns returns vector with:
+    - type of sort (tsort);
+    - comparator (for specified class);
+    - keyfn (for specified class)."
+  [tsort, cl, property]
+  (let [f #(get-in (get mom cl) [:sort property %])]
+    [tsort 
+     (f :comp)
+     (f :keyfn)]))
 
 
 (defn- found-prop
@@ -367,8 +351,9 @@
         what (get-in-nest res nl :what)]
     (if (nil? what)
       (throw (Exception. (str "Not found element: " id)))
-      (let [res (update-sorts res tsort true)
-            f #(assoc-in-nest res nl %1 %2)]
+      (let [sorts (get-in-nest-or-then res nl tl :sort)
+            sorts (if (every? vector? sorts) sorts [sorts])
+            f #(assoc-in-nest res nl %1 %2 :sort (conj sorts (get-sort tsort, what, id)))]
         (if (> tl- 0)
           (f :then (update-in last-then 
                               (conj (vec (repeat (dec tl-) :then)) :props) 
@@ -384,13 +369,15 @@
         tl- (dec tl)]
     (if (nil? cl)
       (found-prop res id nl tl is-recur tsort)
-      (let [res (update-sorts res tsort)
-            f #(assoc-in-nest res nl :then %)]
+      (let [f #(assoc-in-nest res nl :then %)
+            ; Vector with type of sorting, comparator and keyfn.
+            vsort (get-sort tsort cl :self)]
         (if (> tl 0)
           (if (nil? last-then)
             (f (assoc empty-then 
                       :what cl 
-                      :where (get-paths cl, (get-in-nest res nl :what))))
+                      :where (get-paths cl, (get-in-nest res nl :what))
+                      :sort vsort))
             (f (assoc-in last-then 
                          (repeat tl- :then) 
                          (let [what (if (> tl- 1) 
@@ -398,11 +385,13 @@
                                       (:what last-then))]
                            (assoc empty-then 
                                   :what cl
-                                  :where (get-paths cl, what))))))
+                                  :where (get-paths cl, what)
+                                  :sort vsort)))))
           (assoc-in-nest 
             res nl
             :what cl
-            :where (get-paths cl, (get-in-nest-or-then res nl tl :what))))))))
+            :where (get-paths cl, (get-in-nest-or-then res nl tl :what))
+            :sort vsort))))))
 
 
 (defn update-preds
@@ -517,8 +506,8 @@
 (def idsort
   ^{:doc "Defines sort and its type."}
   (let [ch-sort #(invisi-conc %1 (set-info :cur-sort %2))]
-    (alt (ch-sort (lit \↓) :asc)
-         (ch-sort (lit \↑) :desc)
+    (alt (ch-sort (lit \↓) :desc)
+         (ch-sort (lit \↑) :asc)
          (ch-sort emptiness nil))))
 
 
