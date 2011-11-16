@@ -110,7 +110,8 @@
 
 
 (defn bench
-  "Returns string with result of parsing and quering."
+  "Returns string with result of parsing and quering.
+  'n' is numbers of the execution the specified 'query'."
   ([n ^String query mom]
    (bench n query mom nil))
   ([n ^String query mom son]
