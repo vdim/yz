@@ -132,7 +132,7 @@
                                                  (.where cr (create-predicate preds cb root))))
                            getResultList))]
           (if ch-p
-            (yz/filter-by-preds elems (yz/create-string-from-preds preds))
+            (yz/filter-by-preds elems preds)
             elems))))
             
 
