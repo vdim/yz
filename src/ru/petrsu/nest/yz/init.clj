@@ -28,7 +28,10 @@
         ru.petrsu.nest.yz.parsing
         ru.petrsu.nest.yz.core
         
-        clojure.repl)
+        clojure.repl clojure.pprint clojure.java.io
+        clojure.walk
+        clojure.core.protocols)
+
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 
                                IPv4Interface, UnknownLinkInterface,
