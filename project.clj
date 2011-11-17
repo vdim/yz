@@ -14,4 +14,5 @@
   :java-source-path "."
   :jar-exclusions [#"\.swp$|\.clj$"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
-  :warn-on-reflection false)
+  :warn-on-reflection false
+  :omit-source true)
