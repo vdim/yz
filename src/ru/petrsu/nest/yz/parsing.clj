@@ -687,7 +687,7 @@
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 
-(declare params, param, pquery, pnumber, pstring, process-fn, parse+, pfunc, pid, pself)
+(declare params, param, param-query, pnumber, pstring, process-fn, parse+, pfunc, pid, pself)
 (def function
   ^{:doc "Defines YZ's function."}
   (conc (invisi-conc (lit \@) (update-info :function #(conj % empty-fun)))
@@ -701,7 +701,7 @@
 
 (def param
   ^{:doc "Defines different types of function's parameters."}
-  (sur-by-ws (alt pstring pnumber pquery pfunc pself pid)))
+  (sur-by-ws (alt pstring pnumber param-query pfunc pself pid)))
 
 
 (defmacro f-mod
@@ -711,7 +711,7 @@
   `(invisi-conc (lit ~ch) (set-info :f-modificator ~fm)))
 
 
-(def pquery
+(def param-query
   ^{:doc "Defines parameter as query."}
   (conc (alt (f-mod single-pq :single)
              (f-mod list-pq :list)
