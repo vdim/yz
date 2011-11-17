@@ -129,7 +129,7 @@
     (println (reduce #(str %1 "q: " %2 \newline (bench n %2 mom son) \newline) "" yz/queries))))
 
 
-(def ^:dynamic f "etc/yz-bench.txt")
+(def ^:dynamic *f* "etc/yz-bench.txt")
 (def ^:dynamic *q* (ref "")) 
 (defn bench-to-file
   "Writes result of benchmark to file yz-bench.txt."
@@ -144,8 +144,8 @@
                                        (str line " " (bench-quering n @*q* mom son) \newline)
                                        :else (str line \newline))))
                         "" 
-                        (line-seq (cio/reader f)))]
-    (cio/copy new-res (cio/file f))))
+                        (line-seq (cio/reader *f*)))]
+    (cio/copy new-res (cio/file *f*))))
 
 
 (defn -main

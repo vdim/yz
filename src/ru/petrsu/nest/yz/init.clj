@@ -24,8 +24,11 @@
   (:use ru.petrsu.nest.yz.functions 
         ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
+        ru.petrsu.nest.yz.benchmark.benchmark
         ru.petrsu.nest.yz.parsing
-        ru.petrsu.nest.yz.core)
+        ru.petrsu.nest.yz.core
+        
+        clojure.repl)
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 
                                IPv4Interface, UnknownLinkInterface,
