@@ -95,8 +95,7 @@
   and its comparator and keyfn (vector vsort). prop? defines
   whether rq is sequence of sequences from properties."
   [rq vsort prop?]
-  (let [
-        ;; Function for getting comparator.
+  (let [;; Function for getting comparator.
         get-comp #(let [tcomp (if %1 %1 compare)]
                     (cond (nil? %2) nil
                           (= %2 :asc) tcomp
@@ -259,7 +258,11 @@
 (defn- process-prop
   "Processes property."
   [[prop ^Boolean is-recur] obj]
-  (cond (map? prop) (process-func prop, obj)
+  (cond (map? prop) 
+        (let [fr (process-func prop, obj)]
+          (if (and (seq? fr) (= (count fr) 1))
+            (first fr)
+            fr))
         (= prop :#self-object#) obj
         (= prop :#default-property#) (get-fv obj (:dp (get *mom* (class obj))))
         is-recur (loop [res [] obj- (get-fv obj prop)]
