@@ -558,6 +558,52 @@
    "ni[@(ip &.)]"
    "ni[@(ip &)]"
    "ni[&.]"
+
+;; Sorting
+   "↑room"
+   "↓room"
+   "↓room.↓number"
+   "↓room.↑number"
+   "↓room.number"
+   "↑room (building)"
+   "room (↓building)"
+   "↑room (↓building)"
+   "↑room (floor (↓building))"
+   "↑room (device (floor (↓building)))"
+   "↑room (device (↓floor (↓building)))"
+   "↑room (↓device (↓floor (↓building)))"
+   "↑room (device (floor, ↓building))"
+   "↑building (↓room)"
+
+   "room[↓number]"
+   "room[& ↓number]"
+   "room[↓& ↓number]"
+   "room[name & ↓number]"
+   "room[↓& name ↑number]"
+
+   "↓room[↓number]"
+   "↓room[& ↓number]"
+   "↓room[↓& ↓number]"
+   "↓room[name & ↓number]"
+   "↓room[↓& name ↑number]"
+
+   "↓room[number]"
+   "↓room[& number]"
+   "↓room[& number]"
+   "↓room[name & number]"
+   "↓room[& name number]"
+
+   "room.building[↓description]"
+   "room.building[& ↓description]"
+   "room.building[↓& ↓description]"
+   "room.building[name & ↓description]"
+   "room.building[↓& name ↑description]"
+   "room (building[↓description])"
+   "room (building[& ↓description])"
+   "room (building[↓& ↓description])"
+   "room (building[name & ↓description])"
+   "room (building[↓& name ↑description])"
+
    "room"])
 
 (def qlist-list
