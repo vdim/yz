@@ -15,4 +15,5 @@
   :jar-exclusions [#"\.swp$|\.clj$"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false
-  :omit-source true)
+  :omit-source true
+  :repl-init ru.petrsu.nest.yz.init)
