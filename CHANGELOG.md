@@ -1,3 +1,10 @@
+## 0.0.1-alpha10 / 18.11.2011
+
+* Added support processing property from the MOM.
+* Added getSingleResult method to the QueryYZ wrapper.
+* Added factory (ElementManagerFactory) with different implementation of the ElementManager.
+* Added support the sorting of result`s query.
+
 ## 0.0.1-alpha9 / 05.11.2011
 
 * Fixed problem with inheritance from interface.
