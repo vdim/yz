@@ -46,6 +46,7 @@
   (:require [clojure.xml :as cx] 
             [clojure.set :as cs]
             [clojure.string :as cst]
+            [clojure.pprint :as cpp]
             [clojure.java.io :as cio])
   (:import (javax.persistence Transient EntityManagerFactory)))
 
@@ -160,11 +161,14 @@
   "Inits map for specified class. Adds following keys and values:
     - :sn (short name)
     - :dp (default property)
-    - :superclass (super class)
-    - :properties (list of properties)"
+    - :sort (functions for sorting)
+    - :p-propertis ()
+    - :superclass (super class)"
   [cl, map-cl-old]
   {:sn (get-short-name cl)
    :dp (:dp map-cl-old)
+   :sort (:sort map-cl-old)
+   :p-properties (:sort map-cl-old)
    :superclass (:superclass (bean cl))})
 
 
@@ -232,7 +236,8 @@
   (let [f (if (instance? String f)
             (cio/file f)
             f)]
-    (cio/copy (.toString mom) f)))
+    (binding [*out* (cio/writer f)] ; Needed for pretty write.
+      (println (cpp/write mom :stream nil)))))
 
 
 (defn mom-from-file
@@ -253,8 +258,14 @@
   ([emf-or-hbcfg-or-mom f ^Boolean append]
    (let [mom-old (if (and append (.exists (cio/file f))) (mom-from-file f) {})
          s emf-or-hbcfg-or-mom
-         mom (cond (instance? EntityManagerFactory s) (gen-mom-from-metamodel s, mom-old)
+         mom (cond
+                  ; JPA's EntityManagerFactory TODO: replaces by ru.petrsu.nest.yz.core.ElementManager
+                  (instance? EntityManagerFactory s) (gen-mom-from-metamodel s, mom-old)
+
+                   ; hibernate.cfg.xml
                    (instance? String s) (gen-mom-from-cfg s, mom-old)
+
+                   ; List with classes
                    (sequential? s) (gen-mom s, mom-old)
                    :else s)]
      (to-file mom f))))
