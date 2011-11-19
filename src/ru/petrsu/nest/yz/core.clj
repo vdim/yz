@@ -417,14 +417,6 @@
    :rows rows})
 
 
-(defn- remove-repeated
-  "Removed repeated (due to equals) elements
-  from specified collection. We can't use clojure.core/set,
-  because of it mixs our sorted sequence."
-  [coll]
-  (reduce #(if (some (fn [v1] (= v1 %2)) %1) %1 (conj %1 %2)) [] coll))
-
-
 (defn pquery
   "Returns map where
     :error - defines message of an error 
@@ -447,7 +439,7 @@
                                                    (catch Throwable e (.getMessage e)))
                                 :else (try
                                         (let [rq (run-query parse-res)]
-                                          [rq (remove-repeated (get-rows rq))])
+                                          [rq (distinct (get-rows rq))])
                                         (catch Throwable e (.getMessage e))))]
         (if (string? run-query-res)
           (def-result [] run-query-res [] ())
