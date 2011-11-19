@@ -168,7 +168,7 @@
   {:sn (get-short-name cl)
    :dp (:dp map-cl-old)
    :sort (:sort map-cl-old)
-   :p-properties (:sort map-cl-old)
+   :p-properties (:p-properties map-cl-old)
    :superclass (:superclass (bean cl))})
 
 
@@ -197,10 +197,10 @@
   (reduce (fn [m cl]
             (assoc m
                    cl
-                   (reduce #(assoc 
-                              %1 
-                              %2 
-                              (get-s-paths cl %2 (set classes)) ) 
+                   (reduce #(let [paths (get-s-paths cl %2 (set classes))]
+                              (if (empty? paths)
+                                %1
+                                (assoc %1 %2 paths)))
                            (init-map-for-cl cl (get mom-old cl)) 
                            classes)))
           mom-old

@@ -28,6 +28,7 @@
             [ru.petrsu.nest.yz.benchmark.hql :as hql]
             [ru.petrsu.nest.yz.queries.core :as qc]
             [clojure.java.io :as cio]
+            [clojure.java.shell :as sh]
             [clojure.pprint :as cp])
   (:import (java.util Date)))
 
@@ -227,7 +228,7 @@
         (str new-res "# " nb ". " n 
              " " cbd " \"" sdate "\" \"" edate "\" " 
              ; Find a sha1 of the last commit and info about current machine.
-             (try (:out (clojure.java.shell/sh "./info.sh"))
+             (try (:out (sh/sh "./info.sh"))
                (catch Exception e ""))
              \newline)]
     (cio/copy new-res (cio/file *f*)))))
