@@ -207,7 +207,7 @@
   ([n mom]
    (bench-to-file n 10000 mom))
   ([n cbd mom]
-  (let [sdate (Date.) ; Date of starting a benchmark.
+  (let [sdate (Date.) ; Date of starting the benchmark.
         son (bu/gen-bd cbd) ; Database
         nb (inc (get-num-bench *f*)) ; Current number of the benchmark.
         new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
@@ -220,13 +220,13 @@
                                        :else (str %2 \newline)))
                         "" 
                         (line-seq (cio/reader *f*)))
-        edate (Date.) ; Date of ending a benchmark.
+        edate (Date.) ; Date of ending the benchmark.
 
         ; Write info about benchmark in the end of file.
         new-res 
         (str new-res "# " nb ". " n 
              " " cbd " \"" sdate "\" \"" edate "\" " 
-             ; Found a sha1 of the last commit and info about current machine.
+             ; Find a sha1 of the last commit and info about current machine.
              (try (:out (clojure.java.shell/sh "./info.sh"))
                (catch Exception e ""))
              \newline)]
