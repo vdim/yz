@@ -1,0 +1,49 @@
+# Copyright 2011 Vyacheslav Dimitrov, Petrozavodsk State University.
+#
+# First column is the number of a benchmark.
+# Second is time of the parsing.
+# Third is time of the quering.
+#
+# Information about benchmark (see after results):
+#   - number 
+#   - count of the execution each query
+#   - count of elements into a database
+#   - starting date
+#   - ending date
+#   - commit's sha1 (see script info.sh)
+#   - some info about hardware and software (see script info.sh).
+
+#count=1
+
+;building
+
+;room
+
+;building (room)
+
+;room (building)
+
+;building (li)
+
+;device (building)
+
+;device (room (floor (building)))
+
+;floor#(number = 1)
+
+;floor#(number = 1) (room#(number = "215"))
+
+;device#(forwarding = true)
+
+;device#(network.device.id = 25 and forwarding = true)
+
+;device (room (building#(name="MB")))
+
+;device (room#(number="200") (building#(name="MB")))
+
+;device#(id=25) (room#(number="200") (building#(name="MB")))
+
+;device (building (ni))
+
+;device (building (floor))
+

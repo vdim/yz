@@ -27,7 +27,9 @@
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [ru.petrsu.nest.yz.benchmark.hql :as hql]
             [ru.petrsu.nest.yz.queries.core :as qc]
-            [clojure.java.io :as cio]))
+            [clojure.java.io :as cio]
+            [clojure.pprint :as cp])
+  (:import (java.util Date)))
 
 
 (defn- ^javax.persistence.EntityManager create-em
@@ -131,7 +133,7 @@
 
 (def ^:dynamic *f* "etc/yz-bench.txt")
 (def ^:dynamic *q* (ref "")) 
-(defn bench-to-file
+(defn bench-to-file-old
   "Writes result of benchmark to file yz-bench.txt."
   [n mom]
   (let [son (bu/gen-bd 10000)
@@ -155,4 +157,78 @@
   (let [son (bu/gen-bd 10000)
         mom (hb/mom-from-file "nest.mom")]
     (reduce #(str %1 (bench 15 %2 mom son)) "" yz/queries)))
+
+
+;; 
+;; New version of structure of the file with benchmark's results.
+;;
+;; We will be creating two files for each result.
+;;
+;; First file tries represents result of the benchmark into queries versus
+;; time of parsing and time of quering view:
+;;  - first column is number of the benchmark.
+;;  - second column is result of the parsing (in msec)
+;;  - third column is result of the quering (in msec)
+;;
+;; Example:
+;; ;query1 
+;;  10. 244647.120965   7029.25291 
+;;   9.   2047.120965 544729.25291 
+;; ....
+;;
+;; ;query2
+;;  10.    047.120965   7029.25291 
+;;   9.   2047.120965 544729.25291 
+;;
+;;
+
+
+(defn- get-fs
+  "Returns formatted string with number of the benchmark, 
+  amount of elements into bd, count of execution
+  time of the parsing and time of the quering."
+  [nb ptime qtime] 
+  (cp/cl-format nil "~4D ~15,4F ~15,4F~%" nb ptime qtime))
+
+(defn- get-num-bench
+  "Returns a previous number of the benchmark."
+  [f]
+  (some #(if (.startsWith % "#count=")
+           (Integer/parseInt (.substring % 7))
+           nil) 
+        (line-seq (cio/reader f))))
+
+
+(def ^:dynamic *f* "etc/yz-bench-new.txt")
+
+(defn bench-to-file
+  "Writes result of benchmark to yz-bench-new.txt 
+  file with results of benchmark."
+  ([n mom]
+   (bench-to-file n 10000 mom))
+  ([n cbd mom]
+  (let [sdate (Date.) ; Date of starting a benchmark.
+        son (bu/gen-bd cbd) ; Database
+        nb (inc (get-num-bench *f*)) ; Current number of the benchmark.
+        new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
+                                       (str %2 \newline
+                                            (let [q (.substring %2 1)]
+                                              (get-fs nb 
+                                                      (bench-parsing n q mom) 
+                                                      (bench-quering n q mom son))))
+                                       (.startsWith %2 "#count=") (str "#count=" nb \newline)
+                                       :else (str %2 \newline)))
+                        "" 
+                        (line-seq (cio/reader *f*)))
+        edate (Date.) ; Date of ending a benchmark.
+
+        ; Write info about benchmark in the end of file.
+        new-res 
+        (str new-res "# " nb ". " n 
+             " " cbd " \"" sdate "\" \"" edate "\" " 
+             ; Found a sha1 of the last commit and info about current machine.
+             (try (:out (clojure.java.shell/sh "./info.sh"))
+               (catch Exception e ""))
+             \newline)]
+    (cio/copy new-res (cio/file *f*)))))
 
