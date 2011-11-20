@@ -389,3 +389,20 @@
            (is (= (count rows) 1))
            (is (= (nth (nth rows 0) 0) b2))))
 
+;; RCP with != and string.
+(deftest rcp-!=string
+         ^{:doc "Tests predicates which contains RCP with strings and != conditions."}
+         (let [rows (tc/rows-query "building#(name=(\"b1\" || !=\"b2\"))")]
+           (is (= (count rows) 2))
+           (let [b (nth (nth rows 0) 0)]
+             (is (or (= b b1) (= b b3))))
+           (let [b (nth (nth rows 1) 0)]
+             (is (or (= b b1) (= b b3)))))
+         (let [rows (tc/rows-query "building#(name=(!=\"b1\" && !=\"b2\"))")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b3)))
+         (let [rows (tc/rows-query "building#(name~(\"2\" && !=\"b2\"))")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(name~(\"^b.*$\" && !=\"b2\"))")]
+           (is (= (count rows) 2))))
+
