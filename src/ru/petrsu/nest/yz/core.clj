@@ -95,33 +95,35 @@
   and its comparator and keyfn (vector vsort). prop? defines
   whether rq is sequence of sequences from properties."
   [rq vsort prop?]
-  (let [;; Function for getting comparator.
-        get-comp #(let [tcomp (if %1 %1 compare)]
-                    (cond (nil? %2) nil
-                          (= %2 :asc) tcomp
-                          (= %2 :desc) (fn [v1, v2] (* -1 (tcomp v1 v2)))))
-        ;; Function for sorting.
-        s #(cond 
-             (and %3 %2) (sort-by %3 %2 %4)
-             %1 (sort %2 %4)
-             :else %4)]
-    (cond 
-      (and prop? (every? vector? vsort))
-      (loop [rq- rq i 0 [tsort tcomp keyfn] (second vsort) vsort (next vsort)]
-        (if (nil? vsort)
-          rq-
-          (recur 
-            (let [tcomp (get-comp tcomp tsort)
-                  keyfn (if keyfn #(keyfn (nth (% 1) i)) #(nth (% 1) i))]
-              (s tsort tcomp keyfn rq-))
-            (inc i) (second vsort) (next vsort))))
+  (if (nil? vsort)
+    rq
+    (let [;; Function for getting comparator.
+          get-comp #(let [tcomp (if %1 %1 compare)]
+                      (cond (nil? %2) nil
+                            (= %2 :asc) tcomp
+                            (= %2 :desc) (fn [v1, v2] (* -1 (tcomp v1 v2)))))
+          ;; Function for sorting.
+          s #(cond 
+               (and %3 %2) (sort-by %3 %2 %4)
+               %1 (sort %2 %4)
+               :else %4)]
+      (cond 
+        (and prop? (every? vector? vsort))
+        (loop [rq- rq i 0 [tsort tcomp keyfn] (second vsort) vsort (next vsort)]
+          (if (nil? vsort)
+            rq-
+            (recur 
+              (let [tcomp (get-comp tcomp tsort)
+                    keyfn (if keyfn #(keyfn (nth (% 1) i)) #(nth (% 1) i))]
+                (s tsort tcomp keyfn rq-))
+              (inc i) (second vsort) (next vsort))))
 
-      (every? vector? vsort) rq
+        (every? vector? vsort) rq
 
-      :else 
-      (let [[tsort tcomp keyfn] vsort
-            tcomp (get-comp tcomp tsort)]
-        (s tsort tcomp keyfn rq)))))
+        :else 
+        (let [[tsort tcomp keyfn] vsort
+              tcomp (get-comp tcomp tsort)]
+          (s tsort tcomp keyfn rq))))))
 
 
 (defn- select-elems

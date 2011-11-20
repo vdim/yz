@@ -343,10 +343,11 @@
     - comparator (for specified class);
     - keyfn (for specified class)."
   [tsort, cl, property]
-  (let [f #(get-in (get mom cl) [:sort property %])]
-    [tsort 
-     (f :comp)
-     (f :keyfn)]))
+  (if tsort
+    (let [f #(get-in (get mom cl) [:sort property %])]
+      [tsort 
+       (f :comp)
+       (f :keyfn)])))
 
 
 (defn- found-prop
@@ -361,13 +362,19 @@
     (if (nil? what)
       (throw (Exception. (str "Not found element: " id)))
       (let [sorts (get-in-nest-or-then res nl tl- :sort)
-            sorts (if (every? vector? sorts) sorts [sorts])
-            f #(assoc-in-nest res nl %1 %2 :sort (conj sorts (get-sort tsort, what, id)))]
+            sorts (if sorts 
+                    (if (every? vector? sorts) 
+                      sorts 
+                      [sorts]) 
+                    [[nil nil nil]])
+            s (fn [_] 
+                (if tsort
+                  (conj sorts (get-sort tsort, what, id))))
+            f #(assoc-in-nest res nl %1 %2 :sort (s nil))]
         (if (> tl- 0)
           (let [v #(conj (vec (repeat (dec tl-) :then)) %)
                 last-then (get-in-nest res nl :then)
-                last-then (update-in last-then (v :sort)
-                                     (fn [_] (conj sorts (get-sort tsort, what, id))))]
+                last-then (update-in last-then (v :sort) s)]
             (assoc-in-nest 
               res nl :then
               (update-in last-then (v :props)
