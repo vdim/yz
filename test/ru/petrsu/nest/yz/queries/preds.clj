@@ -331,3 +331,30 @@
          (is (tc/check-query "floor#(description=nil)" [[Floor [], Floor [], Floor [], Floor [], Floor []]]))
          (is (tc/check-query "floor#(number != nil)" [[Floor [], Floor [], Floor [], Floor [], Floor []]]))
          (is (tc/check-query "building#(description = nil)" [[Building [], Building []]])))
+
+;; Checks regular expressions
+(deftest req-expr
+         ^{:doc "Tests predicates which contain regular expressions."}
+         (let [rows (tc/rows-query "building#(name~\".*3\")")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b3)))
+         (let [rows (tc/rows-query "floor#(room.number~\"00\")")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) f1_b2)))
+         (let [rows (tc/rows-query "room#(number~\"0\")")]
+           (is (= (count rows) 13)))
+         (let [rows (tc/rows-query "room#(number~\"0$\")")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(room.number~\"0$\" || name=\"b3\")")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b3)))
+         (let [rows (tc/rows-query "building#(room.number~\"0$\" || name~\"^.2$\")")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b2)))
+         (let [rows (tc/rows-query "building#(room.number~\"00\" || name~\"^.5$\")")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b2)))
+         (let [rows (tc/rows-query "building#(room.number~\"0$\")")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(room.number~\"0$\" && name=\"b3\")")]
+           (is (= (count rows) 0))))

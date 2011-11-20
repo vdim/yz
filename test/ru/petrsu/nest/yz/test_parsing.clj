@@ -557,7 +557,15 @@
    "ni[@(ip &.inetAddress)]"
    "ni[@(ip &.)]"
    "ni[@(ip &)]"
+   "ni[name @(ip &)]"
+   "ni[@(ip &.) name]"
+   "ni[description @(ip &.) name]"
+   "ni[@(ip &.) description name]"
    "ni[&.]"
+   "ni[name &.]"
+   "ni[&. name]"
+   "ni[description &. name]"
+   "ni[&. description name]"
 
 ;; Sorting
    "↑room"
@@ -604,6 +612,25 @@
    "room (building[name & ↓description])"
    "room (building[↓& name ↑description])"
 
+;; Regular expressions
+   "room#(number~\".*\")"
+   "room#(number~\".00$\")"
+   "room#(number~\".00$\" || number=\"215\")"
+   "room#(number~\".00$\" || number~\"215\")"
+   "room#(number=\".00$\" || number~\"215\")"
+   "building (room#(number~\".*\"))"
+   "building (room#(number~\".00$\"))"
+   "building (room#(number~\".00$\" || number=\"215\"))"
+   "building (room#(number~\".00$\" || number~\"215\"))"
+   "building (room#(number=\".00$\" || number~\"215\"))"
+   "building (room#(number~\".00$\" && number=\"215\"))"
+   "building (room#(number~\".00$\" && number~\"215\"))"
+   "building (room#(number=\".00$\" && number~\"215\"))"
+   "building#(name~\".*\") (room#(number~\".00$\" && number=\"215\"))"
+   "building#(name~\".*\" && description=\"1\") (room#(number~\".00$\" && number~\"215\"))"
+   "building#(name=\".*\" && description~\"1\") (room#(number=\".00$\" && number~\"215\"))"
+   "building (device (room (floor (network#(name~\".*\")))))"
+   "building.device.room.floor.network#(name~\".*\")"
    "room"])
 
 (def qlist-list
