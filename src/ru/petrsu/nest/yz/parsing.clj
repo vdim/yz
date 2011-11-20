@@ -307,7 +307,10 @@
                                    (= k :ids) ids 
 
                                    ;; Because of clojure does not function "!=", we replaced it by funciton "not="
-                                   (and (= k :func) (= (cs/trim res-) "!=")) (resolve (symbol "not="))
+                                   (and (= k :func) (= (cs/trim res-) "!=")) #'clojure.core/not= 
+                                   
+                                   ;; Function for regular expressions.
+                                   (and (= k :func) (= (cs/trim res-) "~")) #'clojure.core/re-find 
 
                                    ;; Resolve function.
                                    (= k :func) (resolve (symbol res-))
@@ -611,6 +614,7 @@
                   (lit-conc-seq "not=")
                   (lit-conc-seq "!=")
                   (lit \=) 
+                  (lit \~) 
                   (lit \<)
                   (lit \>))))
 

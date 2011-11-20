@@ -239,7 +239,12 @@
 
         ;; If objects from objs are arrays then we must compare two arrays.
         f (let [cl (if (empty? objs) nil (class (nth objs 0)))]
-           (if (and (not (nil? cl)) (.isArray cl)) eq-arrays? f))]
+           (if (and (not (nil? cl)) (.isArray cl)) eq-arrays? f))
+        ;; Check function for a regular expression
+        f (if (= f #'clojure.core/re-find) 
+            (fn [o value] (re-find (re-pattern value) o))
+            f)
+        ]
     (if (map? value)
       (some #(f (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
       (some #(f % value) objs))))
