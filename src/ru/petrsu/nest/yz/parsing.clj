@@ -631,7 +631,12 @@
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) 
                          (change-pred number :value :number)) 
-                   (change-pred string :value :string)
+
+                   ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
+                   (conc (opt (change-pred 
+                                (sur-by-ws (alt (lit \=) (lit \~)))
+                                :func)) 
+                         (change-pred string :value :string))
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)

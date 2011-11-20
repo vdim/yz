@@ -358,3 +358,34 @@
            (is (= (count rows) 0)))
          (let [rows (tc/rows-query "building#(room.number~\"0$\" && name=\"b3\")")]
            (is (= (count rows) 0))))
+
+
+;; Checks RCP with string
+(deftest rcp-string
+         ^{:doc "Tests predicates which contains RCP with strings."}
+         (let [rows (tc/rows-query "building#(name=(\"2012\" || =\"2011\"))")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(name=(\"2012\" || ~\"2011\"))")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(name~(\"2012\" || =\"2011\"))")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(name=(\"2012\" || ~\".*2$\"))")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b2)))
+         (let [rows (tc/rows-query "building#(name=(\"b2\" && ~\".*5$\"))")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(name=(~\".*5$\" && \"b2\"))")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(name=(\"b2\" && ~\".*2$\"))")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b2)))
+         (let [rows (tc/rows-query "building#(name=(\"b5\" || ~\"b.\"))")]
+           (is (= (count rows) 3)))
+         (let [rows (tc/rows-query "building#(name=(\"b5\" || ~\".2\" || ~\".3\"))")]
+           (is (= (count rows) 2)))
+         (let [rows (tc/rows-query "building#(name=(\"b5\" && ~\".2\" && ~\".3\"))")]
+           (is (= (count rows) 0)))
+         (let [rows (tc/rows-query "building#(name=(\"b2\" && ~\".2\" && ~\"b.\"))")]
+           (is (= (count rows) 1))
+           (is (= (nth (nth rows 0) 0) b2))))
+
