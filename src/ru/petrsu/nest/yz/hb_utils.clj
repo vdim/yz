@@ -43,10 +43,10 @@
          user (at least we use hibernate in nest) 
          can use hibernate as framework between its 
          object model and database."}
+  (:use clojure.pprint)
   (:require [clojure.xml :as cx] 
             [clojure.set :as cs]
             [clojure.string :as cst]
-            [clojure.pprint :as cpp]
             [clojure.java.io :as cio])
   (:import (javax.persistence Transient EntityManagerFactory)))
 
@@ -162,7 +162,7 @@
     - :sn (short name)
     - :dp (default property)
     - :sort (functions for sorting)
-    - :p-propertis ()
+    - :p-properties ()
     - :superclass (super class)"
   [cl, map-cl-old]
   {:sn (get-short-name cl)
@@ -230,6 +230,12 @@
   (gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities)), mom-old))
 
 
+(defn- local-dispatch-var 
+  "Dispatcher for Var class for pretty printing."
+  [^clojure.lang.Var v] 
+  (print v))
+
+
 (defn- to-file
   "Writes mom to file"
   [mom, f]
@@ -237,7 +243,9 @@
             (cio/file f)
             f)]
     (binding [*out* (cio/writer f)] ; Needed for pretty write.
-      (println (cpp/write mom :stream nil)))))
+      (let [cd code-dispatch
+            _ (. cd addMethod clojure.lang.Var local-dispatch-var)]
+        (with-pprint-dispatch cd (println (write mom :stream nil)))))))
 
 
 (defn mom-from-file
@@ -252,14 +260,14 @@
   "Writes mom to file. If emf-or-hbcfg-or-mom is 
   EntityManagerFactory, String (name of hibernate config file) 
   or list of classes then first mom is generated and then wrote to file.
-  If 'append' is supplied then information is appended to existing file."
+  If 'append' is supplied (true) then information is appended to existing file."
   ([emf-or-hbcfg-or-mom f]
    (mom-to-file emf-or-hbcfg-or-mom f false))
   ([emf-or-hbcfg-or-mom f ^Boolean append]
-   (let [mom-old (if (and append (.exists (cio/file f))) (mom-from-file f) {})
+   (let [mom-old (if append (mom-from-file f) {})
          s emf-or-hbcfg-or-mom
          mom (cond
-                  ; JPA's EntityManagerFactory TODO: replaces by ru.petrsu.nest.yz.core.ElementManager
+                  ; JPA's EntityManagerFactory TODO: replace by ru.petrsu.nest.yz.core.ElementManager
                   (instance? EntityManagerFactory s) (gen-mom-from-metamodel s, mom-old)
 
                    ; hibernate.cfg.xml

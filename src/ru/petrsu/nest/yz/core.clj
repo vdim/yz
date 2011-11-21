@@ -122,6 +122,9 @@
 
         :else 
         (let [[tsort tcomp keyfn] vsort
+              ;_ (println "keyfn = " keyfn)
+              ;keyfn (read-string (str "#=(eval " "#(.getNumber %)" ")"))
+              ;_ (println "num = " (keyfn (nth rq 0)))
               tcomp (get-comp tcomp tsort)]
           (s tsort tcomp keyfn rq))))))
 

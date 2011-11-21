@@ -110,6 +110,14 @@
                   (apply assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v kvs)))))
 
 
+(defn- create-f
+  "Creates function from specified string
+  something like this:
+    \"#=(eval \" \"#(inc %)\" \")\"."
+  [s]
+  (read-string (str "#=(eval " s ")")))
+
+
 (defn add-value
   "Conjs some value 'v' to :nest array which has nest-level 
   of level."
@@ -295,9 +303,9 @@
                                    ;; If predicate contains processing properties from MOM, then we should 
                                    ;; replace value which is received by value with map where :func key is function 
                                    ;; from MOM and :params key is vector with value which is received.
-                                   (and (= k :value) (not (nil? cpp))) ;(= (first res-) \"))
+                                   (and (= k :value) (not (nil? cpp))) 
                                    (let [stor (:s-to-r cpp)]
-                                     {:func (some (fn [ns-] (ns-resolve ns- (symbol stor))) (all-ns)), 
+                                     {:func stor;(some (fn [ns-] (ns-resolve ns- (symbol stor))) (all-ns)), 
                                       :params [res-]})
 
                                    ;; If value is defined then we should return this value without processing (true, false, nil).
@@ -347,7 +355,10 @@
     - keyfn (for specified class)."
   [tsort, cl, property]
   (if tsort
-    (let [f #(get-in (get mom cl) [:sort property %])]
+    (let [f #(let [v (get-in (get mom cl) [:sort property %])]
+               (if (string? v)
+                 (create-f v)
+                 v))]
       [tsort 
        (f :comp)
        (f :keyfn)])))
@@ -790,7 +801,7 @@
   (complex [n (rep+ (alt alpha (lit \.)))
             _ (update-info :function 
                            #(if-let [f (let [sym (symbol (reduce str "" n))]
-                                        (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
+                                         (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
                               (conj (pop %) (assoc (peek %) :func f))
                               (throw (Exception. (str "Could not found function " (reduce str "" n) ".")))))]
            n))
