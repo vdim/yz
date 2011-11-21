@@ -304,9 +304,9 @@
                                    ;; replace value which is received by value with map where :func key is function 
                                    ;; from MOM and :params key is vector with value which is received.
                                    (and (= k :value) (not (nil? cpp))) 
-                                   (let [stor (:s-to-r cpp)]
-                                     {:func stor;(some (fn [ns-] (ns-resolve ns- (symbol stor))) (all-ns)), 
-                                      :params [res-]})
+                                   (let [stor (:s-to-r cpp)
+                                         stor (if (var? stor) stor (create-f stor))]
+                                     {:func stor, :params [res-]})
 
                                    ;; If value is defined then we should return this value without processing (true, false, nil).
                                    (not= value :not-value) value

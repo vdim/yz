@@ -65,6 +65,17 @@
          (let [rows (tc/rows-query "ei#(MACAddress=\"00:15:63:a0:ae:2e\")")]
            (is (= (count rows) 0))))
 
+
+(deftest pp-as-string
+         (binding [tc/*mom* (assoc tc/*mom* 
+                                   Floor
+                                   (assoc (get tc/*mom* Floor) 
+                                          :p-properties {:number {:s-to-r "#(Integer/valueOf %)"}}))]
+           (let [rows (tc/rows-query "floor#(number=\"3\")")]
+             (is (= (count rows) 1))
+             (is (= (.getNumber ((nth rows 0) 0)) 3)))))
+
+
 (deftest select-ei-mac-with-f
          (let [rows (tc/rows-query "ei#(MACAddress=@(mac2b \"00:15:63:a0:ae:0e\"))")]
            (is (= (count rows) 1))
