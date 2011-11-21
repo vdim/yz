@@ -348,14 +348,14 @@
     - comparator (for specified class);
     - keyfn (for specified class)."
   [tsort, cl, property]
-  (if tsort
+  ;(if tsort
     (let [f #(let [v (get-in (get mom cl) [:sort property %])]
                (if (string? v)
                  (create-f v)
                  v))]
       [tsort 
        (f :comp)
-       (f :keyfn)])))
+       (f :keyfn)]))
 
 
 (defn- found-prop
@@ -369,15 +369,24 @@
         what (get-in-nest res nl :what)]
     (if (nil? what)
       (throw (Exception. (str "Not found element: " id)))
-      (let [sorts (get-in-nest-or-then res nl tl- :sort)
-            sorts (if sorts 
-                    (if (every? vector? sorts) 
-                      sorts 
-                      [sorts]) 
-                    [[nil nil nil]])
-            s (fn [_] 
+      (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
+            props (get-in-nest-or-then res (inc nl) tl- :props)
+            sorts (if tsort
+                    (if sorts 
+                      (if (vector? (sorts 0)) 
+                        sorts 
+                        [sorts]) 
+                      (conj (vec (repeat (count props) [nil nil nil])) [nil nil nil]))
+                      sorts)
+            s (fn [_]
                 (if tsort
-                  (conj sorts (get-sort tsort, what, id))))
+                  (if sorts
+                    (conj sorts (get-sort tsort, what, id))
+                    (conj (vec (repeat (count props) [nil nil nil])) (get-sort tsort, what, id)))
+                  (if sorts
+                    (if (vector? (sorts 0)) 
+                      (conj sorts [nil nil nil])
+                      (conj [sorts] [nil nil nil])))))
             f #(assoc-in-nest res nl %1 %2 :sort (s nil))]
         (if (> tl- 0)
           (let [v #(conj (vec (repeat (dec tl-) :then)) %)
@@ -400,7 +409,7 @@
       (found-prop res id nl tl is-recur tsort)
       (let [f #(assoc-in-nest res nl :then %)
             ; Vector with type of sorting, comparator and keyfn.
-            vsort (get-sort tsort cl :self)
+            vsort (if tsort (get-sort tsort cl :self))
             ; Function for association value for empty-then map.
             assoc-eth #(assoc empty-then :what cl :where % :sort vsort)]
         (if (> tl 0)

@@ -377,6 +377,120 @@
                    :where nil}]))))
 
 
+(deftest t-parse-sorting
+         ^{:doc "Tests a value of the :sort key."}
+         (let [mom- (sort-to-nil mom-)
+               f #(= (parse %1 mom-)
+                     [{:what Building
+                       :props %2
+                       :sort %3
+                       :where nil}])]
+           (is (f "building[name]" [[:name false]] nil))
+           (is (f "↑building" [] [:asc nil nil]))
+           (is (f "↓building" [] [:desc nil nil] ))
+           (is (f "↓building[name]" [[:name false]] [[:desc nil nil] [nil nil nil]]))
+           (is (f "building[↓name]" [[:name false]] [[nil nil nil] [:desc nil nil]]))
+           (is (f "↓building[↓name]" [[:name false]] [[:desc nil nil] [:desc nil nil]]))
+           (is (f "↑building[name]" [[:name false]] [[:asc nil nil] [nil nil nil]]))
+           (is (f "building[↑name]" [[:name false]] [[nil nil nil] [:asc nil nil]]))
+           (is (f "↑building[↑name]" [[:name false]] [[:asc nil nil] [:asc nil nil]]))
+           (is (f "building[name description]" [[:name false] [:description false]] nil))
+           (is (f "↓building[name description]" 
+                  [[:name false] [:description false]] 
+                  [[:desc nil nil] [nil nil nil] [nil nil nil]]))
+           (is (f "↓building[↓name description]" 
+                  [[:name false] [:description false]] 
+                  [[:desc nil nil] [:desc nil nil] [nil nil nil]]))
+           (is (f "↓building[↓name ↓description]" 
+                  [[:name false] [:description false]] 
+                  [[:desc nil nil] [:desc nil nil] [:desc nil nil]]))
+           (is (f "↓building[name ↓description]" 
+                  [[:name false] [:description false]] 
+                  [[:desc nil nil] [nil nil nil] [:desc nil nil]]))
+           (is (f "building[↓name ↓description]" 
+                  [[:name false] [:description false]] 
+                  [[nil nil nil] [:desc nil nil] [:desc nil nil]]))
+           (is (f "building[name ↓description]" 
+                  [[:name false] [:description false]] 
+                  [[nil nil nil] [nil nil nil] [:desc nil nil]]))
+           (let [f #(= (parse %1 mom-)
+                       [{:what ru.petrsu.nest.son.Building 
+                         :props []
+                         :where nil
+                         :sort nil
+                         :nest [{:what ru.petrsu.nest.son.Room
+                                 :props []
+                                 :sort nil
+                                 :where [["floors" "rooms"]]
+                                 :nest [{:what ru.petrsu.nest.son.Device
+                                         :props %2
+                                         :sort %3
+                                         :where [["occupancies" "devices"]]}]}]}])]
+             (is (f "building (room (↓device))" 
+                    []
+                    [:desc nil nil]))
+             (is (f "building (room (↓device[name]))" 
+                    [[:name false]]
+                    [[:desc nil nil] [nil nil nil]]))
+             (is (f "building (room (↓device[↓name]))" 
+                    [[:name false]]
+                    [[:desc nil nil] [:desc nil nil]]))
+             (is (f "building (room (device[↓name]))" 
+                    [[:name false]]
+                    [[nil nil nil] [:desc nil nil]]))
+             (is (f "building (room (device[description ↓name]))" 
+                    [[:description false] [:name false]]
+                    [[nil nil nil] [nil nil nil] [:desc nil nil]]))
+             (is (f "building (room (device[↓description ↓name]))" 
+                    [[:description false] [:name false]]
+                    [[nil nil nil] [:desc nil nil] [:desc nil nil]]))
+             (is (f "building (room (↓device[↓description ↓name]))" 
+                    [[:description false] [:name false]]
+                    [[:desc nil nil] [:desc nil nil] [:desc nil nil]]))
+             (is (f "building (room (↓device[↓description name]))" 
+                    [[:description false] [:name false]]
+                    [[:desc nil nil] [:desc nil nil] [nil nil nil]]))
+             (is (f "building (room (↓device[description name]))" 
+                    [[:description false] [:name false]]
+                    [[:desc nil nil] [nil nil nil] [nil nil nil]])))
+           (let [f #(= (parse %1 mom-)
+                       [{:what ru.petrsu.nest.son.Room
+                         :props []
+                         :sort nil
+                         :where nil
+                         :nest [{:what ru.petrsu.nest.son.Device
+                                 :props %2
+                                 :sort %3
+                                 :where [["occupancies" "devices"]]}]}])]
+             (is (f "room (↓device)" 
+                    []
+                    [:desc nil nil]))
+             (is (f "room (↓device[name])" 
+                    [[:name false]]
+                    [[:desc nil nil] [nil nil nil]]))
+             (is (f "room (↓device[↓name])" 
+                    [[:name false]]
+                    [[:desc nil nil] [:desc nil nil]]))
+             (is (f "room (device[↓name])" 
+                    [[:name false]]
+                    [[nil nil nil] [:desc nil nil]]))
+             (is (f "room (device[description ↓name])" 
+                    [[:description false] [:name false]]
+                    [[nil nil nil] [nil nil nil] [:desc nil nil]]))
+             (is (f "room (device[↓description ↓name])" 
+                    [[:description false] [:name false]]
+                    [[nil nil nil] [:desc nil nil] [:desc nil nil]]))
+             (is (f "room (↓device[↓description ↓name])" 
+                    [[:description false] [:name false]]
+                    [[:desc nil nil] [:desc nil nil] [:desc nil nil]]))
+             (is (f "room (↓device[↓description name])" 
+                    [[:description false] [:name false]]
+                    [[:desc nil nil] [:desc nil nil] [nil nil nil]]))
+             (is (f "room (↓device[description name])" 
+                    [[:description false] [:name false]]
+                    [[:desc nil nil] [nil nil nil] [nil nil nil]])))))
+
+
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
 (def qlist
