@@ -400,23 +400,19 @@
       (found-prop res id nl tl is-recur tsort)
       (let [f #(assoc-in-nest res nl :then %)
             ; Vector with type of sorting, comparator and keyfn.
-            vsort (get-sort tsort cl :self)]
+            vsort (get-sort tsort cl :self)
+            ; Function for association value for empty-then map.
+            assoc-eth #(assoc empty-then :what cl :where % :sort vsort)]
         (if (> tl 0)
           (if (nil? last-then)
-            (f (assoc empty-then 
-                      :what cl 
-                      :where (get-paths cl, (get-in-nest res nl :what))
-                      :sort vsort))
+            (f (assoc-eth (get-paths cl, (get-in-nest res nl :what))))
             (f (assoc-in last-then 
                          (repeat tl- :then) 
                          (let [what (if (> tl- 1) 
                                       (get-in last-then (conj (vec (repeat (dec tl-) :then)) :what))
                                       (:what last-then))]
-                           (assoc empty-then 
-                                  :what cl
-                                  :where (get-paths cl, what)
-                                  :sort vsort)))))
-          (assoc-in-nest 
+                           (assoc-eth (get-paths cl, what))))))
+         (assoc-in-nest 
             res nl
             :what cl
             :where (get-paths cl, (get-in-nest-or-then res nl tl :what))
