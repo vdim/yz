@@ -338,14 +338,8 @@
     - in 'sn' key of each map of mom.
     - as abbreviation class's name."
   [^String id]
-  (let [l-id (cs/lower-case (str id))
-        cl (get-in mom [:sns l-id])]
-    (if (nil? cl)
-      (let [cl (get-in mom [:names l-id])]
-        (if (nil? cl)
-          (get-in mom [:snames l-id])
-          cl))
-      cl)))
+  (let [l-id (cs/lower-case (str id))]
+    (some #(get-in mom [% l-id]) [:sns :names :snames])))
 
 
 (defn- get-sort
