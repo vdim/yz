@@ -126,6 +126,22 @@
                    [f4_b1 r402_f4_b1] [f4_b1 r401_f4_b1] [f4_b1 r101_f4_b1]]))))
 
 
+(defn floor-keyfn
+  [floor]
+  (.getNumber floor))
+
+(deftest keyfn-as-var
+         ^{:doc "Tests sorting in case the keyfn of the Floor class is a var."}
+         (binding [tc/*mom* (assoc tc/*mom* 
+                                   Floor
+                                   (assoc (get tc/*mom* Floor) 
+                                          :sort {:self {:keyfn #'floor-keyfn}}))]
+           (is (= (tc/rows-query "↑building (↑floor)") 
+                  [[b1 f1_b1] [b1 f2_b1] [b1 f3_b1] [b1 f4_b1] [b2 f1_b2] [b3]]))
+           (is (= (tc/rows-query "↓building (↑floor)") 
+                  [[b3] [b2 f1_b2] [b1 f1_b1] [b1 f2_b1] [b1 f3_b1] [b1 f4_b1]]))))
+
+
 (deftest sort-prop
          (is (= (tc/rows-query "floor[↑number]") [[1] [2] [3] [4]]))
          (is (= (tc/rows-query "floor[↓number]") [[4] [3] [2] [1]])))
