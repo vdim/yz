@@ -348,14 +348,15 @@
     - comparator (for specified class);
     - keyfn (for specified class)."
   [tsort, cl, property]
-  ;(if tsort
+  (if tsort
     (let [f #(let [v (get-in (get mom cl) [:sort property %])]
                (if (string? v)
                  (create-f v)
                  v))]
       [tsort 
        (f :comp)
-       (f :keyfn)]))
+       (f :keyfn)])
+    [nil nil nil]))
 
 
 (defn- found-prop
@@ -371,27 +372,28 @@
       (throw (Exception. (str "Not found element: " id)))
       (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
             props (get-in-nest-or-then res (inc nl) tl- :props)
-            sorts (if tsort
-                    (if sorts 
-                      (if (vector? (sorts 0)) 
-                        sorts 
-                        [sorts]) 
-                      (conj (vec (repeat (count props) [nil nil nil])) [nil nil nil]))
-                      sorts)
-            s (fn [_]
-                (if tsort
-                  (if sorts
-                    (conj sorts (get-sort tsort, what, id))
-                    (conj (vec (repeat (count props) [nil nil nil])) (get-sort tsort, what, id)))
-                  (if sorts
-                    (if (vector? (sorts 0)) 
-                      (conj sorts [nil nil nil])
-                      (conj [sorts] [nil nil nil])))))
-            f #(assoc-in-nest res nl %1 %2 :sort (s nil))]
+            sorts (cond 
+                    ; Not nothing, so sorts is nil.
+                    (and (not tsort) (not sorts)) nil
+
+                    ; Because of sorting type is not nil first time (sorts is nil), then we must
+                    ; create structure of value's :sort key: vector [nil nil nil] for
+                    ; class which is selected plus vector [nil nil nil] for each 
+                    ; property which has already added plus vector for current type of 
+                    ; sorting (get-sort function).
+                    (not sorts)
+                    (conj (vec (repeat (count props) [nil nil nil])) [nil nil nil] (get-sort tsort, what, id))
+
+                    ; If sorts is not nil, then we must add some vector for current type of sorting
+                    ; (get-sort function).
+                    :else (if (vector? (sorts 0)) 
+                            (conj sorts (get-sort tsort, what, id))
+                            (conj [sorts] (get-sort tsort, what, id))))
+            f #(assoc-in-nest res nl %1 %2 :sort sorts)]
         (if (> tl- 0)
           (let [v #(conj (vec (repeat (dec tl-) :then)) %)
                 last-then (get-in-nest res nl :then)
-                last-then (update-in last-then (v :sort) s)]
+                last-then (assoc-in last-then (v :sort) sorts)]
             (assoc-in-nest 
               res nl :then
               (update-in last-then (v :props)
