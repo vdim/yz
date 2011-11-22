@@ -197,7 +197,8 @@
 (deftest sort-self-object-by-comp-from-mom
          (binding [tc/*mom* (assoc tc/*mom* Building
                                    (assoc (get tc/*mom* Building) 
-                                          :sort {:self {:comp #(* -1 (compare %1 %2))} 
-                                                 :keyfn #(.getName %1)}))]
+                                          :sort {:self {:comp #(* -1 (compare %1 %2))
+                                                        :keyfn #(.getName %1)}}))]
            (is (= (tc/rows-query "building[↑&]") [[b3] [b2] [b1]]))
            (is (= (tc/rows-query "building[↓&]") [[b1] [b2] [b3]]))))
+

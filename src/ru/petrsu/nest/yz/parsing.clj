@@ -350,9 +350,9 @@
   for specified class (cl) and its property (prop)."
   [tsort, cl, prop]
   (if tsort
-    (let [prop (if (= prop :#default-property#) 
-                     (:dp (get mom cl))
-                     prop)
+    (let [prop (cond (= prop :#default-property#) (:dp (get mom cl))
+                     (= prop :#self-object#) :self
+                     :else prop)
           f #(let [v (get-in (get mom cl) [:sort prop %])]
                (if (string? v)
                  (create-f v)
