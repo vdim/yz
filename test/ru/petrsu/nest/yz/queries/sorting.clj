@@ -76,9 +76,16 @@
           (.setDescription "Some desc")
           (.addFloor f1_b1) (.addFloor f2_b1)
           (.addFloor f3_b1) (.addFloor f4_b1)))
-(def b2 (doto (Building.) (.setName "b2") (.setAddress "Street1") (.addFloor f1_b2)))
+(def b2 (doto (Building.) 
+          (.setDescription "Some desc")
+          (.setName "b2") 
+          (.setAddress "Street1") 
+          (.addFloor f1_b2)))
 
-(def b3 (doto (Building.) (.setName "b3") (.setAddress "Street3")))
+(def b3 (doto (Building.) 
+          (.setDescription "Some desc2")
+          (.setName "b3") 
+          (.setAddress "Street3")))
 
 (def son (doto (SON.)
            (.addBuilding b1) 
@@ -144,5 +151,27 @@
 
 (deftest sort-prop
          (is (= (tc/rows-query "floor[↑number]") [[1] [2] [3] [4]]))
-         (is (= (tc/rows-query "floor[↓number]") [[4] [3] [2] [1]])))
+         (is (= (tc/rows-query "floor[↓number]") [[4] [3] [2] [1]]))
+         (binding [tc/*mom* (assoc tc/*mom* Building
+                                   (assoc (get tc/*mom* Building) 
+                                          :sort {:self {:keyfn #(.getName %)}}))]
+           (is (= (tc/rows-query "↑building[name]") [["b1"] ["b2"] ["b3"]]))
+           (is (= (tc/rows-query "↓building[name]") [["b3"] ["b2"] ["b1"]]))
+           (is (= (tc/rows-query "↑building[↑name]") [["b1"] ["b2"] ["b3"]]))
+           (is (= (tc/rows-query "↓building[↓name]") [["b3"] ["b2"] ["b1"]]))
+           (is (= (tc/rows-query "↑building[↓name]") [["b3"] ["b2"] ["b1"]]))
+           (is (= (tc/rows-query "↓building[↑name]") [["b1"] ["b2"] ["b3"]]))
+
+           (is (= (tc/rows-query "building[↑name address]") [["b1" "Street2"] ["b2" "Street1"] ["b3" "Street3"]]))
+           (is (= (tc/rows-query "building[name ↑address]") [["b2" "Street1"] ["b1" "Street2"] ["b3" "Street3"]]))
+           (is (= (tc/rows-query "building[↑name ↑address]") [["b1" "Street2"] ["b2" "Street1"] ["b3" "Street3"]]))
+
+           (is (= (tc/rows-query "building[↑description ↑name]") 
+                  [["Some desc" "b1"] ["Some desc" "b2"] ["Some desc2" "b3"]]))
+           (is (= (tc/rows-query "building[↑description ↓name]") 
+                  [["Some desc" "b2"] ["Some desc" "b1"] ["Some desc2" "b3"]]))
+           (is (= (tc/rows-query "↑building[↑description ↑name]") 
+                  [["Some desc" "b1"] ["Some desc" "b2"] ["Some desc2" "b3"]]))
+           (is (= (tc/rows-query "↓building[↑description ↓name]") 
+                  [["Some desc" "b2"] ["Some desc" "b1"] ["Some desc2" "b3"]]))))
 

@@ -360,7 +360,7 @@
 
 
 (defn- found-prop
-  "This function is called when likely prop is found"
+  "This function is called when likely some property is found"
   [res id nl tl is-recur tsort]
   (let [tl- (dec tl)
         id (cond (= id \&) :#self-object#

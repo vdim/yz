@@ -103,26 +103,42 @@
                             (= %2 :asc) tcomp
                             (= %2 :desc) (fn [v1, v2] (* -1 (tcomp v1 v2)))))
           ;; Function for sorting.
-          s #(cond 
-               (and %3 %2) (sort-by %3 %2 %4)
-               %1 (sort %2 %4)
-               :else %4)]
+          s #(let [tcomp (get-comp %2 %1)]
+               (cond 
+                 (and %3 tcomp) (sort-by %3 tcomp %4)
+                 %1 (sort tcomp %4)
+                 :else %4))]
       (cond 
-        (and prop? (every? vector? vsort))
-        (loop [rq- rq i 0 [tsort tcomp keyfn] (second vsort) vsort (next vsort)]
-          (if (nil? vsort)
-            rq-
-            (recur 
-              (let [tcomp (get-comp tcomp tsort)
-                    keyfn (if keyfn #(keyfn (nth (% 1) i)) #(nth (% 1) i))]
-                (s tsort tcomp keyfn rq-))
-              (inc i) (second vsort) (next vsort))))
+        (and prop? (every? vector? vsort)) 
+        
+        (let [[tsort tcomp keyfn] (first vsort) 
+              keyfn (if keyfn #(keyfn (% 0)) #(% 0)) 
+              ; First we sort object of class which is selected.
+              rq (s tsort tcomp keyfn rq)
+              
+              ; Do you want to understand it? Why? Just use!
+              gcomp 
+              (fn [v1 v2] 
+                (let [r (some 
+                          #(let [[tsort tcomp keyfn] (nth vsort (inc %))
+                                 tcomp (get-comp tcomp tsort)
+                                 c (cond (nil? tsort) 0
+                                         (and tcomp keyfn) (tcomp (keyfn (nth v1 %)) (keyfn (nth v2 %)))
+                                         tsort (tcomp (nth v1 %) (nth v2 %)))]
+                             (if (= c 0) nil c)) 
+                          (range 0 (min (count v1) (count v2))))]
+                  (if (nil? r)
+                    0
+                    r)))]
+          ; then we sort its vector with properties.
+          (sort-by #(% 1) gcomp rq))
 
+        ; It is needed for passing sorting objects which are selected
+        ; with properties. This sorting is made in previous test of this cond.
         (every? vector? vsort) rq
 
         :else 
-        (let [[tsort tcomp keyfn] vsort
-              tcomp (get-comp tcomp tsort)]
+        (let [[tsort tcomp keyfn] vsort]
           (s tsort tcomp keyfn rq))))))
 
 
