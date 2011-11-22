@@ -546,8 +546,8 @@
 (def idsort
   ^{:doc "Defines sort and its type."}
   (let [ch-sort #(invisi-conc %1 (set-info :cur-sort %2))]
-    (alt (ch-sort (lit \↓) :desc)
-         (ch-sort (lit \↑) :asc)
+    (alt (ch-sort (alt (lit \↓) (lit-conc-seq "d:")) :desc)
+         (ch-sort (alt (lit \↑) (lit-conc-seq "a:")) :asc)
          (ch-sort emptiness nil))))
 
 
