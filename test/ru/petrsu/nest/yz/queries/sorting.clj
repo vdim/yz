@@ -173,5 +173,31 @@
            (is (= (tc/rows-query "↑building[↑description ↑name]") 
                   [["Some desc" "b1"] ["Some desc" "b2"] ["Some desc2" "b3"]]))
            (is (= (tc/rows-query "↓building[↑description ↓name]") 
-                  [["Some desc" "b2"] ["Some desc" "b1"] ["Some desc2" "b3"]]))))
+                  [["Some desc" "b2"] ["Some desc" "b1"] ["Some desc2" "b3"]]))
+           (is (= (tc/rows-query "son (building[↑description ↑name])") 
+                  [[son "Some desc" "b1"] [son "Some desc" "b2"] [son "Some desc2" "b3"]]))))
 
+
+(deftest sort-by-comp-from-mom
+         (binding [tc/*mom* (assoc tc/*mom* Building
+                                   (assoc (get tc/*mom* Building) 
+                                          :sort {:name {:comp #(* -1 (compare %1 %2))}}))]
+           (is (= (tc/rows-query "building[↑name]") [["b3"] ["b2"] ["b1"]]))
+           (is (= (tc/rows-query "building[↓name]") [["b1"] ["b2"] ["b3"]]))))
+
+
+(deftest sort-default-property-by-comp-from-mom
+         (binding [tc/*mom* (assoc tc/*mom* Building
+                                   (assoc (get tc/*mom* Building) 
+                                          :sort {:name {:comp #(* -1 (compare %1 %2))}}))]
+           (is (= (tc/rows-query "building[↑&.]") [["b3"] ["b2"] ["b1"]]))
+           (is (= (tc/rows-query "building[↓&.]") [["b1"] ["b2"] ["b3"]]))))
+
+
+(deftest sort-self-object-by-comp-from-mom
+         (binding [tc/*mom* (assoc tc/*mom* Building
+                                   (assoc (get tc/*mom* Building) 
+                                          :sort {:self {:comp #(* -1 (compare %1 %2))} 
+                                                 :keyfn #(.getName %1)}))]
+           (is (= (tc/rows-query "building[↑&]") [[b3] [b2] [b1]]))
+           (is (= (tc/rows-query "building[↓&]") [[b1] [b2] [b3]]))))

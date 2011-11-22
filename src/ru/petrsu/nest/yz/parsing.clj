@@ -346,10 +346,14 @@
   "Returns returns vector with:
     - type of sort (tsort);
     - comparator (for specified class);
-    - keyfn (for specified class)."
-  [tsort, cl, property]
+    - keyfn (for specified class).
+  for specified class (cl) and its property (prop)."
+  [tsort, cl, prop]
   (if tsort
-    (let [f #(let [v (get-in (get mom cl) [:sort property %])]
+    (let [prop (if (= prop :#default-property#) 
+                     (:dp (get mom cl))
+                     prop)
+          f #(let [v (get-in (get mom cl) [:sort prop %])]
                (if (string? v)
                  (create-f v)
                  v))]
