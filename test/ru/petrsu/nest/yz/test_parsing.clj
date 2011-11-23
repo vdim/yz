@@ -1168,10 +1168,22 @@
                   (map #(str "building#(@(str $" % "') = @(str %" % "'))") qlist)))))
 
 
-(defmacro premainder
-  "Generates code for checking remainder about specified list with queries."
-  [l]
-  `(is (nil? (some #(not (nil? %)) (map #(:remainder (parse+ % mom-)) ~l)))))
+(def qlist-next-query
+  ^{:doc "Defines list with queries with the 
+         following structure: room, query from qlist."}
+  (map #(str "room, " %) qlist))
+
+
+(def qlist-next-query-qlist
+  ^{:doc "Defines list with queries with the 
+         following structure: query from qlist, query from qlist."}
+  (map #(str % ", " %) qlist))
+
+
+(def qlist-nest-query
+  ^{:doc "Defines list with queries with the 
+         following structure: son (query from qlist)."}
+  (map #(str "son (" % ")") qlist))
 
 
 (deftest parse-remainder
@@ -1186,9 +1198,13 @@
          ;   actual: (not (nil? "room[name number floor].floor"))
          ;
          ; It is all I need.
-         (let [results (some #(let [r (:remainder (parse+ % mom-))]
-                                (if r %)) qlist)]
-           (is (nil? results))))
+         (let [results (fn [l] 
+                         (some #(let [r (:remainder (parse+ % mom-))]
+                                  (if r %)) l))]
+           (is (nil? (results qlist)))
+           (is (nil? (results qlist-next-query)))
+           (is (nil? (results qlist-next-query-qlist)))
+           (is (nil? (results qlist-nest-query)))))
 
 
 (comment
