@@ -124,9 +124,9 @@
                  :else %4))]
       (cond
         ; Sort by properties which are not selected.
-        (map? vsort)
+        (every? list? vsort)
         (let [; This is needed for right order of props and vsort.
-              props-sorts (reduce (fn [r [k v]] (cons [[k false] v] r)) [] vsort)
+              props-sorts (reduce (fn [r l] (cons [[(first l) false] (second l)] r)) [] vsort)
               props (reduce #(conj %1 (%2 0)) [] props-sorts) 
               vsort (reduce #(conj %1 (%2 1)) [] props-sorts) 
               rq (map (fn [o] [o (map #(let [[p _] %]

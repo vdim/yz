@@ -378,11 +378,12 @@
             props (get-in-nest-or-then res (inc nl) tl- :props)
             sorts (cond
 
-                    ; If sort is map (from query {a:name, d:description}room), then another sorting is ignore.
-                    (map? sorts) sorts 
-                    
                     ; Not nothing, so sorts is nil.
                     (and (not tsort) (not sorts)) nil
+                    
+                    ; If sort is map (from query {a:name, d:description}room), then another sorting is ignore.
+                    ;(every? list? sorts) sorts 
+                    (or (and sorts (every? list? sorts)) (map? sorts)) sorts 
 
                     ; Because of sorting type is not nil first time (sorts is nil), then we must
                     ; create structure of value's :sort key: vector [nil nil nil] for
@@ -437,7 +438,7 @@
                                                     (reduce (fn [r vv] (conj r (assoc vv :where (get-paths (:what vv) cl)))) [] f)]))
                                         (conj ps p))) [] (:params k)))
                                        :else k)]
-                              (assoc %1 p (get-sort v cl p))) {} vsort)
+                              (conj %1 (list p (get-sort v cl p)))) [] vsort)
               tsort (get-sort tsort cl :self)
               :else nil)
             ; Function for association some values of the empty-then map.
@@ -594,20 +595,18 @@
                      :else (keyword (reduce str prop)))
         res (:result state)
         nl (:nest-level state)
-        tl- (dec (:then-level state))]
+        tl (:then-level state)]
     [(:remainder state) 
      (assoc state :result 
-        (if (> tl- 0)
+        (if (> tl 0)
           (let [v #(conj (vec (repeat %1 :then)) %2)
                 last-then (get-in-nest res nl :then)
-                last-then (if (nil? (get-in last-then (v (dec tl-) :then)))
-                            (assoc last-then :then empty-then)
-                            last-then)]
+                last-then (assoc last-then :then empty-then)]
             (assoc-in-nest 
               res nl :then
-              (update-in last-then (v tl- :sort)
+              (update-in last-then (v tl :sort)
                          #(assoc % propid tsort))))
-          (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
+         (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
 
 
 (declare function)

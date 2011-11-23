@@ -755,21 +755,21 @@
                        :sort %3
                        :where nil}])]
            (is (f "building" [] nil))
-           (is (f "{a:name}building" [] {:name [:asc nil nil]}))
-           (is (f "{d:name}building" [] {:name [:desc nil nil]}))
-           (is (f "{a:name a:description}building" [] {:name [:asc nil nil] :description [:asc nil nil]}))
-           (is (f "{a:name d:description}building" [] {:name [:asc nil nil] :description [:desc nil nil]}))
-           (is (f "{a:description a:name}building" [] {:name [:asc nil nil] :description [:asc nil nil]}))
-           (is (f "{d:description a:name}building" [] {:name [:asc nil nil] :description [:desc nil nil]}))
-           (is (f "{a:description d:name}building" [] {:name [:desc nil nil] :description [:asc nil nil]}))
-           (is (f "{d:description d:name}building" [] {:name [:desc nil nil] :description [:desc nil nil]}))
+           (is (f "{a:name}building" [] ['(:name [:asc nil nil])]))
+           (is (f "{d:name}building" [] ['(:name [:desc nil nil])]))
+           (is (f "{a:name a:description}building" [] ['(:description [:asc nil nil]) '(:name [:asc nil nil])]))
+           (is (f "{a:name d:description}building" [] ['(:description [:desc nil nil]) '(:name [:asc nil nil])]))
+           (is (f "{a:description a:name}building" [] ['(:name [:asc nil nil]) '(:description [:asc nil nil])]))
+           (is (f "{d:description a:name}building" [] ['(:name [:asc nil nil]) '(:description [:desc nil nil])]))
+           (is (f "{a:description d:name}building" [] ['(:name [:desc nil nil]) '(:description [:asc nil nil])]))
+           (is (f "{d:description d:name}building" [] ['(:name [:desc nil nil]) '(:description [:desc nil nil])]))
            (is (f "{a:name d:description d:address}building" [] 
-                  {:name [:asc nil nil] :description [:desc nil nil] :address [:desc nil nil]}))
+                  ['(:address [:desc nil nil]) '(:description [:desc nil nil]) '(:name [:asc nil nil])]))
            (is (f "{a:name d:description a:address}building" [] 
-                  {:name [:asc nil nil] :description [:desc nil nil] :address [:asc nil nil]}))
-           (is (f "{a:name}building[name]" [[:name false]] {:name [:asc nil nil]}))
-           (is (f "{a:name}building[a:name]" [[:name false]] {:name [:asc nil nil]}))
-           (is (f "{a:name}building" [] {:name [:asc nil nil]})))
+                  ['(:address [:asc nil nil]) '(:description [:desc nil nil]) '(:name [:asc nil nil])]))
+           (is (f "{a:name}building[name]" [[:name false]] ['(:name [:asc nil nil])]))
+           (is (f "{a:name}building[a:name]" [[:name false]] ['(:name [:asc nil nil])]))
+           (is (f "{a:name}building" [] ['(:name [:asc nil nil])])))
          (let [mom- (sort-to-nil mom-)
                f #(= (parse %1 mom-)
                      [{:what Building
@@ -781,10 +781,10 @@
                                :sort %3
                                :where [["floors" "rooms"]]}]}])]
            (is (f "building (room)" [] nil))
-           (is (f "building ({a:number}room)" [] {:number [:asc nil nil]}))
-           (is (f "building ({a:number d:name}room)" [] {:number [:asc nil nil] :name [:desc nil nil]}))
+           (is (f "building ({a:number}room)" [] ['(:number [:asc nil nil])]))
+           (is (f "building ({a:number d:name}room)" [] ['(:name [:desc nil nil]) '(:number [:asc nil nil])]))
            (is (f "building ({a:number d:name}room[d:description])" [[:description false]] 
-                  {:number [:asc nil nil] :name [:desc nil nil]}))
+                  ['(:name [:desc nil nil]) '(:number [:asc nil nil])]))
            (is (f "building (room)" [] nil))))
 
 
@@ -1251,7 +1251,9 @@
          ;
          ; It is all I need.
          (let [results (fn [l] 
-                         (some #(let [r (:remainder (parse+ % mom-))]
+                         (some #(let [r (try 
+                                          (:remainder (parse+ % mom-))
+                                          (catch Exception e (do (.printStackTrace e) %)))]
                                   (if r %)) l))]
            (is (nil? (results qlist)))
            (is (nil? (results qlist-next-query)))

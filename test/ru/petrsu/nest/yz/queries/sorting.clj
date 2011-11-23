@@ -221,4 +221,14 @@
 (deftest sort-by-pwns-function
          ^{:doc "Tests sorting by function."}
          (is (= (tc/rows-query "{↑@(count `floor')}building") [[b3] [b2] [b1]]))
-         (is (= (tc/rows-query "{↓@(count `floor')}building") [[b1] [b2] [b3]])))
+         (is (= (tc/rows-query "{↓@(count `floor')}building") [[b1] [b2] [b3]]))
+
+         (is (= (tc/rows-query "{↓@(count `room') ↑number}floor") 
+                [[f1_b2] [f4_b1] [f1_b1] [f2_b1] [f3_b1]]))
+         (is (= (tc/rows-query "{↓@(count `room') ↓number}floor") 
+                [[f1_b2] [f4_b1] [f3_b1] [f2_b1] [f1_b1]]))
+         (is (= (tc/rows-query "{↑@(count `room') ↑number}floor") 
+                [[f1_b1] [f2_b1] [f3_b1] [f4_b1] [f1_b2]]))
+         (is (= (tc/rows-query "{↑@(count `room') ↓number}floor") 
+                [[f3_b1] [f2_b1] [f1_b1] [f4_b1] [f1_b2]])))
+
