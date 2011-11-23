@@ -376,7 +376,11 @@
       (throw (Exception. (str "Not found element: " id)))
       (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
             props (get-in-nest-or-then res (inc nl) tl- :props)
-            sorts (cond 
+            sorts (cond
+
+                    ; If sort is map (from query {a:name, d:description}room), then another sorting is ignore.
+                    (map? sorts) sorts 
+                    
                     ; Not nothing, so sorts is nil.
                     (and (not tsort) (not sorts)) nil
 
@@ -415,8 +419,12 @@
       (found-prop res id nl tl is-recur tsort)
       (let [f #(assoc-in-nest res nl :then %)
             ; Vector with type of sorting, comparator and keyfn.
-            vsort (if tsort (get-sort tsort cl :self))
-            ; Function for association value for empty-then map.
+            vsort (get-in-nest-or-then res (inc nl) tl- :sort)
+            vsort (cond 
+                    (map? vsort) (reduce #(assoc %1 %2 (get-sort (get %1 %2) cl %2)) vsort (keys vsort))
+                    tsort (get-sort tsort cl :self)
+                    :else nil)
+            ; Function for association some values of the empty-then map.
             assoc-eth #(assoc empty-then :what cl :where % :sort vsort)]
         (if (> tl 0)
           (if (nil? last-then)
@@ -450,7 +458,8 @@
 
 
 (defn text
-  "Rule for recognizing any string."
+  "Rule for recognizing any string.
+  ch defines last symbol this string."
   [ch state]
   (let [remainder (reduce str (:remainder state))
         res (for [a (:remainder state) :while (not (= a ch))] a)]
@@ -464,7 +473,7 @@
 
 (declare single-pq, list-pq, indep-pq, end-pq)
 (defn textq
-  "Recognizes text of query which is parameter of function.
+  "Recognizes text of query which is parameter of a function.
   textq restricts count of nested queries, because in case where
   user input an incorrect query (with starting modificator and without
   ending modificator), then infinite loop is occured."
@@ -543,11 +552,64 @@
   (conc (lit \") (partial text \") (lit \")))
 
 
+(def descsort
+  ^{:doc "Defines rule for sorting by descenting."}
+  (complex [_ (alt (lit \↓) (lit-conc-seq "d:"))]
+           :desc))
+
+
+(def ascsort
+  ^{:doc "Defines rule for sorting by ascending."}
+  (complex [_ (alt (lit \↑) (lit-conc-seq "a:"))]
+           :asc))
+
+
+(defn set-sort
+  "Process sorting by properties which 
+  are not selected: {a:number}room.
+  Takes current state and list where first
+  element is type of sorting and second is property.
+  Returns vector where first element is new remainder, 
+  and second is new state."
+  [[tsort prop] state]
+  (let [propid (keyword (reduce str prop))
+        res (:result state)
+        nl (:nest-level state)
+        tl- (dec (:then-level state))]
+    [(:remainder state) 
+     (assoc state :result 
+        (if (> tl- 0)
+          (let [v #(conj (vec (repeat %1 :then)) %2)
+                last-then (get-in-nest res nl :then)
+                last-then (if (nil? (get-in last-then (v (dec tl-) :then)))
+                            (assoc last-then :then empty-then)
+                            last-then)]
+            (assoc-in-nest 
+              res nl :then
+              (update-in last-then (v tl- :sort)
+                         #(assoc % propid tsort))))
+          (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
+
+
+(def propsort
+  ^{:doc "Defines sorting of objects 
+         by properties which are not selected.
+         For example, rooms from a result of the query {a:number}room,
+         will be sorted by number, although this numbers of rooms is not
+         selected."}
+  (conc (lit \{) 
+        (rep* (sur-by-ws 
+                (complex [ret (conc (alt descsort ascsort) (rep+ alpha))
+                          _ (partial set-sort ret)
+                          res (get-info :result)]
+                         ret)))
+        (lit \})))
+
+
 (def idsort
   ^{:doc "Defines sort and its type."}
   (let [ch-sort #(invisi-conc %1 (set-info :cur-sort %2))]
-    (alt (ch-sort (alt (lit \↓) (lit-conc-seq "d:")) :desc)
-         (ch-sort (alt (lit \↑) (lit-conc-seq "a:")) :asc)
+    (alt (ch-sort descsort :desc) (ch-sort ascsort :asc)
          (ch-sort emptiness nil))))
 
 
@@ -612,14 +674,15 @@
 
 
 (def bid
-  ^{:doc "Defines sequence from ids: room.floor.number
+  ^{:doc "Defines sequence from ids. Example: room.floor.number
+         Sorting may be defined before id. Example: {a:number}room
          Each id may contains block from properties or predicates."}
-  (conc idsort 
+  (conc (alt propsort idsort)
         id
         props-and-where
         (rep* (conc (invisi-conc (lit \.) 
                                  (update-info :then-level inc)) 
-                    idsort
+                    (alt propsort idsort)
                     id 
                     props-and-where))))
 
@@ -636,6 +699,21 @@
 
 
 (def pred-id (conc (rep+ alpha) (rep* (conc (lit \.) (rep+ alpha)))))
+
+
+(defn- pfunc-as-param
+  "TODO: what is this function do?"
+  [k]
+  (pfunction
+    (fn [f-m] 
+      (update-info 
+        :preds 
+        #(conj (pop %) 
+               (assoc (peek %) 
+                      k
+                      (peek f-m)))))
+    (update-info :function #(pop %))))
+
 
 ;; The block "value" has the following BNF:
 ;;    value -> v value'
@@ -657,14 +735,7 @@
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)
-                   (pfunction
-                     (fn [f-m] (update-info 
-                                 :preds 
-                                 #(conj (pop %) 
-                                        (assoc (peek %) 
-                                               :value
-                                               (peek f-m)))))
-                          (update-info :function #(pop %))))))
+                   (pfunc-as-param :value))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (update-preds :and))
                         v-prime) emptiness))
@@ -684,15 +755,8 @@
 
 (declare where)
 (def f (alt (conc (lit \() where (lit \)))
-            (conc (alt (change-pred pred-id :ids)
-                       (pfunction 
-                         (fn [f-m] (update-info 
-                                     :preds 
-                                     #(conj (pop %) 
-                                            (assoc (peek %) 
-                                                   :ids
-                                                   (peek f-m)))))
-                         (update-info :function #(pop %))))
+            (conc (alt (change-pred pred-id :ids) 
+                       (pfunc-as-param :ids))
                   (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")))) 
