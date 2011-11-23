@@ -421,7 +421,11 @@
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort)
             vsort (cond 
-                    (map? vsort) (reduce #(assoc %1 %2 (get-sort (get %1 %2) cl %2)) vsort (keys vsort))
+                    (map? vsort) 
+                    (reduce #(let [p (if (= :#default-property# %2)
+                                       (:dp (get mom cl))
+                                       %2)]
+                              (assoc %1 p (get-sort (get %1 p) cl p))) vsort (keys vsort))
                     tsort (get-sort tsort cl :self)
                     :else nil)
             ; Function for association some values of the empty-then map.
@@ -572,7 +576,10 @@
   Returns vector where first element is new remainder, 
   and second is new state."
   [[tsort prop] state]
-  (let [propid (keyword (reduce str prop))
+  (let [propid (reduce str prop)
+        propid (cond (= propid "&.") :#default-property#
+                     (= propid \&) :self
+                     :else (keyword propid))
         res (:result state)
         nl (:nest-level state)
         tl- (dec (:then-level state))]
@@ -599,7 +606,7 @@
          selected."}
   (conc (lit \{) 
         (rep* (sur-by-ws 
-                (complex [ret (conc (alt descsort ascsort) (rep+ alpha))
+                (complex [ret (conc (alt descsort ascsort) (alt (lit-conc-seq "&.") (rep+ alpha)))
                           _ (partial set-sort ret)
                           res (get-info :result)]
                          ret)))

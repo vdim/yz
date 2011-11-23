@@ -202,3 +202,19 @@
            (is (= (tc/rows-query "building[↑&]") [[b3] [b2] [b1]]))
            (is (= (tc/rows-query "building[↓&]") [[b1] [b2] [b3]]))))
 
+
+(deftest sort-by-pwns
+         ^{:doc "Tests queries with sorting by properties which are not selected."}
+         (binding [tc/*mom* (assoc tc/*mom* Building
+                                   (assoc (get tc/*mom* Building) 
+                                          :sort {:self {:comp #(* -1 (compare %1 %2))
+                                                        :keyfn #(.getName %1)}}))]
+           (is (= (tc/rows-query "{↑name}building") [[b1] [b2] [b3]]))
+           (is (= (tc/rows-query "{↓name}building") [[b3] [b2] [b1]]))
+           (is (= (tc/rows-query "{↑description ↑name}building") [[b1] [b2] [b3]]))
+           (is (= (tc/rows-query "{↑description ↓name}building") [[b2] [b1] [b3]]))
+           (is (= (tc/rows-query "{↓description ↑name}building") [[b3] [b1] [b2]]))
+           (is (= (tc/rows-query "{↓description ↓name}building") [[b3] [b2] [b1]]))
+           (is (= (tc/rows-query "{↑&}building") [[b3] [b2] [b1]]))
+           (is (= (tc/rows-query "{↓&}building") [[b1] [b2] [b3]]))))
+

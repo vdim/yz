@@ -67,7 +67,7 @@
 (def ^{:dynamic true} *mom*)
 
 
-(declare process-preds)
+(declare process-preds, process-props, process-prop)
 (defn- pp-func
   "Defines whether specified object o satisfies to specified
   vector with predicates preds."
@@ -97,43 +97,53 @@
   [rq vsort prop?]
   (if (nil? vsort)
     rq
-    (let [;; Function for getting comparator.
+    (let [;; Functions for getting comparator.
           get-comp #(let [tcomp (if %1 %1 compare)]
                       (cond (nil? %2) nil
                             (= %2 :asc) tcomp
                             (= %2 :desc) (fn [v1, v2] (* -1 (tcomp v1 v2)))))
+
+          get-gcomp 
+          (fn [f vs]
+            (fn [v1 v2] 
+              (let [r (some 
+                        #(let [[tsort tcomp keyfn] (nth vs (f %))
+                                tcomp (get-comp tcomp tsort)
+                                c (cond (nil? tsort) 0
+                                        (and tcomp keyfn) (tcomp (keyfn (nth v1 %)) (keyfn (nth v2 %)))
+                                        tsort (tcomp (nth v1 %) (nth v2 %)))]
+                           (if (= c 0) nil c)) 
+                        (range 0 (min (count v1) (count v2))))]
+                (if (nil? r) 0 r))))
+
           ;; Function for sorting.
           s #(let [tcomp (get-comp %2 %1)]
                (cond 
                  (and %3 tcomp) (sort-by %3 tcomp %4)
                  %1 (sort tcomp %4)
                  :else %4))]
-      (cond 
+      (cond
+        ; Sort by properties which are not selected.
+        (map? vsort)
+        (let [; This is needed for right order of props and vsort.
+              props-sorts (reduce (fn [r [k v]] (cons [[k false] v] r)) [] vsort)
+              props (reduce #(conj %1 (%2 0)) [] props-sorts) 
+              vsort (reduce #(conj %1 (%2 1)) [] props-sorts) 
+              rq (map (fn [o] [o (map #(let [[p _] %]
+                                         (if (= p :self)
+                                           o
+                                           (process-prop %, o))) props)]) rq)]
+          (map first (sort-by #(% 1) (get-gcomp identity vsort) rq)))
+
         (and prop? (every? vector? vsort)) 
-        
         (let [[tsort tcomp keyfn] (first vsort) 
               keyfn (if keyfn #(keyfn (% 0)) #(% 0)) 
               ; First we sort object of class which is selected.
-              rq (s tsort tcomp keyfn rq)
-              
-              ; Do you want to understand it? Why? Just use!
-              gcomp 
-              (fn [v1 v2] 
-                (let [r (some 
-                          #(let [[tsort tcomp keyfn] (nth vsort (inc %))
-                                 tcomp (get-comp tcomp tsort)
-                                 c (cond (nil? tsort) 0
-                                         (and tcomp keyfn) (tcomp (keyfn (nth v1 %)) (keyfn (nth v2 %)))
-                                         tsort (tcomp (nth v1 %) (nth v2 %)))]
-                             (if (= c 0) nil c)) 
-                          (range 0 (min (count v1) (count v2))))]
-                  (if (nil? r)
-                    0
-                    r)))]
+              rq (s tsort tcomp keyfn rq)]
           ; then we sort its vector with properties.
-          (sort-by #(% 1) gcomp rq))
+          (sort-by #(% 1) (get-gcomp inc vsort) rq))
 
-        ; It is needed for passing sorting objects which are selected
+        ; It is needed for missing sorting objects which are selected
         ; with properties. This sorting is made in previous test of this cond.
         (every? vector? vsort) rq
 
