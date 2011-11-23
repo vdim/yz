@@ -123,8 +123,12 @@
                  %1 (sort tcomp %4)
                  :else %4))]
       (cond
+        ; Yet another hack for missing sorting result of the 
+        ; following queries {a:name}building[name]. 
+        (and (every? list? vsort) (every? vector? rq)) rq
+
         ; Sort by properties which are not selected.
-        (every? list? vsort)
+        (every? list? vsort) 
         (let [; This is needed for right order of props and vsort.
               props-sorts (reduce (fn [r l] (cons [[(first l) false] (second l)] r)) [] vsort)
               props (reduce #(conj %1 (%2 0)) [] props-sorts) 

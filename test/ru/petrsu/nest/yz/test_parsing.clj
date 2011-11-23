@@ -748,8 +748,8 @@
 
 (deftest t-parse-sorting-pwns
          ^{:doc "Tests queries with sorting by properties which are not selected."}
-         (let [mom- (sort-to-nil mom-)
-               f #(= (parse %1 mom-)
+       (let [mom- (sort-to-nil mom-)]
+         (let [f #(= (parse %1 mom-)
                      [{:what Building
                        :props %2
                        :sort %3
@@ -769,9 +769,16 @@
                   ['(:address [:asc nil nil]) '(:description [:desc nil nil]) '(:name [:asc nil nil])]))
            (is (f "{a:name}building[name]" [[:name false]] ['(:name [:asc nil nil])]))
            (is (f "{a:name}building[a:name]" [[:name false]] ['(:name [:asc nil nil])]))
+           (is (f "{a:name}building[a:name d:address]" 
+                  [[:name false] [:address false]] ['(:name [:asc nil nil])]))
+           (is (f "{a:name}building[name d:address]" 
+                  [[:name false] [:address false]] ['(:name [:asc nil nil])]))
+           (is (f "{a:name}building[a:name address]" 
+                  [[:name false] [:address false]] ['(:name [:asc nil nil])]))
+           (is (f "{a:name}building[name address]" 
+                  [[:name false] [:address false]] ['(:name [:asc nil nil])]))
            (is (f "{a:name}building" [] ['(:name [:asc nil nil])])))
-         (let [mom- (sort-to-nil mom-)
-               f #(= (parse %1 mom-)
+         (let [f #(= (parse %1 mom-)
                      [{:what Building
                        :props []
                        :sort nil
@@ -784,8 +791,46 @@
            (is (f "building ({a:number}room)" [] ['(:number [:asc nil nil])]))
            (is (f "building ({a:number d:name}room)" [] ['(:name [:desc nil nil]) '(:number [:asc nil nil])]))
            (is (f "building ({a:number d:name}room[d:description])" [[:description false]] 
-                  ['(:name [:desc nil nil]) '(:number [:asc nil nil])]))
-           (is (f "building (room)" [] nil))))
+                  ['(:name [:desc nil nil]) '(:number [:asc nil nil])])))
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :props %2
+                       :sort %3
+                       :where nil
+                       :nest [{:what Room
+                               :props %4
+                               :sort %5
+                               :where [["floors" "rooms"]]}]}])]
+           (is (f "{a:name}building (room)" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] nil))
+           (is (f "{a:name}building[name] (room)" 
+                  [[:name false]] ['(:name [:asc nil nil])] 
+                  [] nil))
+           (is (f "{a:name}building[name] (room[name])" 
+                  [[:name false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] nil))
+           (is (f "{a:name}building[a:name] (room)" 
+                  [[:name false]] ['(:name [:asc nil nil])] 
+                  [] nil))
+           (is (f "{a:name}building[a:name] (room[d:name])" 
+                  [[:name false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] [[nil nil nil] [:desc nil nil]]))
+           (is (f "{a:name}building ({a:number}room)" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:asc nil nil])]))
+           (is (f "{a:name}building[name description] ({a:number}room)" 
+                  [[:name false] [:description false]] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:asc nil nil])]))
+           (is (f "{a:name}building[name description] ({a:number}room[name number])" 
+                  [[:name false] [:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false]] ['(:number [:asc nil nil])]))
+           (is (f "{a:address a:name}building ({a:number d:name}room)" 
+                  [] ['(:name [:asc nil nil]) '(:address [:asc nil nil])]
+                  [] ['(:name [:desc nil nil]) '(:number [:asc nil nil])]))
+           (is (f "{a:name}building ({a:number d:name}room[d:description])" 
+                  [] ['(:name [:asc nil nil])]
+                  [[:description false]] ['(:name [:desc nil nil]) '(:number [:asc nil nil])])))))
 
 
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
