@@ -218,3 +218,7 @@
            (is (= (tc/rows-query "{↑&}building") [[b3] [b2] [b1]]))
            (is (= (tc/rows-query "{↓&}building") [[b1] [b2] [b3]]))))
 
+(deftest sort-by-pwns-function
+         ^{:doc "Tests sorting by function."}
+         (is (= (tc/rows-query "{↑@(count `floor')}building") [[b3] [b2] [b1]]))
+         (is (= (tc/rows-query "{↓@(count `floor')}building") [[b1] [b2] [b3]])))

@@ -420,14 +420,26 @@
       (let [f #(assoc-in-nest res nl :then %)
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort)
-            vsort (cond 
-                    (map? vsort) 
-                    (reduce #(let [p (if (= :#default-property# %2)
-                                       (:dp (get mom cl))
-                                       %2)]
-                              (assoc %1 p (get-sort (get %1 p) cl p))) vsort (keys vsort))
-                    tsort (get-sort tsort cl :self)
-                    :else nil)
+            vsort 
+            (cond 
+              (map? vsort) 
+              (reduce 
+                #(let [[k v] %2
+                       p (cond 
+                           (= :#default-property# k) (:dp (get mom cl))
+                           (map? k) 
+                           (assoc k :params 
+                                  (reduce 
+                                    (fn [ps p]
+                                      (if (vector? p)
+                                        (let [f (p 1)]
+                                          (conj ps [(p 0) 
+                                                    (reduce (fn [r vv] (conj r (assoc vv :where (get-paths (:what vv) cl)))) [] f)]))
+                                        (conj ps p))) [] (:params k)))
+                                       :else k)]
+                              (assoc %1 p (get-sort v cl p))) {} vsort)
+              tsort (get-sort tsort cl :self)
+              :else nil)
             ; Function for association some values of the empty-then map.
             assoc-eth #(assoc empty-then :what cl :where % :sort vsort)]
         (if (> tl 0)
@@ -568,7 +580,7 @@
            :asc))
 
 
-(defn set-sort
+(defn- set-sort
   "Process sorting by properties which 
   are not selected: {a:number}room.
   Takes current state and list where first
@@ -576,10 +588,10 @@
   Returns vector where first element is new remainder, 
   and second is new state."
   [[tsort prop] state]
-  (let [propid (reduce str prop)
-        propid (cond (= propid "&.") :#default-property#
-                     (= propid \&) :self
-                     :else (keyword propid))
+  (let [propid (cond (map? prop) prop ; user sorts objects by some function.
+                     (= prop [\& \.]) :#default-property#
+                     (= prop [\&]) :self
+                     :else (keyword (reduce str prop)))
         res (:result state)
         nl (:nest-level state)
         tl- (dec (:then-level state))]
@@ -598,6 +610,7 @@
           (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
 
 
+(declare function)
 (def propsort
   ^{:doc "Defines sorting of objects 
          by properties which are not selected.
@@ -606,9 +619,14 @@
          selected."}
   (conc (lit \{) 
         (rep* (sur-by-ws 
-                (complex [ret (conc (alt descsort ascsort) (alt (lit-conc-seq "&.") (rep+ alpha)))
-                          _ (partial set-sort ret)
-                          res (get-info :result)]
+                (complex [ret (conc (alt descsort ascsort) 
+                                    (alt (lit-conc-seq "&.")  ; sorting by default property: {a:&.}room
+                                         (rep+ alpha)         ; sorting by property: {a:name}room
+                                         (complex [_ function ; sorting by function: {a:@(count `room')}building
+                                                   f (get-info :function)
+                                                   _ (update-info :function #(pop %))]
+                                                  (peek f))))
+                          _ (partial set-sort ret)]
                          ret)))
         (lit \})))
 
@@ -783,7 +801,8 @@
 (def props
   ^{:doc "Defines sequences of properties of an object."}
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
-        (rep+ (alt (sur-by-ws (conc idsort (pfunction
+        (rep+ (alt (sur-by-ws (conc idsort 
+                                    (pfunction
                                       #(partial set-id (peek %) found-prop) 
                                       (update-info :function #(pop %)))))
                    (sur-by-ws (conc (opt (invisi-conc (lit \*) (set-info :is-recur true)))

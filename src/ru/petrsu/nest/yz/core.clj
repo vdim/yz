@@ -67,7 +67,7 @@
 (def ^{:dynamic true} *mom*)
 
 
-(declare process-preds, process-props, process-prop)
+(declare process-preds, process-prop)
 (defn- pp-func
   "Defines whether specified object o satisfies to specified
   vector with predicates preds."

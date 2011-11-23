@@ -759,6 +759,10 @@
            (is (f "{d:name}building" [] {:name [:desc nil nil]}))
            (is (f "{a:name a:description}building" [] {:name [:asc nil nil] :description [:asc nil nil]}))
            (is (f "{a:name d:description}building" [] {:name [:asc nil nil] :description [:desc nil nil]}))
+           (is (f "{a:description a:name}building" [] {:name [:asc nil nil] :description [:asc nil nil]}))
+           (is (f "{d:description a:name}building" [] {:name [:asc nil nil] :description [:desc nil nil]}))
+           (is (f "{a:description d:name}building" [] {:name [:desc nil nil] :description [:asc nil nil]}))
+           (is (f "{d:description d:name}building" [] {:name [:desc nil nil] :description [:desc nil nil]}))
            (is (f "{a:name d:description d:address}building" [] 
                   {:name [:asc nil nil] :description [:desc nil nil] :address [:desc nil nil]}))
            (is (f "{a:name d:description a:address}building" [] 
@@ -1127,6 +1131,16 @@
    "{a:number}room (floor), building"
    "{a:number}room ({d:number}floor), building"
    "{a:number}room ({d:number}floor), {a:number}building"
+   "{a:@(count `room')}building"
+   "{d:@(count `room')}building"
+   "{a:name d:@(count `room')}building"
+   "{d:name a:@(count `room')}building"
+   "{a:@(count `room') d:name}building"
+   "{a:@(count `room') a:name}building"
+   "{a:@(count `room') a:name d:description}building"
+   "{a:@(count `room') a:name d:description a:floor}building"
+   "{a:name d:description a:@(count `room') a:floor}building"
+   "{a:name d:description a:floor a:@(count `room')}building"
 
 ;; Regular expressions
    "room#(number~\".*\")"
