@@ -432,7 +432,7 @@
 
 
 (defn- def-result
-  "Returns map of the reusult executing 'pquery'."
+  "Returns map with the result of executing 'pquery'."
   [result, error, columns rows]
   {:result result
    :error error

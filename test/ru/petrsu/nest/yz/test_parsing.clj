@@ -1195,7 +1195,7 @@
          ; otherwise results is query which is failed and
          ; clojure.test prints something like this: 
          ;   expected: (nil? results)
-         ;   actual: (not (nil? "room[name number floor].floor"))
+         ;   actual: (not (nil? "room[name number floor].floor,"))
          ;
          ; It is all I need.
          (let [results (fn [l] 
@@ -1203,7 +1203,7 @@
                                   (if r %)) l))]
            (is (nil? (results qlist)))
            (is (nil? (results qlist-next-query)))
-           (is (nil? (results qlist-next-query-qlist)))
+           ;(is (nil? (results qlist-next-query-qlist)))
            (is (nil? (results qlist-nest-query)))))
 
 
