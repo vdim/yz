@@ -445,7 +445,7 @@
       (found-prop res id nl tl is-recur tsort)
       (let [f #(assoc-in-nest res nl :then %)
             ; Vector with type of sorting, comparator and keyfn.
-            vsort (get-in-nest-or-then res (inc nl) tl- :sort)
+            vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some then map.
             assoc-lth #(assoc %1 :what cl :where (get-paths cl %2) :sort vsort)
@@ -606,24 +606,20 @@
                      :else (keyword (reduce str prop)))
         res (:result state)
         nl (:nest-level state)
-        tl (:then-level state)
-        ;_ (println "tl = " tl)
-        ]
+        tl (:then-level state)]
     [(:remainder state) 
      (assoc state :result 
         (if (> tl 0)
-          (let [v #(conj (vec (repeat %1 :then)) %2)
-                last-then (get-in-nest res nl :then) 
-                ;_ (println "last-then = " last-then)
-                last-then (if (nil? last-then)
-                            empty-then
-                            (assoc last-then :then empty-then)) ]
-                ;_ (println "last-then2 = " (update-in last-then (v (dec tl) :sort)
-                ;         #(assoc % propid tsort)))]
-            (assoc-in-nest 
-              res nl :then
-              (update-in last-then (v (dec tl) :sort)
-                         #(assoc % propid tsort))))
+            (let [then-v (vec (repeat (dec tl) :then))
+                  last-then (get-in-nest res nl :then)
+                  ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
+                  ;; Because of get-in can return nil, but lt must be not nil.
+                  lt (get-in last-then then-v)
+                  lt (if (nil? lt) empty-then lt)
+
+                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))
+                  lt (update-in lt (conj then-v :sort) #(assoc % propid tsort))]
+              (assoc-in-nest res nl :then lt))
          (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
 
 
@@ -643,10 +639,7 @@
                                                    f (get-info :function)
                                                    _ (update-info :function #(pop %))]
                                                   (peek f))))
-                          _ (partial set-sort ret)
-                          res (get-info :result)
-                          ;_ (effects (println "res = " res))
-                          ]
+                          _ (partial set-sort ret)]
                          ret)))
         (lit \})))
 

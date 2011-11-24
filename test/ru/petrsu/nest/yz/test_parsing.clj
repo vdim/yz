@@ -852,12 +852,176 @@
            (is (f "{a:name}building[description].{d:number}room" 
                   [[:description false]] ['(:name [:asc nil nil])] 
                   [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[a:description].{d:number}room" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:desc nil nil])]))
            (is (f "{a:name}building[description].{d:number}room[name]" 
                   [[:description false]] ['(:name [:asc nil nil])] 
                   [[:name false]] ['(:number [:desc nil nil])]))
-           (is (f "{a:name}building.room" 
+           (is (f "{a:name}building[description].{d:number}room[a:name]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].{d:number}room[a:name number]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].{d:number}room[a:name d:number]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].{d:number}room[name d:number]"
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].{d:number}room[name number d:description]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false] [:description false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].room[a:name]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] [[nil nil nil] [:asc nil nil]]))
+           (is (f "{a:name}building[description].room[a:name description]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:description false]] [[nil nil nil] [:asc nil nil] [nil nil nil]])))
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :props %2
+                       :sort %3
+                       :where nil
+                       :then {:what Floor
+                              :where [["floors"]]
+                              :sort nil
+                              :props []
+                              :then {:what Room
+                                     :props %4
+                                     :sort %5
+                                     :where [["rooms"]]}}}])]
+           (is (f "{a:name}building.floor.room" 
                   [] ['(:name [:asc nil nil])] 
-                  [] nil)))))
+                  [] nil))
+           (is (f "{a:name}building[name].floor.room" 
+                  [[:name false]] ['(:name [:asc nil nil])] 
+                  [] nil))
+           (is (f "{a:name}building.floor.{d:number}room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.{d:number}room" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[a:description].floor.{d:number}room" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.{d:number}room[name]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.{d:number}room[a:name]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.{d:number}room[a:name number]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.{d:number}room[a:name d:number]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.{d:number}room[name d:number]"
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.{d:number}room[name number d:description]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:number false] [:description false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].floor.room[a:name]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] [[nil nil nil] [:asc nil nil]]))
+           (is (f "{a:name}building[description].floor.room[a:name description]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false] [:description false]] [[nil nil nil] [:asc nil nil] [nil nil nil]])))
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :props %2
+                       :sort %3
+                       :where nil
+                       :then {:what Floor
+                              :where [["floors"]]
+                              :props %4
+                              :sort %5
+                              :then {:what Room
+                                     :props %6
+                                     :sort %7
+                                     :where [["rooms"]]}}}])]
+           (is (f "{a:name}building.floor[a:number].room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:number false]] [[nil nil nil] [:asc nil nil]]
+                  [] nil))
+           (is (f "{a:name}building.floor[number].{d:number}room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:number false]] nil
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.floor[a:number].{d:number}room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:number false]] [[nil nil nil] [:asc nil nil]]
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.{a:number}floor.{d:number}room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:asc nil nil])]
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.{a:number d:description}floor.{d:number}room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.{a:number d:description}floor.room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [] nil))
+           (is (f "{a:name}building.{a:number d:description}floor[number].room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [] nil))
+           (is (f "{a:name}building.{a:number d:description}floor[description number].room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [] nil))
+           (is (f "{a:name}building.{a:number d:description}floor[description number].{d:number}room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.{a:number d:description}floor[description number].room[a:name]" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false]] [[nil nil nil] [:asc nil nil]]))
+           (is (f "{a:name}building.{a:number d:description}floor[description number].{d:number}room[a:name]" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[address].{a:number d:description}floor[description number].{d:number}room[a:name]" 
+                  [[:address false]] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[address name].{a:number d:description}floor[description number].{d:number}room[a:name]" 
+                  [[:address false] [:name false]] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[a:address name].{a:number d:description}floor[description number].{d:number}room[a:name]" 
+                  [[:address false] [:name false]] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[address d:name].{a:number d:description}floor[description number].{d:number}room[a:name]" 
+                  [[:address false] [:name false]] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[a:address d:name].{a:number d:description}floor[description number].{d:number}room[a:name]" 
+                  [[:address false] [:name false]] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.{a:number d:description}floor[description number].{d:number}room[name description]" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false] [:description false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.{a:number d:description}floor[description number].{d:number a:name}room[name description]" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] ['(:description [:desc nil nil]) '(:number [:asc nil nil])]
+                  [[:name false] [:description false]] ['(:name [:asc nil nil]) '(:number [:desc nil nil])]))
+           (is (f "{a:name}building.floor[a:description number].{d:number a:name d:description}room[name description]" 
+                  [] ['(:name [:asc nil nil])] 
+                  [[:description false] [:number false]] [[nil nil nil] [:asc nil nil] [nil nil nil]]
+                  [[:name false] [:description false]] 
+                  ['(:description [:desc nil nil]) '(:name [:asc nil nil]) '(:number [:desc nil nil])]))
+           )))
 
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
