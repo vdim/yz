@@ -410,6 +410,31 @@
           (f :props (conj (get-in-nest res nl :props) [id is-recur])))))))
 
 
+(defn- transform-sort
+  "Takes vector with sort and specified 
+  class and transforms it for passing to core.clj"
+  [vsort tsort cl]
+  (cond 
+    (map? vsort) 
+    (reduce 
+      #(let [[k v] %2
+             p (cond 
+                 (= :#default-property# k) (:dp (get mom cl))
+                 (map? k) 
+                 (assoc k :params 
+                        (reduce 
+                          (fn [ps p]
+                            (if (vector? p)
+                              (let [f (p 1)]
+                                (conj ps [(p 0) 
+                                          (reduce (fn [r vv] (conj r (assoc vv :where (get-paths (:what vv) cl)))) [] f)]))
+                              (conj ps p))) [] (:params k)))
+                 :else k)]
+         (conj %1 (list p (get-sort v cl p)))) [] vsort)
+    tsort (get-sort tsort cl :self)
+    :else nil))
+
+
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
   [res ^String id nl tl is-recur tsort]
@@ -421,41 +446,27 @@
       (let [f #(assoc-in-nest res nl :then %)
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort)
-            vsort 
-            (cond 
-              (map? vsort) 
-              (reduce 
-                #(let [[k v] %2
-                       p (cond 
-                           (= :#default-property# k) (:dp (get mom cl))
-                           (map? k) 
-                           (assoc k :params 
-                                  (reduce 
-                                    (fn [ps p]
-                                      (if (vector? p)
-                                        (let [f (p 1)]
-                                          (conj ps [(p 0) 
-                                                    (reduce (fn [r vv] (conj r (assoc vv :where (get-paths (:what vv) cl)))) [] f)]))
-                                        (conj ps p))) [] (:params k)))
-                                       :else k)]
-                              (conj %1 (list p (get-sort v cl p)))) [] vsort)
-              tsort (get-sort tsort cl :self)
-              :else nil)
-            ; Function for association some values of the empty-then map.
-            assoc-eth #(assoc empty-then :what cl :where % :sort vsort)]
+            vsort (transform-sort vsort tsort cl)
+            ; Function for association some values of some then map.
+            assoc-lth #(assoc %1 :what cl :where (get-paths cl %2) :sort vsort)
+            ; What for getting where.
+            what (get-in-nest-or-then res nl tl- :what)]
         (if (> tl 0)
           (if (nil? last-then)
-            (f (assoc-eth (get-paths cl, (get-in-nest res nl :what))))
-            (f (assoc-in last-then 
-                         (repeat tl- :then) 
-                         (let [what (if (> tl- 1) 
-                                      (get-in last-then (conj (vec (repeat (dec tl-) :then)) :what))
-                                      (:what last-then))]
-                           (assoc-eth (get-paths cl, what))))))
+            (f (assoc-lth empty-then (get-in-nest res nl :what)))
+            (let [then-v (repeat tl- :then)
+                  ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
+                  ;; Because of get-in can return nil, but lt must be not nil.
+                  lt (get-in last-then then-v)
+                  lt (if (nil? lt) empty-then lt)
+
+                  lt (assoc-lth lt what)
+                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
+              (f lt)))
          (assoc-in-nest 
             res nl
             :what cl
-            :where (get-paths cl, (get-in-nest-or-then res nl tl :what))
+            :where (get-paths cl, what)
             :sort vsort))))))
 
 
@@ -595,16 +606,23 @@
                      :else (keyword (reduce str prop)))
         res (:result state)
         nl (:nest-level state)
-        tl (:then-level state)]
+        tl (:then-level state)
+        ;_ (println "tl = " tl)
+        ]
     [(:remainder state) 
      (assoc state :result 
         (if (> tl 0)
           (let [v #(conj (vec (repeat %1 :then)) %2)
-                last-then (get-in-nest res nl :then)
-                last-then (assoc last-then :then empty-then)]
+                last-then (get-in-nest res nl :then) 
+                ;_ (println "last-then = " last-then)
+                last-then (if (nil? last-then)
+                            empty-then
+                            (assoc last-then :then empty-then)) ]
+                ;_ (println "last-then2 = " (update-in last-then (v (dec tl) :sort)
+                ;         #(assoc % propid tsort)))]
             (assoc-in-nest 
               res nl :then
-              (update-in last-then (v tl :sort)
+              (update-in last-then (v (dec tl) :sort)
                          #(assoc % propid tsort))))
          (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
 
@@ -625,7 +643,10 @@
                                                    f (get-info :function)
                                                    _ (update-info :function #(pop %))]
                                                   (peek f))))
-                          _ (partial set-sort ret)]
+                          _ (partial set-sort ret)
+                          res (get-info :result)
+                          ;_ (effects (println "res = " res))
+                          ]
                          ret)))
         (lit \})))
 

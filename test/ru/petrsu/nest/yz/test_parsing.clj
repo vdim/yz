@@ -830,8 +830,34 @@
                   [] ['(:name [:desc nil nil]) '(:number [:asc nil nil])]))
            (is (f "{a:name}building ({a:number d:name}room[d:description])" 
                   [] ['(:name [:asc nil nil])]
-                  [[:description false]] ['(:name [:desc nil nil]) '(:number [:asc nil nil])])))))
-
+                  [[:description false]] ['(:name [:desc nil nil]) '(:number [:asc nil nil])])))
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :props %2
+                       :sort %3
+                       :where nil
+                       :then {:what Room
+                               :props %4
+                               :sort %5
+                               :where [["floors" "rooms"]]}}])]
+           (is (f "{a:name}building.room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] nil))
+           (is (f "{a:name}building[name].room" 
+                  [[:name false]] ['(:name [:asc nil nil])] 
+                  [] nil))
+           (is (f "{a:name}building.{d:number}room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].{d:number}room" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building[description].{d:number}room[name]" 
+                  [[:description false]] ['(:name [:asc nil nil])] 
+                  [[:name false]] ['(:number [:desc nil nil])]))
+           (is (f "{a:name}building.room" 
+                  [] ['(:name [:asc nil nil])] 
+                  [] nil)))))
 
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
