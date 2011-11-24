@@ -13,37 +13,69 @@
 #   - commit's sha1 (see script info.sh)
 #   - some info about hardware and software (see script info.sh).
 
-#count=1
+#count=2
 
 ;building
+   2       1010.3708      40241.0159
+   1        870.5225      40904.4069
 
 ;room
+   2        455.7303      47989.3481
+   1        415.7968      49836.8531
 
 ;building (room)
+   2       1158.1348      54871.7570
+   1       1054.8172      55377.4476
 
 ;room (building)
+   2       1069.8450      76553.7111
+   1        952.4961      76346.0736
 
 ;building (li)
+   2        981.0878     186486.7456
+   1        860.4300     192178.5100
 
 ;device (building)
+   2       1023.3561     374420.1820
+   1        895.9991     368267.5946
 
 ;device (room (floor (building)))
+   2       2438.0846     509557.4317
+   1       2155.4241     496732.4511
 
 ;floor#(number = 1)
+   2       1463.2924      41969.7944
+   1       1337.9469      41261.0128
 
 ;floor#(number = 1) (room#(number = "215"))
+   2       2807.4959      43392.7643
+   1       2551.4686      42307.7830
 
 ;device#(forwarding = true)
+   2       1245.3005     106565.2733
+   1       1140.3020     102783.1011
 
 ;device#(network.device.id = 25 and forwarding = true)
+   2       2391.7663     346381.5909
+   1       2145.3968     340876.0824
 
 ;device (room (building#(name="MB")))
+   2       2375.9694     459050.7641
+   1       2275.8585     449264.4201
 
 ;device (room#(number="200") (building#(name="MB")))
+   2       3207.0287     279734.5903
+   1       2997.2846     273543.1429
 
 ;device#(id=25) (room#(number="200") (building#(name="MB")))
+   2       4092.6023     105246.8263
+   1       3876.2743     102491.8157
 
-;device (building (ni))
+#;device (building (ni))
 
-;device (building (floor))
+#;device (building (floor))
+
+# 1. 1000 10000 "Thu Nov 24 09:30:26 MSK 2011" "Thu Nov 24 10:14:46 MSK 2011" f72d8405ce87e3b13b31c45f4f51d2d60bfccafd 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1048932 kB Linux nest x86_64
+
+# 2. 1000 10000 "Thu Nov 24 13:49:32 MSK 2011" "Thu Nov 24 14:34:34 MSK 2011" 552b33b3b07eae184cf15d7568da53d13db3dfa6 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1048932 kB Linux nest x86_64
 
