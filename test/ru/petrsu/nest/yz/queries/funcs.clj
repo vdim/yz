@@ -80,26 +80,26 @@
 
 (deftest t-str
          ^{:doc "Test calling function (count)."}
-         (is (= (nth (tc/r-query "@(str \"1\" \"2\")") 0) "12"))
-         (is (= (nth (tc/r-query "@(str \"asdf\" 1 \"qwer\")") 0) "asdf1qwer"))
-         (is (= (nth (tc/r-query "@(str \"asdf\" 1.0 \"qwer\")") 0) "asdf1.0qwer")))
+         (is (= (nth (tc/r-query "@(str \"1\" \"2\")") 0) ["12" []]))
+         (is (= (nth (tc/r-query "@(str \"asdf\" 1 \"qwer\")") 0) ["asdf1qwer" []]))
+         (is (= (nth (tc/r-query "@(str \"asdf\" 1.0 \"qwer\")") 0) ["asdf1.0qwer" []])))
         
 
 (deftest t-count
          ^{:doc "Tests calling function (count)."}
          (let [f-c #(= (nth (tc/r-query %1) 0) %2)]
-           (is (f-c "@(count %building')" 3))
-           (is (f-c "@(count $building')" 1))
-           (is (f-c "@(count `building')" 3))
-           (is (f-c "@(count %room')" 13))
-           (is (f-c "@(count `room')" 13))
-           (is (f-c "@(count `room#(number=\"101\")')" 3))
-           (is (f-c "@(count `room#(number=\"102\")')" 1))
-           (is (f-c "@(count `room#(number=(\"101\" or \"102\"))')" 4))
-           (is (f-c "@(count `room#(number=(\"101\" and \"102\"))')" 0))
-           (is (f-c "@(count %floor')" 5))
-           (is (f-c "@(count `floor')" 5))
-           (is (f-c "@(count `device')" 0))))
+           (is (f-c "@(count %building')" [3 []]))
+           (is (f-c "@(count $building')" [1 [] 1 [] 1 []]))
+           (is (f-c "@(count `building')" [3 []]))
+           (is (f-c "@(count %room')" [13 []]))
+           (is (f-c "@(count `room')" [13 []]))
+           (is (f-c "@(count `room#(number=\"101\")')" [3 []]))
+           (is (f-c "@(count `room#(number=\"102\")')" [1 []]))
+           (is (f-c "@(count `room#(number=(\"101\" or \"102\"))')" [4 []]))
+           (is (f-c "@(count `room#(number=(\"101\" and \"102\"))')" [0 []]))
+           (is (f-c "@(count %floor')" [5 []]))
+           (is (f-c "@(count `floor')" [5 []]))
+           (is (f-c "@(count `device')" [0 []]))))
 
 
 (deftest t-count-prop

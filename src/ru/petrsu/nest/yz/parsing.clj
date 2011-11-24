@@ -917,8 +917,10 @@
 
 (def funcq
   ^{:doc "Defines rule for query as function."}
-  (pfunction #(set-info :result (peek %)) 
-             (update-info :function #(pop %))))
+  (pfunction 
+    ; Deletes top of the result stack and puts structure which corresponds 
+    #(update-info :result (fn [r] (conj (pop r) (peek %))))
+    (update-info :function #(pop %))))
 
 
 (def query

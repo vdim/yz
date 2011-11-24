@@ -371,7 +371,10 @@
   "Returns result of 'query' based on specified map of object model ('mom')
   and instance of some ElementManager ('em')."
   [parse-res]
-  (vec (map #(do-query %) parse-res)))
+  (vec (map #(if (nil? (get % :func))
+               (do-query %)
+               (reduce (fn [r rf] (vec (concat r [rf []]))) [] (process-func % nil)))
+            parse-res)))
 
 
 (defn- get-column-name
@@ -469,15 +472,12 @@
       (let [parse-res (try
                         (p/parse query *mom*)
                         (catch Throwable e (.getMessage e)))
-            run-query-res (cond (string? parse-res) parse-res
-                                (map? parse-res) (try
-                                                   (let [pc (process-func parse-res nil)]
-                                                     [pc (reduce #(cons [%2] %1) () pc)])
-                                                   (catch Throwable e (.getMessage e)))
-                                :else (try
-                                        (let [rq (run-query parse-res)]
-                                          [rq (distinct (get-rows rq))])
-                                        (catch Throwable e (.getMessage e))))]
+            run-query-res (if (string? parse-res) 
+                            parse-res
+                            (try
+                              (let [rq (run-query parse-res)]
+                                [rq (distinct (get-rows rq))])
+                              (catch Throwable e (.getMessage e))))]
         (if (string? run-query-res)
           (def-result [] run-query-res [] ())
           (def-result (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))

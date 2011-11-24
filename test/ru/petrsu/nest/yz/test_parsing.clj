@@ -1492,7 +1492,7 @@
                                   (if r %)) l))]
            (is (nil? (results qlist)))
            (is (nil? (results qlist-next-query)))
-           ;(is (nil? (results qlist-next-query-qlist)))
+           (is (nil? (results qlist-next-query-qlist)))
            (is (nil? (results qlist-nest-query)))))
 
 
