@@ -21,10 +21,12 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Helper functions for testing YZ's queries."}
   (:use clojure.test)
+  (:use clojure.java.shell)
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
+            [net.kryshen.planter.core :as planter]
             [ru.petrsu.nest.yz.core :as c])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
-           (ru.petrsu.nest.son SonBeanUtils SON)
+           (ru.petrsu.nest.son SonBeanUtils SON LocalSonManager)
            (ru.petrsu.nest.yz.core ElementManager)))
 
 ;; ElementManager (see ru.petrsu.nest.yz.core/ElementManager for more details).
@@ -75,7 +77,7 @@
 
 
 (defn setup-son
-  "Setups specified son and then executes quereis."
+  "Setups specified son and then executes queries."
   ([son]
    (setup-son son *file-mom*))
   ([son nf]
@@ -83,6 +85,22 @@
      (binding [*mom* (hb/mom-from-file nf)
                *em* (em-memory son (create-id-cache son))]
        (f)))))
+
+
+(defn setup-lm
+  "Runs query using LocalSonManager storage from Nest project."
+  ([son]
+   (setup-son son *file-mom*))
+  ([son nf]
+   (fn [f]
+     (let [_ (sh "rm" "-Rf" "data") ; Dirty hack: deletes data before making queries.
+           _ (planter/register-bean son)
+           _ (planter/save-all-and-wait)
+           lm (LocalSonManager.)]
+       (binding [*mom* (hb/mom-from-file nf)
+                 *em* lm]
+         (f)
+         (.close lm))))))
 
 
 (defn create-emm
