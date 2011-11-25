@@ -1023,6 +1023,48 @@
                   ['(:description [:desc nil nil]) '(:name [:asc nil nil]) '(:number [:desc nil nil])]))
            )))
 
+
+(deftest preds-with-dp
+         ^{:doc "Tests parsing queries with predicates which use default property."}
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :props []
+                       :sort nil
+                       :preds %2 
+                       :where nil}])]
+           (is (f "building#(floor.=1)" 
+                  [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(room.=1)" 
+                  [{:ids [{:id ["floors" "rooms"] :cl Room} 
+                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(floor.room.=1)" 
+                  [{:ids [{:id ["floors"] :cl Floor} {:id ["rooms"] :cl Room}
+                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(floor.=1 && room.=2)" 
+                  [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (let [mom- (assoc mom- Floor (assoc (get mom- Floor) :dp nil))]
+             (is (= (parse "building#(floor.=1)" mom-)
+                     [{:what Building
+                       :props []
+                       :sort nil
+                       :preds [{:ids [{:id ["floors"] :cl Floor}], :func #'clojure.core/=, :value 1}]
+                       :where nil}])))
+           (let [mom- (assoc mom- Floor 
+                             (assoc (get mom- Floor) 
+                                    :p-properties {:number {:s-to-r #'inc}}))]
+             (is (= (parse "building#(floor.=1)" mom-)
+                     [{:what Building
+                       :props []
+                       :sort nil
+                       :preds [{:ids [{:id ["floors"] :cl Floor} 
+                                      {:id ["number"] :cl nil}], :func #'clojure.core/=, 
+                                :value {:func #'clojure.core/inc :params [1]}}]
+                       :where nil}])))
+           ))
+
+
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
 (def qlist
@@ -1247,6 +1289,20 @@
    "room (building#(floor.=1))"
    "floor (room (building#(floor.=1)))"
    "device (floor (room (building#(floor.=1))))"
+   "room.building#(floor.=1)"
+   "floor.room.building#(floor.=1)"
+   "device.floor.room.building#(floor.=1)"
+   "room, building#(floor.=1)"
+   "floor, room, building#(floor.=1)"
+   "device, floor, room, building#(floor.=1)"
+   "device#(ni.=1), floor, room, building#(floor.=1)"
+   "device#(ni.=1), floor#(room.=2), room, building#(floor.=1)"
+   "building#(floor.=(1 && 2)).room#(device.=3)"
+   "building#(floor.=(1 && 2)).room#(device.=(3 || 4))"
+   "building#(floor.=(1 && 2)) (room#(device.=3))"
+   "building#(floor.=(1 && 2)) (room#(device.=(3 || 4)))"
+   "building#(floor.=(1 && 2)), room#(device.=3)"
+   "building#(floor.=(1 && 2)), room#(device.=(3 || 4))"
 
 ;; Sorting
    "↑room"

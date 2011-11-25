@@ -406,3 +406,17 @@
          (let [rows (tc/rows-query "building#(name~(\"^b.*$\" && !=\"b2\"))")]
            (is (= (count rows) 2))))
 
+
+(deftest preds-with-dp 
+         (binding [tc/*mom* (assoc tc/*mom* 
+                                   Floor
+                                   (assoc (get tc/*mom* Floor) 
+                                          :dp :number))]
+           (let [rows (tc/rows-query "building#(floor.=3)")]
+             (is (= (count rows) 1))
+             (is (= ((nth rows 0) 0) b1)))
+           (let [rows (tc/rows-query "building#(floor.=(3 || 4))")]
+             (is (= (count rows) 1))
+             (is (= ((nth rows 0) 0) b1)))
+           (let [rows (tc/rows-query "building#(floor.=(3 && 4))")]
+             (is (= (count rows) 1)))))
