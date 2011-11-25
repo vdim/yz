@@ -1237,6 +1237,17 @@
    "ni[description &. name]"
    "ni[&. description name]"
 
+;; Default property into predicates.
+   "building#(floor.=1)"
+   "building#(floor.=1 || floor.number=2)"
+   "building#(floor.=1 || room.number=2)"
+   "building#(floor.=(1 || 2))"
+   "building#(floor.=(1 && <2))"
+   "building#(floor.=(1 && 2))"
+   "room (building#(floor.=1))"
+   "floor (room (building#(floor.=1)))"
+   "device (floor (room (building#(floor.=1))))"
+
 ;; Sorting
    "↑room"
    "↓room"
