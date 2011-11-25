@@ -1,3 +1,13 @@
+## 0.0.1-alpha11 / 25.11.2011
+
+* Added support regular expressions into predicates: building#(name~"^Main.*ding$")
+* Fixed problem with performance (due to removing the remove-duplicate function).
+* Added support sorting besides properties which are selected: {↓name ↓description ↓@(count `device')}room
+* Added typing syntax for sorting: a:room[name d:number]
+* Fixed problem with queries like this: @(inc 1), room
+* Added support default properties into predicates: building#(floor.=1)
+* Added new method about ElementManager interface.
+
 ## 0.0.1-alpha10 / 18.11.2011
 
 * Added support processing property from the MOM.

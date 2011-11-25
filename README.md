@@ -179,7 +179,7 @@ The complexity of restrictions is not limit:
 
 
 ## Restriction
-It is just prototype, not for production using.
+It is just prototype, not for production use.
 
 ## Copyright
 

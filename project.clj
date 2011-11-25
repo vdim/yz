@@ -1,4 +1,4 @@
-(defproject ru.petrsu.nest/yz "0.0.1-alpha10"
+(defproject ru.petrsu.nest/yz "0.0.1-alpha11"
   :description "Implementation of the YZ language."
   :url "https://github.com/vdim/yz"
   :dependencies [[org.clojure/clojure "1.3.0"]
