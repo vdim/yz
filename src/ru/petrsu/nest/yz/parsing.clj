@@ -252,7 +252,7 @@
   (let [sp-res (cs/split res #"\.")]
     (loop [cl- cl, ids- ids, sp-res- sp-res pp nil]
       (if (empty? sp-res-)
-        (if (.endsWith res ".")
+        (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
           (let [dp (:dp (get mom cl-))]
             (if dp
               [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
@@ -308,7 +308,7 @@
                                    ;; If predicate contains processing properties from MOM, then we should 
                                    ;; replace value which is received by value with map where :func key is function 
                                    ;; from MOM and :params key is vector with value which is received.
-                                   (and (= k :value) (not (nil? cpp))) 
+                                   (and (= k :value) (not (nil? cpp)) (not (nil? (:s-to-r cpp)))) 
                                    (let [stor (:s-to-r cpp)
                                          stor (if (var? stor) stor (create-f stor))]
                                      {:func stor, :params [res-]})
