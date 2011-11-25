@@ -53,7 +53,11 @@
   (reify ElementManager
     (^java.util.Collection getElems [_ ^Class claz] 
          (filter #(= (class %) claz) (map identity (se-iterator son))))
-    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))))
+    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))
+
+    ;; Value is got from bean of the object o.
+    (^Object getPropertyValue [this ^Object o, ^String property]
+       ((keyword property) (bean o)))))
     ;(getById [_ ^Object id] (get id-cache id))))
 
 

@@ -45,7 +45,8 @@
          getClasses returns collection of classes which are entities of the model.
          This method is needed for generating the MOM (Map Of the Model)."}
   (^java.util.Collection getElems [^Class claz])
-  (^java.util.Collection getClasses []))
+  (^java.util.Collection getClasses [])
+  (^Object getPropertyValue [^Object o, ^String property]))
 
 
 (defprotocol ExtendedElementManager
@@ -171,7 +172,8 @@
   [o, ^Keyword field-name]
   (if (nil? o)
     nil
-    (let [v (get (bean o) field-name :not-found)]
+    ;(let [v (get (bean o) field-name :not-found)]
+    (let [v (.getPropertyValue *em* o (name field-name))]
       (cond 
         ; If value is nil then function returns nil.
         (nil? v) v

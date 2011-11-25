@@ -281,8 +281,6 @@
              preds (get-info :preds)
              cpp (get-info :pp)
              res- (effects (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret))
-             ;res- (if (and (string? res-) (.endsWith res- ".")) (str res- (:dp (get mom 
-             ;_ (effects (println "res- = " res-))
              [ids pp] (effects (if (= k :ids) 
                                  (get-ids (:ids (peek preds)) res- (get-in-then res  nl tl :what))
                                  [nil nil]))

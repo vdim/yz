@@ -117,6 +117,10 @@
   ;; Implementation getClasses's method. Gets all classes from JPA's metamodel.
   (getClasses [_] (map #(.getJavaType %) 
                        (.. em getEntityManagerFactory getMetamodel getEntities)))
+ 
+  ;; Value is got from bean of the object o.
+  (^Object getPropertyValue [this ^Object o, ^String property]
+     ((keyword property) (bean o)))
 
 
   ExtendedElementManager
@@ -147,6 +151,10 @@
   (reify ElementManager
     (^java.util.Collection getElems [_ ^Class claz] 
        (throw (UnsupportedOperationException. "Not supported yet.")))
-    (getClasses [_] classes)))
+    (getClasses [_] classes)
+    
+    ;; Value is got from bean of the object o.
+    (^Object getPropertyValue [this ^Object o, ^String property]
+       ((keyword property) (bean o)))))
 
 
