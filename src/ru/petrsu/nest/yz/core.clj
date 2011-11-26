@@ -71,7 +71,7 @@
 (def ^{:dynamic true} *mom*)
 
 
-(declare process-preds, process-prop)
+(declare process-preds, process-prop process-func)
 (defn- pp-func
   "Defines whether specified object o satisfies to specified
   vector with predicates preds."
@@ -90,8 +90,18 @@
   returns new sequence of objects which are filtered by this predicates."
   [objs, preds]
   (if (nil? preds) 
-    objs 
-    (filter #(pp-func % preds) objs)))
+    objs
+    (let [; Attempt to improve performace. If parameters of some function
+          ; doesn't contain queries then we get result of function and use
+          ; it as parameter. So we avoid calling function (which does not
+          ; depend from query) for each objects from objs.
+          preds 
+          (reduce #(conj %1 
+                         (let [params (:params (:value %2))]
+                           (if (and (not (nil? params)) (not (some vector? params)))
+                             (assoc %2 :value (nth (process-func (:value %2) nil) 0))
+                             %2))) [] preds)] 
+      (filter #(pp-func % preds) objs))))
 
 
 (defn- sort-rq

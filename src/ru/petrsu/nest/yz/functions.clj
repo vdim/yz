@@ -83,3 +83,10 @@
   Example: (mac2b \"00:01:02:AA:0F:12\")."
   [^String mac]
   (YZUtils/getMACfromString mac))
+
+
+(defn testf
+  "Some test function."
+  [v]
+  (let [_ (println "v = " v)]
+    v))
