@@ -32,7 +32,7 @@
 ;; ElementManager (see ru.petrsu.nest.yz.core/ElementManager for more details).
 (def ^:dynamic *em*)
 
-;; Map of the Object Model.
+;; A map of Object Model.
 (def ^:dynamic *mom*)
 
 ;;
@@ -76,6 +76,17 @@
                     (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. son))))))
 
 
+(defn create-emm
+  "Returns implementation of the memory ElementManager 
+  for specified son."
+  [son]
+  (em-memory son (create-id-cache son)))
+
+
+;;
+;; Definition fixtures (see doc string to the clojure.test namespace for more details).
+;;
+
 (defn setup-son
   "Setups specified son and then executes queries."
   ([son]
@@ -88,12 +99,12 @@
 
 
 (defn setup-lm
-  "Runs query using LocalSonManager storage from Nest project."
+  "Runs test queries using LocalSonManager storage from Nest project."
   ([son]
    (setup-son son *file-mom*))
   ([son nf]
    (fn [f]
-     (let [_ (sh "rm" "-Rf" "data") ; Dirty hack: deletes data before making queries.
+     (let [_ (sh "rm" "-Rf" "data") ; Dirty hack: deletes directory "data" before making queries.
            _ (planter/register-bean son)
            _ (planter/save-all-and-wait)
            lm (LocalSonManager.)]
@@ -101,13 +112,6 @@
                  *em* lm]
          (f)
          (.close lm))))))
-
-
-(defn create-emm
-  "Returns implementation of the memory ElementManager 
-  for specified son."
-  [son]
-  (em-memory son (create-id-cache son)))
 
 
 ;;
