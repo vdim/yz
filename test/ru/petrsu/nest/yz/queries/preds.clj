@@ -360,6 +360,11 @@
            (is (= (count rows) 0))))
 
 
+(deftest req-expr-nil
+         ^{:doc "Tests regular expression where string is nil."}
+         (is (= (count (tc/rows-query "floor#(name~\".*3\")")) 0)))
+
+
 ;; Checks RCP with string
 (deftest rcp-string
          ^{:doc "Tests predicates which contains RCP with strings."}

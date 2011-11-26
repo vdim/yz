@@ -276,7 +276,10 @@
            (if (and (not (nil? cl)) (.isArray cl)) eq-arrays? f))
         ;; Check function for a regular expression
         f (if (= f #'clojure.core/re-find) 
-            (fn [o value] (re-find (re-pattern value) o))
+            (fn [o value] 
+              (if (or (nil? value) (nil? o)) ; Prevent NullPointerException.
+                nil
+                (re-find (re-pattern value) o)))
             f)
         ]
     (if (map? value)
