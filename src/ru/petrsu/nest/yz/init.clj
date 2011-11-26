@@ -38,4 +38,32 @@
                                IPv4Interface, UnknownLinkInterface,
                                CompositeOU, SimpleOU, Occupancy)))
 
+;; MOM the SON model from the Nest project.
 (def i-mom (mom-from-file "nest.mom"))
+
+;; Vector with all classes from SON model 
+;; (Sometimes It is needed for testing functions from the hb-utils namespace.)
+(def classes
+  [ru.petrsu.nest.son.SonElement 
+   ru.petrsu.nest.son.SON 
+   ru.petrsu.nest.son.Occupancy 
+   ru.petrsu.nest.son.NetworkElement 
+   ru.petrsu.nest.son.Device 
+   ru.petrsu.nest.son.LinkInterface 
+   ru.petrsu.nest.son.UnknownLinkInterface 
+   ru.petrsu.nest.son.EthernetInterface 
+   ru.petrsu.nest.son.VLANInterface 
+   ru.petrsu.nest.son.NetworkInterface 
+   ru.petrsu.nest.son.UnknownNetworkInterface 
+   ru.petrsu.nest.son.IPv4Interface 
+   ru.petrsu.nest.son.Network 
+   ru.petrsu.nest.son.UnknownNetwork 
+   ru.petrsu.nest.son.IPNetwork 
+   ru.petrsu.nest.son.OrganizationalElement 
+   ru.petrsu.nest.son.AbstractOU 
+   ru.petrsu.nest.son.SimpleOU 
+   ru.petrsu.nest.son.CompositeOU 
+   ru.petrsu.nest.son.SpatialElement 
+   ru.petrsu.nest.son.Room 
+   ru.petrsu.nest.son.Floor 
+   ru.petrsu.nest.son.Building])
