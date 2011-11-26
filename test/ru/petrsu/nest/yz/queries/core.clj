@@ -52,15 +52,16 @@
 (defn em-memory
   "Implementation of the memory ElementManager."
   [son, id-cache]
-  (reify ElementManager
-    (^java.util.Collection getElems [_ ^Class claz] 
-         (filter #(= (class %) claz) (map identity (se-iterator son))))
-    (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))
+  (let [elems (map identity (se-iterator son))]
+    (reify ElementManager
+      (^java.util.Collection getElems [_ ^Class claz] 
+           (filter #(instance? claz %) elems))
+      (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))
 
-    ;; Value is got from bean of the object o.
-    (^Object getPropertyValue [this ^Object o, ^String property]
-       ((keyword property) (bean o)))))
-    ;(getById [_ ^Object id] (get id-cache id))))
+      ;; Value is got from bean of the object o.
+      (^Object getPropertyValue [this ^Object o, ^String property]
+         ((keyword property) (bean o))))))
+      ;(getById [_ ^Object id] (get id-cache id))))
 
 
 (defn create-id-cache
