@@ -203,36 +203,48 @@
         (line-seq (cio/reader f))))
 
 
-(def ^:dynamic *f* "etc/yz-bench-new.txt")
-
 (defn bench-to-file
   "Writes result of benchmark to yz-bench-new.txt 
-  file with results of benchmark."
+  file (by default) with results of benchmark. 
+  Parameters:
+    n - count of executing each query.
+    mom - MOM of an object model.
+    bd - SON element or ElementManager or count of 
+        elements into BD (which is will be generated due to gen-bd function).
+    f - file for result of the benchmark (and, of course, it must contains queries.)"
+  ([mom]
+   (bench-to-file 1000 10000 mom "etc/yz-bench-new.txt"))
   ([n mom]
-   (bench-to-file n 10000 mom))
-  ([n cbd mom]
+   (bench-to-file n 10000 mom "etc/yz-bench-new.txt"))
+  ([n bd mom]
+   (bench-to-file n bd mom "etc/yz-bench-new.txt"))
+  ([n bd mom f]
   (let [sdate (Date.) ; Date of starting the benchmark.
-        son (bu/gen-bd cbd) ; Database
-        nb (inc (get-num-bench *f*)) ; Current number of the benchmark.
+        bd ; Database
+        (cond (number? bd) (qc/create-emm (bu/gen-bd bd))
+              (instance? ElementManager bd) bd
+              :else (qc/create-emm bd))
+        cbd (ffirst (:rows (pquery "@(count `sonelement')" mom bd)))
+        nb (inc (get-num-bench f)) ; Current number of the benchmark.
         new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
                                        (str %2 \newline
                                             (let [q (.substring %2 1)]
                                               (get-fs nb 
                                                       (bench-parsing n q mom) 
-                                                      (bench-quering n q mom son))))
+                                                      (bench-quering n q mom bd))))
                                        (.startsWith %2 "#count=") (str "#count=" nb \newline)
                                        :else (str %2 \newline)))
                         "" 
-                        (line-seq (cio/reader *f*)))
+                        (line-seq (cio/reader f)))
         edate (Date.) ; Date of ending the benchmark.
 
         ; Write info about benchmark in the end of file.
         new-res 
         (str new-res "# " nb ". " n 
-             " " cbd " \"" sdate "\" \"" edate "\" " 
+             " " cbd " \"" sdate "\" \"" edate "\" " (class bd) " "
              ; Find a sha1 of the last commit and info about current machine.
              (try (:out (sh/sh "./info.sh"))
                (catch Exception e ""))
              \newline)]
-    (cio/copy new-res (cio/file *f*)))))
+    (cio/copy new-res (cio/file f)))))
 
