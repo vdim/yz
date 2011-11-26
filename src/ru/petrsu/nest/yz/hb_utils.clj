@@ -206,10 +206,26 @@
           mom-old
           classes))
 
+
+(defn- dissoc-nil
+  "Returns new MOM where pairs with nil value are
+  removed."
+  [mom]
+  (reduce 
+    (fn [m, [k v]]
+      (if (class? k)
+        (assoc m k (reduce (fn [m [k v]]
+                             (if (nil? v)
+                               m
+                               (assoc m k v))) {} v))
+        (assoc m k v)))
+    {} mom))
+
+
 (defn gen-mom
   "Generates mom from list of classes."
   [classes, mom-old]
-  (let [mom (gen-basic-mom classes, mom-old)
+  (let [mom (dissoc-nil (gen-basic-mom classes, mom-old))
         sns (get-sns mom, (:sns mom-old))
         snames (get-names mom :simpleName (:snames mom-old))
         names (get-names mom :name (:names mom-old))]
