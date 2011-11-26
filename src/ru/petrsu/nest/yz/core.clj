@@ -179,9 +179,9 @@
 
 
 (defn get-fv
-  "Returns value of field. First we try to find property
-  due to bean function, if is failed then we try to using
-  reflection (e.g. getDeclaredField)."
+  "Returns value of field. First we try to finding property
+  due to getPropertyValue function of a ElementManager, 
+  if is failed then we try to using reflection (e.g. getDeclaredField)."
   [o, ^Keyword field-name]
   (if (nil? o)
     nil
