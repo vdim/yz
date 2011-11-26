@@ -30,7 +30,8 @@
             [clojure.java.io :as cio]
             [clojure.java.shell :as sh]
             [clojure.pprint :as cp])
-  (:import (java.util Date)))
+  (:import (java.util Date)
+           (ru.petrsu.nest.yz.core ElementManager)))
 
 
 (defn- ^javax.persistence.EntityManager create-em
@@ -107,7 +108,9 @@
    (bench-quering n query mom nil))
   ([n ^String query mom son]
    (let [son (if (nil? son) (bu/gen-bd 10000) son)
-         em (qc/create-emm son)]
+         em (if (instance? ElementManager son)
+              son
+              (qc/create-emm son))]
      (bu/btime (dotimes [_ n]
                  (pquery query mom em))))))
 
