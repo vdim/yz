@@ -29,7 +29,7 @@
 (ns ru.petrsu.nest.yz.parsing
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
-  (:use name.choi.joshua.fnparse ru.petrsu.nest.yz.functions)
+  (:use name.choi.joshua.fnparse)
   (:require [clojure.string :as cs])
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
 

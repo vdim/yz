@@ -20,15 +20,14 @@
 
 (ns ru.petrsu.nest.yz.core
   ^{:author "Vyacheslav Dimitrov"
-    :doc "This code contains core functions of the Clojure's implementation of the YZ language.
+    :doc "This code contains core functions of Clojure's implementation of the YZ language.
 
          The Parsing of queries does due to the fnparse library.
          See the code for the parsing queries in the parsing.clj file.
          
-         You must have some implementation of the ElementManager (see below definterface) and
+         You must have some implementation of the ElementManager interface (see below) and
          pass it to the pquery function."}
   (:require [ru.petrsu.nest.yz.parsing :as p] [clojure.string :as cs])
-  (:use ru.petrsu.nest.yz.functions)
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
 
 

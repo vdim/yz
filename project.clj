@@ -8,7 +8,6 @@
                  [org.clojure/algo.monads "0.1.0"]]
   :aot [ru.petrsu.nest.yz.core 
         ru.petrsu.nest.yz.hb-utils 
-        ru.petrsu.nest.yz.functions 
         ru.petrsu.nest.yz.yz
         ru.petrsu.nest.yz.yz-factory]
   :java-source-path "."
