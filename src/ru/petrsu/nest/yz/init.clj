@@ -21,7 +21,8 @@
 (ns ru.petrsu.nest.yz.init
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for starting repl."}
-  (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu])
+  (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]
+            [ru.petrsu.nest.yz.queries.core :as qc])
   (:use ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
         ru.petrsu.nest.yz.benchmark.benchmark
