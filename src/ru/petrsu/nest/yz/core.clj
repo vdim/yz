@@ -473,6 +473,10 @@
    :rows rows})
 
 
+(def
+  ^{:doc "The memoized version of the parse function from the parsing.clj"}
+  mparse (memoize p/parse))
+
 (defn pquery
   "Returns map where
     :error - defines message of an error 
@@ -486,7 +490,7 @@
     (if (empty? query)
       (def-result [[]] nil [] ())
       (let [parse-res (try
-                        (p/parse query *mom*)
+                        (mparse query *mom*)
                         (catch Throwable e (.getMessage e)))
             run-query-res (if (string? parse-res) 
                             parse-res
