@@ -177,7 +177,7 @@
     (sort-rq (filter-by-preds (.getElems *em* cl) preds) tsort false))
 
 
-(defn get-fv
+(defn nm-get-fv
   "Returns value of field. First we try to finding property
   due to getPropertyValue function of a ElementManager, 
   if is failed then we try to using reflection (e.g. getDeclaredField)."
@@ -204,6 +204,11 @@
 
         ; Returns value.
         :else v))))
+
+
+(def 
+  ^{:doc "The memoized version of the get-fv function."} 
+  get-fv (memoize nm-get-fv))
 
 
 (declare process-nests, get-rows, run-query)
