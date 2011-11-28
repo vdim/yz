@@ -296,16 +296,22 @@
       (some #(f % value) objs))))
 
 
+(defn- pmapcat
+  "Parallel version of the mapcat function."
+  [f coll]
+  (apply concat (pmap f coll)))
+
+
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects."
   [sources preds paths ^Class what tsort]
-  (mapcat #(loop [ps % res sources]
+  (pmapcat #(loop [ps % res sources]
              (if (empty? ps)
                (let [res (filter (fn [o] (instance? what o)) res)]
                  (sort-rq (filter-by-preds res preds) tsort false))
                (recur (rest ps) (get-objs (first ps) res))))
-          paths))
+           paths))
 
 
 (defn- process-prop
