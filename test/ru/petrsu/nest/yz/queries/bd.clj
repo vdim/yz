@@ -20,8 +20,7 @@
 (ns ru.petrsu.nest.yz.queries.bd
   ^{:author "Vyacheslav Dimitrov"
     :doc "Pretty BD with Nest model for testing."}
-  (:use ru.petrsu.nest.yz.core)
-  (:use ru.petrsu.nest.yz.functions)
+  (:use ru.petrsu.nest.util.utils)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 

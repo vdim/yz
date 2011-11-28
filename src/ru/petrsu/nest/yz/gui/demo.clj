@@ -20,7 +20,6 @@
 (ns ru.petrsu.nest.yz.gui.demo
   ^{:author "Vyacheslav Dimitrov"
     :doc "This code implements GUI for the demonstration using YZ."}
-  (:use ru.petrsu.nest.yz.functions)
   (:require [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.queries.bd :as bd])

@@ -22,7 +22,7 @@
     :doc "Tests queries which imply processing properties from MOM."}
   (:use clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc]
-            [ru.petrsu.nest.yz.functions :as f]
+            [ru.petrsu.nest.util.utils :as f]
             [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (ru.petrsu.nest.son SON Building Room Floor NetworkInterface IPv4Interface)))
 

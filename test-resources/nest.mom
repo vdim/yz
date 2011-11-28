@@ -1,4 +1,5 @@
-{ru.petrsu.nest.son.UnknownNetwork
+{:namespaces (use 'ru.petrsu.nest.util.utils)
+ru.petrsu.nest.son.UnknownNetwork
  {ru.petrsu.nest.son.Occupancy
   [["networkInterfaces" "linkInterface" "device" "occupancy"]],
   :superclass java.lang.Object,
@@ -303,8 +304,8 @@
   :sn "ei",
   :p-properties
   {:MACAddress
-   {:r-to-s #'ru.petrsu.nest.yz.functions/mac,
-    :s-to-r #'ru.petrsu.nest.yz.functions/mac2b}},
+   {:r-to-s #'ru.petrsu.nest.util.utils/mac,
+    :s-to-r #'ru.petrsu.nest.util.utils/mac2b}},
   ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
   ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
   ru.petrsu.nest.son.CompositeOU
@@ -404,8 +405,8 @@
   :sn "ip4i",
   :p-properties
   {:inetAddress
-   {:r-to-s #'ru.petrsu.nest.yz.functions/ip,
-    :s-to-r #'ru.petrsu.nest.yz.functions/ip2b}},
+   {:r-to-s #'ru.petrsu.nest.util.utils/ip,
+    :s-to-r #'ru.petrsu.nest.util.utils/ip2b}},
   ru.petrsu.nest.son.Network [["network"]],
   ru.petrsu.nest.son.SimpleOU
   [["linkInterface" "device" "occupancy" "OU"]],
@@ -471,8 +472,8 @@
   :sn "ipn",
   :p-properties
   {:address
-   {:r-to-s #'ru.petrsu.nest.yz.functions/ip,
-    :s-to-r #'ru.petrsu.nest.yz.functions/ip2b}},
+   {:r-to-s #'ru.petrsu.nest.util.utils/ip,
+    :s-to-r #'ru.petrsu.nest.util.utils/ip2b}},
   ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
   ru.petrsu.nest.son.SimpleOU
   [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],

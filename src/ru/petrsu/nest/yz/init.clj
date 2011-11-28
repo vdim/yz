@@ -22,8 +22,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for starting repl."}
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu])
-  (:use ru.petrsu.nest.yz.functions 
-        ru.petrsu.nest.yz.hb-utils
+  (:use ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
         ru.petrsu.nest.yz.benchmark.benchmark
         ru.petrsu.nest.yz.parsing
