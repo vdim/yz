@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+
+<project name="YZ" default="compile.son">
+    
+    <property name="test"         value="test"/>
+    <property name="classes"       value="classes"/>
+    <property name="lib"       value="lib"/>
+    
+    
+    <path id="project.libs">
+        <fileset dir="${lib}">
+            <include name="**/*.jar"/>
+        </fileset>
+    </path>
+    <path id="project.run">
+        <!-- Allows Clojure without AOT compilation. -->
+        <pathelement location="${classes}"/>
+        <path refid="project.libs"/>
+    </path>
+
+    <target name="compile.son">
+        <copy todir="${classes}">
+            <fileset dir="${test}" includes="**/*.clj"/>
+        </copy>
+
+        <java classname="clojure.lang.Compile"
+              classpathref="project.run"
+              failonerror="true">
+            <sysproperty key="clojure.compile.path"
+                         value="${basedir}/${classes}"/>
+            <sysproperty key="clojure.compile.warn-on-reflection"
+                         value="true"/>
+            <arg value="ru.petrsu.nest.son"/>
+        </java>
+    </target>
+</project>
