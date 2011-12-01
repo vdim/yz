@@ -249,7 +249,7 @@
   by specified 'field-name'."
   [^String field-name, objs]
   (flatten
-    (map #(if-let [fv (get-fv % (keyword field-name))]
+    (pmap #(if-let [fv (get-fv % (keyword field-name))]
            (if (instance? java.util.Collection fv)
              (map identity fv)
              fv))
