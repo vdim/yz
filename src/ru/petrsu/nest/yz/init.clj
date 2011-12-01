@@ -28,6 +28,7 @@
         ru.petrsu.nest.yz.benchmark.benchmark
         ru.petrsu.nest.yz.parsing
         ru.petrsu.nest.yz.core
+        ru.petrsu.nest.son.local-sm
         
         clojure.repl clojure.pprint clojure.java.io
         clojure.walk

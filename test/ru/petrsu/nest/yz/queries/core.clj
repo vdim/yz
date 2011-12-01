@@ -24,9 +24,10 @@
   (:use clojure.java.shell)
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
             [net.kryshen.planter.core :as planter]
-            [ru.petrsu.nest.yz.core :as c])
+            [ru.petrsu.nest.yz.core :as c]
+            [ru.petrsu.nest.son.local-sm :as lsm])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
-           (ru.petrsu.nest.son SonBeanUtils SON LocalSonManager)
+           (ru.petrsu.nest.son SonBeanUtils SON)
            (ru.petrsu.nest.yz.core ElementManager)))
 
 ;; ElementManager (see ru.petrsu.nest.yz.core/ElementManager for more details).
@@ -108,7 +109,7 @@
      (let [_ (sh "rm" "-Rf" "data") ; Dirty hack: deletes directory "data" before making queries.
            _ (planter/register-bean son)
            _ (planter/save-all-and-wait)
-           lm (LocalSonManager.)]
+           lm (lsm/create-lsm)]
        (binding [*mom* (hb/mom-from-file nf)
                  *em* lm]
          (f)
