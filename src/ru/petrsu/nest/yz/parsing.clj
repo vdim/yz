@@ -31,7 +31,9 @@
     :doc "Code for the parsing of queries (due to the fnparse library)."}
   (:use name.choi.joshua.fnparse)
   (:require [clojure.string :as cs])
-  (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
+  (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)
+           (ru.petrsu.nest.yz SyntaxException NotFoundPathException 
+                              NotFoundElementException NotFoundFunctionException)))
 
 
 (defn ^String sdrop
@@ -178,7 +180,7 @@
                                  (if (not (empty? ps)) ps)) 
                               (ancestors cl-target))]
               (if (empty? paths)
-                (throw (Exception. (str "Not found path between " cl-source " and " cl-target ".")))
+                (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target ".")))
                 paths))
             (recur (:superclass (get mom cl-))))
           paths)))))
@@ -378,7 +380,7 @@
                  :else (keyword (str id)))
         what (get-in-nest res nl :what)]
     (if (nil? what)
-      (throw (Exception. (str "Not found element: " id)))
+      (throw (NotFoundElementException. (str "Not found element: " (name id))))
       (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
             props (get-in-nest-or-then res (inc nl) tl- :props)
             sorts (cond
@@ -918,7 +920,7 @@
                            #(if-let [f (let [sym (symbol (reduce str "" n))]
                                          (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
                               (conj (pop %) (assoc (peek %) :func f))
-                              (throw (Exception. (str "Could not found function " (reduce str "" n) ".")))))]
+                              (throw (NotFoundFunctionException. (str "Could not found function " (reduce str "" n) ".")))))]
            n))
 
 
@@ -956,6 +958,6 @@
   (let [r (parse+ q, mom)]
     (if (nil? (:remainder r))
       (:result r)
-      (throw (Exception. (str "Syntax error near: " (reduce str "" (:remainder r))))))))
+      (throw (SyntaxException. (str "Syntax error near: " (reduce str "" (:remainder r))))))))
 
 
