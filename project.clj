@@ -11,7 +11,7 @@
         ru.petrsu.nest.yz.yz
         ru.petrsu.nest.yz.yz-factory]
   :java-source-path "."
-  :jar-exclusions [#"\.swp$|\.clj$"]
+  :jar-exclusions [#"\.swp$|\.clj$|son"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false
   :omit-source true
