@@ -1,5 +1,6 @@
-{:namespaces (use 'ru.petrsu.nest.util.utils)
-ru.petrsu.nest.son.UnknownNetwork
+(do
+(use 'ru.petrsu.nest.util.utils)
+{ru.petrsu.nest.son.UnknownNetwork
  {ru.petrsu.nest.son.Occupancy
   [["networkInterfaces" "linkInterface" "device" "occupancy"]],
   :superclass java.lang.Object,
@@ -529,3 +530,4 @@ ru.petrsu.nest.son.UnknownNetwork
   ru.petrsu.nest.son.Building
   [["linkInterface" "device" "occupancy" "room" "floor" "building"]]},
  ru.petrsu.nest.son.OrganizationalElement {:sn "oe"}}
+)

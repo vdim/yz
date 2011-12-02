@@ -20,8 +20,8 @@
 (ns ru.petrsu.nest.yz.queries.bd
   ^{:author "Vyacheslav Dimitrov"
     :doc "Pretty BD with Nest model for testing."}
-  (:use ru.petrsu.nest.util.utils)
-  (:require [ru.petrsu.nest.yz.queries.core :as tc])
+  (:require [ru.petrsu.nest.yz.queries.core :as tc]
+            [ru.petrsu.nest.util.utils :as f])
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 
                                IPv4Interface, UnknownLinkInterface,
@@ -61,33 +61,33 @@
 ;Network Structure
 
 (def net1 (doto (IPNetwork.) 
-           (.setAddress (ip2b "192.168.112.32")) 
-           (.setMask (ip2b "255.255.255.224"))))
+           (.setAddress (f/ip2b "192.168.112.32")) 
+           (.setMask (f/ip2b "255.255.255.224"))))
 (def net2 (doto (IPNetwork.) 
-           (.setAddress (ip2b "172.20.255.108")) 
-           (.setMask (ip2b "255.255.255.252"))))
+           (.setAddress (f/ip2b "172.20.255.108")) 
+           (.setMask (f/ip2b "255.255.255.252"))))
 
 (def rd_ei1_ni1 (doto (IPv4Interface.) 
-                  (.setInetAddress (ip2b "192.168.112.50")) 
+                  (.setInetAddress (f/ip2b "192.168.112.50")) 
                   (.setNetwork net1)))
 (def rd_ei1_ni2 (doto (IPv4Interface.) 
-                  (.setInetAddress (ip2b "172.20.255.109"))
+                  (.setInetAddress (f/ip2b "172.20.255.109"))
                   (.setNetwork net2)))
 (def d1_ei1_ni1 (doto (IPv4Interface.) 
-                  (.setInetAddress (ip2b "192.168.112.51"))
+                  (.setInetAddress (f/ip2b "192.168.112.51"))
                   (.setNetwork net1)))
 
 (def rd_ei1 (doto (EthernetInterface.) 
-              (.setMACAddress (mac2b "00:15:f9:05:24:c5"))
+              (.setMACAddress (f/mac2b "00:15:f9:05:24:c5"))
               (.addNetworkInterface rd_ei1_ni1)))
 (def rd_ei2 (doto (EthernetInterface.) 
-              (.setMACAddress (mac2b "00:15:63:a0:ae:0e"))
+              (.setMACAddress (f/mac2b "00:15:63:a0:ae:0e"))
               (.addNetworkInterface rd_ei1_ni2)))
 (def d1_ei1 (doto (EthernetInterface.) 
-              (.setMACAddress (mac2b "00:15:63:a0:ae:1e"))
+              (.setMACAddress (f/mac2b "00:15:63:a0:ae:1e"))
               (.addNetworkInterface d1_ei1_ni1)))
-(def rd_ei3 (doto (EthernetInterface.) (.setMACAddress (mac2b "00:15:f9:05:24:c4"))))
-(def rd_ei4 (doto (EthernetInterface.) (.setMACAddress (mac2b "00:15:63:a0:ae:0f"))))
+(def rd_ei3 (doto (EthernetInterface.) (.setMACAddress (f/mac2b "00:15:f9:05:24:c4"))))
+(def rd_ei4 (doto (EthernetInterface.) (.setMACAddress (f/mac2b "00:15:63:a0:ae:0f"))))
 
 (def d1 (doto (Device.)
           (.addLinkInterface d1_ei1)))
