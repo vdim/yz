@@ -1568,8 +1568,8 @@
 (deftest neg-parse-tests
          ^{:doc "Contains tests which are thrown exceptions."}
          (is (thrown? SyntaxException (parse "building#" mom-)))
-         (is (thrown? SyntaxException (parse "(building)" mom-)))
-         (is (thrown? SyntaxException (parse ", building" mom-)))
+         (is (thrown? NullPointerException (parse "(building)" mom-)))
+         (is (thrown? NullPointerException (parse ", building" mom-)))
          (is (thrown? SyntaxException (parse "building, " mom-))))
 
 (comment

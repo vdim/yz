@@ -935,14 +935,14 @@
 (def query
   ^{:doc "Defines start symbol for parsing query."}
   (alt (conc funcq ; Query may be simple function: @(count `room')
-             (rep* (conc delimiter query))); ; or function + some query: @(count `room'), room
+             (rep* (conc delimiter query))) ; or function + some query: @(count `room'), room
 
-       (conc bid ; Id's sequence with properties or predicates: room; room.floor; room[name]; room#(name="MB") and so on.
+       (conc bid ; or id's sequence with properties or predicates: room; room.floor; room[name]; room#(name="MB") and so on.
          (rep* ; or  sequence from the following parts.
            (alt
              nest-query ; Nested query: room (floor)
              (conc delimiter query)))))) ; Next query: room, floor
-
+            
 
 (defn parse+
   "Like parse, but returns all structure of result."
