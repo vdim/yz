@@ -23,7 +23,8 @@
   (:use ru.petrsu.nest.yz.parsing 
         ru.petrsu.nest.yz.hb-utils 
         clojure.test)
-  (:import (ru.petrsu.nest.son Building Room Floor)))
+  (:import (ru.petrsu.nest.son Building Room Floor)
+           (ru.petrsu.nest.yz SyntaxException)))
 
 (def mom- 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
@@ -1562,6 +1563,14 @@
            (is (nil? (results qlist-next-query-qlist)))
            (is (nil? (results qlist-nest-query)))))
 
+
+
+(deftest neg-parse-tests
+         ^{:doc "Contains tests which are thrown exceptions."}
+         (is (thrown? SyntaxException (parse "building#" mom-)))
+         (is (thrown? SyntaxException (parse "(building)" mom-)))
+         (is (thrown? SyntaxException (parse ", building" mom-)))
+         (is (thrown? SyntaxException (parse "building, " mom-))))
 
 (comment
 (deftest t-parse-remainder
