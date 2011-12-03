@@ -464,18 +464,15 @@
              data))))
 
 
-(defn- def-result
-  "Returns map with the result of executing 'pquery'."
-  [result, error, columns rows]
-  {:result result
-   :error error
-   :columns columns
-   :rows rows})
+(defrecord Result 
+  ^{:doc "Map with the result of executing 'pquery'."}
+  [result error columns rows])
 
 
 (def
   ^{:doc "The memoized version of the parse function from the parsing.clj"}
   mparse (memoize p/parse))
+
 
 (defn pquery
   "Returns map where
@@ -488,7 +485,7 @@
   (binding [*mom* mom
             *em* em]
     (if (empty? query)
-      (def-result [[]] nil [] ())
+      (Result. [[]] nil [] ())
       (let [parse-res (try
                         (mparse query *mom*)
                         (catch Throwable e (.getMessage e)))
@@ -500,6 +497,6 @@
                                 [rq (distinct (get-rows rq))])
                               (catch Throwable e (.getMessage e))))]
         (if (string? run-query-res)
-          (def-result [] run-query-res [] ())
-          (def-result (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))
+          (Result. [] run-query-res [] ())
+          (Result. (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))
 
