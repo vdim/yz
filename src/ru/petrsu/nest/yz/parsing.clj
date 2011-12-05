@@ -545,7 +545,7 @@
 
 (def alpha
   ^{:doc "Sequence of characters."}
-  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ123456780&+/-*:"))
+  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&+/-*:"))
 
 (def digit
   ^{:doc "Sequence of digits."}
