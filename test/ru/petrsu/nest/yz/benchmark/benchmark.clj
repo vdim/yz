@@ -27,6 +27,8 @@
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [ru.petrsu.nest.yz.benchmark.hql :as hql]
             [ru.petrsu.nest.yz.queries.core :as qc]
+            [ru.petrsu.nest.yz.queries.nest-queries :as nq]
+            [ru.petrsu.nest.son.local-sm :as lsm]
             [clojure.java.io :as cio]
             [clojure.java.shell :as sh]
             [clojure.pprint :as cp])
@@ -106,11 +108,11 @@
   for specified query 'n' times. "
   ([n ^String query mom]
    (bench-quering n query mom nil))
-  ([n ^String query mom son]
-   (let [son (if (nil? son) (bu/gen-bd 10000) son)
-         em (if (instance? ElementManager son)
-              son
-              (qc/create-emm son))]
+  ([n ^String query mom son-or-em]
+   (let [son-or-em (if (nil? son-or-em) (bu/gen-bd 10000) son-or-em)
+         em (if (instance? ElementManager son-or-em)
+              son-or-em
+              (qc/create-emm son-or-em))]
      (bu/btime (dotimes [_ n]
                  (pquery query mom em))))))
 
@@ -120,8 +122,8 @@
   'n' is numbers of the execution the specified 'query'."
   ([n ^String query mom]
    (bench n query mom nil))
-  ([n ^String query mom son]
-   (let [time-q (bench-quering n query mom son)
+  ([n ^String query mom son-or-em]
+   (let [time-q (bench-quering n query mom son-or-em)
          time-p (bench-parsing n query mom)]
      (str "Parsing: " time-p \newline
           "Quering: " time-q))))
@@ -247,4 +249,20 @@
                (catch Exception e ""))
              \newline)]
     (cio/copy new-res (cio/file f)))))
+
+
+(defn bench-for-nest-queries
+  "Benchmark for queries from Nest project."
+  ([mom] 
+   (bench-for-nest-queries mom (lsm/create-lsm)))
+  ([mom bd]
+   (let [bp #(bench-parsing 1 % mom) 
+         bq #(bench-quering 1 % mom bd)
+         f (fn [bf queries] (reduce  #(+ %1 (bf %2)) 0 queries))
+         ptime-ai (f bp nq/address-info-queries)
+         qtime-ai (f bq nq/address-info-queries)
+         ptime-e (f bp nq/enlivener-queries)
+         qtime-e (f bq nq/enlivener-queries)]
+     (str "ParsingAI: " ptime-ai \newline "QueringAI: " qtime-ai \newline
+          "ParsingE: " ptime-e \newline "QueringE: " qtime-e))))
 
