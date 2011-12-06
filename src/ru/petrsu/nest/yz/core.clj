@@ -490,7 +490,7 @@
                         (p/parse query *mom*)
                         (catch Throwable e (.getMessage e)))
             parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)
-            run-query-res (if (or (string? parse-res) (nil? parse-res))
+            run-query-res (if (string? parse-res)
                             parse-res
                             (try
                               (let [rq (run-query parse-res)]
