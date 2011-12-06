@@ -487,7 +487,7 @@
     (if (empty? query)
       (Result. [[]] nil [] ())
       (let [parse-res (try
-                        (mparse query *mom*)
+                        (p/parse query *mom*)
                         (catch Throwable e (.getMessage e)))
             parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)
             run-query-res (if (or (string? parse-res) (nil? parse-res))
