@@ -177,7 +177,7 @@
     (sort-rq (filter-by-preds (.getElems *em* cl) preds) tsort false))
 
 
-(defn get-fv
+(defn- get-fv
   "Returns value of field. First we try to finding property
   due to getPropertyValue function of a ElementManager, 
   if is failed then we try to using reflection (e.g. getDeclaredField)."
@@ -187,7 +187,7 @@
     (let [v (.getPropertyValue *em* o (name field-name))]
       (cond 
         ; If value is nil then function returns nil.
-        (nil? v) v
+        (nil? v) nil
 
         ; If value not found into bean map then we try find this value due to java reflection.
         (= v :not-found)
@@ -235,7 +235,7 @@
                            ; param is value of some property of the object.
                            (and (instance? String %) (.startsWith % "&."))  (get-fv obj (keyword (.substring % 2)))
 
-                           ; param is string or number.
+                           ; param is string, number or some keyword (true, false, nil).
                            :else %) 
                     (:params f-map))
         lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
@@ -264,7 +264,7 @@
     (java.util.Arrays/equals a1 a2)))
 
 
-(defn process-preds
+(defn- process-preds
   "Processes restrictions."
   [o, l-side, f, value] 
   (let [objs (cond (vector? l-side) 
@@ -334,7 +334,7 @@
     (map #(process-prop % obj) props)))
 
 
-(defn process-then
+(defn- process-then
   "Processes :then value of query structure.
   Returns sequence of objects."
   [then, objs, props, cl, tsort]
@@ -353,7 +353,7 @@
 
 (declare process-nests)
 
-(defn p-nest
+(defn- p-nest
   "Generates code for process :nest value with some objects."
   [^PersistentArrayMap nest, objs]
   (reduce #(conj %1 (%2 1) (process-nests (:nest nest) (%2 0)))
