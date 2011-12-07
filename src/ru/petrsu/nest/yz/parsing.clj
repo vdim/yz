@@ -477,7 +477,9 @@
             :sort vsort))))))
 
 
-(defn update-preds
+(defn- add-op-to-preds
+  "Takes operation ('and' or 'or') and adds it to
+  end of the :preds value "
   [op]
   (update-info :preds #(conj % op)))
 
@@ -784,11 +786,11 @@
                    (change-pred (lit-conc-seq "nil") :value nil)
                    (pfunc-as-param :value))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
-                        (invisi-conc v-f (update-preds :and))
+                        (invisi-conc v-f (add-op-to-preds :and))
                         v-prime) emptiness))
 (def v (conc v-f v-prime))
 (def value-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||")) nil)) 
-                            (invisi-conc v (update-preds :or)) 
+                            (invisi-conc v (add-op-to-preds :or)) 
                             value-prime) emptiness))
 (def value (conc v value-prime)) 
 
@@ -807,11 +809,11 @@
                   (change-pred sign :func) 
                   value)))
 (def t-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")))) 
-                        (invisi-conc f (update-preds :and))
+                        (invisi-conc f (add-op-to-preds :and))
                         t-prime) emptiness))
 (def t (conc f t-prime))
 (def where-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "or") (lit-conc-seq "||"))))
-                            (invisi-conc t (update-preds :or))
+                            (invisi-conc t (add-op-to-preds :or))
                             where-prime) emptiness))
 (def where (conc t where-prime)) 
 
