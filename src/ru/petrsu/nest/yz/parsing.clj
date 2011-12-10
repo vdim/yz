@@ -76,11 +76,12 @@
     :nest - nested vector with definition of linking objects: building (room)
     :then - nested map with definition of linking objects: building.room
     :where - path to parent objects."
-  [{:props []}])
+  ;[{:props []}])
+  [{}])
 
 (def empty-then
   "Defines then structure."
-  (empty-res 0))
+  {})
 
 (def empty-pred
   "Defines pred structure."
@@ -402,7 +403,13 @@
                     :else (if (vector? (sorts 0)) 
                             (conj sorts (get-sort tsort, what, id))
                             (conj [sorts] (get-sort tsort, what, id))))
-            f #(assoc-in-nest res nl %1 %2 :sort sorts)]
+            f #(assoc-in-nest res nl %1 %2 :sort sorts)
+            
+            ; This function is need for improving performance because first element of :props is
+            ; not vector but next is. Result of benchmark in case parameter is vector:
+            ; (time (dotimes [_ 1e7] (lvec [1 2 3]))): "Elapsed time: 327.200079 msecs"
+            ; (time (dotimes [_ 1e7] (vec [1 2 3]))): "Elapsed time: 7122.513999 msecs"
+            lvec #(if (vector? %) % (vec %))]
         (if (> tl- 0)
           (let [v #(conj (vec (repeat (dec tl-) :then)) %)
                 last-then (get-in-nest res nl :then)
@@ -410,8 +417,8 @@
             (assoc-in-nest 
               res nl :then
               (update-in last-then (v :props)
-                         #(conj % [id is-recur]))))
-          (f :props (conj (get-in-nest res nl :props) [id is-recur])))))))
+                         #(lvec (conj % [id is-recur])))))
+          (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur]))))))))
 
 
 (defn- transform-sort
