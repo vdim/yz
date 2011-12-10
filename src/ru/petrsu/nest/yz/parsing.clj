@@ -148,7 +148,7 @@
   [res nl tl k]
   (if (= tl 0) 
     (get-in-nest res nl k) 
-    (get-in (get-in-nest res nl :then) (conj (vec (repeat (dec tl) :then)) k))))
+    (get-in (get-in-nest res nl :then) (-> tl dec (repeat :then) vec (conj k))))) 
 
 
 (defn get-in-nest-or-then
@@ -505,8 +505,8 @@
 
 
 (def limit-nq
-  ^{:doc "Defines number of the nested queries into parameter as query."}
-  (identity 100))
+  "Defines number of the nested queries into parameter as query."
+  100)
 
 (declare single-pq, list-pq, indep-pq, end-pq)
 (defn textq
@@ -546,42 +546,42 @@
 ;; Rules of grammar are below. See BNF in the begining of file.
 
 (def alpha
-  ^{:doc "Sequence of characters."}
+  "Sequence of characters."
   (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&+/-*:"))
 
 (def digit
-  ^{:doc "Sequence of digits."}
+  "Sequence of digits."
   (lit-alt-seq "1234567890."))
 
 (def number
-  ^{:doc "Defines number."}
+  "Defines number."
   (conc (opt (alt (lit \+) (lit \-))) (rep+ digit)))
 
 (def whitespaces
-  ^{:doc "List of whitespaces"}
+  "List of whitespaces"
   (rep+ (alt (lit \space) (lit \newline) (lit \tab))))
 
 (def end-pq
-  ^{:doc "Defines symbol for indication 
-         end query which is parameter."}
-  (identity \'))
+  "Defines symbol for indication 
+  end query which is parameter."
+  \')
 
 (def list-pq
-  ^{:doc "Defines symbol for indication 
-         query-parameter which is passed as list."}
-  (identity \`))
+  "Defines symbol for indication 
+  query-parameter which is passed as list."
+  \`)
 
 (def single-pq
-  ^{:doc "Defines symbol for indication 
-         query-parameter for which function is called
-         for each tuple."}
-  (identity \$))
+  "Defines symbol for indication 
+  query-parameter for which function is called
+  for each tuple."
+  \$)
 
 (def indep-pq
-  ^{:doc "Defines symbol for indication 
-         query-parameter which is independence
-         from the rest of query."}
-  (identity \%))
+  "Defines symbol for indication 
+  query-parameter which is independence
+  from the rest of query."
+  \%)
 
 
 (def string
