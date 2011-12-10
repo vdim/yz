@@ -251,21 +251,19 @@
 (defn- get-ids 
   "Returns new value of the :ids key of the pred structure."
   [ids ^String res ^Class cl]
-  (let [sp-res (cs/split res #"\.")]
-    (loop [cl- cl, ids- ids, sp-res- sp-res pp nil]
-      (if (empty? sp-res-)
-        (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
-          (let [dp (:dp (get mom cl-))]
-            (if dp
-              [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
-              [ids- pp]))
+  (loop [cl- cl, ids- ids, sp-res (cs/split res #"\.") pp nil]
+    (if (empty? sp-res)
+      (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
+        (if-let [dp (:dp (get mom cl-))]
+          [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
           [ids- pp])
-        (let [id (first sp-res-)
-              ^Class cl-target (find-class id)]
-          (recur cl-target
-                 (vec (flatten (conj ids- (get-path id cl- cl-target))))
-                 (rest sp-res-)
-                 ((keyword id) (:p-properties (get mom cl-)))))))))
+        [ids- pp])
+      (let [id (first sp-res)
+            ^Class cl-target (find-class id)]
+        (recur cl-target
+               (vec (flatten (conj ids- (get-path id cl- cl-target))))
+               (rest sp-res)
+               ((keyword id) (:p-properties (get mom cl-))))))))
 
 
 (defn change-pred
@@ -304,13 +302,12 @@
                                    ;; If RCP is part of predicate (like this: ei#(MACAddress="1" || "2"))
                                    ;; with processing properties from MOM, then we should just change parameter.
                                    (and (= k :value) (map? (:value (peek %)))) 
-                                   ;(assoc (:value (peek %)) :params [(subs res- 1 (dec (count res-)))])
                                    (assoc (:value (peek %)) :params [res-])
 
                                    ;; If predicate contains processing properties from MOM, then we should 
                                    ;; replace value which is received by value with map where :func key is function 
                                    ;; from MOM and :params key is vector with value which is received.
-                                   (and (= k :value) (not (nil? cpp)) (not (nil? (:s-to-r cpp)))) 
+                                   (and (= k :value) cpp (:s-to-r cpp)) 
                                    (let [stor (:s-to-r cpp)
                                          stor (if (var? stor) stor (create-f stor))]
                                      {:func stor, :params [res-]})
@@ -422,11 +419,16 @@
   class and transforms it for passing to core.clj"
   [vsort tsort cl]
   (cond 
+    ; vsort is map where key is name of the property (or function) and 
+    ; value is type of the sort (:asc, :desc).
     (map? vsort) 
     (reduce 
       #(let [[k v] %2
              p (cond 
-                 (= :#default-property# k) (:dp (get mom cl))
+                 ; Sorting is done by default property: {a:&.}building
+                 (= :#default-property# k) (:dp (get mom cl)) 
+                 
+                 ; Sorting is done by result of a function: {a:@(count `room')}building
                  (map? k) 
                  (assoc k :params 
                         (reduce 
@@ -436,10 +438,14 @@
                                 (conj ps [(p 0) 
                                           (reduce (fn [r vv] (conj r (assoc vv :where (get-paths (:what vv) cl)))) [] f)]))
                               (conj ps p))) [] (:params k)))
+
+                 ;Sorting is done by some property: {a:name}building
                  :else k)]
          (conj %1 (list p (get-sort v cl p)))) [] vsort)
-    tsort (get-sort tsort cl :self)
-    :else nil))
+
+    ; tsort won't be nil into queries something like this: a:building
+    ; (tsort = :asc)
+    tsort (get-sort tsort cl :self)))
 
 
 (defn- found-id
