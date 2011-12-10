@@ -67,29 +67,29 @@
 ;; Helper macros, definitions and functions.
 
 (def empty-res
-  ^{:doc "Defines vector within one empty map. 
-         The vector is initial result of 'parse' function.
-         Vector may contains the following keys:
-            :props - vector with properties (empty).
-            :what - class for selecting.
-            :preds - list with predicates.
-            :nest - nested vector with definition of linking objects: building (room)
-            :then - nested map with definition of linking objects: building.room
-            :where - path to parent objects."}
+  "Defines vector within one empty map. 
+  The vector is initial result of 'parse' function.
+  Vector may contains the following keys:
+    :props - vector with properties (empty).
+    :what - class for selecting.
+    :preds - list with predicates.
+    :nest - nested vector with definition of linking objects: building (room)
+    :then - nested map with definition of linking objects: building.room
+    :where - path to parent objects."
   [{:props []}])
 
 (def empty-then
-  ^{:doc "Defines then structure"}
+  "Defines then structure."
   (empty-res 0))
 
 (def empty-pred
-  ^{:doc "Defines pred structure"}
+  "Defines pred structure."
   {:ids []
    :func nil
    :value nil})
 
 (def empty-fun
-  ^{:doc "Defines function structure"}
+  "Defines function structure"
   {:func nil ; Function (:func has clojure.lang.Var type.)
    :params []}) ; Vector with parameters.
 
@@ -502,7 +502,7 @@
 
 (defn text
   "Rule for recognizing any string.
-  ch defines last symbol this string."
+  ch defines last symbol of this string."
   [ch state]
   (let [remainder (reduce str (:remainder state))
         res (for [a (:remainder state) :while (not (= a ch))] a)]
@@ -591,18 +591,18 @@
 
 
 (def string
-  ^{:doc "Defines string"}
+  "Defines string"
   (conc (lit \") (partial text \") (lit \")))
 
 
 (def descsort
-  ^{:doc "Defines rule for sorting by descenting."}
+  "Defines rule for sorting by descenting."
   (complex [_ (alt (lit \↓) (lit-conc-seq "d:"))]
            :desc))
 
 
 (def ascsort
-  ^{:doc "Defines rule for sorting by ascending."}
+  "Defines rule for sorting by ascending."
   (complex [_ (alt (lit \↑) (lit-conc-seq "a:"))]
            :asc))
 
@@ -640,11 +640,9 @@
 
 (declare function)
 (def propsort
-  ^{:doc "Defines sorting of objects 
-         by properties which are not selected.
-         For example, rooms from a result of the query {a:number}room,
-         will be sorted by number, although this numbers of rooms is not
-         selected."}
+  "Defines sorting of objects by properties which are not selected.
+  For example, rooms from a result of the query {a:number}room,
+  will be sorted by number, although this numbers of rooms is not selected."
   (conc (lit \{) 
         (rep* (sur-by-ws 
                 (complex [ret (conc (alt descsort ascsort) 
@@ -660,7 +658,7 @@
 
 
 (def idsort
-  ^{:doc "Defines sort and its type."}
+  "Defines sort and its type."
   (let [ch-sort #(invisi-conc %1 (set-info :cur-sort %2))]
     (alt (ch-sort descsort :desc) (ch-sort ascsort :asc)
          (ch-sort emptiness nil))))
@@ -689,11 +687,11 @@
 
 
 (def delimiter
-  ^{:doc "Defines delimiter (now it is comma) for queries into one level.
-         Examples: 
-          room, building
-          room (floor, building)
-          room (floor, building), device"}
+  "Defines delimiter (now it is comma) for queries into one level.
+  Examples: 
+    room, building
+    room (floor, building)
+    room (floor, building), device"
   (complex [ret (sur-by-ws (lit \,)) 
             nl (get-info :nest-level)
             _ (update-info :result #(add-value % nl (empty-res 0)))
@@ -703,7 +701,7 @@
 
 (declare query, function)
 (def nest-query
-  ^{:doc "Defines nested query"}
+  "Defines nested query"
   (conc (sur-by-ws (complex [ret (invisi-conc (lit\() (update-info :nest-level inc))
                              nl (get-info :nest-level)
                              _ (update-info :result #(assoc-in-nest % (dec nl) :nest empty-res))
@@ -716,20 +714,19 @@
 
 (declare block-where, props)
 (def props-and-where
-  ^{:doc "Defines block from properties or predicates.
-         It may be emptiness or contains only block with
-         properties or only block with predicates or both.
-         Also an order of blocks is not important:
-          floor#(number=1)[name]
-          floor[name]#(number=1)"}
-  (alt 
-    (conc (opt props) (opt block-where) (opt props))))
+  "Defines block from properties or predicates.
+  It may be emptiness or contains only block with
+  properties or only block with predicates or both.
+  Also an order of blocks is not important:
+    floor#(number=1)[name]
+    floor[name]#(number=1)"
+  (alt (conc (opt props) (opt block-where) (opt props))))
 
 
 (def bid
-  ^{:doc "Defines sequence from ids. Example: room.floor.number
-         Sorting may be defined before id. Example: {a:number}room
-         Each id may contains block from properties or predicates."}
+  "Defines sequence from ids. Example: room.floor.number
+  Sorting may be defined before id. Example: {a:number}room
+  Each id may contains block from properties or predicates."
   (conc (alt propsort idsort)
         id
         props-and-where
@@ -740,7 +737,7 @@
                     props-and-where))))
 
 (def sign
-  ^{:doc "Defines sing of where's expression."}
+  "Defines sing of where's expression."
   (sur-by-ws (alt (lit-conc-seq ">=")
                   (lit-conc-seq "<=")
                   (lit-conc-seq "not=")
@@ -752,7 +749,7 @@
 
 
 (def pred-id 
-  ^{:doc "Defines id into predicates: "}
+  "Defines id into predicates."
   (conc (rep+ alpha) (rep* (conc (lit \.) (rep* alpha)))))
 
 
@@ -825,11 +822,11 @@
 
 
 (def block-where
-  ^{:doc "Defines where clause."}
+  "Defines where clause."
   (conc (add-pred (lit \#)) (invisi-conc where change-preds)))
 
 (def props
-  ^{:doc "Defines sequences of properties of an object."}
+  "Defines sequences of properties of an object."
   (conc (invisi-conc (lit \[) (update-info :then-level inc)) 
         (rep+ (alt (sur-by-ws (conc idsort 
                                     (pfunction
@@ -842,30 +839,30 @@
 
 (declare params, param, param-query, pnumber, pstring, process-fn, parse+, pfunc, pid, pself)
 (def function
-  ^{:doc "Defines YZ's function."}
+  "Defines YZ's function."
   (conc (invisi-conc (lit \@) (update-info :function #(conj % empty-fun)))
         (lit \() (process-fn) params (lit \))))
 
 
 (def params
-  ^{:doc "Defines sequense of parameters of YZ's function."}
+  "Defines sequense of parameters of YZ's function."
   (alt (conc param params) emptiness))
 
 
 (def param
-  ^{:doc "Defines different types of function's parameters."}
+  "Defines different types of function's parameters."
   (sur-by-ws (alt pstring pnumber param-query pfunc pself pid)))
 
 
-(defmacro f-mod
+(defn f-mod
   "Generates code for processing modificator 
   of function's parameter-query."
   [ch fm]
-  `(invisi-conc (lit ~ch) (set-info :f-modificator ~fm)))
+  (invisi-conc (lit ch) (set-info :f-modificator fm)))
 
 
 (def param-query
-  ^{:doc "Defines parameter as query."}
+  "Defines parameter as query."
   (conc (alt (f-mod single-pq :single)
              (f-mod list-pq :list)
              (f-mod indep-pq :indep))
@@ -884,7 +881,7 @@
 
 
 (def pnumber
-  ^{:doc "Defines param as number."}
+  "Defines param as number."
   (complex [n number
             _ (update-param (let [n- (reduce str "" (flatten n))] 
                               (try (Integer/parseInt n-)
@@ -893,13 +890,13 @@
 
 
 (def pstring
-  ^{:doc "Defines param as string."}
+  "Defines param as string."
   (complex [s string
             _ (update-param (nth s 1))]
            s))
 
 (def pfunc
-  ^{:doc "Defines parameter of function as another function"}
+  "Defines parameter of function as another function."
   (complex [f function
             f-m (get-info :function)
             _ (update-info :function #(pop %))
@@ -908,14 +905,14 @@
 
 
 (def pid
-  ^{:doc "Defines parameter as some id."}
+  "Defines parameter as some id."
   (complex [id (rep+ alpha)
             _ (update-param (symbol (reduce str id)))]
            id))
 
 
 (def pself
-  ^{:doc "Defines param as self object or property of one."}
+  "Defines param as self object or property of one."
   (complex [s (conc (lit \&) (alt (conc (lit \.) (rep* alpha)) emptiness))
             _ (update-param (reduce str "" (flatten s)))]
            s))
@@ -933,7 +930,7 @@
 
 
 (def funcq
-  ^{:doc "Defines rule for query as function."}
+  "Defines rule for query as function."
   (pfunction 
     ; Deletes top of the result stack and puts structure which corresponds 
     #(update-info :result (fn [r] (conj (pop r) (peek %))))
@@ -941,7 +938,7 @@
 
 
 (def query
-  ^{:doc "Defines start symbol for parsing query."}
+  "Defines start symbol for parsing query."
   (alt (conc funcq ; Query may be simple function: @(count `room')
              (rep* (conc delimiter query))) ; or function + some query: @(count `room'), room
 
