@@ -36,7 +36,7 @@
                               NotFoundElementException NotFoundFunctionException)))
 
 
-(defn ^String sdrop
+(defn- ^String sdrop
   "Drops first n characters from s.  Returns an empty string if n is
    greater than the length of s."
   [n ^String s]
@@ -120,7 +120,7 @@
   (read-string (str "#=(eval " s ")")))
 
 
-(defn add-value
+(defn- add-value
   "Conjs some value 'v' to :nest array which has nest-level 
   of level."
   [res nest-level v]
@@ -143,7 +143,7 @@
       (recur (:nest (peek res-)) (dec nl)))))
 
 
-(defn get-in-then
+(defn- get-in-then
   "Gets value from res due to nl and tl"
   [res nl tl k]
   (if (= tl 0) 
@@ -151,7 +151,7 @@
     (get-in (get-in-nest res nl :then) (-> tl dec (repeat :then) vec (conj k))))) 
 
 
-(defn get-in-nest-or-then
+(defn- get-in-nest-or-then
   "If last then is nil, then returns result
   of get-in-nest, otherwise returns result get-in-then."
   [res nl tl k]
@@ -186,7 +186,7 @@
           paths)))))
 
 
-(defn change-preds
+(defn- change-preds
   "Changed ':preds' and 'result' of the state."
   [state]
   [nil, (let [res (:result state)
@@ -203,7 +203,7 @@
                                              st))))))])
 
 
-(defn add-pred
+(defn- add-pred
   "Conjs empty-pred value to current vector :preds in q-representation.
   If 'f' is supplied then value is call of 'f' with :preds as parameter."
   ([rule]
@@ -266,7 +266,7 @@
                ((keyword id) (:p-properties (get mom cl-))))))))
 
 
-(defn change-pred
+(defn- change-pred
   "Changes :preds of q-presentation by setting key 'k' to
   the return value of 'rule'. If 'value' is supplied then
   value of the 'k' is set to 'value' (This is need for 
@@ -490,7 +490,7 @@
   (update-info :preds #(conj % op)))
 
 
-(defn update-param
+(defn- update-param
   "Updates :params key of :function key of the q-representation structure."
   [value]
   (update-info :function #(let [f (peek %)] 
@@ -500,7 +500,7 @@
                                          (conj (:params f) value))))))
 
 
-(defn text
+(defn- text
   "Rule for recognizing any string.
   ch defines last symbol of this string."
   [ch state]
@@ -515,7 +515,7 @@
   100)
 
 (declare single-pq, list-pq, indep-pq, end-pq)
-(defn textq
+(defn- textq
   "Recognizes text of query which is parameter of a function.
   textq restricts count of nested queries, because in case where
   user input an incorrect query (with starting modificator and without
@@ -664,7 +664,7 @@
          (ch-sort emptiness nil))))
 
 
-(defn set-id
+(defn- set-id
   [id, f, state]
   [(:remainder state) 
    (assoc state :result 
@@ -676,7 +676,7 @@
              (:cur-sort state)))])
 
 
-(defn process-id
+(defn- process-id
   "Processes some id due to functions 'f'"
   [f]
   (complex [id (alt (lit-conc-seq "&.") (rep+ alpha))
@@ -837,11 +837,22 @@
         (invisi-conc (lit \]) (update-info :then-level dec))))
 
 
-(declare params, param, param-query, pnumber, pstring, process-fn, parse+, pfunc, pid, pself)
+(def process-fn
+  "Processes function name."
+  (complex [n (rep+ (alt alpha (lit \.)))
+            _ (update-info :function 
+                           #(if-let [f (let [sym (symbol (reduce str "" n))]
+                                         (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
+                              (conj (pop %) (assoc (peek %) :func f))
+                              (throw (NotFoundFunctionException. (str "Could not found function " (reduce str "" n) ".")))))]
+           n))
+
+
+(declare params, param, param-query, pnumber, pstring, parse+, pfunc, pid, pself)
 (def function
   "Defines YZ's function."
   (conc (invisi-conc (lit \@) (update-info :function #(conj % empty-fun)))
-        (lit \() (process-fn) params (lit \))))
+        (lit \() process-fn params (lit \))))
 
 
 (def params
@@ -854,7 +865,7 @@
   (sur-by-ws (alt pstring pnumber param-query pfunc pself pid)))
 
 
-(defn f-mod
+(defn- f-mod
   "Generates code for processing modificator 
   of function's parameter-query."
   [ch fm]
@@ -917,16 +928,6 @@
             _ (update-param (reduce str "" (flatten s)))]
            s))
 
-(defn process-fn
-  "Processes function name."
-  []
-  (complex [n (rep+ (alt alpha (lit \.)))
-            _ (update-info :function 
-                           #(if-let [f (let [sym (symbol (reduce str "" n))]
-                                         (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
-                              (conj (pop %) (assoc (peek %) :func f))
-                              (throw (NotFoundFunctionException. (str "Could not found function " (reduce str "" n) ".")))))]
-           n))
 
 
 (def funcq
@@ -957,9 +958,9 @@
 
 
 (defn parse
-  "Parses specified query ('q') on the YZ language based on
-  specified ('mom') the map of the object model.
-  Returns a value of the :result key of the q-representation structure."
+  "Parses specified query ('q') in YZ language. 
+  Parsing is based on specified ('mom') map of an object model.
+  Returns an inner representation of the query."
   [q, mom]
   (let [r (parse+ q, mom)]
     (if (nil? (:remainder r))
