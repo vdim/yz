@@ -130,9 +130,9 @@
   (if (<= nest-level 0)
     (conj (pop res) (apply nnassoc (peek res) l-tag v kvs))
     (conj (pop res)
-           (nnassoc (peek res) 
-                  :nest 
-                  (apply assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v kvs)))))
+          (nnassoc (peek res) 
+                   :nest 
+                   (apply assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v kvs)))))
 
 
 (defn- create-f
@@ -150,9 +150,9 @@
   (if (<= nest-level 0)
     (conj res v)
     (conj (pop res)
-           (assoc (peek res) 
-                  :nest 
-                  (add-value (:nest (peek res)) (dec nest-level) v)))))
+          (assoc (peek res) 
+                 :nest 
+                 (add-value (:nest (peek res)) (dec nest-level) v)))))
 
 
 (defn get-in-nest
@@ -723,7 +723,7 @@
     room (floor, building), device"
   (complex [ret (sur-by-ws (lit \,)) 
             nl (get-info :nest-level)
-            _ (update-info :result #(add-value % nl (empty-res 0)))
+            _ (update-info :result #(add-value % nl {})) ; Add new map to current nest level.
             _ (set-info :then-level 0)]
            ret))
 
