@@ -338,39 +338,32 @@
 (defn- process-then
   "Processes :then value of query structure.
   Returns sequence of objects."
-  [then, objs, props, cl, tsort]
-  (loop [then- then, objs- objs, props- props, tsort tsort]
+  [objs, then, props, tsort]
+  (loop [objs- objs, then- then, props- props, tsort tsort]
     (if (or (nil? then-) (every? nil? objs-))
       (let [pp (map (fn [o] [o, (process-props o props-)]) objs-)]
         (if (and (not-empty pp) (= ((first pp) 0) ((first pp) 1)))
           pp
           (sort-rq pp tsort true)))
-      (recur (:then then-) 
-             (get-objs-by-path objs- then-)
+      (recur (get-objs-by-path objs- then-)
+             (:then then-) 
              (:props then-)
              (:sort then-)))))
 
 
 (declare process-nests)
-
 (defn- p-nest
-  "Generates code for process :nest value with some objects."
+  "Processes :nest value with some objects."
   [^PersistentArrayMap nest, objs]
   (reduce #(conj %1 (%2 1) (process-nests (:nest nest) (%2 0)))
           []
-          (process-then (:then nest) objs (:props nest) (:what nest) (:sort nest))))
-
-
-(defn- process-nest
-  "Processes one element from vector from :nest value of query structure."
-  [^PersistentArrayMap nest, objs]
-  (p-nest nest (get-objs-by-path objs nest)))
+          (process-then objs (:then nest) (:props nest) (:sort nest))))
 
 
 (defn- process-nests
   "Processes :nest value of query structure"
   [nests obj]
-  (vec (map #(process-nest % [obj]) nests)))
+  (vec (map #(p-nest % (get-objs-by-path [obj] %)) nests)))
 
 
 (defn- do-query
