@@ -218,10 +218,11 @@
                                  rq (if (or (= fmod :indep) (nil? obj))
                                         (run-query q)
                                         (process-nests q obj))]
-                             (cond (= fmod :single) {:mode :single 
-                                                     :res (map (fn [p] (get-rows [p])) 
-                                                               (mapcat (fn [r] (map vec (partition 2 r))) rq))}
-                                   :else (get-rows rq)))
+                             (if (= fmod :single) 
+                               {:mode :single 
+                                :res (map (fn [p] (get-rows [p])) 
+                                          (mapcat (fn [r] (map vec (partition 2 r))) rq))}
+                               (get-rows rq)))
 
                            ; param is another function.
                            (map? %) (process-func % obj)
@@ -233,12 +234,12 @@
                            (= "&." %) (get-fv obj (:dp (get *mom* (class obj))))
 
                            ; param is value of some property of the object.
-                           (and (instance? String %) (.startsWith % "&."))  (get-fv obj (.substring % 2))
+                           (and (string? %) (.startsWith % "&.")) (get-fv obj (.substring % 2))
 
                            ; param is string, number or some keyword (true, false, nil).
                            :else %) 
                     (:params f-map))
-        lparams (reduce #(if (and (map? %2) (= (:mode %2) :single)) 
+        lparams (reduce #(if (= (:mode %2) :single)
                            (vec (mapcat (fn [lp] (map (fn [o] (conj lp o)) (:res %2))) %1))
                            (vec (map (fn [lp] (conj lp %2)) %1))) [[]] params)]
     (map #(apply (:func f-map) %) lparams)))
