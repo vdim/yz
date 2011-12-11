@@ -272,7 +272,7 @@
         objs (cond (vector? ids) 
                    (reduce #(let [objs- (reduce 
                                           (fn [objs-, field-name] 
-                                            (get-objs  field-name objs-)) 
+                                            (get-objs field-name objs-)) 
                                           %1
                                           (:id %2))]
                               (if (nil? (:cl %2))
@@ -301,12 +301,11 @@
   "Returns sequence of objects which has cl-target's class and are
   belonged to 'sources' objects."
   [sources preds paths ^Class what tsort]
-  (mapcat #(loop [ps % res sources]
-             (if (empty? ps)
-               (let [res (filter (fn [o] (instance? what o)) res)]
-                 (sort-rq (filter-by-preds res preds) tsort false))
-               (recur (rest ps) (get-objs (first ps) res))))
-           paths))
+  (let [path (first paths)] ; At this moment we use first path.
+    (sort-rq (filter-by-preds 
+               (filter #(instance? what %) 
+                       (reduce #(get-objs %2 %1) sources path)) preds)
+             tsort false)))
 
 
 (defn- process-prop
