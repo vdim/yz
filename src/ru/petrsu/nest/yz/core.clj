@@ -170,11 +170,12 @@
 
 
 (defn- select-elems
-  "Returns from storage objects which have 'cl' class."
-  [^Class cl, ^PersistentVector preds, tsort]
-  (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
-    (.getElems *em* cl preds))
-    (sort-rq (filter-by-preds (.getElems *em* cl) preds) tsort false))
+  "Returns from storage objects which have ':what' class from nest."
+  [nest]
+  (let [{:keys [^Class what ^PersistentVector preds what sort]} nest]
+    (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
+      (.getElems *em* what preds))
+      (sort-rq (filter-by-preds (.getElems *em* what) preds) sort false)))
 
 
 (defn- get-fv
@@ -301,7 +302,7 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
-  (let [{:keys [preds where what sort]} m
+  (let [{:keys [preds where ^Class what sort]} m
         path (first where)] ; At this moment we use first path.
     (sort-rq (filter-by-preds 
                (filter #(instance? what %) 
@@ -366,19 +367,12 @@
   (vec (map #(p-nest % (get-objs-by-path [obj] %)) nests)))
 
 
-(defn- do-query
-  "Gets structure of query getting from parser and returns
-  structure of user's result."
-  [q]
-  (p-nest q (select-elems (:what q) (:preds q) (:sort q))))
-
-
 (defn- run-query
   "Returns result of 'query' based on specified map of object model ('mom')
   and instance of some ElementManager ('em')."
   [parse-res]
-  (vec (map #(if (nil? (get % :func))
-               (do-query %)
+  (vec (map #(if (nil? (get % :func)) 
+               (p-nest % (select-elems %))
                (reduce (fn [r rf] (vec (concat r [rf []]))) [] (process-func % nil)))
             parse-res)))
 
