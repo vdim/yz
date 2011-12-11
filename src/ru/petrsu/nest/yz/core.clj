@@ -77,11 +77,11 @@
   [o, ^PersistentVector preds]
   (first 
     (reduce #(if (map? %2) 
-               (conj %1 (process-preds o (:ids %2) (:func %2) (:value %2))) 
-                (let [op (if (= %2 :and) 
-                           (and (peek %1) (peek (pop %1)))
-                           (or (peek %1) (peek (pop %1))))]
-                  (conj (pop (pop %1)) op))) [] preds)))
+               (conj %1 (process-preds o %2))
+               (let [op (if (= %2 :and) 
+                          (and (peek %1) (peek (pop %1)))
+                          (or (peek %1) (peek (pop %1))))]
+                 (conj (pop (pop %1)) op))) [] preds)))
 
 
 (defn filter-by-preds
@@ -266,8 +266,9 @@
 
 (defn- process-preds
   "Processes restrictions."
-  [o, l-side, f, value] 
-  (let [objs (cond (vector? l-side) 
+  [o, pred] 
+  (let [{:keys [ids func value]} pred
+        objs (cond (vector? ids) 
                    (reduce #(let [objs- (reduce 
                                           (fn [objs-, field-name] 
                                             (get-objs  field-name objs-)) 
@@ -277,23 +278,22 @@
                                 objs-
                                 (filter (fn [obj] (instance? (:cl %2) obj)) objs-)))
                            [o]
-                           l-side)
-                   (map? l-side) (process-func l-side o))
+                           ids)
+                   (map? ids) (process-func ids o))
 
         ;; If objects from objs are arrays then we must compare two arrays.
-        f (let [cl (if (empty? objs) nil (class (nth objs 0)))]
-           (if (and cl (.isArray cl)) eq-arrays? f))
+        func (let [cl (if (empty? objs) nil (class (nth objs 0)))]
+               (if (and cl (.isArray cl)) eq-arrays? func))
         ;; Check function for a regular expression
-        f (if (= f #'clojure.core/re-find) 
-            (fn [o value] 
-              (if (or (nil? value) (nil? o)) ; Prevent NullPointerException.
-                nil
-                (re-find (re-pattern value) o)))
-            f)
-        ]
+        func (if (= func #'clojure.core/re-find) 
+               (fn [o value] 
+                 (if (or (nil? value) (nil? o)) ; Prevent NullPointerException.
+                   nil
+                   (re-find (re-pattern value) o)))
+               func)]
     (if (map? value)
-      (some #(f (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
-      (some #(f % value) objs))))
+      (some #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
+      (some #(func % value) objs))))
 
 
 (defn- get-objs-by-path
