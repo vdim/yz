@@ -864,6 +864,22 @@
                   [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
                    {:ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
+           (is (f "building#(.=1)" 
+                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(.=1 && .=2)" 
+                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(.=(1 && 2))" 
+                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(.=1 && .=2 && .=3)" 
+                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and
+                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   :and]))
            (let [mom- (assoc mom- Floor (assoc (get mom- Floor) :dp nil))]
              (is (= (parse "building#(floor.=1)" mom-)
                      [{:what Building
@@ -1119,6 +1135,36 @@
    "building#(floor.=(1 && 2)), room#(device.=3)"
    "building#(floor.=(1 && 2)), room#(device.=(3 || 4))"
 
+   "floor#(.=1)"
+   "floor#(.=1 && .=2)"
+   "floor#(.=(1 && 2))"
+   "floor#(.=1 || .=2)"
+   "floor#(.=(1 || 2))"
+   "floor#(.=1 || .=2 || .=3)"
+   "floor#(name=\"sname\" && .=1)"
+   "floor#(name=\"sname\" && .=(1 && 2))"
+   "floor#(name=\"sname\" || .=1)"
+   "floor#(name=\"sname\" || .=(1 && 2))"
+   "floor#(.=1 && name=\"sname\")"
+   "floor#(.=(1 && 2) && name=\"sname\")"
+   "floor#((.=1 || .=2) && name=\"sname\")"
+   "floor#(.=1 || .=2 && name=\"sname\")"
+   "floor#(.=1 || name=\"sname\" || .=2)"
+   "floor#((.=(1 && 2) || .=3) && name=\"sname\")"
+   "room, floor#(.=1)"
+   "room, floor#(.=1 && .=2)"
+   "room, floor#(.=(1 && 2))"
+   "room, floor#(.=1 || .=2)"
+   "room, floor#(.=(1 || 2))"
+   "room, floor#(.=1 || .=2 || .=3)"
+   "room (floor#(.=1))"
+   "room (floor#(.=1 && .=2))"
+   "room (floor#(.=(1 && 2)))"
+   "room (floor#(.=1 || .=2))"
+   "room (floor#(.=(1 || 2)))"
+   "room (floor#(.=1 || .=2 || .=3))"
+
+   
 ;; Sorting
    "↑room"
    "↓room"

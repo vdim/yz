@@ -304,6 +304,11 @@
              preds (get-info :preds)
              cpp (get-info :pp)
              res- (effects (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret))
+
+             ;; If query is floor(.=1) then res- will be "." (character), 
+             ;; so we must coerce it to string (for passing to get-ids function).
+             res- (effects (if (instance? Character res-) (str res-) res-))
+             
              [ids pp] (effects (if (= k :ids) 
                                  (get-ids (:ids (peek preds)) res- (get-in-then res  nl tl :what))
                                  [nil nil]))
@@ -586,11 +591,11 @@
 
 (def digit
   "Sequence of digits."
-  (lit-alt-seq "1234567890."))
+  (lit-alt-seq "1234567890"))
 
 (def number
   "Defines number."
-  (conc (opt (alt (lit \+) (lit \-))) (rep+ digit)))
+  (conc (opt (alt (lit \+) (lit \-))) (rep+ digit) (opt (conc (lit \.) (rep+ digit)))))
 
 (def whitespaces
   "List of whitespaces"
@@ -779,7 +784,7 @@
 
 (def pred-id 
   "Defines id into predicates."
-  (conc (rep+ alpha) (rep* (conc (lit \.) (rep* alpha)))))
+  (alt (lit \.) (conc (rep+ alpha) (rep* (conc (lit \.) (rep* alpha))))))
 
 
 (defn- pfunc-as-param

@@ -424,4 +424,8 @@
              (is (= (count rows) 1))
              (is (= ((nth rows 0) 0) b1)))
            (let [rows (tc/rows-query "building#(floor.=(3 && 4))")]
-             (is (= (count rows) 1)))))
+             (is (= (count rows) 1)))
+           (let [rows (tc/rows-query "floor#(.=3)")]
+             (is (= (count rows) 1))
+             (is (= ((nth rows 0) 0) f3_b1)))
+           ))
