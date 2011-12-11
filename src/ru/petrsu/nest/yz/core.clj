@@ -298,14 +298,15 @@
 
 
 (defn- get-objs-by-path
-  "Returns sequence of objects which has cl-target's class and are
-  belonged to 'sources' objects."
-  [sources preds paths ^Class what tsort]
-  (let [path (first paths)] ; At this moment we use first path.
+  "Returns sequence of objects which has cl-target's 
+  (value of the :what key from m) class and are belonged to 'sources' objects."
+  [sources m]
+  (let [{:keys [preds where what sort]} m
+        path (first where)] ; At this moment we use first path.
     (sort-rq (filter-by-preds 
                (filter #(instance? what %) 
                        (reduce #(get-objs %2 %1) sources path)) preds)
-             tsort false)))
+             sort false)))
 
 
 (defn- process-prop
@@ -341,12 +342,11 @@
   (loop [then- then, objs- objs, props- props, tsort tsort]
     (if (or (nil? then-) (every? nil? objs-))
       (let [pp (map (fn [o] [o, (process-props o props-)]) objs-)]
-        (if (and (not (empty? pp)) (= ((first pp) 0) ((first pp) 1)))
+        (if (and (not-empty pp) (= ((first pp) 0) ((first pp) 1)))
           pp
           (sort-rq pp tsort true)))
       (recur (:then then-) 
-             (get-objs-by-path objs- (:preds then-)
-                               (:where then-) (:what then-) (:sort then-))
+             (get-objs-by-path objs- then-)
              (:props then-)
              (:sort then-)))))
 
@@ -364,10 +364,7 @@
 (defn- process-nest
   "Processes one element from vector from :nest value of query structure."
   [^PersistentArrayMap nest, objs]
-  (p-nest nest (get-objs-by-path 
-                 objs 
-                 (:preds nest) (:where nest)
-                 (:what nest) (:sort nest))))
+  (p-nest nest (get-objs-by-path objs nest)))
 
 
 (defn- process-nests
