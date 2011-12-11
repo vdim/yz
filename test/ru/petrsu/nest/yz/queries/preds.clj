@@ -428,4 +428,8 @@
            (let [rows (tc/rows-query "floor#(.=3)")]
              (is (= (count rows) 1))
              (is (= ((nth rows 0) 0) f3_b1)))
+           (let [rows (tc/rows-query "floor#(.=3 && .=2)")]
+             (is (= (count rows) 0)))
+           (let [rows (tc/rows-query "floor#(.=(3 && 2))")]
+             (is (= (count rows) 0)))
            ))
