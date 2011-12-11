@@ -181,22 +181,22 @@
   "Returns value of field. First we try to finding property
   due to getPropertyValue function of a ElementManager, 
   if is failed then we try to using reflection (e.g. getDeclaredField)."
-  [o, ^Keyword field-name]
+  [o, field-name]
   (if (nil? o)
     nil
-    (let [v (.getPropertyValue *em* o (name field-name))]
+    (let [field-name (if (keyword? field-name) (name field-name) field-name)
+          v (.getPropertyValue *em* o field-name)]
       (cond 
         ; If value is nil then function returns nil.
         (nil? v) nil
 
         ; If value not found into bean map then we try find this value due to java reflection.
         (= v :not-found)
-        (let [field-name (name field-name)]
-          (loop [^Class cl (class o)]
-            (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
-                  (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-                  (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-                  :else (recur (:superclass (bean cl))))))
+        (loop [^Class cl (class o)]
+          (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
+                (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
+                (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
+                :else (recur (:superclass (bean cl)))))
 
         ; If value is an array then we check whether a type of the array from the MOM, If true then
         ; we returns a collection from this array.
@@ -230,10 +230,10 @@
                            (= "&" %) obj 
 
                            ; param is value of the default property.
-                           (= "&." %) (get-fv obj (keyword (:dp (get *mom* (class obj)))))
+                           (= "&." %) (get-fv obj (:dp (get *mom* (class obj))))
 
                            ; param is value of some property of the object.
-                           (and (instance? String %) (.startsWith % "&."))  (get-fv obj (keyword (.substring % 2)))
+                           (and (instance? String %) (.startsWith % "&."))  (get-fv obj (.substring % 2))
 
                            ; param is string, number or some keyword (true, false, nil).
                            :else %) 
@@ -249,7 +249,7 @@
   by specified 'field-name'."
   [^String field-name, objs]
   (flatten
-    (map #(if-let [fv (get-fv % (keyword field-name))]
+    (map #(if-let [fv (get-fv % field-name)]
            (if (instance? java.util.Collection fv)
              (map identity fv)
              fv))
