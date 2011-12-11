@@ -97,7 +97,7 @@
           preds 
           (reduce #(conj %1 
                          (let [params (:params (:value %2))]
-                           (if (and (not (nil? params)) (not (some vector? params)))
+                           (if (and params (not (some vector? params)))
                              (assoc %2 :value (nth (process-func (:value %2) nil) 0))
                              %2))) [] preds)] 
       (filter #(pp-func % preds) objs))))
@@ -282,7 +282,7 @@
 
         ;; If objects from objs are arrays then we must compare two arrays.
         f (let [cl (if (empty? objs) nil (class (nth objs 0)))]
-           (if (and (not (nil? cl)) (.isArray cl)) eq-arrays? f))
+           (if (and cl (.isArray cl)) eq-arrays? f))
         ;; Check function for a regular expression
         f (if (= f #'clojure.core/re-find) 
             (fn [o value] 
@@ -407,12 +407,12 @@
                            v))
                          props))]
     (cond  
-      (not (nil? then)) (loop [then- then]
-                          (if (nil? (:then then-))
-                            (if (nil? (:props then-))
-                              (.getSimpleName (:what then-))
-                              (pprops (:props then-) (:what then-)))
-                            (recur (:then then-))))
+      then (loop [then- then]
+             (if (nil? (:then then-))
+               (if (nil? (:props then-))
+                 (.getSimpleName (:what then-))
+                 (pprops (:props then-) (:what then-)))
+               (recur (:then then-))))
       (not (empty? props)) (pprops props what)
       :else (.getSimpleName what))))
 
