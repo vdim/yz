@@ -200,7 +200,7 @@
 
         ; If value is an array then we check whether a type of the array from the MOM, If true then
         ; we returns a collection from this array.
-        (and (.isArray (class v)) (get *mom* (.getComponentType (class v)))) (map identity v)
+        (and (.isArray (class v)) (get *mom* (.getComponentType (class v)))) (seq v)
 
         ; Returns value.
         :else v))))
@@ -251,7 +251,7 @@
   (flatten
     (map #(if-let [fv (get-fv % field-name)]
            (if (instance? java.util.Collection fv)
-             (map identity fv)
+             (seq fv)
              fv))
            objs)))
 
