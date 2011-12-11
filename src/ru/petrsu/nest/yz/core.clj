@@ -461,7 +461,7 @@
 (defn pquery
   "Returns map where
     :error - defines message of an error 
-            (:error is nil if nothing errors is occured)
+            (:error is nil if any error is not occured)
     :result - a result of a query
     :columns - vector with column's names.
     :rows - rows of the result of a query."
@@ -474,13 +474,13 @@
                         (p/parse query *mom*)
                         (catch Throwable e (.getMessage e)))
             parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)
-            run-query-res (if (string? parse-res)
-                            parse-res
-                            (try
-                              (let [rq (run-query parse-res)]
-                                [rq (distinct (get-rows rq))])
-                              (catch Throwable e (.getMessage e))))]
-        (if (string? run-query-res)
-          (Result. [] run-query-res [] ())
-          (Result. (run-query-res 0) nil (get-columns-lite (run-query-res 1)) (run-query-res 1)))))))
+            query-res (if (string? parse-res)
+                        parse-res
+                        (try
+                          (run-query parse-res)
+                          (catch Throwable e (.getMessage e))))]
+        (if (string? query-res)
+          (Result. [] query-res [] ())
+          (let [rows (distinct (get-rows query-res))]
+            (Result. query-res nil (get-columns-lite rows) rows)))))))
 
