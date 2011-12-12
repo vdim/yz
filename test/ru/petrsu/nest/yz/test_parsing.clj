@@ -24,7 +24,7 @@
         ru.petrsu.nest.yz.hb-utils 
         clojure.test)
   (:import (ru.petrsu.nest.son Building Room Floor)
-           (ru.petrsu.nest.yz SyntaxException)))
+           (ru.petrsu.nest.yz SyntaxException NotDefinedDP)))
 
 (def mom- 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
@@ -881,9 +881,10 @@
                    {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
            (let [mom- (assoc mom- Floor (assoc (get mom- Floor) :dp nil))]
-             (is (= (parse "building#(floor.=1)" mom-)
-                     [{:what Building
-                       :preds [{:ids [{:id ["floors"] :cl Floor}], :func #'clojure.core/=, :value 1}]}])))
+             (is (thrown? RuntimeException (parse "building#(floor.=1)" mom-))))
+             ;(is (= (parse "building#(floor.=1)" mom-)
+             ;        [{:what Building
+             ;          :preds [{:ids [{:id ["floors"] :cl Floor}], :func #'clojure.core/=, :value 1}]}])))
            (let [mom- (assoc mom- Floor 
                              (assoc (get mom- Floor) 
                                     :p-properties {:number {:s-to-r #'inc}}))]
@@ -1126,8 +1127,8 @@
    "room, building#(floor.=1)"
    "floor, room, building#(floor.=1)"
    "device, floor, room, building#(floor.=1)"
-   "device#(ni.=1), floor, room, building#(floor.=1)"
-   "device#(ni.=1), floor#(room.=2), room, building#(floor.=1)"
+   "device#(floor.=1), floor, room, building#(floor.=1)"
+   "device#(floor.=1), floor#(room.=2), room, building#(floor.=1)"
    "building#(floor.=(1 && 2)).room#(device.=3)"
    "building#(floor.=(1 && 2)).room#(device.=(3 || 4))"
    "building#(floor.=(1 && 2)) (room#(device.=3))"
