@@ -246,12 +246,18 @@
     (map #(apply (:func f-map) %) lparams)))
 
 
+(defn- cpmap
+  "Chunked parallel map."
+  [f coll]
+  (apply concat (pmap #(doall (map f %)) (partition-all 32 coll))))
+
+
 (defn- get-objs
   "Returns sequence of objects which belong to 'objs' 
   by specified 'field-name'."
   [^String field-name, objs]
   (flatten
-    (map #(if-let [fv (get-fv % field-name)]
+    (cpmap #(if-let [fv (get-fv % field-name)]
            (if (instance? java.util.Collection fv)
              (seq fv)
              fv))
