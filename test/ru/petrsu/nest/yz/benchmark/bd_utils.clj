@@ -48,6 +48,23 @@
 (def ^{:dynamic true} *dialect* (identity "org.hibernate.dialect.DerbyDialect"))
 (def ^{:dynamic true} *driver* (identity "org.apache.derby.jdbc.EmbeddedDriver"))
 
+(def names
+  "List of names for elements from the SON model."
+  ["MB" "TK" "UK1" "UK2" "UK9" "GT" "RT" "VI" "MN" "CRT"])
+
+(def descs
+  "List of descriptions for elements from the SON model."
+  ["Description." 
+   "Simple description." 
+   "Long.... description." 
+   "Integer" 
+   "Double" 
+   "String" 
+   "Lang" 
+   "Clojure" 
+   "YZ" 
+   "Scals"])
+
 (def classes
   ^{:doc "Defines all classes of SON model."}
   (vec (flatten (map (fn [[k v]] (repeat v k)) 
@@ -173,11 +190,15 @@
                         :vlan (VLANInterface.)
                         :son (SON.)})
         r (Random.)
-        clc (count classes)]
+        clc (count classes)
+        cn (count names)
+        cd (count descs)]
     (loop [sm- sm, n- n]
       (if (<= n- 0)
         (:son sm)
-        (recur (change-model sm- (.newInstance (classes (.nextInt r clc)))) 
+        (recur (change-model sm- (doto (.newInstance (classes (.nextInt r clc))) 
+                                   (.setName (names (.nextInt r cn)))
+                                   (.setDescription (descs (.nextInt r cd)))))
                (dec n-))))))
 
 
