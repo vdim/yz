@@ -403,8 +403,8 @@
         id (cond (= id \&) :#self-object#
                  (= id "&.") :#default-property#
                  (map? id) id
-                 :else (keyword (str id)))
-        what (get-in-nest res nl :what)]
+                 :else (keyword (str id))) 
+        what (get-in-nest-or-then res nl tl- :what)]
     (if (nil? what)
       (throw (NotFoundElementException. (str "Not found element: " (name id))))
       (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
