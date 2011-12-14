@@ -216,7 +216,7 @@
         elements into BD (which is will be generated due to gen-bd function).
     f - file for result of the benchmark (and, of course, it must contains queries.)
     bench-fn - function which takes some string and returns result of benchmark."
-  [n bd mom f]
+  [n bd mom f bench-fn]
   (let [sdate (Date.) ; Date of starting the benchmark.
         bd ; Database
         (cond (number? bd) (qc/create-emm (bu/gen-bd bd))
@@ -225,7 +225,7 @@
         cbd (ffirst (:rows (pquery "@(count `sonelement')" mom bd)))
         nb (inc (get-num-bench f)) ; Current number of the benchmark.
         new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
-                                       (str %2 \newline (bench-fn %2))
+                                       (str %2 \newline (bench-fn %2 nb))
                                        (.startsWith %2 "#count=") (str "#count=" nb \newline)
                                        :else (str %2 \newline)))
                         "" 
@@ -260,8 +260,8 @@
    (bench-to-file n bd mom "etc/yz-bench-new.txt"))
   ([n bd mom f]
   (write-to-file n bd mom f 
-                 #(let [q (.substring % 1)]
-                    (get-fs nb 
+                 #(let [q (.substring %1 1)]
+                    (get-fs %2
                             (bench-parsing n q mom) 
                             (bench-quering n q mom bd))))))
 
@@ -316,6 +316,6 @@
    (bench-list-to-file mom bd n bench-list-file))
   ([mom bd n f]
   (write-to-file n bd mom f
-                 #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring % 1)))) (all-ns)))
+                 #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
                        rb (bench-for-list mom bd n ql)] 
-                   (get-fs nb (rb 0) (rb 1)))))
+                   (get-fs %2 (rb 0) (rb 1))))))
