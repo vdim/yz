@@ -27,6 +27,7 @@
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [ru.petrsu.nest.yz.benchmark.hql :as hql]
             [ru.petrsu.nest.yz.queries.core :as qc]
+            [ru.petrsu.nest.yz.test-parsing :as tp]
             [ru.petrsu.nest.yz.queries.nest-queries :as nq]
             [ru.petrsu.nest.son.local-sm :as lsm]
             [clojure.java.io :as cio]
@@ -205,6 +206,43 @@
         (line-seq (cio/reader f))))
 
 
+(defn- write-to-file
+  "Writes result of benchmark to yz-bench-new.txt 
+  file (by default) with results of benchmark. 
+  Parameters:
+    n - count of executing each query.
+    mom - MOM of an object model.
+    bd - SON element or ElementManager or count of 
+        elements into BD (which is will be generated due to gen-bd function).
+    f - file for result of the benchmark (and, of course, it must contains queries.)
+    bench-fn - function which takes some string and returns result of benchmark."
+  [n bd mom f]
+  (let [sdate (Date.) ; Date of starting the benchmark.
+        bd ; Database
+        (cond (number? bd) (qc/create-emm (bu/gen-bd bd))
+              (instance? ElementManager bd) bd
+              :else (qc/create-emm bd))
+        cbd (ffirst (:rows (pquery "@(count `sonelement')" mom bd)))
+        nb (inc (get-num-bench f)) ; Current number of the benchmark.
+        new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
+                                       (str %2 \newline (bench-fn %2))
+                                       (.startsWith %2 "#count=") (str "#count=" nb \newline)
+                                       :else (str %2 \newline)))
+                        "" 
+                        (line-seq (cio/reader f)))
+        edate (Date.) ; Date of ending the benchmark.
+
+        ; Write info about benchmark in the end of file.
+        new-res 
+        (str new-res "# " nb ". " n 
+             " " cbd " \"" sdate "\" \"" edate "\" " (class bd) " "
+             ; Find a sha1 of the last commit and info about current machine.
+             (try (:out (sh/sh "./info.sh"))
+               (catch Exception e ""))
+             \newline)]
+    (cio/copy new-res (cio/file f))))
+
+
 (defn bench-to-file
   "Writes result of benchmark to yz-bench-new.txt 
   file (by default) with results of benchmark. 
@@ -221,48 +259,63 @@
   ([n bd mom]
    (bench-to-file n bd mom "etc/yz-bench-new.txt"))
   ([n bd mom f]
-  (let [sdate (Date.) ; Date of starting the benchmark.
-        bd ; Database
-        (cond (number? bd) (qc/create-emm (bu/gen-bd bd))
-              (instance? ElementManager bd) bd
-              :else (qc/create-emm bd))
-        cbd (ffirst (:rows (pquery "@(count `sonelement')" mom bd)))
-        nb (inc (get-num-bench f)) ; Current number of the benchmark.
-        new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
-                                       (str %2 \newline
-                                            (let [q (.substring %2 1)]
-                                              (get-fs nb 
-                                                      (bench-parsing n q mom) 
-                                                      (bench-quering n q mom bd))))
-                                       (.startsWith %2 "#count=") (str "#count=" nb \newline)
-                                       :else (str %2 \newline)))
-                        "" 
-                        (line-seq (cio/reader f)))
-        edate (Date.) ; Date of ending the benchmark.
+  (write-to-file n bd mom f 
+                 #(let [q (.substring % 1)]
+                    (get-fs nb 
+                            (bench-parsing n q mom) 
+                            (bench-quering n q mom bd))))))
 
-        ; Write info about benchmark in the end of file.
-        new-res 
-        (str new-res "# " nb ". " n 
-             " " cbd " \"" sdate "\" \"" edate "\" " (class bd) " "
-             ; Find a sha1 of the last commit and info about current machine.
-             (try (:out (sh/sh "./info.sh"))
-               (catch Exception e ""))
-             \newline)]
-    (cio/copy new-res (cio/file f)))))
+
+(defn- bench-for-list
+  "Takes info about benchmark and list with queries and
+  returns vector with two elements where first is time of the
+  parsing and second is time the querying."
+  [mom bd n qlist]
+   (let [bp #(bench-parsing n % mom) 
+         bq #(bench-quering n % mom bd)
+         f (fn [bf queries] (reduce  #(+ %1 (bf %2)) 0 queries))]
+     [(f bp qlist) (f bq qlist)]))
 
 
 (defn bench-for-nest-queries
-  "Benchmark for queries from Nest project."
+  "Benchmark for queries from Nest project + qlist from test-parsing.clj. Parameters: 
+      - mom - a map of an object model (mandatory).
+      - bd - instance of the SON or instance of ElementManager's implementation 
+            (local son manager by default).
+      - n - times of execution each list with queries (1 by default)."
   ([mom] 
-   (bench-for-nest-queries mom (lsm/create-lsm)))
+   (bench-for-nest-queries mom (lsm/create-lsm) 1))
   ([mom bd]
-   (let [bp #(bench-parsing 1 % mom) 
-         bq #(bench-quering 1 % mom bd)
-         f (fn [bf queries] (reduce  #(+ %1 (bf %2)) 0 queries))
-         ptime-ai (f bp nq/address-info-queries)
-         qtime-ai (f bq nq/address-info-queries)
-         ptime-e (f bp nq/enlivener-queries)
-         qtime-e (f bq nq/enlivener-queries)]
-     (str "ParsingAI: " ptime-ai \newline "QueringAI: " qtime-ai \newline
-          "ParsingE: " ptime-e \newline "QueringE: " qtime-e))))
+   (bench-for-nest-queries mom bd 1))
+  ([mom bd n]
+   (let [[p-ai q-ai] (bench-for-list mom bd n nq/address-info-queries)
+         [p-e q-e] (bench-for-list mom bd n nq/enlivener-queries)
+         [p-tp q-tp] (bench-for-list mom bd n  tp/qlist)]
+     (str "ParsingAI: " p-ai \newline "QueringAI: " q-ai \newline 
+          "ParsingE: " p-e \newline "QueringE: " q-e \newline 
+          "ParsingTP: " p-tp \newline "QueringTP: " q-tp))))
 
+
+(def bench-list-file
+  "Name of default file for result of benchmark list with queries."
+  "etc/yz-bench-list.txt")
+
+
+(defn bench-list-to-file
+  "Benchmark for queries from Nest project + qlist from test-parsing.clj. Parameters: 
+      - mom - a map of an object model (mandatory).
+      - bd - instance of the SON or instance of ElementManager's implementation 
+            (local son manager by default).
+      - n - times of execution each list with queries (1 by default).
+      - f - name of file for result (etc/yz-bench-list.txt)."
+  ([mom] 
+   (bench-list-to-file mom (lsm/create-lsm) 1 bench-list-file))
+  ([mom bd]
+   (bench-list-to-file mom bd 1 bench-list-file))
+  ([mom bd n]
+   (bench-list-to-file mom bd n bench-list-file))
+  ([mom bd n f]
+  (write-to-file n bd mom f
+                 #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring % 1)))) (all-ns)))
+                       rb (bench-for-list mom bd n ql)] 
+                   (get-fs nb (rb 0) (rb 1)))))
