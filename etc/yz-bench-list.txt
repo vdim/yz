@@ -1,0 +1,27 @@
+# Copyright 2011 Vyacheslav Dimitrov, Petrozavodsk State University.
+# Contains result of benchmarks for specified list of queries.
+# There are some scenario (from Nest project): 
+#
+# First column is the number of a benchmark.
+# Second is time of the parsing.
+# Third is time of the quering.
+#
+# Information about benchmark (see after results):
+#   - number 
+#   - count of the execution each list with queries.
+#   - count of elements into a database
+#   - starting date
+#   - ending date
+#   - commit's sha1 (see script info.sh)
+#   - some info about hardware and software (see script info.sh).
+
+#count=0
+
+
+;enlivener-queries
+
+;address-info-queries
+
+;qlist
+
+
