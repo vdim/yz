@@ -21,8 +21,10 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests for parsing functions."}
   (:use ru.petrsu.nest.yz.parsing 
+        ru.petrsu.nest.yz.core
         ru.petrsu.nest.yz.hb-utils 
-        clojure.test)
+        clojure.test 
+        ru.petrsu.nest.yz.queries.bd)
   (:import (ru.petrsu.nest.son Building Room Floor)
            (ru.petrsu.nest.yz SyntaxException NotDefinedDP)))
 
@@ -1446,3 +1448,10 @@
            (f qlist-pred)
            (f qlist-list)))
 )
+
+(deftest pquery-qlist
+         ^{:doc "Calling pquery for each query from qlist."}
+         (let [results (fn [l] 
+                         (some #(-> % (pquery mom- mem) :error nil? not) l))]
+           (is (nil? (results qlist)))))
+
