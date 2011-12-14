@@ -207,8 +207,7 @@
 
 
 (defn- write-to-file
-  "Writes result of benchmark to yz-bench-new.txt 
-  file (by default) with results of benchmark. 
+  "Writes result of benchmark to file with results of benchmark. 
   Parameters:
     n - count of executing each query.
     mom - MOM of an object model.
