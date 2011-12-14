@@ -20,6 +20,7 @@
 (ns ru.petrsu.nest.yz.benchmark.bd-utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Usefull functions for working with bd for benchmark."}
+  (:require [ru.petrsu.nest.util.utils :as f])
   (:import (ru.petrsu.nest.son Building Floor Room
                                Occupancy SimpleOU CompositeOU
                                Device UnknownNetwork UnknownNetworkInterface EthernetInterface
@@ -192,14 +193,23 @@
         r (Random.)
         clc (count classes)
         cn (count names)
-        cd (count descs)]
+        cd (count descs)
+        se #(let [se (doto (.newInstance (classes (.nextInt r clc))) 
+                       (.setName (names (.nextInt r cn)))
+                       (.setDescription (descs (.nextInt r cd))))
+                  se (if (instance? Floor se) (doto se (.setNumber (Integer. (.nextInt r 100)))) se) 
+                  se (if (instance? Room se) (doto se (.setNumber (str (.nextInt r 100)))) se) 
+                  se (if (instance? IPv4Interface se) 
+                       (doto se (.setInetAddress (f/ip2b (str (.nextInt r 255) "."
+                                                          (.nextInt r 255) "."
+                                                          (.nextInt r 255) "."
+                                                          (.nextInt r 255)))))
+                       se)]
+              se)]
     (loop [sm- sm, n- n]
       (if (<= n- 0)
         (:son sm)
-        (recur (change-model sm- (doto (.newInstance (classes (.nextInt r clc))) 
-                                   (.setName (names (.nextInt r cn)))
-                                   (.setDescription (descs (.nextInt r cd)))))
-               (dec n-))))))
+        (recur (change-model sm- (se)) (dec n-))))))
 
 
 (defn create-bd
