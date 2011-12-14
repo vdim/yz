@@ -185,8 +185,9 @@
   [o, field-name]
   (if (nil? o)
     nil
-    (let [field-name (if (keyword? field-name) (name field-name) field-name)
-          v (.getPropertyValue *em* o field-name)]
+    (let [field-name (if (keyword? field-name) (name field-name) field-name) 
+          v (try (.getPropertyValue *em* o field-name)
+              (catch Exception e (throw (Exception. (str "Not found property: " field-name)))))]
       (cond 
         ; If value is nil then function returns nil.
         (nil? v) nil
