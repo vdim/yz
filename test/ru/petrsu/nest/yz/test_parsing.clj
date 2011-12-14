@@ -1102,8 +1102,8 @@
 ;; Default property
    "ni[@(ip &.inetAddress)]"
    "ni[@(ip &.)]"
-   "ni[@(ip &)]"
-   "ni[name @(ip &)]"
+   "ni[@(str &)]"
+   "ni[name @(str &)]"
    "ni[@(ip &.) name]"
    "ni[description @(ip &.) name]"
    "ni[@(ip &.) description name]"
@@ -1296,7 +1296,7 @@
    "{a:number}room, {a:name}building, {d:name}device"
    "{a:number}room (floor), building"
    "{a:number}room ({d:number}floor), building"
-   "{a:number}room ({d:number}floor), {a:number}building"
+   "{a:number}room ({d:number}floor), {a:name}building"
    "{a:@(count `room')}building"
    "{d:@(count `room')}building"
    "{a:name d:@(count `room')}building"
@@ -1304,9 +1304,9 @@
    "{a:@(count `room') d:name}building"
    "{a:@(count `room') a:name}building"
    "{a:@(count `room') a:name d:description}building"
-   "{a:@(count `room') a:name d:description a:floor}building"
-   "{a:name d:description a:@(count `room') a:floor}building"
-   "{a:name d:description a:floor a:@(count `room')}building"
+   "{a:@(count `room') a:name d:description a:floors}building"
+   "{a:name d:description a:@(count `room') a:floors}building"
+   "{a:name d:description a:floors a:@(count `room')}building"
 
 ;; Regular expressions
    "room#(number~\".*\")"
@@ -1451,7 +1451,12 @@
 
 (deftest pquery-qlist
          ^{:doc "Calling pquery for each query from qlist."}
-         (let [results (fn [l] 
-                         (some #(-> % (pquery mom- mem) :error nil? not) l))]
+         (let [mom- (assoc mom- Room
+                             (assoc (get mom- Room) 
+                                    :sort {:self {:keyfn "#(.getNumber %)"}}))
+               results (fn [l] 
+                         (some #(let [e (:error (pquery % mom- mem))]
+                                  (if e [e %]))
+                               l))]
            (is (nil? (results qlist)))))
 
