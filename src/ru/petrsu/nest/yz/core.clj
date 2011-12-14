@@ -361,20 +361,6 @@
           (process-then objs (:then nest) (:props nest) (:sort nest))))
 
 
-(defn- pprocess-nests
-  "Parallel version the process-nest function."
-  [nests obj]
-  (vec (pmap #(p-nest % (get-objs-by-path [obj] %)) nests)))
-
-
-(defn- pp-nest
-  "Parallel version of p-nest."
-  [^PersistentArrayMap nest, objs]
-  (reduce #(conj %1 (%2 1) (pprocess-nests (:nest nest) (%2 0)))
-          []
-          (process-then objs (:then nest) (:props nest) (:sort nest))))
-
-
 (defn- process-nests
   "Processes :nest value of query structure"
   [nests obj]
@@ -386,7 +372,7 @@
   and instance of some ElementManager ('em')."
   [parse-res]
   (vec (map #(if (nil? (get % :func)) 
-               (pp-nest % (select-elems %))
+               (p-nest % (select-elems %))
                (reduce (fn [r rf] (vec (concat r [rf []]))) [] (process-func % nil)))
             parse-res)))
 
