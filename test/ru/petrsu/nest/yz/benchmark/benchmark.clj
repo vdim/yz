@@ -299,7 +299,8 @@
       - bd - instance of the SON or instance of ElementManager's implementation 
             (local son manager by default).
       - n - times of execution each list with queries (1 by default).
-      - f - name of file for result (etc/yz-bench-list.txt)."
+      - f - name of file for result (etc/yz-bench-list.txt).
+  Use nil for indication value of parameter as default."
   ([mom] 
    (bench-list-to-file mom (lsm/create-lsm) 1 bench-list-file))
   ([mom bd]
@@ -307,7 +308,10 @@
   ([mom bd n]
    (bench-list-to-file mom bd n bench-list-file))
   ([mom bd n f]
-  (write-to-file n bd mom f
-                 #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
+   (let [bd (if (nil? bd) (lsm/create-lsm) bd)
+         n (if (nil? n) 1 n)
+         f (if (nil? f) bench-list-file f)]
+     (write-to-file n bd mom f
+                    #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
                        rb (bench-for-list mom bd n ql)] 
-                   (get-fs %2 (rb 0) (rb 1))))))
+                   (get-fs %2 (rb 0) (rb 1)))))))
