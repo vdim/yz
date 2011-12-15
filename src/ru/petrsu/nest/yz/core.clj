@@ -77,7 +77,8 @@
   [o, ^PersistentVector preds]
   (first 
     (reduce #(if (map? %2) 
-               (conj %1 (process-preds o %2))
+               (let [pp (process-preds o %2)]
+               (conj %1 (process-preds o %2)))
                (let [op (if (= %2 :and) 
                           (and (peek %1) (peek (pop %1)))
                           (or (peek %1) (peek (pop %1))))]
@@ -293,10 +294,13 @@
                  (if (or (nil? value) (nil? o)) ; Prevent NullPointerException.
                    nil
                    (re-find (re-pattern value) o)))
-               func)]
+               func)
+        func #(try (func %1 %2)
+                ; If exception is caused then value is returned as nil.
+                (catch Exception e nil))]
     (if (map? value)
-      (some #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
-      (some #(func % value) objs))))
+        (some #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
+        (some #(func % value) objs))))
 
 
 (defn- get-objs-by-path
