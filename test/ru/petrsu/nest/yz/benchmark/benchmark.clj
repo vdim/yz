@@ -55,18 +55,6 @@
     emb))
 
 
-(defn run-query
-  "Runs specified query ('q') due to specified function ('f')
-  which takes string-query and some EntityManager."
-  [f q ^javax.persistence.EntityManager em]
-  (if (nil? em)
-   (let [em (get-clean-bd)
-         t (run-query f q em)]
-     (.close em)
-     t)
-    (f q em)))
-
-
 (def ncount
   ^{:doc "Defines amount of evaluating set of queries. "}
   (identity 100))
@@ -242,6 +230,11 @@
     (cio/copy new-res (cio/file f))))
 
 
+(def bench-file
+  "Name of the default file for results of benchmark."
+  "etc/yz-bench-new.txt")
+
+
 (defn bench-to-file
   "Writes result of benchmark to yz-bench-new.txt 
   file (by default) with results of benchmark. 
@@ -252,12 +245,12 @@
         elements into BD (which is will be generated due to gen-bd function).
     f - file for result of the benchmark (and, of course, it must contains queries.)"
   ([mom]
-   (bench-to-file 1000 10000 mom "etc/yz-bench-new.txt"))
-  ([n mom]
-   (bench-to-file n 10000 mom "etc/yz-bench-new.txt"))
-  ([n bd mom]
-   (bench-to-file n bd mom "etc/yz-bench-new.txt"))
-  ([n bd mom f]
+   (bench-to-file mom 10000 1000 bench-file))
+  ([mom bd]
+   (bench-to-file mom bd 1000 bench-file))
+  ([mom bd n]
+   (bench-to-file mom bd n bench-file))
+  ([mom bd n f]
   (write-to-file n bd mom f 
                  #(let [q (.substring %1 1)]
                     (get-fs %2
