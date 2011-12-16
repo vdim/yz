@@ -121,8 +121,7 @@
   ([n ^String query mom son-or-em]
    (let [time-q (bench-quering n query mom son-or-em)
          time-p (bench-parsing n query mom)]
-     (str "Parsing: " time-p \newline
-          "Quering: " time-q))))
+     [time-p time-q])))
 
 
 (defn pr-bench
