@@ -77,8 +77,7 @@
   [o, ^PersistentVector preds]
   (first 
     (reduce #(if (map? %2) 
-               (let [pp (process-preds o %2)]
-               (conj %1 (process-preds o %2)))
+               (conj %1 (process-preds o %2))
                (let [op (if (= %2 :and) 
                           (and (peek %1) (peek (pop %1)))
                           (or (peek %1) (peek (pop %1))))]

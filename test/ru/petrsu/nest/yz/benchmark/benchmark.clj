@@ -20,7 +20,8 @@
 (ns ru.petrsu.nest.yz.benchmark.benchmark
   ^{:author "Vyacheslav Dimitrov"
     :doc "System for benchmarking different types of queries."}
-  (:use ru.petrsu.nest.yz.core)
+  (:use ru.petrsu.nest.yz.core
+        incanter.stats)
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]
             [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.parsing :as p]
@@ -84,12 +85,17 @@
    ((getf ql) num, n, {})))
 )
 
+(defn- do-times
+  "Returns sequence of time (n times) of execution some function f."
+  [f, n]
+  (map (fn [_] (bu/btime (f))) (repeat n 0)))
+
+
 (defn bench-parsing
   "Beanchmark parsing. Executes parsing 
   for specified query 'n' times. "
   [n ^String query mom]
-  (bu/btime (dotimes [_ n]
-              (p/parse query mom))))
+    (apply + (do-times (partial p/parse query mom) n)))
 
 
 (defn bench-quering
@@ -101,9 +107,10 @@
    (let [son-or-em (if (nil? son-or-em) (bu/gen-bd 10000) son-or-em)
          em (if (instance? ElementManager son-or-em)
               son-or-em
-              (qc/create-emm son-or-em))]
-     (bu/btime (dotimes [_ n]
-                 (pquery query mom em))))))
+              (qc/create-emm son-or-em))
+         times (do-times (partial pquery query mom em) n)
+         s-times (apply + times)]
+     (concat [s-times (/ s-times n)] (quantile times :probs [0.05, 0.5 0.9])))))
 
 
 (defn bench
@@ -182,8 +189,10 @@
   "Returns formatted string with number of the benchmark, 
   amount of elements into bd, count of execution
   time of the parsing and time of the quering."
-  [nb ptime qtime] 
-  (cp/cl-format nil "~4D ~15,4F ~15,4F~%" nb ptime qtime))
+  [nb ptime [qtime sa p5 p50 p90]] 
+  (cp/cl-format nil "~4D ~15,4F ~15,4F ~15,4F ~15,4F ~15,4F ~15,4F~%" 
+                nb ptime qtime sa p5 p50 p90))
+
 
 (defn- get-num-bench
   "Returns a previous number of the benchmark."
@@ -212,7 +221,7 @@
         cbd (ffirst (:rows (pquery "@(count `sonelement')" mom bd)))
         nb (inc (get-num-bench f)) ; Current number of the benchmark.
         new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
-                                       (str %2 \newline (bench-fn %2 nb))
+                                       (str %2 \newline (bench-fn %2 bd nb))
                                        (.startsWith %2 "#count=") (str "#count=" nb \newline)
                                        :else (str %2 \newline)))
                         "" 
@@ -253,9 +262,9 @@
   ([mom bd n f]
   (write-to-file n bd mom f 
                  #(let [q (.substring %1 1)]
-                    (get-fs %2
+                    (get-fs %3
                             (bench-parsing n q mom) 
-                            (bench-quering n q mom bd))))))
+                            (bench-quering n q mom %2))))))
 
 
 (defn- bench-for-list
@@ -263,10 +272,8 @@
   returns vector with two elements where first is time of the
   parsing and second is time the querying."
   [mom bd n qlist]
-   (let [bp #(bench-parsing n % mom) 
-         bq #(bench-quering n % mom bd)
-         f (fn [bf queries] (reduce  #(+ %1 (bf %2)) 0 queries))]
-     [(f bp qlist) (f bq qlist)]))
+  [(reduce #(+ %1 (bench-parsing n %2 mom)) 0 qlist)
+   (reduce #(map + %1 (bench-quering n %2 mom bd)) [0 0 0 0 0] qlist)])
 
 
 (defn bench-for-nest-queries
@@ -313,5 +320,5 @@
          f (if (nil? f) bench-list-file f)]
      (write-to-file n bd mom f
                     #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
-                       rb (bench-for-list mom bd n ql)] 
-                   (get-fs %2 (rb 0) (rb 1)))))))
+                           rb (bench-for-list mom %2 n ql)] 
+                   (get-fs %3 (rb 0) (rb 1)))))))
