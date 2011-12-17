@@ -6,7 +6,8 @@
                  [org.apache.derby/derby "10.7.1.1"]
                  [com.h2database/h2 "1.3.160"]
                  [org.clojure/algo.monads "0.1.0"] 
-                 [incanter/incanter-core "1.3.0-SNAPSHOT"]]
+                 [incanter/incanter-core "1.3.0-SNAPSHOT"]
+                 [org.codehaus.jsr166-mirror/jsr166y "1.7.0"]]
   :aot [ru.petrsu.nest.yz.core 
         ru.petrsu.nest.yz.hb-utils 
         ru.petrsu.nest.yz.yz
