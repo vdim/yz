@@ -27,6 +27,7 @@
          
          You must have some implementation of the ElementManager interface (see below) and
          pass it to the pquery function."}
+  (:use clojure.par)
   (:require [ru.petrsu.nest.yz.parsing :as p] [clojure.string :as cs])
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
 
@@ -259,11 +260,11 @@
   by specified 'field-name'."
   [^String field-name, objs]
   (flatten
-    (map #(if-let [fv (get-fv % field-name)]
+    (pvmap #(if-let [fv (get-fv % field-name)]
            (if (instance? java.util.Collection fv)
              (seq fv)
              fv))
-           objs)))
+           (vec objs))))
 
 
 (defn- eq-arrays?
