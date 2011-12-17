@@ -347,14 +347,20 @@
                                    ;; If key is :ids then we should get vector with ids due to get-ids function.
                                    (= k :ids) ids 
 
-                                   ;; Because of clojure does not function "!=", we replaced it by funciton "not="
-                                   (and (= k :func) (= (cs/trim res-) "!=")) #'clojure.core/not= 
-                                   
-                                   ;; Function for regular expressions.
-                                   (and (= k :func) (= (cs/trim res-) "~")) #'clojure.core/re-find 
 
                                    ;; Resolve function.
-                                   (= k :func) (resolve (symbol res-))
+                                   (= k :func) 
+                                   (cond
+                                     ;; Because of clojure does not function "!=", we replaced it by funciton "not="
+                                     (= (cs/trim res-) "!=") #'clojure.core/not=
+
+                                     ;; Function for regular expressions.
+                                     (= (cs/trim res-) "~") #'clojure.core/re-find 
+
+                                     ;; Identical function.
+                                     (= (cs/trim res-) "==") #'clojure.core/identical?
+                                     
+                                     :else (resolve (symbol res-)))
 
                                    ;; Strings, numbers are not needed in any processing.
                                    :else res-))))
@@ -777,6 +783,7 @@
                   (lit-conc-seq "<=")
                   (lit-conc-seq "not=")
                   (lit-conc-seq "!=")
+                  (lit-conc-seq "==")
                   (lit \=) 
                   (lit \~) 
                   (lit \<)
@@ -816,7 +823,7 @@
                    ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
                    (conc (opt (change-pred 
                                 (sur-by-ws 
-                                  (alt (lit \=) (lit \~) (lit-conc-seq "!=")))
+                                  (alt (lit \=) (lit \~) (lit-conc-seq "!=") (lit-conc-seq "==")))
                                 :func)) 
                          (change-pred string :value :string))
                    (change-pred (lit-conc-seq "true") :value true)
