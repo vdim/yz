@@ -1,6 +1,5 @@
-## About
-YZ is simple (easy) query language for an object model (OM). It may be usefull
-for advanced user of your application for getting information about your OM.
+# About
+YZ is simple (easy) string query language for an object model (OM). 
 
 ## Installation
 
