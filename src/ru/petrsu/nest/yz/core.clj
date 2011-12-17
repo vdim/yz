@@ -75,13 +75,20 @@
   "Defines whether specified object o satisfies to specified
   vector with predicates preds."
   [o, ^PersistentVector preds]
-  (first 
-    (reduce #(if (map? %2) 
-               (conj %1 (process-preds o %2))
-               (let [op (if (= %2 :and) 
-                          (and (peek %1) (peek (pop %1)))
-                          (or (peek %1) (peek (pop %1))))]
-                 (conj (pop (pop %1)) op))) [] preds)))
+  (let [ff (first 
+             (reduce #(if (map? %2) 
+                        (conj %1 %2)
+                        (let [fa (peek %1)
+                              sa (peek (pop %1))
+                              op (if (= %2 :and) 
+                                   (and (if (map? fa) (process-preds o fa) fa) 
+                                        (if (map? sa) (process-preds o sa) sa))
+                                   (or (if (map? fa) (process-preds o fa) fa) 
+                                        (if (map? sa) (process-preds o sa) sa)))]
+                          (conj (pop (pop %1)) op))) [] preds))]
+    (if (map? ff)
+      (process-preds o ff)
+      ff)))
 
 
 (defn filter-by-preds
