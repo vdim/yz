@@ -1375,6 +1375,31 @@
    "floor#(.=(==1 && 2))" 
    "floor#(.=(==1 && ==2))" 
    "building#(name==1)"
+   
+   ;; Exact class
+   "ni^"
+   "ni^.device"
+   "ni^.device^"
+   "ni^ (device)"
+   "ni^ (device^)"
+   "ni^, device"
+   "ni^, device^"
+   "ni^.device.room.floor.building"
+   "ni^.device^.room.floor.building"
+   "ni^.device.room^.floor.building"
+   "ni^.device^.room^.floor.building"
+   "ni^.device.room.floor^.building"
+   "ni^.device.room^.floor^.building"
+   "ni^.device^.room^.floor^.building"
+   "ni^.device^.room.floor^.building"
+   "ni^.device.room.floor.building^"
+   "ni^.device.room.floor^.building^"
+   "ni^.device.room^.floor^.building^"
+   "ni^.device^.room^.floor^.building^"
+   "ni^.device^.room.floor^.building^"
+   "ni^.device^.room^.floor^.building^"
+   "ni^.device^.room^.floor.building^"
+   "ni.device^.room^.floor.building^"
    ])
 
 

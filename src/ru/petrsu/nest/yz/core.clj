@@ -179,10 +179,12 @@
 (defn- select-elems
   "Returns from storage objects which have ':what' class from nest."
   [nest]
-  (let [{:keys [^Class what ^PersistentVector preds what sort]} nest]
+  (let [{:keys [^Class what ^PersistentVector preds sort exactly]} nest]
     (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
-      (.getElems *em* what preds))
-      (sort-rq (filter-by-preds (.getElems *em* what) preds) sort false)))
+      (sort-rq (.getElems *em* what preds) sort false)
+      (let [elems (.getElems *em* what)
+            elems (if exactly (filter #(= (class %) what) elems) elems)]
+        (sort-rq (filter-by-preds elems preds) sort false)))))
 
 
 (defn- get-fv
@@ -313,11 +315,11 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
-  (let [{:keys [preds where ^Class what sort]} m
+  (let [{:keys [preds where ^Class what sort exactly]} m
+        f (if exactly #(= (class %) what) #(instance? what %))
         path (first where)] ; At this moment we use first path.
     (sort-rq (filter-by-preds 
-               (filter #(instance? what %) 
-                       (reduce #(get-objs %2 %1) sources path)) preds)
+               (filter f (reduce #(get-objs %2 %1) sources path)) preds)
              sort false)))
 
 

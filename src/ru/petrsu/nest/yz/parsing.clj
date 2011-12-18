@@ -406,7 +406,7 @@
   "This function is called when likely some property is found"
   [res id nl tl is-recur tsort]
   (let [tl- (dec tl)
-        id (cond (= id \&) :#self-object#
+        id (cond (= id "&") :#self-object#
                  (= id "&.") :#default-property#
                  (map? id) id
                  :else (keyword (str id))) 
@@ -492,7 +492,8 @@
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
   [res ^String id nl tl is-recur tsort]
-  (let [^Class cl (find-class id)
+  (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
+        ^Class cl (find-class id)
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
@@ -502,7 +503,7 @@
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some then map.
-            assoc-lth #(nnassoc %1 :what cl :where (get-paths cl %2) :sort vsort)
+            assoc-lth #(nnassoc %1 :what cl :where (get-paths cl %2) :sort vsort :exactly ex)
             ; What for getting where.
             what (get-in-nest-or-then res nl tl- :what)]
         (if (> tl 0)
@@ -518,10 +519,11 @@
                   lt (if (empty? then-v) lt (nnassoc-in last-then then-v lt))]
               (f lt)))
          (assoc-in-nest 
-            res nl
-            :what cl
-            :where (get-paths cl, what)
-            :sort vsort))))))
+           res nl
+           :what cl
+           :where (get-paths cl, what)
+           :sort vsort
+           :exactly ex))))))
 
 
 (defn- add-op-to-preds
@@ -720,10 +722,12 @@
 (defn- process-id
   "Processes some id due to functions 'f'"
   [f]
-  (complex [id (alt (lit-conc-seq "&.") (rep+ alpha))
+  (complex [id (conc (alt (lit-conc-seq "&.") (rep+ alpha)) (opt (lit \^)))
+  ;(complex [id (alt (lit-conc-seq "&.") (rep+ alpha)) 
             _ (partial set-id (reduce str (flatten id)) f)]
             id))
 
+;(def id (conc (process-id found-id) (opt (lit \^))))
 (def id (process-id found-id))
 
 
