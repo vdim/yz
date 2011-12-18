@@ -19,7 +19,7 @@ YZ[ˈiːzi] is simple (easy) string-based query language for an object model (OM
 * Grouping.
 
 ## Motivation
-We must allowed an user to getting any info about data domain of our project. We did it. 
+We must allowed users of our project to getting any info about data domain. We did it. 
 May be it will be usefull for you also.
  
 ## Installation
