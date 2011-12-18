@@ -1,6 +1,23 @@
 # About
-YZ is simple (easy) string query language for an object model (OM). 
+YZ[ˈiːzi] is simple (easy) string query language for an object model (OM). 
 
+#### What does YZ include?
+
+* Selection.
+* Projection.
+* Filtering.
+* Joining.
+* Union.
+* Sorting.
+* Calling a user function.
+* Recursive queries.
+
+#### What not?
+
+* Definitions (schema, new classes, instances of classes, functions and so on).
+* Updating.
+* Grouping.
+ 
 ## Installation
 
 ### Build from source code
