@@ -491,7 +491,9 @@
                         parse-res
                         (try
                           (run-query parse-res)
-                          (catch Throwable e (.getMessage e))))]
+                          (catch Throwable e (let [msg (.getMessage e)
+                                                   msg (if (nil? msg) (.toString e) msg)]
+                                               msg))))]
         (if (string? query-res)
           (Result. [] query-res [] ())
           (let [rows (distinct (get-rows query-res))]
