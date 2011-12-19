@@ -3,14 +3,29 @@ YZ[ˈiːzi] is simple (easy) string-based query language for an object model (OM
 
 #### What does YZ include?
 
-* Selection.
-* Projection.
-* Filtering.
-* Joining.
-* Union.
-* Sorting.
-* Calling a user function.
-* Recursive queries.
+* Selection:
+<pre><code>entity</code></pre>
+
+* Projection:
+<pre><code>entity[prop1 prop2]</code></pre>
+
+* Filtering:
+<pre><code>entity#(prop1="sv")</code></pre>
+
+* Joining:
+<pre><code>entity1 (entity2)</code></pre>
+
+* Union:
+<pre><code>entity1, entity2</code></pre>
+
+* Sorting:
+<pre><code>↓entity</code></pre>
+
+* Calling a user function:
+<pre><code>entity[prop1 @(f &)]</code></pre>
+
+* Recursive queries:
+<pre><code>entity[*parent]</code></pre>
 
 #### What not?
 
