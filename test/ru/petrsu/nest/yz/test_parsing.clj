@@ -902,7 +902,9 @@
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
 (def qlist
-  ^{:doc "Defines list of YZ's queries (used Nest's model)."}
+  ^{:doc "Defines list of YZ's queries (used Nest's model).
+         DON'T MODIFY IT, because first benchmark for qlist is done.
+         Add new queries to qlist-new."}
   [
 ;; Selections   
    "building"
@@ -1354,6 +1356,57 @@
    "floor (building, room#(number~\".*\"))"
    "room"])
 
+
+(def qlist-new
+  "List with new queries."
+  [;; Identical.
+   "floor#(number==1)" 
+   "floor#(.==1)" 
+   "floor#(number==1 && number=2)" 
+   "floor#(number==1 && number==2)" 
+   "floor#(number=1 && number==2)" 
+   "floor#(.==1 && .==2)" 
+   "floor#(.==1 && .=2)" 
+   "floor#(.=1 && .==2)" 
+   "floor#(.==(1 && 2))" 
+   "floor#(.==(1 && ==2))" 
+   "floor#(.==(1 && =2))" 
+   "floor#(.=(1 && ==2))" 
+   "floor#(.=(==1 && 2))" 
+   "floor#(.=(==1 && ==2))" 
+   "building#(name==1)"
+   
+   ;; Exact class
+   "ni^"
+   "ni^.device"
+   "ni^.device^"
+   "ni^ (device)"
+   "ni^ (device^)"
+   "ni^, device"
+   "ni^, device^"
+   "ni^.device.room.floor.building"
+   "ni^.device^.room.floor.building"
+   "ni^.device.room^.floor.building"
+   "ni^.device^.room^.floor.building"
+   "ni^.device.room.floor^.building"
+   "ni^.device.room^.floor^.building"
+   "ni^.device^.room^.floor^.building"
+   "ni^.device^.room.floor^.building"
+   "ni^.device.room.floor.building^"
+   "ni^.device.room.floor^.building^"
+   "ni^.device.room^.floor^.building^"
+   "ni^.device^.room^.floor^.building^"
+   "ni^.device^.room.floor^.building^"
+   "ni^.device^.room^.floor^.building^"
+   "ni^.device^.room^.floor.building^"
+   "ni.device^.room^.floor.building^"
+   ])
+
+
+(def clist
+  "List with queries from qlist and qlis-new"
+  (concat qlist qlist-new))
+
 (def qlist-list
   ^{:doc "Defines list with query-function with parameter (as :list) from qlist"}
   (vec (map #(str "@(str `" % "')") qlist)))
@@ -1386,22 +1439,22 @@
                   (map #(str "building#(@(str $" % "') = @(str %" % "'))") qlist)))))
 
 
-(def qlist-next-query
+(def clist-next-query
   ^{:doc "Defines list with queries with the 
-         following structure: room, query from qlist."}
-  (map #(str "room, " %) qlist))
+         following structure: room, query from clist."}
+  (map #(str "room, " %) clist))
 
 
-(def qlist-next-query-qlist
+(def clist-next-query-clist
   ^{:doc "Defines list with queries with the 
-         following structure: query from qlist, query from qlist."}
-  (map #(str % ", " %) qlist))
+         following structure: query from clist, query from clist."}
+  (map #(str % ", " %) clist))
 
 
-(def qlist-nest-query
+(def clist-nest-query
   ^{:doc "Defines list with queries with the 
-         following structure: son (query from qlist)."}
-  (map #(str "son (" % ")") qlist))
+         following structure: son (query from clist)."}
+  (map #(str "son (" % ")") clist))
 
 
 (deftest parse-remainder
@@ -1421,10 +1474,10 @@
                                           (:remainder (parse+ % mom-))
                                           (catch Exception e (do (.printStackTrace e) %)))]
                                   (if r %)) l))]
-           (is (nil? (results qlist)))
-           (is (nil? (results qlist-next-query)))
-           (is (nil? (results qlist-next-query-qlist)))
-           (is (nil? (results qlist-nest-query)))))
+           (is (nil? (results clist)))
+           (is (nil? (results clist-next-query)))
+           (is (nil? (results clist-next-query-clist)))
+           (is (nil? (results clist-nest-query)))))
 
 
 
@@ -1458,5 +1511,5 @@
                          (some #(let [e (:error (pquery % mom- mem))]
                                   (if e [e %]))
                                l))]
-           (is (nil? (results qlist)))))
+           (is (nil? (results clist)))))
 

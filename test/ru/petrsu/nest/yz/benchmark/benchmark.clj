@@ -92,15 +92,17 @@
 
 
 (defn bench-parsing
-  "Beanchmark parsing. Executes parsing 
-  for specified query 'n' times. "
+  "Beanchmark parsing. Executes the parse function
+  for specified query and mom 'n' times. Returns total time."
   [n ^String query mom]
     (apply + (do-times (partial p/parse query mom) n)))
 
 
 (defn bench-quering
-  "Beanchmark quering. Executes parsing 
-  for specified query 'n' times. "
+  "Beanchmark quering. Executes the pquery function for specified query, 
+  bd and mom 'n' times. If bd is nil then bd is generated with 10000 elements.
+  Returns sequence: 
+    (total time, average time, quntile(5%), quntile(50%), quntile(90%))."
   ([n ^String query mom]
    (bench-quering n query mom nil))
   ([n ^String query mom son-or-em]
@@ -114,15 +116,16 @@
 
 
 (defn bench
-  "Returns string with result of parsing and quering.
-  'n' is numbers of the execution the specified 'query'."
+  "Returns vector with result of parsing (first) and quering (second).
+  'n' is a number of the execution the specified 'query'.
+  For quering bd is needed. If bd is nil then bd is generated with
+  10000 elements."
   ([n ^String query mom]
    (bench n query mom nil))
   ([n ^String query mom son-or-em]
    (let [time-q (bench-quering n query mom son-or-em)
          time-p (bench-parsing n query mom)]
-     (str "Parsing: " time-p \newline
-          "Quering: " time-q))))
+     [time-p time-q])))
 
 
 (defn pr-bench
@@ -306,7 +309,7 @@
       - bd - instance of the SON or instance of ElementManager's implementation 
             (local son manager by default).
       - n - times of execution each list with queries (1 by default).
-      - f - name of file for result (etc/yz-bench-list.txt).
+      - f - name of file for result (etc/yz-bench-list.txt by default).
   Use nil for indication value of parameter as default."
   ([mom] 
    (bench-list-to-file mom (lsm/create-lsm) 1 bench-list-file))
@@ -321,4 +324,4 @@
      (write-to-file n bd mom f
                     #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
                            rb (bench-for-list mom %2 n ql)] 
-                   (get-fs %3 (rb 0) (rb 1)))))))
+                       (get-fs %3 (rb 0) (rb 1)))))))

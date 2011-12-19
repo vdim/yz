@@ -75,13 +75,20 @@
   "Defines whether specified object o satisfies to specified
   vector with predicates preds."
   [o, ^PersistentVector preds]
-  (first 
-    (reduce #(if (map? %2) 
-               (conj %1 (process-preds o %2))
-               (let [op (if (= %2 :and) 
-                          (and (peek %1) (peek (pop %1)))
-                          (or (peek %1) (peek (pop %1))))]
-                 (conj (pop (pop %1)) op))) [] preds)))
+  (let [ff (first 
+             (reduce #(if (map? %2) 
+                        (conj %1 %2)
+                        (let [fa (peek %1)
+                              sa (peek (pop %1))
+                              op (if (= %2 :and) 
+                                   (and (if (map? fa) (process-preds o fa) fa) 
+                                        (if (map? sa) (process-preds o sa) sa))
+                                   (or (if (map? fa) (process-preds o fa) fa) 
+                                        (if (map? sa) (process-preds o sa) sa)))]
+                          (conj (pop (pop %1)) op))) [] preds))]
+    (if (map? ff)
+      (process-preds o ff)
+      ff)))
 
 
 (defn filter-by-preds
@@ -172,10 +179,12 @@
 (defn- select-elems
   "Returns from storage objects which have ':what' class from nest."
   [nest]
-  (let [{:keys [^Class what ^PersistentVector preds what sort]} nest]
+  (let [{:keys [^Class what ^PersistentVector preds sort exactly]} nest]
     (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
-      (.getElems *em* what preds))
-      (sort-rq (filter-by-preds (.getElems *em* what) preds) sort false)))
+      (sort-rq (.getElems *em* what preds) sort false)
+      (let [elems (.getElems *em* what)
+            elems (if exactly (filter #(= (class %) what) elems) elems)]
+        (sort-rq (filter-by-preds elems preds) sort false)))))
 
 
 (defn- get-fv
@@ -306,11 +315,11 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
-  (let [{:keys [preds where ^Class what sort]} m
+  (let [{:keys [preds where ^Class what sort exactly]} m
+        f (if exactly #(= (class %) what) #(instance? what %))
         path (first where)] ; At this moment we use first path.
     (sort-rq (filter-by-preds 
-               (filter #(instance? what %) 
-                       (reduce #(get-objs %2 %1) sources path)) preds)
+               (filter f (reduce #(get-objs %2 %1) sources path)) preds)
              sort false)))
 
 
@@ -482,7 +491,9 @@
                         parse-res
                         (try
                           (run-query parse-res)
-                          (catch Throwable e (.getMessage e))))]
+                          (catch Throwable e (let [msg (.getMessage e)
+                                                   msg (if (nil? msg) (.toString e) msg)]
+                                               msg))))]
         (if (string? query-res)
           (Result. [] query-res [] ())
           (let [rows (distinct (get-rows query-res))]
