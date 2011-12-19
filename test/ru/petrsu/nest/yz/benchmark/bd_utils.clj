@@ -67,23 +67,24 @@
    "Scals"])
 
 (def classes
-  ^{:doc "Defines all classes of SON model."}
-  (vec (flatten (map (fn [[k v]] (repeat v k)) 
-                     {Building 1
-                      Floor 5
-                      Room 50
-                      Occupancy 5
-                      SimpleOU 20
-                      CompositeOU 5
-                      Device 300
-                      UnknownNetwork 5
-                      UnknownNetworkInterface 170 
-                      EthernetInterface 150
-                      UnknownLinkInterface 150
-                      IPv4Interface 170
-                      IPNetwork 5
-                      VLANInterface 20
-                      SON 1}))))
+  ^{:doc "Defines all classes of SON model with its weights."}
+  (vec (concat (reduce (fn [r [k v]] (concat r (repeat v k)))
+                       []
+                       {[Building :building] 1
+                        [Floor :floor] 5
+                        [Room :room] 50
+                        [Occupancy :occupancy]5
+                        [SimpleOU :sou] 20
+                        [CompositeOU :cou] 5
+                        [Device :device] 300
+                        [UnknownNetwork :network] 5
+                        [UnknownNetworkInterface :ni] 170 
+                        [EthernetInterface :ei] 150
+                        [UnknownLinkInterface :li] 150
+                        [IPv4Interface :ipv4] 170
+                        [IPNetwork :ipn] 5
+                        [VLANInterface :vlan] 20}))))
+
 
 (defn schema-export
   "Cleans database due to Hibernate Schema Export."
@@ -137,79 +138,109 @@
 (defn change-model
   "Changes model: takes model and object of 
   model and inserts object into the model."
-  [sm o]
-  (cond (instance? Building o) (do (.addBuilding (:son sm) o) (assoc sm :building o))
-        (instance? Floor o) (do (.addFloor (:building sm) o) (assoc sm :floor o))
-        (instance? Room o) (do (.addRoom (:floor sm) o) 
-                             (if (nil? (.getRoom (:occupancy sm)))
-                               (.setRoom (:occupancy sm) o))
-                             (assoc sm :room o))
-        (instance? Occupancy o) (do (.setRoom o (:room sm)) 
-                                  (.setOU o (:sou sm))
-                                  (if (nil? (.getOccupancy (:device sm)))
-                                    (.addDevice o (:device sm)))
-                                  (assoc sm :occupancy o))
-        (instance? SimpleOU o) (do (.addOU (:cou sm) o)
-                                 (if (nil? (.getOU (:occupancy sm)))
-                                   (.setOU (:occupancy sm) o))
-                                 (assoc sm :sou o))
-        (instance? CompositeOU o) (do (.addOU (:cou sm) o) (assoc sm :cou o))
-        (instance? Device o) (do (.addDevice (:occupancy sm) o) (assoc sm :device o))
-        (instance? UnknownLinkInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :li o))
-        (instance? EthernetInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :ei o))
-        (instance? VLANInterface o) (do (.addLinkInterface (:device sm) o) (assoc sm :vlan o))
-        (instance? UnknownNetworkInterface o) (do (.addNetworkInterface (:li sm) o) (assoc sm :ni o))
-        (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) (assoc sm :ipv4 o))
-        (instance? UnknownNetwork o) (do
-                                 (if (nil? (.getNetwork (:ni sm)))
-                                   (.setNetwork (:ni sm) o))
-                                 (assoc sm :network o))
-        (instance? IPNetwork o) (do 
-                                   (if (nil? (.getNetwork (:ipv4 sm)))
-                                     (.setNetwork (:ipv4 sm) o))
-                                 (assoc sm :ipn o))
-        :else sm))
+  [sm [o k]]
+  (do 
+    (cond (instance? Building o) (.addBuilding (:son sm) o)
+          (instance? Floor o) (.addFloor (:building sm) o)
+          (instance? Room o) (do (.addRoom (:floor sm) o) 
+                               (if (nil? (.getRoom (:occupancy sm)))
+                                 (.setRoom (:occupancy sm) o)))
+          (instance? Occupancy o) (do (.setRoom o (:room sm)) 
+                                    (.setOU o (:sou sm))
+                                    (if (nil? (.getOccupancy (:device sm)))
+                                      (.addDevice o (:device sm))))
+          (instance? SimpleOU o) (do (.addOU (:cou sm) o)
+                                   (if (nil? (.getOU (:occupancy sm)))
+                                     (.setOU (:occupancy sm) o)))
+          (instance? CompositeOU o) (.addOU (:cou sm) o)
+          (instance? Device o) (.addDevice (:occupancy sm) o)
+          (instance? UnknownLinkInterface o) (.addLinkInterface (:device sm) o)
+          (instance? EthernetInterface o) (.addLinkInterface (:device sm) o)
+          (instance? VLANInterface o) (.addLinkInterface (:device sm) o)
+          (instance? UnknownNetworkInterface o) (.addNetworkInterface (:li sm) o)
+          (instance? IPv4Interface o) (.addNetworkInterface (:ei sm) o)
+          (instance? UnknownNetwork o) (if (nil? (.getNetwork (:ni sm)))
+                                         (.setNetwork (:ni sm) o))
+          (instance? IPNetwork o) (if (nil? (.getNetwork (:ipv4 sm)))
+                                    (.setNetwork (:ipv4 sm) o)))
+    (assoc sm k o)))
+
+
+(defn- ^String gen-ip
+  "Takes an random and generates casual IPv4 address."
+  [^Random r]
+  (str (.nextInt r 255) "."
+       (.nextInt r 255) "."
+       (.nextInt r 255) "."
+       (.nextInt r 255)))
+
+
+(defn- ^String gen-mask
+  "Takes an random and generates casual mask: 255.255.?.?."
+  [^Random r]
+  (str "255.255."
+       (.nextInt r 255) "."
+       (.nextInt r 255)))
+
+
+(defn- ^String gen-mac
+  "Takes an random and generates casual MAC address."
+  [^Random r]
+  (let [v [0 1 2 3 4 5 6 7 8 9 \a \b \c \d \e \f]
+        cv (count v)]
+    (loop [n 12 res ""]
+      (if (= n 0)
+        (->> res (partition 2) (interpose \:) flatten (reduce str))
+        (recur (dec n) (str res (v (.nextInt r cv))))))))
 
 
 (defn gen-bd
   "Takes number of elements in BD, generates BD 
   and returns SON."
   [n]
-  (let [sm (init-model {:building (Building.)
-                        :floor (Floor.)
-                        :room (Room.)
-                        :occupancy (Occupancy.)
-                        :sou (SimpleOU.)
-                        :cou (CompositeOU.)
-                        :device (Device.)
-                        :network (UnknownNetwork.)
-                        :ni (UnknownNetworkInterface.)
-                        :ei (EthernetInterface.)
-                        :li (UnknownLinkInterface.)
-                        :ipn (IPNetwork.)
-                        :ipv4 (IPv4Interface.)
-                        :vlan (VLANInterface.)
-                        :son (SON.)})
-        r (Random.)
+  (let [r (Random.)
         clc (count classes)
         cn (count names)
         cd (count descs)
-        se #(let [se (doto (.newInstance (classes (.nextInt r clc))) 
+        se #(let [[cl k] (classes (.nextInt r clc))
+                  se (doto (if (nil? %) 
+                             (.newInstance cl)
+                             (.newInstance %))
                        (.setName (names (.nextInt r cn)))
                        (.setDescription (descs (.nextInt r cd))))
                   se (if (instance? Floor se) (doto se (.setNumber (Integer. (.nextInt r 100)))) se) 
                   se (if (instance? Room se) (doto se (.setNumber (str (.nextInt r 100)))) se) 
                   se (if (instance? IPv4Interface se) 
-                       (doto se (.setInetAddress (f/ip2b (str (.nextInt r 255) "."
-                                                          (.nextInt r 255) "."
-                                                          (.nextInt r 255) "."
-                                                          (.nextInt r 255)))))
+                       (doto se (.setInetAddress (f/ip2b (gen-ip r))))
+                       se)
+                  se (if (instance? IPNetwork se) 
+                       (doto se 
+                         (.setAddress (f/ip2b (gen-ip r))) 
+                         (.setMask (f/ip2b (gen-mask r))))
+                       se)
+                  se (if (instance? EthernetInterface se) 
+                       (doto se (.setMACAddress (f/mac2b (gen-mac r))))
                        se)]
-              se)]
+              [se k])
+        sm (init-model {:building ((se Building) 0)
+                        :floor ((se Floor) 0)
+                        :room ((se Room) 0)
+                        :occupancy ((se Occupancy) 0)
+                        :sou ((se SimpleOU) 0)
+                        :cou ((se CompositeOU) 0)
+                        :device ((se Device) 0)
+                        :network ((se UnknownNetwork) 0)
+                        :ni ((se UnknownNetworkInterface) 0)
+                        :ei ((se EthernetInterface) 0)
+                        :li ((se UnknownLinkInterface) 0)
+                        :ipn ((se IPNetwork) 0)
+                        :ipv4 ((se IPv4Interface) 0)
+                        :vlan ((se VLANInterface) 0)
+                        :son (SON.)})]
     (loop [sm- sm, n- n]
       (if (<= n- 0)
-        (:son sm)
-        (recur (change-model sm- (se)) (dec n-))))))
+        (:son sm-)
+        (recur (change-model sm- (se nil)) (dec n-))))))
 
 
 (defn create-bd
