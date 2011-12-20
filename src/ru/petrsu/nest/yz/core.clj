@@ -281,14 +281,11 @@
   [o, pred] 
   (let [{:keys [ids func value]} pred
         objs (cond (vector? ids) 
-                   (reduce #(let [objs- (reduce 
-                                          (fn [objs-, field-name] 
-                                            (get-objs field-name objs-)) 
-                                          %1
-                                          (:id %2))]
-                              (if (nil? (:cl %2))
+                   (reduce (fn [r {:keys [id cl]}]
+                             (let [objs- (reduce #(get-objs %2 %1) r id)]
+                              (if (nil? cl)
                                 objs-
-                                (filter (fn [obj] (instance? (:cl %2) obj)) objs-)))
+                                (filter (partial instance? cl) objs-))))
                            [o]
                            ids)
                    (map? ids) (process-func ids o))
