@@ -350,17 +350,18 @@
 
                                    ;; Resolve function.
                                    (= k :func) 
-                                   (cond
-                                     ;; Because of clojure does not function "!=", we replaced it by funciton "not="
-                                     (= (cs/trim res-) "!=") #'clojure.core/not=
+                                   (let [tres (cs/trim res-)]
+                                     (case tres
+                                       ;; Because of clojure does not function "!=", we replaced it by funciton "not="
+                                       "!=" #'clojure.core/not=
 
-                                     ;; Function for regular expressions.
-                                     (= (cs/trim res-) "~") #'clojure.core/re-find 
+                                       ;; Function for regular expressions.
+                                       "~" #'clojure.core/re-find 
 
-                                     ;; Identical function.
-                                     (= (cs/trim res-) "==") #'clojure.core/identical?
+                                       ;; Identical function.
+                                       "==" #'clojure.core/identical?
                                      
-                                     :else (resolve (symbol res-)))
+                                       (resolve (symbol res-))))
 
                                    ;; Strings, numbers are not needed in any processing.
                                    :else res-))))
