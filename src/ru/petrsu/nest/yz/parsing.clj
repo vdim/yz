@@ -62,7 +62,9 @@
            :is-recur ; Defines whether property is recur.
            :cur-pred ; Current predicate.
            :cur-sort ; Current indicator of sorting.
-           :pp) ; Define process property.
+           :pp ; Define process property.
+           :all ; Defines whether ∀ modificator is set.
+           )
 
 
 ;; Helper macros, definitions and functions.
@@ -304,6 +306,7 @@
              tl (get-info :then-level)
              preds (get-info :preds)
              cpp (get-info :pp)
+             allm (get-info :all)
              res- (effects (if (seq? ret) (cs/trim (reduce str (flatten ret))) ret))
 
              ;; If query is floor(.=1) then res- will be "." (character), 
@@ -325,8 +328,9 @@
              _ (update-info 
                  :preds 
                  #(conj (pop %) 
-                        (assoc (peek %) 
-                               k 
+                        (nnassoc (peek %) 
+                                 :all allm
+                                 k 
                                  (cond
                                    ;; If RCP is part of predicate (like this: ei#(MACAddress="1" || "2"))
                                    ;; with processing properties from MOM, then we should just change parameter.
@@ -854,10 +858,11 @@
 
 (declare where)
 (def f (alt (conc (lit \() where (lit \)))
-            (conc (alt (change-pred pred-id :ids) 
+            (conc (alt (conc (opt (invisi-conc (lit \∀) (set-info :all true))) ; ALL modificator.
+                             (change-pred pred-id :ids))
                        (pfunc-as-param :ids))
                   (change-pred sign :func) 
-                  value)))
+                  (invisi-conc value (set-info :all nil)))))
 (def t-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")))) 
                         (invisi-conc f (add-op-to-preds :and))
                         t-prime) emptiness))
@@ -1001,7 +1006,7 @@
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
   (do (def mom mom)
-    ((query (struct q-representation (seq q) empty-res 0 0 [] nil [] false empty-pred nil nil)) 1)))
+    ((query (struct q-representation (seq q) empty-res 0 0 [] nil [] false empty-pred nil nil nil)) 1)))
 
 
 (defn parse

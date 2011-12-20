@@ -278,8 +278,8 @@
 
 (defn- process-preds
   "Processes restrictions."
-  [o, pred] 
-  (let [{:keys [ids func value]} pred
+  [o, pred]
+  (let [{:keys [all ids func value]} pred
         objs (cond (vector? ids) 
                    (reduce (fn [r {:keys [id cl]}]
                              (let [objs- (reduce #(get-objs %2 %1) r id)]
@@ -302,10 +302,12 @@
                func)
         func #(try (func %1 %2)
                 ; If exception is caused then value is returned as nil.
-                (catch Exception e nil))]
+                (catch Exception e nil))
+        ;; Define filter function.
+        f (if all every? some)]
     (if (map? value)
-        (some #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
-        (some #(func % value) objs))))
+        (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
+        (f #(func % value) objs))))
 
 
 (defn- get-objs-by-path
