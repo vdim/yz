@@ -899,6 +899,68 @@
            ))
 
 
+(deftest preds-with-allm
+         ^{:doc "Tests parsing queries with predicates which contain ALL modificator (∀)."}
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :preds %2}])]
+           (is (f "building#(∀floor.=1)" 
+                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(∀room.=1)" 
+                  [{:all true :ids [{:id ["floors" "rooms"] :cl Room} 
+                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(∀floor.room.=1)" 
+                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["rooms"] :cl Room}
+                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(∀floor.=1 && room.=2)" 
+                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(∀floor.=1 && ∀room.=2)" 
+                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:all true :ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(floor.=1 && ∀room.=2)" 
+                  [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:all true :ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(∀.=1)" 
+                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+           (is (f "building#(∀.=1 && .=2)" 
+                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(∀.=1 && ∀.=2)" 
+                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(.=1 && ∀.=2)" 
+                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(∀.=(1 && 2))" 
+                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and]))
+           (is (f "building#(.=1 && .=2 && ∀.=3)" 
+                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   :and]))
+           (is (f "building#(.=1 && ∀.=2 && ∀.=3)" 
+                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   :and]))
+           (is (f "building#(∀.=1 && ∀.=2 && ∀.=3)" 
+                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                   :and
+                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   :and]))
+           ))
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
 (def qlist
@@ -1400,6 +1462,18 @@
    "ni^.device^.room^.floor^.building^"
    "ni^.device^.room^.floor.building^"
    "ni.device^.room^.floor.building^"
+
+   ;; "ALL" modificator
+   "floor#(∀number=1)"
+   "room#(∀building.name=\"1\")"
+   "room#(∀building.floor.room.name=\"1\")"
+   "floor#(∀room.number=1)"
+   "floor#(number=2 && ∀room.number=1)"
+   "floor#(∀room.number=1 && number=2)"
+   "floor#(∀room.number=1 && ∀device.name=\"nd\")"
+   "floor#(∀room.number=1 && ∀device.name=\"nd\")"
+   "floor#(∀room.number=1 || ∀device.name=\"nd\")"
+   "floor#(∀room.number=1 || ∀device.name=\"nd\" && ∀li.name=\"ld\")"
    ])
 
 
@@ -1483,10 +1557,12 @@
 
 (deftest neg-parse-tests
          ^{:doc "Contains tests which are thrown exceptions."}
-         (is (thrown? SyntaxException (parse "building#" mom-)))
-         (is (thrown? NullPointerException (parse "(building)" mom-)))
-         (is (thrown? NullPointerException (parse ", building" mom-)))
-         (is (thrown? SyntaxException (parse "building, " mom-))))
+         (let [f #(parse % mom-)]
+           (is (thrown? SyntaxException (f "building#")))
+           (is (thrown? NullPointerException (f "(building)")))
+           (is (thrown? NullPointerException (f ", building")))
+           (is (thrown? SyntaxException (f "building, ")))
+           (is (thrown? SyntaxException (f "building#(floor.∀room.number=1)")))))
 
 (comment
 (deftest t-parse-remainder
