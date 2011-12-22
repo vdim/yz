@@ -601,7 +601,7 @@
 
 (def alpha
   "Sequence of characters."
-  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&+/-*:"))
+  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&+/-*:?"))
 
 (def digit
   "Sequence of digits."
