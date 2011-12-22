@@ -305,9 +305,9 @@
                 (catch Exception e nil))
         ;; Define filter function.
         f (if all every? some)]
-    (if (map? value)
-        (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
-        (f #(func % value) objs))))
+    (cond (nil? (seq objs)) false
+          (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
+          :else (f #(func % value) objs))))
 
 
 (defn- get-objs-by-path
