@@ -433,3 +433,19 @@
            (let [rows (tc/rows-query "floor#(.=(3 && 2))")]
              (is (= (count rows) 0)))
            ))
+
+
+(deftest preds-with-ALLm
+         (let [cr? #(= (count %1) %2)]
+           (let [rows (tc/rows-query "building#(∀floor.number=1)")]
+             (is (cr? rows 1))
+             (is (= ((nth rows 0) 0) b2)))
+           (let [rows (tc/rows-query "building#(∀floor.number=3)")]
+             (is (empty? rows)))
+           (let [rows (tc/rows-query "floor#(∀room.number~\"^1.*\")")]
+             (is (cr? rows 1))
+             (is (= ((nth rows 0) 0) f1_b1)))
+           (let [rows (tc/rows-query "building (floor#(∀room.number~\"^1.*\"))")]
+             (is (cr? rows 3))
+             (map #(or (= 0 (% 1)) (= 1 (% 1))) rows))
+           ))
