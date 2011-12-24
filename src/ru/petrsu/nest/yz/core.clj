@@ -318,7 +318,7 @@
         path (first where)] ; At this moment we use first path.
     (sort-rq (filter-by-preds 
                (filter #(instance? what %) 
-                       (reduce #(get-objs %2 %1) sources path)) preds)
+                       (pvreduce #(get-objs %2 %1) sources path)) preds)
              sort false)))
 
 
