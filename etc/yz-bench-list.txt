@@ -1,10 +1,23 @@
 # Copyright 2011 Vyacheslav Dimitrov, Petrozavodsk State University.
 # Contains result of benchmarks for specified list of queries.
-# There are some scenario (from Nest project): 
 #
-# First column is the number of a benchmark.
-# Second is time of the parsing.
-# Third is time of the quering.
+# There are some scenario (from Nest project): 
+#   enlivener - scenario for the automatical creating Spatial and Organization 
+#	structrue of SON model (YZ is used for searching elements which has 
+#	already added).
+#   address-info - scenario for searching information about specified IP address.
+#
+# Also qlist is list with queries from the test_parsing.clj file which are used for testing parsing.
+#
+#   Title:
+#	Num - the number of experiment.
+#	P - total time of parsing.
+#	Q - total time of quering.
+#	Avg - average time.
+#	Q(5%) - quantile 5%
+#	Q(50%) - quantile 50%
+#	Q(90%) - quantile 90%
+#
 #
 # Information about benchmark (see after results):
 #   - number 
@@ -26,6 +39,7 @@
 #count=7
 
 
+  Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;enlivener-queries
    7      13840.9088      30378.4951        607.5699        517.2077        553.6061        641.8577
    6      14164.8022      30670.3015        613.4060        519.9997        557.2789        647.5748
@@ -35,6 +49,7 @@
    2      10801.0734      93925.1398       1878.5028       1834.0894       1857.4941       1934.6278
    1      12856.3821     121959.6875       2439.1937       2303.8892       2390.8343       2587.9871
 
+  Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;address-info-queries
    7       1215.0615       3255.9873         65.1197         36.6802         57.5760         94.4692
    6        990.5453       3337.2540         66.7451         39.4799         59.6667         97.3063
@@ -44,6 +59,7 @@
    2        679.0746      42701.5098        854.0302        840.1832        851.0180        870.2860
    1        854.4696      44369.0813        887.3816        854.0445        875.8018        926.7886
 
+  Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;qlist
    7      35046.0189    3282958.6231      65659.1725      56762.1857      65982.7041      72916.8791
    6      34914.7183    3700282.0231      74005.6405      68501.8027      74187.9991      78592.8964
