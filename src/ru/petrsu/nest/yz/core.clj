@@ -108,7 +108,7 @@
                            (if (and params (not (some vector? params)))
                              (assoc %2 :value (nth (process-func (:value %2) nil) 0))
                              %2))) [] preds)] 
-      (filter #(pp-func % preds) objs))))
+      (pvfilter #(pp-func % preds) (vec objs)))))
 
 
 (defn- sort-rq
@@ -449,6 +449,8 @@
   ([data]
      (get-rows data ()))
   ([data & args]
+(if (nil? data)
+()
    (if (empty? (data 0))
      (if (empty? (nth args 0))
        ()
@@ -457,7 +459,7 @@
                (cond (empty? o) [nil]
                      (empty? (o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
                      :else (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o))))
-             data))))
+             data)))))
 
 
 (defrecord Result 
