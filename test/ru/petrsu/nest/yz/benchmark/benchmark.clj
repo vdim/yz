@@ -197,7 +197,7 @@
                 nb ptime qtime sa p5 p50 p90))
 
 
-(defn- get-num-bench
+(defn get-num-bench
   "Returns a previous number of the benchmark."
   [f]
   (some #(if (.startsWith % "#count=")
@@ -307,7 +307,8 @@
   "Benchmark for queries from Nest project + qlist from test-parsing.clj. Parameters: 
       - mom - a map of an object model (mandatory).
       - bd - instance of the SON or instance of ElementManager's implementation 
-            (local son manager by default).
+            (local son manager by default) or count of elements into bd which will be 
+            generated.
       - n - times of execution each list with queries (1 by default).
       - f - name of file for result (etc/yz-bench-list.txt by default).
   Use nil for indication value of parameter as default."
