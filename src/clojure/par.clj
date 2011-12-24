@@ -46,7 +46,8 @@
         new-tail (to-array (map f (.tail v)))]
     (PersistentVector. (.cnt v) (.shift v) new-root new-tail)))
 
-(defn pvreduce [f #^PersistentVector v]
+(defn pvreduce 
+  ([f #^PersistentVector v]
   (if (<= (count v) PersistentVector/CHUNK)
     (reduce f v)
     (let [tr (fjvtree v
@@ -57,4 +58,19 @@
                       (recur (f ret (aget a i)) (inc i))
                       ret))))]
       (f tr (reduce f (.tail v))))))
+  ([f val #^PersistentVector v]
+  (if (<= (count v) PersistentVector/CHUNK)
+    (reduce f val v)
+    (let [tr (fjvtree v
+               #(reduce val f %)
+               #(let [a (.array #^PersistentVector$Node %)]
+                  (loop [ret (aget a 0) i (int 1)]
+                    (if (< i PersistentVector/CHUNK)
+                      (recur (f ret (aget a i)) (inc i))
+                      ret))))]
+      (f tr (reduce f val (.tail v)))))))
+
+(defn pvfilter [pred v]
+  (letfn [(filt [v x] (if (pred x) (conj v x) v))]
+    (pvreduce filt [] v)))
 
