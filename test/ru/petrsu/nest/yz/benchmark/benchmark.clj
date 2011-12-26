@@ -189,12 +189,11 @@
 
 
 (defn- get-fs
-  "Returns formatted string with number of the benchmark, 
-  amount of elements into bd, count of execution
-  time of the parsing and time of the quering."
-  [nb ptime [qtime sa p5 p50 p90]] 
-  (cp/cl-format nil "~4D ~15,4F ~15,4F ~15,4F ~15,4F ~15,4F ~15,4F~%" 
-                nb ptime qtime sa p5 p50 p90))
+  "Returns formatted string with specified characteristic."
+  [nb ptime charas]
+  (apply cp/cl-format 
+         nil (str "~4D ~15,4F" (apply str (repeat (count  charas) " ~15,4F")) "~%") 
+         nb ptime charas))
 
 
 (defn get-num-bench
@@ -324,5 +323,6 @@
          f (if (nil? f) bench-list-file f)]
      (write-to-file n bd mom f
                     #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
-                           rb (bench-for-list mom %2 n ql)] 
-                       (get-fs %3 (rb 0) (rb 1)))))))
+                           rb (bench-for-list mom %2 n ql)
+                           timeq (nth (rb 1) 0)] 
+                       (get-fs %3 (rb 0) (concat (rb 1) (list (/ timeq (count ql))))))))))
