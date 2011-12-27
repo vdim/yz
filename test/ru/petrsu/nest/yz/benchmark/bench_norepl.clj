@@ -20,16 +20,19 @@
 (ns ru.petrsu.nest.yz.benchmark.bench-norepl
   ^{:author "Vyacheslav Dimitrov"
     :doc "Running benchmark from command line for specified list of commits."}
-  (:use ru.petrsu.nest.yz.benchmark.benchmark 
-        ru.petrsu.nest.yz.hb-utils))
+  (:require [ru.petrsu.nest.yz.benchmark.benchmark :as bb] )
+  (:use ru.petrsu.nest.yz.hb-utils))
 
 
 (defn -main
   "Running benchmark due to specified parameters for benchmark (fmom bd n f l).
   l? defines weather we run bench-for-list-file or bench-to-file."
-  [fmom bd n f l?]
-  (let [b-mom (mom-from-file fmom)]
-    (if l?
-      (bench-list-to-file b-mom bd n f)
-      (bench-to-file b-mom bd n f))))
+  ([fmom bd n f]
+   (-main fmom bd n f nil))
+  ([fmom bd n f l?]
+   (let [b-mom (mom-from-file fmom)]
+     (if l?
+       (bb/bench-list-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)
+       (bb/bench-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)))
+   (System/exit 0)))
 
