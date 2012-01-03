@@ -324,5 +324,5 @@
      (write-to-file n bd mom f
                     #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
                            rb (bench-for-list mom %2 n ql)
-                           timeq (nth (rb 1) 0)] 
-                       (get-fs %3 (rb 0) (concat (rb 1) (list (/ timeq (count ql))))))))))
+                           avg_time (nth (rb 1) 1)] ; Need for counting time per query.
+                       (get-fs %3 (rb 0) (concat (rb 1) (list (/ avg_time (count ql))))))))))
