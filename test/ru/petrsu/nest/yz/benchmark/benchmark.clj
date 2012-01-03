@@ -302,6 +302,12 @@
   "etc/yz-bench-list.txt")
 
 
+(defn- get-def
+  "Returns value of definition for specified name."
+  [name]
+  (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring name 1)))) (all-ns))))
+
+
 (defn bench-list-to-file
   "Benchmark for queries from Nest project + qlist from test-parsing.clj. Parameters: 
       - mom - a map of an object model (mandatory).
@@ -322,7 +328,27 @@
          n (if (nil? n) 1 n)
          f (if (nil? f) bench-list-file f)]
      (write-to-file n bd mom f
-                    #(let [ql (.get (some (fn [ns-] (ns-resolve ns- (symbol (.substring %1 1)))) (all-ns)))
+                    #(let [ql (get-def %1)
                            rb (bench-for-list mom %2 n ql)
                            avg_time (nth (rb 1) 1)] ; Need for counting time per query.
                        (get-fs %3 (rb 0) (concat (rb 1) (list (/ avg_time (count ql))))))))))
+
+
+(defn add-time-per-query
+  "Takes file with benchmarks of lists, adds time per query to it
+  and adds"
+  [f]
+  (let [cur-list (atom "")
+        new-res 
+        (reduce 
+          #(str %1 (cond (.startsWith %2 ";") 
+                         (do (reset! cur-list (get-def %2)) (str %2 \newline))
+                         (.startsWith %2 "#") (str %2 \newline)
+                         :else
+                         (let [s (read-string (str "[" %2 "]"))]
+                           (if (and (not-empty s) (every? number? s) (= (count s) 7))
+                             (get-fs (s 0) (s 1) (concat (drop 2 s) (list (/ (s 3) (count @cur-list)))))
+                             (str %2 \newline)))))
+            "" 
+            (line-seq (cio/reader f)))] 
+    (cio/copy new-res (cio/file f))))
