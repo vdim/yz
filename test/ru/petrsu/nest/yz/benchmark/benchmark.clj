@@ -329,9 +329,9 @@
          f (if (nil? f) bench-list-file f)]
      (write-to-file n bd mom f
                     #(let [ql (get-def %1)
-                           rb (bench-for-list mom %2 n ql)
-                           avg_time (nth (rb 1) 1)] ; Need for counting time per query.
-                       (get-fs %3 (rb 0) (concat (rb 1) (list (/ avg_time (count ql))))))))))
+                           [rb0 rb1] (bench-for-list mom %2 n ql)
+                           avg_time (nth rb1 1)] ; Need for counting time per query.
+                       (get-fs %3 rb0 (concat rb1 (list (/ avg_time (count ql))))))))))
 
 
 (defn add-time-per-query
