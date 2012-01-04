@@ -1487,8 +1487,10 @@
    "floor#(all:room.number=1 || all:device.name=\"nd\")"
    "floor#(all:room.number=1 || all:device.name=\"nd\" && all:li.name=\"ld\")"
 
-   ;; Function with namespace
+   ;; Name of a function may contains any character.
    "building[@(clojure.core/count `room')]"
+   "building[@(clojure.core/nil? `room')]"
+   "building[@(nil? `room')]"
    ])
 
 
