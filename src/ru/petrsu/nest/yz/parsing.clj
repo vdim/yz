@@ -550,10 +550,10 @@
 
 (defn- text
   "Rule for recognizing any string.
-  ch defines last symbol of this string."
-  [ch state]
+  ch defines list with last symbols of this string."
+  [chs state]
   (let [remainder (reduce str (:remainder state))
-        res (for [a (:remainder state) :while (not (= a ch))] a)]
+        res (for [a (:remainder state) :while (not (some #(= a %) chs))] a)]
     [(reduce str res) 
      (assoc state :remainder (sdrop (count res) remainder))]))
 
@@ -640,7 +640,7 @@
 
 (def string
   "Defines string"
-  (conc (lit \") (partial text \") (lit \")))
+  (conc (lit \") (partial text [\"]) (lit \")))
 
 
 (def descsort
@@ -890,7 +890,7 @@
 
 (def process-fn
   "Processes function name."
-  (complex [n (rep+ (alt alpha (lit \.)))
+  (complex [n (partial text [\space \newline \tab])
             _ (update-info :function 
                            #(if-let [f (let [sym (symbol (reduce str "" n))]
                                          (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]

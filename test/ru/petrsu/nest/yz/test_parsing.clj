@@ -1486,6 +1486,9 @@
    "floor#(all:room.number=1 && all:device.name=\"nd\")"
    "floor#(all:room.number=1 || all:device.name=\"nd\")"
    "floor#(all:room.number=1 || all:device.name=\"nd\" && all:li.name=\"ld\")"
+
+   ;; Function with namespace
+   "building[@(clojure.core/count `room')]"
    ])
 
 
