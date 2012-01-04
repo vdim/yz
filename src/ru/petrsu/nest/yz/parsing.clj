@@ -727,12 +727,11 @@
 (defn- process-id
   "Processes some id due to functions 'f'"
   [f]
-  (complex [id (conc (alt (lit-conc-seq "&.") (rep+ alpha)) (opt (lit \^)))
-  ;(complex [id (alt (lit-conc-seq "&.") (rep+ alpha)) 
+  (complex [id (conc (alt (lit-conc-seq "&.") (rep+ alpha)) 
+                     (opt (lit \^))) ; Defines whether class must be exact.
             _ (partial set-id (reduce str (flatten id)) f)]
             id))
 
-;(def id (conc (process-id found-id) (opt (lit \^))))
 (def id (process-id found-id))
 
 
@@ -979,7 +978,6 @@
   (complex [s (conc (lit \&) (alt (conc (lit \.) (rep* alpha)) emptiness))
             _ (update-param (reduce str "" (flatten s)))]
            s))
-
 
 
 (def funcq
