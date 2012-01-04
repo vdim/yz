@@ -120,7 +120,7 @@
  
   ;; Value is got from bean of the object o.
   (^Object getPropertyValue [this ^Object o, ^String property]
-     ((keyword property) (bean o)))
+     (get (bean o) (keyword property) :not-found))
 
 
   ExtendedElementManager
