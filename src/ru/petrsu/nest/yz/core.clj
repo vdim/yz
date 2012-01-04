@@ -316,7 +316,8 @@
   [sources m]
   (let [{:keys [preds where ^Class what sort exactly]} m
         f (if exactly #(= (class %) what) #(instance? what %))
-        path (first where)] ; At this moment we use first path.
+        min-counts (apply min (map count where))
+        path (some #(if (= min-counts (count %)) %) where)] ; At this moment we use path with minimum edges.
     (sort-rq (filter-by-preds 
                (filter f (reduce #(get-objs %2 %1) sources path)) preds)
              sort false)))
