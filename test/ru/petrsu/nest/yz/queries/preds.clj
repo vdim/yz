@@ -448,4 +448,15 @@
            (let [rows (tc/rows-query "building (floor#(∀room.number~\"^1.*\"))")]
              (is (cr? rows 3))
              (map #(or (= 0 (% 1)) (= 1 (% 1))) rows))
+           (let [rows (tc/rows-query "building#(all:floor.number=1)")]
+             (is (cr? rows 1))
+             (is (= ((nth rows 0) 0) b2)))
+           (let [rows (tc/rows-query "building#(all:floor.number=3)")]
+             (is (empty? rows)))
+           (let [rows (tc/rows-query "floor#(all:room.number~\"^1.*\")")]
+             (is (cr? rows 1))
+             (is (= ((nth rows 0) 0) f1_b1)))
+           (let [rows (tc/rows-query "building (floor#(all:room.number~\"^1.*\"))")]
+             (is (cr? rows 3))
+             (map #(or (= 0 (% 1)) (= 1 (% 1))) rows))
            ))

@@ -857,7 +857,7 @@
 
 (declare where)
 (def f (alt (conc (lit \() where (lit \)))
-            (conc (alt (conc (opt (invisi-conc (lit \∀) (set-info :all true))) ; ALL modificator.
+            (conc (alt (conc (opt (invisi-conc (alt (lit \∀) (lit-conc-seq "all:")) (set-info :all true))) ; ALL modificator.
                              (change-pred pred-id :ids))
                        (pfunc-as-param :ids))
                   (change-pred sign :func) 

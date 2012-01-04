@@ -901,66 +901,68 @@
 
 (deftest preds-with-allm
          ^{:doc "Tests parsing queries with predicates which contain ALL modificator (∀)."}
-         (let [f #(= (parse %1 mom-)
-                     [{:what Building
-                       :preds %2}])]
-           (is (f "building#(∀floor.=1)" 
+         (let [f #(every? (fn [q] (= (parse q mom-) [{:what Building :preds %2}])) %1)]
+           (is (f ["building#(∀floor.=1)" "building#(all:floor.=1)"]
                   [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
-           (is (f "building#(∀room.=1)" 
+           (is (f ["building#(∀room.=1)" "building#(all:room.=1)"]
                   [{:all true :ids [{:id ["floors" "rooms"] :cl Room} 
                           {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
-           (is (f "building#(∀floor.room.=1)" 
+           (is (f ["building#(∀floor.room.=1)" "building#(all:floor.room.=1)"]
                   [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["rooms"] :cl Room}
                           {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
-           (is (f "building#(∀floor.=1 && room.=2)" 
+           (is (f ["building#(∀floor.=1 && room.=2)" "building#(all:floor.=1 && room.=2)"]
                   [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
                    {:ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
-           (is (f "building#(∀floor.=1 && ∀room.=2)" 
+           (is (f ["building#(∀floor.=1 && ∀room.=2)" "building#(all:floor.=1 && all:room.=2)" 
+                   "building#(all:floor.=1 && ∀room.=2)" "building#(∀floor.=1 && all:room.=2)"]
                   [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
                    {:all true :ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
-           (is (f "building#(floor.=1 && ∀room.=2)" 
+           (is (f ["building#(floor.=1 && ∀room.=2)" "building#(floor.=1 && all:room.=2)"]
                   [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
                    {:all true :ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
-           (is (f "building#(∀.=1)" 
+           (is (f ["building#(∀.=1)" "building#(all:.=1)"]
                   [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}]))
-           (is (f "building#(∀.=1 && .=2)" 
+           (is (f ["building#(∀.=1 && .=2)" "building#(all:.=1 && .=2)"]
                   [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
                    {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
-           (is (f "building#(∀.=1 && ∀.=2)" 
+           (is (f ["building#(∀.=1 && ∀.=2)" "building#(all:.=1 && all:.=2)" 
+                   "building#(all:.=1 && ∀.=2)" "building#(∀.=1 && all:.=2)"]
                   [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
-           (is (f "building#(.=1 && ∀.=2)" 
+           (is (f ["building#(.=1 && ∀.=2)" "building#(.=1 && all:.=2)"]
                   [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
-           (is (f "building#(∀.=(1 && 2))" 
+           (is (f ["building#(∀.=(1 && 2))" "building#(all:.=(1 && 2))"]
                   [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
-           (is (f "building#(.=1 && .=2 && ∀.=3)" 
+           (is (f ["building#(.=1 && .=2 && ∀.=3)" "building#(.=1 && .=2 && all:.=3)"]
                   [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
                    {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
-           (is (f "building#(.=1 && ∀.=2 && ∀.=3)" 
+           (is (f ["building#(.=1 && ∀.=2 && ∀.=3)" "building#(.=1 && all:.=2 && all:.=3)" 
+                   "building#(.=1 && all:.=2 && ∀.=3)" "building#(.=1 && ∀.=2 && all:.=3)"]
                   [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
-           (is (f "building#(∀.=1 && ∀.=2 && ∀.=3)" 
+           (is (f ["building#(∀.=1 && ∀.=2 && ∀.=3)" "building#(all:.=1 && all:.=2 && all:.=3)"]
                   [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and
                    {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
            ))
+
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
 (def qlist
@@ -1474,6 +1476,16 @@
    "floor#(∀room.number=1 && ∀device.name=\"nd\")"
    "floor#(∀room.number=1 || ∀device.name=\"nd\")"
    "floor#(∀room.number=1 || ∀device.name=\"nd\" && ∀li.name=\"ld\")"
+   "floor#(all:number=1)"
+   "room#(all:building.name=\"1\")"
+   "room#(all:building.floor.room.name=\"1\")"
+   "floor#(all:room.number=1)"
+   "floor#(number=2 && all:room.number=1)"
+   "floor#(all:room.number=1 && number=2)"
+   "floor#(all:room.number=1 && all:device.name=\"nd\")"
+   "floor#(all:room.number=1 && all:device.name=\"nd\")"
+   "floor#(all:room.number=1 || all:device.name=\"nd\")"
+   "floor#(all:room.number=1 || all:device.name=\"nd\" && all:li.name=\"ld\")"
    ])
 
 
