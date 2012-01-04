@@ -88,7 +88,7 @@
 (defn- do-times
   "Returns sequence of time (n times) of execution some function f."
   [f, n]
-  (map (fn [_] (bu/btime (f))) (repeat n 0)))
+  (repeatedly n #(bu/btime (f))))
 
 
 (defn bench-parsing
