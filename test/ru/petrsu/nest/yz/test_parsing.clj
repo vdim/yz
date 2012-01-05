@@ -963,6 +963,30 @@
                    :and]))
            ))
 
+
+(deftest funcs-mods
+         ^{:doc "Tests function's modificators."}
+         (let [f #(= (parse %1 mom-) [{:func #'clojure.core/count :params [[%2 [{:what Building}]]]}])]
+           (is (f "@(count `building')" :dep-list))
+           (is (f "@(count dep-list:`building')" :dep-list))
+           (is (f "@(count dl:`building')" :dep-list))
+           (is (f "@(count dep-each:`building')" :dep-each))
+           (is (f "@(count de:`building')" :dep-each))
+           (is (f "@(count indep-list:`building')" :indep-list))
+           (is (f "@(count il:`building')" :indep-list))
+           (is (f "@(count indep-each:`building')" :indep-each))
+           (is (f "@(count ie:`building')" :indep-each)))
+           
+         (let [f #(= (parse %1 mom-) [{:func #'clojure.core/count :params [[%2 [{:what Building}]]]} 
+                                      {:func #'clojure.core/count :params [[%3 [{:what Room}]]]}])]
+           (is (f "@(count `building'), @(count `room')" :dep-list :dep-list))
+           (is (f "@(count `building'), @(count dl:`room')" :dep-list :dep-list))
+           (is (f "@(count dl:`building'), @(count `room')" :dep-list :dep-list))
+           (is (f "@(count dl:`building'), @(count dl:`room')" :dep-list :dep-list))
+           (is (f "@(count il:`building'), @(count dl:`room')" :indep-list :dep-list))
+           (is (f "@(count il:`building'), @(count de:`room')" :indep-list :dep-each))))
+
+
 (defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
 
 (def qlist
@@ -1109,35 +1133,35 @@
 ;; Functions as query.
    "@(str \"One - \" 1 \", Two -\" 2)"
    "@(str `room')"
-   "@(str %room')"
-   "@(str $room')"
+   "@(str dl:`room')"
+   "@(str il:`room')"
    "@(str `floor')"
-   "@(str %floor')"
-   "@(str $floor')"
+   "@(str de:`floor')"
+   "@(str ie:`floor')"
    "@(str `floor' `room')"
-   "@(str `floor' %room')"
-   "@(str `floor' $room')"
-   "@(str %floor' %room')"
-   "@(str %floor' `room')"
-   "@(str %floor' $room')"
-   "@(str $floor' $room')"
-   "@(str $floor' `room')"
-   "@(str $floor' %room')"
+   "@(str `floor' de:`room')"
+   "@(str `floor' il:`room')"
+   "@(str de:`floor' de:`room')"
+   "@(str de:`floor' `room')"
+   "@(str de:`floor' ie:`room')"
+   "@(str ie:`floor' de:`room')"
+   "@(str ie:`floor' `room')"
+   "@(str ie:`floor' ie:`room')"
    "@(str `floor' 1 `room')"
-   "@(str `floor' 2 $room')"
-   "@(str `floor' 3 %room')"
+   "@(str `floor' 2 de:`room')"
+   "@(str `floor' 3 ie:`room')"
    "@(str `floor' 1 `room' 3)"
-   "@(str `floor' 2 $room' 2)"
-   "@(str `floor' 3 %room' 1)"
+   "@(str `floor' 2 de:`room' 2)"
+   "@(str `floor' 3 ie:`room' 1)"
    "@(str `floor' `room' 3)"
-   "@(str `floor' $room' 2)"
-   "@(str `floor' %room' 1)"
+   "@(str `floor' de:`room' 2)"
+   "@(str `floor' ie:`room' 1)"
    "@(str 1 `floor' `room' 3)"
-   "@(str 2 `floor' $room' 2)"
-   "@(str 3 `floor' %room' 1)"
+   "@(str 2 `floor' de:`room' 2)"
+   "@(str 3 `floor' ie:`room' 1)"
    "@(str 1 `floor' 4 `room' 3)"
-   "@(str 2 `floor' 5 $room' 2)"
-   "@(str 3 `floor' 6 %room' 1)"
+   "@(str 2 `floor' 5 de:`room' 2)"
+   "@(str 3 `floor' 6 ie:`room' 1)"
 
 ;; Keywords
    "device#(forwarding=true)"
@@ -1491,6 +1515,18 @@
    "building[@(clojure.core/count `room')]"
    "building[@(clojure.core/nil? `room')]"
    "building[@(nil? `room')]"
+
+   ;; New function's modificators (It tests in qlist, but this is just in case.)
+   "@(count `room')"
+   "@(count dl:`room')"
+   "@(count de:`room')"
+   "@(count il:`room')"
+   "@(count ie:`room')"
+   "building[@(count `room')]"
+   "building[@(count dl:`room')]"
+   "building[@(count de:`room')]"
+   "building[@(count il:`room')]"
+   "building[@(count ie:`room')]"
    ])
 
 
@@ -1504,11 +1540,11 @@
 
 (def qlist-single
   ^{:doc "Defines list with query-function with parameter (as :single) from qlist"}
-  (vec (map #(str "@(str $" % "')") qlist)))
+  (vec (map #(str "@(str de:`" % "')") qlist)))
 
 (def qlist-indep
   ^{:doc "Defines list with query-function with parameter (as :indep) from qlist"}
-  (vec (map #(str "@(str %" % "')") qlist)))
+  (vec (map #(str "@(str ie:`" % "')") qlist)))
 
 (def qlist-prop
   ^{:doc "Defines list with queries which have function as property."}
@@ -1518,16 +1554,16 @@
                   (map #(str "building[@(str `" % "') & @(str `" % "')]") qlist)
                   (map #(str "building[& @(str `" % "') @(str `" % "')]") qlist)
                   (map #(str "building[@(str `" % "') @(str `" % "') &]") qlist)
-                  (map #(str "building[& @(str $" % "')]") qlist)
-                  (map #(str "building[& @(str %" % "')]") qlist)))))
+                  (map #(str "building[& @(str de:`" % "')]") qlist)
+                  (map #(str "building[& @(str ie:`" % "')]") qlist)))))
 
 (def qlist-pred
   ^{:doc "Defines list with queries which have function as predicate."}
   (vec (flatten (list 
                   (map #(str "building#(@(str `" % "') > 3)") qlist)
                   (map #(str "building#(@(str `" % "') < 3)") qlist)
-                  (map #(str "building#(@(str `" % "') = @(str $" % "'))") qlist)
-                  (map #(str "building#(@(str $" % "') = @(str %" % "'))") qlist)))))
+                  (map #(str "building#(@(str `" % "') = @(str de:`" % "'))") qlist)
+                  (map #(str "building#(@(str de:`" % "') = @(str ie:`" % "'))") qlist)))))
 
 
 (def clist-next-query

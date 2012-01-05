@@ -226,10 +226,10 @@
                            ; param is result of a query.
                            (vector? %)
                            (let [[fmod q] %
-                                 rq (if (or (= fmod :indep) (nil? obj))
+                                 rq (if (or (= fmod :indep-list) (= fmod :indep-each) (nil? obj))
                                         (run-query q)
                                         (process-nests q obj))]
-                             (if (= fmod :single) 
+                             (if (or (= fmod :indep-each) (= fmod :dep-each))
                                {:mode :single 
                                 :res (map (fn [p] (get-rows [p])) 
                                           (mapcat (fn [r] (map vec (partition 2 r))) rq))}

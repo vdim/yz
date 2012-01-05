@@ -88,16 +88,16 @@
 (deftest t-count
          ^{:doc "Tests calling function (count)."}
          (let [f-c #(= (nth (tc/r-query %1) 0) %2)]
-           (is (f-c "@(count %building')" [3 []]))
-           (is (f-c "@(count $building')" [1 [] 1 [] 1 []]))
+           (is (f-c "@(count il:`building')" [3 []]))
+           (is (f-c "@(count de:`building')" [1 [] 1 [] 1 []]))
            (is (f-c "@(count `building')" [3 []]))
-           (is (f-c "@(count %room')" [13 []]))
+           (is (f-c "@(count il:`room')" [13 []]))
            (is (f-c "@(count `room')" [13 []]))
            (is (f-c "@(count `room#(number=\"101\")')" [3 []]))
            (is (f-c "@(count `room#(number=\"102\")')" [1 []]))
            (is (f-c "@(count `room#(number=(\"101\" or \"102\"))')" [4 []]))
            (is (f-c "@(count `room#(number=(\"101\" and \"102\"))')" [0 []]))
-           (is (f-c "@(count %floor')" [5 []]))
+           (is (f-c "@(count il:`floor')" [5 []]))
            (is (f-c "@(count `floor')" [5 []]))
            (is (f-c "@(count `device')" [0 []]))))
 

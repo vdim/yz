@@ -562,7 +562,7 @@
   "Defines number of the nested queries into parameter as query."
   100)
 
-(declare single-pq, list-pq, indep-pq, end-pq)
+(declare end-pq, start-pq)
 (defn- textq
   "Recognizes text of query which is parameter of a function.
   textq restricts count of nested queries, because in case where
@@ -571,9 +571,9 @@
   [state]
   (loop [res "" remainder (:remainder state) end-c 0 count-nq 0]
     (let [ch (first remainder)
-          ^Long c (cond (or (= ch single-pq) (= ch list-pq) (= ch indep-pq)) (inc end-c)
-                       (= ch end-pq) (dec end-c)
-                       :else end-c)]
+          ^Long c (cond (= ch start-pq) (inc end-c)
+                        (= ch end-pq) (dec end-c)
+                        :else end-c)]
       (cond (> count-nq limit-nq) (throw (Exception. "Limit of nested queries is exceeded."))
             (and (= ch end-pq) (= c -1)) [res (assoc state :remainder 
                                                      (sdrop (count res) (reduce str (:remainder state))))]
@@ -616,30 +616,15 @@
   (rep+ (alt (lit \space) (lit \newline) (lit \tab))))
 
 (def end-pq
-  "Defines symbol for indication 
-  end query which is parameter."
+  "Defines symbol for indication end query which is parameter."
   \')
 
-(def list-pq
-  "Defines symbol for indication 
-  query-parameter which is passed as list."
+(def start-pq
+  "Defines symbol for indication start query which is passed."
   \`)
 
-(def single-pq
-  "Defines symbol for indication 
-  query-parameter for which function is called
-  for each tuple."
-  \$)
-
-(def indep-pq
-  "Defines symbol for indication 
-  query-parameter which is independence
-  from the rest of query."
-  \%)
-
-
 (def string
-  "Defines string"
+  "Defines string."
   (conc (lit \") (partial text [\"]) (lit \")))
 
 
@@ -690,7 +675,7 @@
 (def propsort
   "Defines sorting of objects by properties which are not selected.
   For example, rooms from a result of the query {a:number}room,
-  will be sorted by number, although this numbers of rooms is not selected."
+  will be sorted by number, although this numbers of rooms are not selected."
   (conc (lit \{) 
         (rep* (sur-by-ws 
                 (complex [ret (conc (alt descsort ascsort) 
@@ -919,15 +904,22 @@
 (defn- f-mod
   "Generates code for processing modificator 
   of function's parameter-query."
-  [ch fm]
-  (invisi-conc (lit ch) (set-info :f-modificator fm)))
+  [long-mod short-mod fm]
+  (invisi-conc (alt (lit-conc-seq long-mod) 
+                    (lit-conc-seq short-mod)) 
+               (set-info :f-modificator fm)))
+
+
+(def dep-each (f-mod "dep-each:" "de:" :dep-each))
+(def dep-list (f-mod "dep-list:" "dl:" :dep-list))
+(def indep-each (f-mod "indep-each:" "ie:" :indep-each))
+(def indep-list (f-mod "indep-list:" "il:" :indep-list))
 
 
 (def param-query
   "Defines parameter as query."
-  (conc (alt (f-mod single-pq :single)
-             (f-mod list-pq :list)
-             (f-mod indep-pq :indep))
+  (conc (opt (alt dep-each dep-list indep-each indep-list))
+        (lit start-pq)
         (complex [ret textq 
                   nl (get-info :nest-level)
                   tl (get-info :then-level)
@@ -937,7 +929,9 @@
                                                :where 
                                                (get-paths (:what %) (get-in-nest res nl :what))) q)))
                   fm (get-info :f-modificator)
-                  _ (update-param [fm q])]
+                  fm (effects (if (nil? fm) :dep-list fm))
+                  _ (update-param [fm q])
+                  _ (set-info :f-modificator nil)]
                  ret)
         (lit end-pq)))
 
