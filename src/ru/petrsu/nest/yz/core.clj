@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -280,6 +280,7 @@
   "Processes restrictions."
   [o, pred]
   (let [{:keys [all ids func value]} pred
+        value (if (keyword? value) (nth @p/query-params (dec (Integer/parseInt (name value)))) value)
         objs (cond (vector? ids) 
                    (reduce (fn [r {:keys [id cl]}]
                              (let [objs- (reduce #(get-objs %2 %1) r id)]
@@ -469,6 +470,23 @@
   ^{:doc "The memoized version of the parse function from the parsing.clj"}
   mparse (memoize p/parse))
 
+(defn get-qr
+  "Takes result of parsing and returns result of quering."
+  [parse-res ^PersistentArrayMap mom ^ElementManager em]
+  (binding [*mom* mom
+            *em* em]
+    (let [query-res (if (string? parse-res)     
+                      parse-res
+                      (try
+                        (run-query parse-res)
+                        (catch Throwable e (let [msg (.getMessage e)
+                                                 msg (if (nil? msg) (.toString e) msg)]
+                                             msg))))]
+      (if (string? query-res)
+        (Result. [] query-res [] ())
+        (let [rows (distinct (get-rows query-res))]
+          (Result. query-res nil (get-columns-lite rows) rows))))))
+
 
 (defn pquery
   "Returns map where
@@ -478,23 +496,29 @@
     :columns - vector with column's names.
     :rows - rows of the result of a query."
   [^String query ^PersistentArrayMap mom ^ElementManager em]
-  (binding [*mom* mom
-            *em* em]
-    (if (empty? query)
-      (Result. [[]] nil [] ())
-      (let [parse-res (try
-                        (p/parse query *mom*)
-                        (catch Throwable e (.getMessage e)))
-            parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)
-            query-res (if (string? parse-res)
-                        parse-res
-                        (try
-                          (run-query parse-res)
-                          (catch Throwable e (let [msg (.getMessage e)
-                                                   msg (if (nil? msg) (.toString e) msg)]
-                                               msg))))]
-        (if (string? query-res)
-          (Result. [] query-res [] ())
-          (let [rows (distinct (get-rows query-res))]
-            (Result. query-res nil (get-columns-lite rows) rows)))))))
+  (if (empty? query)
+    (Result. [[]] nil [] ())
+    (let [parse-res (try
+                      (p/parse query mom)
+                      (catch Throwable e (.getMessage e)))
+          parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)]
+      (get-qr parse-res mom em))))
 
+
+(defmacro defq
+  "Macro for definitions queries. May be usefull for 
+  parameterized queries:
+    (defq q \"floor#(number=$1)\") 
+    (q 1)
+    (q 2)"
+  [name ^String query]
+  (let [mi (meta name)
+        conn (:conn mi)
+        conn (if (nil? conn) mi conn)
+        {:keys [mom em]} conn
+        parse-res (p/parse query (eval mom))
+        nparams (count @p/query-params)
+        params (repeatedly nparams gensym)]
+    `(defn ~(symbol (str name)) 
+       ([~@params] (do (reset! p/query-params (list ~@params))
+                     (get-qr ~parse-res ~mom ~em))))))

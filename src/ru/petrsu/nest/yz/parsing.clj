@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -68,6 +68,11 @@
 
 
 ;; Helper macros, definitions and functions.
+
+(def query-params 
+  "Defines vector with query's parameters. Example such query is: 
+    floor#(number=($1 || $2))"
+  (atom []))
 
 (def empty-res
   "Defines vector within one empty map. 
@@ -345,12 +350,15 @@
                                          stor (if (var? stor) stor (create-f stor))]
                                      {:func stor, :params [res-]})
 
+                                   ;; If value is :parameter then value must be atom.
+                                   (= value :parameter) (do (swap! query-params conj nil)
+                                                          (keyword (subs res- 1)))
+                                   
                                    ;; If value is defined then we should return this value without processing (true, false, nil).
                                    (not= value :not-value) value
 
                                    ;; If key is :ids then we should get vector with ids due to get-ids function.
-                                   (= k :ids) ids 
-
+                                   (= k :ids) ids
 
                                    ;; Resolve function.
                                    (= k :func) 
@@ -802,6 +810,10 @@
     (update-info :function #(pop %))))
 
 
+(def value-as-param
+  "Defines value as parameter of query: floor#(number=$1)"
+  (conc (lit \$) (rep+ digit)))
+
 ;; The block "value" has the following BNF:
 ;;    value -> v value'
 ;;    value'-> or v value' | ε
@@ -811,17 +823,20 @@
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) 
-                         (change-pred number :value :number)) 
+                         (alt (change-pred number :value :number) 
+                              (change-pred value-as-param :value :parameter)))
 
                    ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
                    (conc (opt (change-pred 
                                 (sur-by-ws 
                                   (alt (lit \=) (lit \~) (lit-conc-seq "!=") (lit-conc-seq "==")))
                                 :func)) 
-                         (change-pred string :value :string))
+                         (alt (change-pred string :value :string) 
+                              (change-pred value-as-param :value :parameter)))
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)
+                   (change-pred value-as-param :value :parameter)
                    (pfunc-as-param :value))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (add-op-to-preds :and))
@@ -998,6 +1013,7 @@
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
   (do (def mom mom)
+    (reset! query-params [])
     ((query (struct q-representation (seq q) empty-res 0 0 [] nil [] false empty-pred nil nil nil)) 1)))
 
 
