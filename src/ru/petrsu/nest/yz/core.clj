@@ -65,6 +65,11 @@
   (getElems [this claz preds]))
 
 
+(defrecord Result 
+  ^{:doc "Map with the result of executing 'pquery'."}
+  [result error columns rows])
+
+
 (def ^{:dynamic true
        :tag ElementManager} *em*)
 (def ^{:dynamic true} *mom*)
@@ -216,6 +221,12 @@
         ; Returns value.
         :else v))))
 
+(defn- get-qp
+  "Returns value from p/query-params for 
+  specified number (has string type)."
+  [n]
+  (nth @p/query-params (dec (Integer/parseInt (name n)))))
+
 
 (declare process-nests, get-rows, run-query)
 (defn- process-func
@@ -224,19 +235,23 @@
   [f-map, obj]
   (let [params (map #(cond
                            ; params is parameter: @(str $1)
-                           (keyword? %) (nth @p/query-params (dec (Integer/parseInt (name %))))
+                           (keyword? %) (let [qp (get-qp %)]
+                                          (if (instance? Result qp) (:rows qp) qp))
                        
                            ; param is result of a query.
                            (vector? %)
                            (let [[fmod q] %
-                                 rq (if (or (= fmod :indep-list) (= fmod :indep-each) (nil? obj))
-                                        (run-query q)
-                                        (process-nests q obj))]
-                             (if (or (= fmod :indep-each) (= fmod :dep-each))
-                               {:mode :single 
-                                :res (map (fn [p] (get-rows [p])) 
-                                          (mapcat (fn [r] (map vec (partition 2 r))) rq))}
-                               (get-rows rq)))
+                                 q (if (keyword? q) (get-qp q) q)
+                                 rq (cond (instance? Result q) q
+                                          (or (= fmod :indep-list) (= fmod :indep-each) (nil? obj))
+                                          (run-query q)
+                                          :else (process-nests q obj))]
+                             (cond (instance? Result q) (:rows q)
+                                   (or (= fmod :indep-each) (= fmod :dep-each))
+                                   {:mode :single 
+                                    :res (map (fn [p] (get-rows [p])) 
+                                              (mapcat (fn [r] (map vec (partition 2 r))) rq))}
+                                   :else (get-rows rq)))
 
                            ; param is another function.
                            (map? %) (process-func % obj)
@@ -283,7 +298,7 @@
   "Processes restrictions."
   [o, pred]
   (let [{:keys [all ids func value]} pred
-        value (if (keyword? value) (nth @p/query-params (dec (Integer/parseInt (name value)))) value)
+        value (if (keyword? value) (get-qp value) value)
         objs (cond (vector? ids) 
                    (reduce (fn [r {:keys [id cl]}]
                              (let [objs- (reduce #(get-objs %2 %1) r id)]
@@ -462,11 +477,6 @@
                      (empty? (o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
                      :else (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o))))
              data))))
-
-
-(defrecord Result 
-  ^{:doc "Map with the result of executing 'pquery'."}
-  [result error columns rows])
 
 
 (def

@@ -831,8 +831,7 @@
                                 (sur-by-ws 
                                   (alt (lit \=) (lit \~) (lit-conc-seq "!=") (lit-conc-seq "==")))
                                 :func)) 
-                         (alt (change-pred string :value :string) 
-                              (change-pred value-as-param :value :parameter)))
+                         (change-pred string :value :string))
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)
@@ -913,7 +912,7 @@
 
 (def param
   "Defines different types of function's parameters."
-  (sur-by-ws (alt pstring pnumber param-query pfunc pself pid pparam)))
+  (sur-by-ws (alt pstring pnumber pparam param-query pfunc pself pid)))
 
 
 (defn- f-mod
@@ -934,21 +933,29 @@
 (def param-query
   "Defines parameter as query."
   (conc (opt (alt dep-each dep-list indep-each indep-list))
-        (lit start-pq)
-        (complex [ret textq 
-                  nl (get-info :nest-level)
-                  tl (get-info :then-level)
-                  res (get-info :result)
-                  q (effects (:result (parse+ ret mom)))
-                  q (effects (vec (map #(nnassoc % 
-                                               :where 
-                                               (get-paths (:what %) (get-in-nest res nl :what))) q)))
-                  fm (get-info :f-modificator)
-                  fm (effects (if (nil? fm) :dep-list fm))
-                  _ (update-param [fm q])
-                  _ (set-info :f-modificator nil)]
-                 ret)
-        (lit end-pq)))
+        (alt (complex [ret value-as-param
+                       fm (get-info :f-modificator)
+                       fm (effects (if (nil? fm) :dep-list fm))
+                       _ (do (swap! query-params conj nil) 
+                           (update-param [fm (keyword (reduce str "" (second ret)))]))
+                       _ (set-info :f-modificator nil)]
+                      ret)
+             (conc
+               (lit start-pq)
+               (complex [ret textq
+                         nl (get-info :nest-level)
+                         tl (get-info :then-level)
+                         res (get-info :result)
+                         q (effects (:result (parse+ ret mom)))
+                         q (effects (vec (map #(nnassoc % 
+                                                        :where 
+                                                        (get-paths (:what %) (get-in-nest res nl :what))) q)))
+                         fm (get-info :f-modificator)
+                         fm (effects (if (nil? fm) :dep-list fm))
+                         _ (update-param [fm q])
+                         _ (set-info :f-modificator nil)]
+                        ret)
+               (lit end-pq)))))
 
 
 (def pnumber
