@@ -899,7 +899,7 @@
            n))
 
 
-(declare params, param, param-query, pnumber, pstring, parse+, pfunc, pid, pself)
+(declare params, param, param-query, pnumber, pstring, parse+, pfunc, pid, pself pparam)
 (def function
   "Defines YZ's function."
   (conc (invisi-conc (lit \@) (update-info :function #(conj % empty-fun)))
@@ -913,7 +913,7 @@
 
 (def param
   "Defines different types of function's parameters."
-  (sur-by-ws (alt pstring pnumber param-query pfunc pself pid)))
+  (sur-by-ws (alt pstring pnumber param-query pfunc pself pid pparam)))
 
 
 (defn- f-mod
@@ -988,6 +988,13 @@
             _ (update-param (reduce str "" (flatten s)))]
            s))
 
+
+(def pparam
+  "Defines param as parameter."
+  (complex [s value-as-param
+            _ (do (swap! query-params conj nil) 
+                (update-param (keyword (reduce str "" (second s)))))]
+           s))
 
 (def funcq
   "Defines rule for query as function."

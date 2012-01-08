@@ -222,7 +222,10 @@
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
   [f-map, obj]
-  (let [params (map #(cond 
+  (let [params (map #(cond
+                           ; params is parameter: @(str $1)
+                           (keyword? %) (nth @p/query-params (dec (Integer/parseInt (name %))))
+                       
                            ; param is result of a query.
                            (vector? %)
                            (let [[fmod q] %
