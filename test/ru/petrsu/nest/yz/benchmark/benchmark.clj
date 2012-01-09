@@ -352,3 +352,14 @@
             "" 
             (line-seq (cio/reader f)))] 
     (cio/copy new-res (cio/file f))))
+
+
+(defn bench-list-tpq
+  "Takes list with queries (qlist) and parameters of database (mom bd n) 
+  and returns vector where each element is vector
+  where first element is time and second element is query
+  (result vector is sorted by time for query)."
+  [mom bd n qlist] 
+  (let [bd (if (number? bd) (qc/create-emm (bu/gen-bd bd)) bd)]
+    (sort-by #(% 1) (map (fn [q] [q (first (bench-quering n q mom bd))]) qlist))))
+
