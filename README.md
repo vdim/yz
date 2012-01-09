@@ -1,5 +1,5 @@
 # About
-YZ[ˈiːzi] is simple (easy) string-based query language for an object model (OM). 
+YZ[ˈiːzi] is simple (easy) string-based query language for an object model. 
 
 #### What does YZ include?
 
@@ -75,7 +75,7 @@ Project is in alpha stage and it is just prototype, not for production use.
 
 ## Copyright
 
-Copyright 2011 Vyacheslav Dimitrov, Petrozavodsk State University.
+Copyright 2011-2012 Vyacheslav Dimitrov, Petrozavodsk State University.
 
 YZ is free software: you can redistribute it and/or modify it
 under the terms of the GNU Lesser General Public License version 3
