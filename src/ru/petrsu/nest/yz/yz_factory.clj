@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -124,20 +124,21 @@
 
 
   ExtendedElementManager
-  (getElems [_ claz preds]
-         (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
-              cr (.createTupleQuery cb)
-              ^Root root (. cr (from claz))
-              cr (.. cr (multiselect [root]) (distinct true))
-              ch-p (contains-f? preds) ; ch-p defines whether "preds" contains function.
-              elems (map #(.get % 0) 
-                         (.. em (createQuery (if (or (nil? preds) ch-p)
-                                                 cr 
-                                                 (.where cr (create-predicate preds cb root))))
-                           getResultList))]
-          (if ch-p
-            (yz/filter-by-preds elems preds)
-            elems))))
+  (getElems 
+    [_ claz preds]
+    (let [^CriteriaBuilder cb (.getCriteriaBuilder em)
+          cr (.createTupleQuery cb)
+          ^Root root (. cr (from claz))
+          cr (.. cr (multiselect [root]) (distinct true))
+          ch-p (contains-f? preds) ; ch-p defines whether "preds" contains function.
+          elems (map #(.get % 0) 
+                     (.. em (createQuery (if (or (nil? preds) ch-p)
+                                           cr 
+                                           (.where cr (create-predicate preds cb root))))
+                       getResultList))]
+      (if ch-p
+        (yz/filter-by-preds elems preds)
+        elems))))
             
 
 (defn ^ElementManager -createJPAElementManager
