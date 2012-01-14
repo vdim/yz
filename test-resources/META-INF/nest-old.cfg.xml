@@ -3,8 +3,8 @@
 <hibernate-configuration>
     <session-factory>
 
-	<!--property name="hibernate.connection.url">jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true</property-->
-	<property name="hibernate.connection.url">jdbc:h2:db-bench/db1;create=true</property>
+	<property name="hibernate.connection.url">jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true</property>
+	<!--property name="hibernate.connection.url">jdbc:h2:db-bench/db1;create=true</property-->
 	<property name="hibernate.connection.driver_class">org.h2.Driver</property>
 	<property name="hibernate.dialect">org.hibernate.dialect.H2Dialect</property>
 
