@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -17,44 +17,27 @@
 ;; <http://www.gnu.org/licenses/>.
 ;;
 
-(ns ru.petrsu.nest.yz.benchmark.bd-utils
+(ns ru.petrsu.nest.yz.benchmark.bd-utils-old
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Usefull functions for working with bd for benchmark."}
-  (:require [ru.petrsu.nest.util.utils :as f])
-  (:import (ru.petrsu.nest.son Building Floor Room
-                               Occupancy SimpleOU CompositeOU
-                               Device UnknownNetwork UnknownNetworkInterface EthernetInterface
-                               UnknownLinkInterface IPv4Interface IPNetwork VLANInterface SON)
+    :doc "Code for generating nest DB (JPA variant)."}
+  (:require [ru.petrsu.nest.util.utils :as f] [ru.petrsu.nest.yz.benchmark.bd-utils :as bu])
+  (:import (ru.petrsu.nest.son.jpa Building Floor Room
+                                   Occupancy SimpleOU CompositeOU Device 
+                                   Network IPNetwork EthernetInterface LinkInterface 
+                                   IPv4Interface NetworkInterface VLANInterface SON)
            (javax.persistence Persistence)
+           (org.hibernate.tool.hbm2ddl SchemaExport)
+           (org.hibernate.cfg Configuration)
            (java.util Random)))
 
 
-(defmacro btime
-  "Like Clojure's macros time, but doesn't have side effect 
-  (something prints) and returns time which is taken for
-  evaluating an expr."
-  [expr]
-  `(let [start# (. System (nanoTime))
-         ret# ~expr]
-     (/ (double (- (. System (nanoTime)) start#)) 1000000.0)))
+(def hibcfg
+  ^{:doc "Defines name of file with hibernate config relatively classpath."}
+  (identity "/META-INF/hibernate.cfg.xml"))
 
-
-(def names
-  "List of names for elements from the SON model."
-  ["MB" "TK" "UK1" "UK2" "UK9" "GT" "RT" "VI" "MN" "CRT"])
-
-(def descs
-  "List of descriptions for elements from the SON model."
-  ["Description." 
-   "Simple description." 
-   "Long.... description." 
-   "Integer" 
-   "Double" 
-   "String" 
-   "Lang" 
-   "Clojure" 
-   "YZ" 
-   "Scals"])
+(def ^{:dynamic true} *url* (identity "jdbc:derby:db1;create=true"))
+(def ^{:dynamic true} *dialect* (identity "org.hibernate.dialect.DerbyDialect"))
+(def ^{:dynamic true} *driver* (identity "org.apache.derby.jdbc.EmbeddedDriver"))
 
 (def classes
   ^{:doc "Defines all classes of SON model with its weights."}
@@ -67,13 +50,33 @@
                         [SimpleOU :sou] 20
                         [CompositeOU :cou] 5
                         [Device :device] 300
-                        [UnknownNetwork :network] 5
-                        [UnknownNetworkInterface :ni] 170 
+                        [Network :network] 5
+                        [NetworkInterface :ni] 170 
                         [EthernetInterface :ei] 150
-                        [UnknownLinkInterface :li] 150
+                        [LinkInterface :li] 150
                         [IPv4Interface :ipv4] 170
                         [IPNetwork :ipn] 5
                         [VLANInterface :vlan] 20}))))
+
+
+(defn schema-export
+  "Cleans database due to Hibernate Schema Export."
+  ([]
+   (schema-export *url* *dialect* *driver*))
+  ([url dialect driver]
+   (let [cfg (doto (Configuration.) 
+               (.configure hibcfg)
+               (.setProperty "hibernate.connection.url" url)
+               (.setProperty "hibernate.dialect" dialect)
+               (.setProperty "hibernate.connection.driver_class" driver))
+         just-drop false
+         just-create false
+         script false
+         export true
+         _ (doto (SchemaExport. cfg) 
+             (.setOutputFile "ddl.sql")
+             (.setDelimiter ";")
+             (.execute script export just-drop just-create))])))
 
 
 (defn init-model
@@ -124,42 +127,14 @@
                                      (.setOU (:occupancy sm) o)))
           (instance? CompositeOU o) (.addOU (:cou sm) o)
           (instance? Device o) (.addDevice (:occupancy sm) o)
-          (instance? UnknownLinkInterface o) (.addLinkInterface (:device sm) o)
+          (instance? LinkInterface o) (.addLinkInterface (:device sm) o)
           (instance? EthernetInterface o) (.addLinkInterface (:device sm) o)
           (instance? VLANInterface o) (.addLinkInterface (:device sm) o)
-          (instance? UnknownNetworkInterface o) (do (.addNetworkInterface (:li sm) o) 
+          (instance? NetworkInterface o) (do (.addNetworkInterface (:li sm) o) 
                                                   (.setNetwork o (:network sm)))
           (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) 
                                         (.setNetwork o (:ipn sm))))
     (assoc sm k o)))
-
-
-(defn ^String gen-ip
-  "Takes an random and generates casual IPv4 address."
-  [^Random r]
-  (str (.nextInt r 255) "."
-       (.nextInt r 255) "."
-       (.nextInt r 255) "."
-       (.nextInt r 255)))
-
-
-(defn ^String gen-mask
-  "Takes an random and generates casual mask: 255.255.?.?."
-  [^Random r]
-  (str "255.255."
-       (.nextInt r 255) "."
-       (.nextInt r 255)))
-
-
-(defn ^String gen-mac
-  "Takes an random and generates casual MAC address."
-  [^Random r]
-  (let [v [0 1 2 3 4 5 6 7 8 9 \a \b \c \d \e \f]
-        cv (count v)]
-    (loop [n 12 res ""]
-      (if (= n 0)
-        (->> res (partition 2) (interpose \:) flatten (reduce str))
-        (recur (dec n) (str res (v (.nextInt r cv))))))))
 
 
 (defn gen-bd
@@ -168,25 +143,25 @@
   [n]
   (let [r (Random.)
         clc (count classes)
-        cn (count names)
-        cd (count descs)
+        cn (count bu/names)
+        cd (count bu/descs)
         se #(let [[cl k] (classes (.nextInt r clc))
                   cl (if (nil? %) cl %)
                   se (doto (.newInstance cl)
-                       (.setName (str (.getSimpleName cl) "_" (names (.nextInt r cn))))
-                       (.setDescription (descs (.nextInt r cd))))
+                       (.setName (str (.getSimpleName cl) "_" (bu/names (.nextInt r cn))))
+                       (.setDescription (bu/descs (.nextInt r cd))))
                   se (if (instance? Floor se) (doto se (.setNumber (Integer. (.nextInt r 100)))) se) 
                   se (if (instance? Room se) (doto se (.setNumber (str (.nextInt r 100)))) se) 
                   se (if (instance? IPv4Interface se) 
-                       (doto se (.setInetAddress (f/ip2b (gen-ip r))))
+                       (doto se (.setInetAddress (f/ip2b (bu/gen-ip r))))
                        se)
                   se (if (instance? IPNetwork se) 
                        (doto se 
-                         (.setAddress (f/ip2b (gen-ip r))) 
-                         (.setMask (f/ip2b (gen-mask r))))
+                         (.setAddress (f/ip2b (bu/gen-ip r))) 
+                         (.setMask (f/ip2b (bu/gen-mask r))))
                        se)
                   se (if (instance? EthernetInterface se) 
-                       (doto se (.setMACAddress (f/mac2b (gen-mac r))))
+                       (doto se (.setMACAddress (f/mac2b (bu/gen-mac r))))
                        se)]
               [se k])
         sm (init-model {:building ((se Building) 0)
@@ -196,10 +171,10 @@
                         :sou ((se SimpleOU) 0)
                         :cou ((se CompositeOU) 0)
                         :device ((se Device) 0)
-                        :network ((se UnknownNetwork) 0)
-                        :ni ((se UnknownNetworkInterface) 0)
+                        :network ((se Network) 0)
+                        :ni ((se NetworkInterface) 0)
                         :ei ((se EthernetInterface) 0)
-                        :li ((se UnknownLinkInterface) 0)
+                        :li ((se LinkInterface) 0)
                         :ipn ((se IPNetwork) 0)
                         :ipv4 ((se IPv4Interface) 0)
                         :vlan ((se VLANInterface) 0)
@@ -208,4 +183,38 @@
       (if (<= n- 0)
         (:son sm-)
         (recur (change-model sm- (se nil)) (dec n-))))))
+
+
+(defn create-bd
+  "Creates BD for specified EntityManager 
+  and with specified n elements."
+  [n, em]
+  (let [son (gen-bd n)]
+    (do (.. em getTransaction begin) 
+      (.persist em son)
+      (.flush em)
+      (.. em getTransaction commit))))
+
+
+(defn- do-cr
+  "Takes a number of query from 'queries array' and a name of the persistence unit,
+  executes query, ant returns time of executing query."
+  [nums, n, url dialect driver]
+  (let [_ (schema-export url dialect driver)
+        m {"hibernate.connection.url" url, 
+           "hibernate.dialect" dialect, 
+           "hibernate.connection.driver_class" driver}
+        em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n m))]
+    (create-bd (Integer/parseInt nums) em)))
+
+
+(defn -main
+  "Takes a number of elements and name of the persistence unit 
+  ant creates database. If name of persistence unit is not supplied then \"bench\" is used."
+  ([nums]
+   (do-cr nums, "bench", *url* *dialect* *driver*))
+  ([nums, n]
+   (do-cr nums, n, *url* *dialect* *driver*))
+  ([nums, n, url dialect driver]
+   (do-cr nums, n, url, dialect, driver)))
 

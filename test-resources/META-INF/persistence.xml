@@ -27,4 +27,9 @@
 		<property name="hibernate.ejb.cfgfile" value="/META-INF/auction-hb.cfg.xml"/>
         </properties>
     </persistence-unit>
+    <persistence-unit name="nest-old">
+        <properties>
+		<property name="hibernate.ejb.cfgfile" value="/META-INF/nest-old.cfg.xml"/>
+        </properties>
+    </persistence-unit>
 </persistence>

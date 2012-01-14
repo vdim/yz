@@ -1,0 +1,60 @@
+<!DOCTYPE hibernate-configuration SYSTEM
+"http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+<hibernate-configuration>
+    <session-factory>
+
+	<!--property name="hibernate.connection.url">jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true</property-->
+	<property name="hibernate.connection.url">jdbc:h2:db-bench/db1;create=true</property>
+	<property name="hibernate.connection.driver_class">org.h2.Driver</property>
+	<property name="hibernate.dialect">org.hibernate.dialect.H2Dialect</property>
+
+	<!--property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
+	<property name="hibernate.connection.url">jdbc:derby:db-bench;create=true</property>
+        <property name="hibernate.connection.username">sa</property-->
+	<property name="hibernate.dialect">org.hibernate.dialect.DerbyDialect</property>
+	
+	<property name="hibernate.hbm2ddl.auto">create-drop</property>
+	<property name="hibernate.connection.username">sa</property>
+        <!-- Use the C3P0 connection pool provider -->
+        <property name="hibernate.c3p0.min_size">5</property>
+        <property name="hibernate.c3p0.max_size">200</property>
+        <property name="hibernate.c3p0.timeout">300</property>
+        <property name="hibernate.c3p0.max_statements">50</property>
+        <property name="hibernate.c3p0.idle_test_period">3000</property>
+        
+        <!-- Show and print nice SQL on stdout -->
+        <property name="show_sql">false</property>
+        <property name="format_sql">true</property>
+	
+	<!-- Set a maximum "depth" for the outer join fetch tree for single-ended associations -->
+	<!--property name="max_fetch_depth">1</property-->
+        
+        <!-- List of XML mapping files -->
+        <mapping class="ru.petrsu.nest.son.jpa.Floor"/>
+        <mapping class="ru.petrsu.nest.son.jpa.Building"/>
+        <mapping class="ru.petrsu.nest.son.jpa.Room"/>
+	
+	<mapping class="ru.petrsu.nest.son.jpa.Occupancy"/>
+        
+        <mapping class="ru.petrsu.nest.son.jpa.AbstractOU"/>
+        <mapping class="ru.petrsu.nest.son.jpa.SimpleOU"/>
+        <mapping class="ru.petrsu.nest.son.jpa.CompositeOU"/>
+        
+        <mapping class="ru.petrsu.nest.son.jpa.Device"/>
+	<mapping class="ru.petrsu.nest.son.jpa.NetworkInterface"/>
+	<mapping class="ru.petrsu.nest.son.jpa.IPv4Interface"/>
+	<mapping class="ru.petrsu.nest.son.jpa.LinkInterface"/>
+        <mapping class="ru.petrsu.nest.son.jpa.VLANInterface"/>
+	<mapping class="ru.petrsu.nest.son.jpa.EthernetInterface"/>
+	<mapping class="ru.petrsu.nest.son.jpa.Network"/>
+	<mapping class="ru.petrsu.nest.son.jpa.IPNetwork"/>
+	
+        <mapping class="ru.petrsu.nest.son.jpa.SON"/>
+        <mapping class="ru.petrsu.nest.son.jpa.SonElement"/>
+	
+	<mapping class="ru.petrsu.nest.son.jpa.AbstractSonModificationOccurence"/>
+	<mapping class="ru.petrsu.nest.son.jpa.SonPropertyModificationOccurence"/>
+	<mapping class="ru.petrsu.nest.son.jpa.SonReferenceModificationOccurence"/>
+	
+    </session-factory>
+</hibernate-configuration>

@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -22,7 +22,8 @@
     :doc "System for benchmarking different types of queries."}
   (:use ru.petrsu.nest.yz.core
         incanter.stats)
-  (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]
+  (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
+            [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo]
             [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
@@ -35,15 +36,16 @@
             [clojure.java.shell :as sh]
             [clojure.pprint :as cp])
   (:import (java.util Date)
-           (ru.petrsu.nest.yz.core ElementManager)))
+           (ru.petrsu.nest.yz.core ElementManager) 
+           (javax.persistence Persistence EntityManager)))
 
 
-(defn- ^javax.persistence.EntityManager create-em
+(defn ^javax.persistence.EntityManager create-em
   "Returns EntityManager due to specified name (bench is default)."
   ([]
    (create-em "bench"))
   ([n]
-   (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n))))
+   (.createEntityManager (Persistence/createEntityManagerFactory n))))
 
 
 (defn ^javax.persistence.EntityManager get-clean-bd
@@ -51,8 +53,8 @@
   and generates some database's structure."
   []
   (let [emb (create-em)]
-    (do (bu/schema-export)
-      (bu/create-bd 1000 emb))
+    (do (buo/schema-export)
+      (buo/create-bd 1000 emb))
     emb))
 
 
@@ -106,7 +108,9 @@
   ([n ^String query mom]
    (bench-quering n query mom nil))
   ([n ^String query mom son-or-em]
-   (let [son-or-em (if (nil? son-or-em) (bu/gen-bd 10000) son-or-em)
+   (let [son-or-em (cond (nil? son-or-em) (bu/gen-bd 10000) 
+                         (number? son-or-em) (bu/gen-bd son-or-em)
+                         :else son-or-em)
          em (if (instance? ElementManager son-or-em)
               son-or-em
               (qc/create-emm son-or-em))
@@ -269,7 +273,7 @@
                             (bench-quering n q mom %2))))))
 
 
-(defn- bench-for-list
+(defn bench-for-list
   "Takes info about benchmark and list with queries and
   returns vector with two elements where first is time of the
   parsing and second is time the querying."
@@ -335,8 +339,8 @@
 
 
 (defn add-time-per-query
-  "Takes file with benchmarks of lists, adds time per query to it
-  and adds"
+  "Takes a file with benchmarks of lists, adds time per query to it 
+  (for each benchmark) and saves its file."
   [f]
   (let [cur-list (atom "")
         new-res 
@@ -362,4 +366,31 @@
   [mom bd n qlist] 
   (let [bd (if (number? bd) (qc/create-emm (bu/gen-bd bd)) bd)]
     (sort-by #(% 1) (map (fn [q] [q (first (bench-quering n q mom bd))]) qlist))))
+
+
+(defn- do-times-hql
+  "Returns sequence of time (n times) of execution some function f."
+  [f, n, bd-n]
+  (repeatedly n #(let [^EntityManager em (create-em "nest-old")
+                       _ (buo/create-bd bd-n em)]
+                   (bu/btime (f em)))))
+
+
+(defn bench-quering-hql
+  "Beanchmark HQL quering. 
+  Returns sequence: 
+    (total time, average time, quntile(5%), quntile(50%), quntile(90%))."
+  [n ^String query bd-n]
+  (let [f #(.. %2 (createQuery %1) getResultList)
+        times (do-times-hql (partial f query) n bd-n)
+        s-times (apply + times)]
+    (concat [s-times (/ s-times n)] (quantile times :probs [0.05, 0.5 0.9]))))
+
+
+(defn bench-for-list-hql
+  "Takes list with HQL's queries and
+  returns time of the querying."
+  [n bd-n qlist]
+  (reduce #(map + %1 (bench-quering-hql n %2 bd-n)) [0 0 0 0 0] qlist))
+
 
