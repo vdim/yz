@@ -217,14 +217,15 @@
     bd - SON element or ElementManager or count of 
         elements into BD (which is will be generated due to gen-bd function).
     f - file for result of the benchmark (and, of course, it must contains queries.)
+    hql? - defines whether benchmark is done for HQL language (if hql? is then bd must be number).
     bench-fn - function which takes some string and returns result of benchmark."
-  [n bd mom f bench-fn]
+  [n bd mom f hql? bench-fn]
   (let [sdate (Date.) ; Date of starting the benchmark.
         bd ; Database
-        (cond (number? bd) (qc/create-emm (bu/gen-bd bd))
-              (instance? ElementManager bd) bd
+        (cond (or hql? (instance? ElementManager bd)) bd
+              (number? bd) (qc/create-emm (bu/gen-bd bd))
               :else (qc/create-emm bd))
-        cbd (ffirst (:rows (pquery "@(count `sonelement')" mom bd)))
+        cbd (if hql? bd (ffirst (:rows (pquery "@(count `sonelement')" mom bd))))
         nb (inc (get-num-bench f)) ; Current number of the benchmark.
         new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
                                        (str %2 \newline (bench-fn %2 bd nb))
@@ -266,7 +267,7 @@
   ([mom bd n]
    (bench-to-file mom bd n bench-file))
   ([mom bd n f]
-  (write-to-file n bd mom f 
+  (write-to-file n bd mom f false
                  #(let [q (.substring %1 1)]
                     (get-fs %3
                             (bench-parsing n q mom) 
@@ -302,8 +303,12 @@
 
 
 (def bench-list-file
-  "Name of default file for result of benchmark list with queries."
+  "Name of default file for result of benchmark list with queries (YZ language)."
   "etc/yz-bench-list.txt")
+
+(def bench-list-file-hql
+  "Name of default file for result of benchmark list with queries (HQL language)."
+  "etc/hql-bench-list.txt")
 
 
 (defn- get-def
@@ -331,7 +336,7 @@
    (let [bd (if (nil? bd) (lsm/create-lsm) bd)
          n (if (nil? n) 1 n)
          f (if (nil? f) bench-list-file f)]
-     (write-to-file n bd mom f
+     (write-to-file n bd mom f false
                     #(let [ql (get-def %1)
                            [rb0 rb1] (bench-for-list mom %2 n ql)
                            avg_time (nth rb1 1)] ; Need for counting time per query.
@@ -394,3 +399,18 @@
   (reduce #(map + %1 (bench-quering-hql n %2 bd-n)) [0 0 0 0 0] qlist))
 
 
+(defn bench-list-to-file-hql
+  "Benchmark for queries from Nest project + qlist from test-parsing.clj. Parameters: 
+      - bd - .
+      - n - times of execution each list with queries (1 by default).
+      - f - name of file for result (etc/yz-bench-list.txt by default).
+  Use nil for indication value of parameter as default."
+  [bd-n n f]
+  (let [bd-n (if (nil? bd-n) 1000 bd-n)
+        n (if (nil? n) 1 n)
+        f (if (nil? f) bench-list-file-hql f)]
+    (write-to-file n bd-n nil f true
+                   #(let [ql (get-def %1)
+                          rb1 (bench-for-list-hql n %2 ql)
+                          avg_time (nth rb1 1)] ; Need for counting time per query.
+                      (get-fs %3 0 (concat rb1 (list (/ avg_time (count ql)))))))))
