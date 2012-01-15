@@ -20,7 +20,8 @@
 (ns ru.petrsu.nest.yz.benchmark.benchmark
   ^{:author "Vyacheslav Dimitrov"
     :doc "System for benchmarking different types of queries."}
-  (:use ru.petrsu.nest.yz.core
+  (:use ru.petrsu.nest.yz.core 
+        ru.petrsu.nest.yz.yz-factory
         incanter.stats)
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo]
@@ -223,7 +224,8 @@
   (let [sdate (Date.) ; Date of starting the benchmark.
         bd ; Database
         (cond (or hql? (instance? ElementManager bd)) bd
-              (number? bd) (qc/create-emm (bu/gen-bd bd))
+              (number? bd) (qc/create-emm (bu/gen-bd bd)) 
+              (instance? EntityManager bd) (-createJPAElementManager bd)
               :else (qc/create-emm bd))
         cbd (if hql? bd (ffirst (:rows (pquery "@(count `sonelement')" mom bd))))
         nb (inc (get-num-bench f)) ; Current number of the benchmark.

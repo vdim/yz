@@ -20,19 +20,32 @@
 (ns ru.petrsu.nest.yz.benchmark.bench-norepl
   ^{:author "Vyacheslav Dimitrov"
     :doc "Running benchmark from command line for specified list of commits."}
-  (:require [ru.petrsu.nest.yz.benchmark.benchmark :as bb] )
-  (:use ru.petrsu.nest.yz.hb-utils))
+  (:require [ru.petrsu.nest.yz.benchmark.benchmark :as bb] 
+            [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo])
+  (:use ru.petrsu.nest.yz.hb-utils)
+  (:import (javax.persistence Persistence)))
 
 
 (defn -main
   "Running benchmark due to specified parameters for benchmark (fmom bd n f l).
-  l? defines weather we run bench-for-list-file or bench-to-file."
+  modificator defines whether we run bench-for-list-file or bench-to-file."
   ([fmom bd n f]
-   (-main fmom bd n f nil))
-  ([fmom bd n f l?]
+   (-main fmom bd n f ""))
+  ([fmom bd n f modificator]
    (let [b-mom (mom-from-file fmom)]
-     (if l?
-       (bb/bench-list-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)
+     (case modificator
+       "list" (bb/bench-list-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)
+
+       "jpa-list" (let [em (.createEntityManager (Persistence/createEntityManagerFactory "nest-old"))
+                        _ (buo/create-bd (Integer/parseInt bd) em)] 
+                    (bb/bench-list-to-file b-mom em (Integer/parseInt n) f))
+
+       "jpa" (let [em (.createEntityManager (Persistence/createEntityManagerFactory "nest-old"))
+                   _ (buo/create-bd (Integer/parseInt bd) em)] 
+               (bb/bench-to-file b-mom em (Integer/parseInt n) f))
+
+       "hql" (bb/bench-list-to-file-hql (Integer/parseInt bd) (Integer/parseInt n) f)
+
        (bb/bench-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)))
    (System/exit 0)))
 
