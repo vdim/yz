@@ -377,19 +377,17 @@
 
 (defn- do-times-hql
   "Returns sequence of time (n times) of execution some function f."
-  [f, n, bd-n]
-  (repeatedly n #(let [^EntityManager em (create-em "nest-old")
-                       _ (buo/create-bd bd-n em)]
-                   (bu/btime (f em)))))
+  [f, n]
+  (repeatedly n #(bu/btime (f))))
 
 
 (defn bench-quering-hql
   "Beanchmark HQL quering. 
   Returns sequence: 
     (total time, average time, quntile(5%), quntile(50%), quntile(90%))."
-  [n ^String query bd-n]
-  (let [f #(.. %2 (createQuery %1) getResultList)
-        times (do-times-hql (partial f query) n bd-n)
+  [n ^String query em]
+  (let [f #(.. em (createQuery %1) getResultList)
+        times (do-times-hql (partial f query) n)
         s-times (apply + times)]
     (concat [s-times (/ s-times n)] (quantile times :probs [0.05, 0.5 0.9]))))
 
@@ -398,7 +396,9 @@
   "Takes list with HQL's queries and
   returns time of the querying."
   [n bd-n qlist]
-  (reduce #(map + %1 (bench-quering-hql n %2 bd-n)) [0 0 0 0 0] qlist))
+  (let [^EntityManager em (create-em "nest-old")
+        _ (buo/create-bd bd-n em)]
+    (reduce #(map + %1 (bench-quering-hql n %2 em)) [0 0 0 0 0] qlist)))
 
 
 (defn bench-list-to-file-hql
