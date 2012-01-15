@@ -17,8 +17,9 @@ CP=`lein classpath`
 FILE_NEW="etc/yz-bench-new.txt"
 FILE_LIST="etc/yz-bench-list.txt"
 FILE_HQL="etc/hql-bench-list.txt"
+FILE_JPA="etc/jpa-bench-list.txt"
 FILE_OTH=""
-FILE=$FILE_NEW
+FILE=$FILE_JPA
 
 ## MOM
 MOM_JPA="nest_jpa.mom"
@@ -31,6 +32,6 @@ for n in $n_bd; do
 	if test $n -gt 20000; then
 	    JAVA_OPTS="-Xss256M -Xmx2G"
 	fi;
-        java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bench-norepl $MOM $n 1 $FILE "jpa-list"
+        java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bench-norepl $MOM $n 50 $FILE "jpa-list"
 done;
 
