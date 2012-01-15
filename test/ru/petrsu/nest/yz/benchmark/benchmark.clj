@@ -88,17 +88,19 @@
    ((getf ql) num, n, {})))
 )
 
-(defn- do-times
+
+(defn- do-times-q
   "Returns sequence of time (n times) of execution some function f."
   [f, n]
-  (repeatedly n #(bu/btime (f))))
+  (repeatedly n #(let [[t r] (bu/brtime (f))]
+                   (if (nil? (:error r)) t (throw (Exception. (:error r)) )))))
 
 
 (defn bench-parsing
   "Beanchmark parsing. Executes the parse function
   for specified query and mom 'n' times. Returns total time."
   [n ^String query mom]
-    (apply + (do-times (partial p/parse query mom) n)))
+    (apply + (repeatedly n #(bu/btime (p/parse query mom)))))
 
 
 (defn bench-quering
@@ -115,7 +117,7 @@
          em (if (instance? ElementManager son-or-em)
               son-or-em
               (qc/create-emm son-or-em))
-         times (do-times (partial pquery query mom em) n)
+         times (do-times-q (partial pquery query mom em) n)
          s-times (apply + times)]
      (concat [s-times (/ s-times n)] (quantile times :probs [0.05, 0.5 0.9])))))
 

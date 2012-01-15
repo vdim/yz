@@ -39,6 +39,17 @@
      (/ (double (- (. System (nanoTime)) start#)) 1000000.0)))
 
 
+(defmacro brtime
+  "Like Clojure's macros time, but doesn't have side effect 
+  (something prints) and returns vector where firs element is 
+  time which is taken for evaluating an expr and second
+  element is result of the expression."
+  [expr]
+  `(let [start# (. System (nanoTime))
+         ret# ~expr]
+     [(/ (double (- (. System (nanoTime)) start#)) 1000000.0) ret#]))
+
+
 (def names
   "List of names for elements from the SON model."
   ["MB" "TK" "UK1" "UK2" "UK9" "GT" "RT" "VI" "MN" "CRT"])
