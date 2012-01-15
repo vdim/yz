@@ -20,10 +20,17 @@ FILE_HQL="etc/hql-bench-list.txt"
 FILE_OTH=""
 FILE=$FILE_NEW
 
+## MOM
+MOM_JPA="nest_jpa.mom"
+MOM_MEM="nest.mom"
+MOM=$MOM_JPA
+
+## Modificators: hql, jpa, jpa-list, list
+
 for n in $n_bd; do
 	if test $n -gt 20000; then
 	    JAVA_OPTS="-Xss256M -Xmx2G"
 	fi;
-        java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bench-norepl nest.mom $n 1 $FILE
+        java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bench-norepl $MOM $n 1 $FILE "jpa-list"
 done;
 
