@@ -5,8 +5,7 @@
 # Runs benchmark for specified set of amount database elements.
 #
 
-#n_bd="1000 5000 10000 15000 20000 50000 100000"
-n_bd="1000"
+n_bd="1000 5000 10000 15000 20000 50000 100000"
 
 ## Java options.
 JAVA_OPTS=""
