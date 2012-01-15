@@ -64,8 +64,11 @@
   "Returns Path for specified vector with names of properties and
   the root element."
   [^Root root, ids]
-  (reduce #(try (.join %1 %2)
-             (catch Exception e (.get %1 %2))) root ids))
+  (reduce #(let [ids- (:id %2)]
+             (reduce 
+               (fn [r id]
+                 (try (.join r id)
+                   (catch Exception e (.get r id)))) %1 ids-)) root ids))
 
 
 (defmacro complex-predicate
@@ -84,15 +87,15 @@
         path (get-path root (:ids pred))
         ;v  (cs/trim (:value pred))
         v (:value pred)
-        v (if (and (instance? String v) (= \" (nth v 0))) (subs v 1 (dec (count v))) v)]
-    (cond (and (= "=" op) (nil? v)) (.isNull cb path)
-          (= "=" op) (.equal cb path v)
-          (= ">" op) (.gt cb path (Double/parseDouble v))
-          (= "<" op) (.lt cb path (Double/parseDouble v))
-          (= ">=" op) (.ge cb path (Double/parseDouble v))
-          (= "<=" op) (.le cb path (Double/parseDouble v))
-          (and (= "not=" op) (nil? v)) (.isNotNull cb path)
-          (= "not=" op) (.notEqual cb path v)
+        v (if (and (instance? String v) (> 0 (count v)) (= \" (nth v 0))) (subs v 1 (dec (count v))) v)]
+    (cond (and (= #'clojure.core/= op) (nil? v)) (.isNull cb path)
+          (= #'clojure.core/= op) (.equal cb path v)
+          (= #'clojure.core/> op) (.gt cb path (Double/parseDouble v))
+          (= #'clojure.core/< op) (.lt cb path (Double/parseDouble v))
+          (= #'clojure.core/>= op) (.ge cb path (Double/parseDouble v))
+          (= #'clojure.core/<= op) (.le cb path (Double/parseDouble v))
+          (and (= #'clojure.core/not= op) (nil? v)) (.isNotNull cb path)
+          (= #'clojure.core/not= op) (.notEqual cb path v)
           :else (throw (Exception. (str "No find function " op))))))
 
 
