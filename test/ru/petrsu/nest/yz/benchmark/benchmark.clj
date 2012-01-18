@@ -405,7 +405,7 @@
 
 (defn bench-list-to-file-hql
   "Benchmark for queries from Nest project + qlist from test-parsing.clj. Parameters: 
-      - bd - .
+      - bd-n - amount elements of a DB.
       - n - times of execution each list with queries (1 by default).
       - f - name of file for result (etc/yz-bench-list.txt by default).
   Use nil for indication value of parameter as default."
