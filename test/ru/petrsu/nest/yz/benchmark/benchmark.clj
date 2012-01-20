@@ -347,26 +347,6 @@
                        (get-fs %3 rb0 (concat rb1 (list (/ avg_time (count ql))))))))))
 
 
-(defn add-time-per-query
-  "Takes a file with benchmarks of lists, adds time per query to it 
-  (for each benchmark) and saves its file."
-  [f]
-  (let [cur-list (atom "")
-        new-res 
-        (reduce 
-          #(str %1 (cond (.startsWith %2 ";") 
-                         (do (reset! cur-list (get-def %2)) (str %2 \newline))
-                         (.startsWith %2 "#") (str %2 \newline)
-                         :else
-                         (let [s (read-string (str "[" %2 "]"))]
-                           (if (and (not-empty s) (every? number? s) (= (count s) 7))
-                             (get-fs (s 0) (s 1) (concat (drop 2 s) (list (/ (s 3) (count @cur-list)))))
-                             (str %2 \newline)))))
-            "" 
-            (line-seq (cio/reader f)))] 
-    (cio/copy new-res (cio/file f))))
-
-
 (defn bench-list-tpq
   "Takes list with queries (qlist) and parameters of database (mom bd n) 
   and returns vector where each element is vector
