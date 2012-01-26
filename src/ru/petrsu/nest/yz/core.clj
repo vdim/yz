@@ -278,12 +278,7 @@
   "Returns sequence of objects which belong to 'objs' 
   by specified 'field-name'."
   [^String field-name, objs]
-  (flatten
-    (map #(if-let [fv (get-fv % field-name)]
-           (if (instance? java.util.Collection fv)
-             (seq fv)
-             fv))
-           (vec objs))))
+  (flatten (map #(get-fv % field-name) objs)))
 
 
 (defn- eq-arrays?
@@ -336,8 +331,7 @@
   (let [{:keys [preds where ^Class what sort exactly]} m
         f (if exactly #(= (class %) what) #(instance? what %))
         path (apply min-key count where)] ; At this moment we use path with minimum edges.
-    (sort-rq (filter-by-preds 
-               (filter f (reduce #(get-objs %2 %1) sources path)) preds)
+    (sort-rq (filter-by-preds (filter f (reduce #(get-objs %2 %1) sources path)) preds)
              sort false)))
 
 
@@ -387,9 +381,12 @@
 (defn- p-nest
   "Processes :nest value with some objects."
   [^PersistentArrayMap nest, objs]
-  (reduce #(conj %1 (%2 1) (process-nests (:nest nest) (%2 0)))
-          []
-          (process-then objs (:then nest) (:props nest) (:sort nest))))
+  (if (empty? objs)
+    []
+    (let [n (:nest nest)]
+      (reduce #(conj %1 (%2 1) (if (nil? n) [] (process-nests n (%2 0))))
+              []
+              (process-then objs (:then nest) (:props nest) (:sort nest))))))
 
 
 (defn- process-nests
