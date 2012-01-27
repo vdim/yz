@@ -229,7 +229,7 @@
               (number? bd) (qc/create-emm (bu/gen-bd bd)) 
               (instance? EntityManager bd) (-createJPAElementManager bd)
               :else (qc/create-emm bd))
-        cbd (if hql? bd (ffirst (:rows (pquery "@(count `sonelement')" mom bd))))
+        cbd (if hql? bd (((:result (pquery "@(count `sonelement')" mom bd)) 0) 0))
         nb (inc (get-num-bench f)) ; Current number of the benchmark.
         new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
                                        (str %2 \newline (bench-fn %2 bd nb))
