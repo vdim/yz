@@ -22,13 +22,13 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "This code contains core functions of Clojure's implementation of the YZ language.
 
-         The Parsing of queries does due to the fnparse library.
-         See the code for the parsing queries in the parsing.clj file.
+         The parsing of queries does due to the fnparse library.
+         See code for parsing queries in the parsing.clj file.
          
          You must have some implementation of the ElementManager interface (see below) and
          pass it to the pquery function."}
-  (:require [ru.petrsu.nest.yz.parsing :as p] [clojure.string :as cs])
-  (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)))
+  (:require [ru.petrsu.nest.yz.parsing :as p])
+  (:import (clojure.lang PersistentArrayMap PersistentVector)))
 
 
 (definterface ElementManager
@@ -66,7 +66,13 @@
 
 
 (defrecord Result 
-  ^{:doc "Map with the result of executing 'pquery'."}
+  ^{:doc "Map with the result of executing 'pquery'.
+            :result - hierarchical structure of result query.
+            :error - if error is occured then value of this keyword contains 
+                     string representation of the error. If not then value is nil.
+            :columns - list with default names of columns.
+            :rows - representation of a result query as set of rows
+                    (similarly as table from relation database terminology.)"}
   [result error columns rows])
 
 
