@@ -81,24 +81,25 @@
 
 
 (declare process-preds, process-prop process-func)
+(defmacro check-arg
+  "Generates code for checking argument of predicate."
+  [a, o]
+  `(if (map? ~a) (process-preds ~o ~a) ~a))
+
+
 (defn- pp-func
   "Defines whether specified object o satisfies to specified
   vector with predicates preds."
   [o, ^PersistentVector preds]
-  (let [ff (first 
-             (reduce #(if (map? %2) 
-                        (conj %1 %2)
-                        (let [fa (peek %1)
-                              sa (peek (pop %1))
-                              op (if (= %2 :and) 
-                                   (and (if (map? fa) (process-preds o fa) fa) 
-                                        (if (map? sa) (process-preds o sa) sa))
-                                   (or (if (map? fa) (process-preds o fa) fa) 
-                                        (if (map? sa) (process-preds o sa) sa)))]
-                          (conj (pop (pop %1)) op))) [] preds))]
-    (if (map? ff)
-      (process-preds o ff)
-      ff)))
+  (let [rp (reduce #(if (map? %2) 
+                      (conj %1 %2)
+                      (let [fa (peek %1)
+                            sa (peek (pop %1))
+                            r (if (= %2 :and) 
+                                (and (check-arg fa o) (check-arg sa o))
+                                (or (check-arg fa o) (check-arg sa o)))]
+                        (conj (pop (pop %1)) r))) [] preds)]
+    (check-arg (rp 0) o)))
 
 
 (defn filter-by-preds
