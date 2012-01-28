@@ -280,8 +280,8 @@
 
 (defn bench-for-list
   "Takes info about benchmark and list with queries and
-  returns vector with two elements where first is time of the
-  parsing and second is time the querying."
+  returns vector with two elements where first is time of
+  parsing and second is vector with characteristics of querying."
   [mom bd n qlist]
   [(reduce #(+ %1 (bench-parsing n %2 mom)) 0 qlist)
    (reduce #(map + %1 (bench-quering n %2 mom bd)) [0 0 0 0 0] qlist)])
