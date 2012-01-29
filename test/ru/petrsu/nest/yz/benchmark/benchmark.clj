@@ -360,7 +360,8 @@
 (defn- do-times-hql
   "Returns sequence of time (n times) of execution some function f."
   [f, n]
-  (repeatedly n #(bu/btime (f))))
+  (repeatedly n #(let [[t r] (bu/brtime (f))]
+                   t)))
 
 
 (defn bench-quering-hql
