@@ -332,8 +332,8 @@
      "select aou from AbstractOU aou where name='ПетрГУ' and parent.id=1"
      "select aou from AbstractOU aou where name='Медицинский факультет' and parent.id=2"
      "select o from Occupancy o where o.room.id=39 and o.OU.id=40"
-     "select li, ni.network, li.device from LinkInterface li 
-     join li.networkInterfaces ni where li.description != null and li.description != ''"])
+     "select li, ni.network, d from LinkInterface li join li.networkInterfaces ni join ni.network n join n.networkInterfaces 
+     ni2 join ni2.linkInterface.device d where li.description != null and li.description != ''"])
 
 
 (def address-info-queries-jpa
