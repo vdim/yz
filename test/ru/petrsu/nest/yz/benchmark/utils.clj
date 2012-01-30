@@ -20,9 +20,11 @@
 
 (in-ns 'ru.petrsu.nest.yz.benchmark.benchmark)
 
-(defn avg-hql
-  "Takes file with HQL benchmark's results and returns one result."
-  [f]
+(defn avg
+  "Takes name of a file (f-in) with some benchmark's 
+  results, counts average result and writes this result to
+  specified file (f-out)."
+  [f-in, f-out]
   (let [n 50 ; amount of executing list of queries.
         nbd 7 ; amount of databases (1000, 5000, 10000, 15000, 20000, 50000, 100000)
         cur-list (atom "")
@@ -36,7 +38,7 @@
                            (assoc %1 @cur-list (conj (vec (get %1 @cur-list)) (s 2)))
                            %1)))
                 {} 
-                (line-seq (cio/reader f)))
+                (line-seq (cio/reader f-in)))
         times (reduce (fn [m [k v]] (assoc m k (partition n (apply interleave (partition nbd v))))) {} res)
         res (reduce (fn [m [k v]] 
                       (assoc m k (map #(let [s-times (apply + %)]
@@ -46,7 +48,7 @@
         res (reduce (fn [s [k v]] 
                       (str s k \newline (reduce str "" (map #(get-fs 1 0 %) v)) \newline)) 
                     "" res)]
-    (cio/copy res (cio/file "test-hql.txt"))))
+    (cio/copy res (cio/file f-out))))
 
 
 (defn add-time-per-query
