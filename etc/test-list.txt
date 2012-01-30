@@ -1,0 +1,74 @@
+# Copyright 2012 Vyacheslav Dimitrov, Petrozavodsk State University.
+# Contains result of benchmarks for specified list of queries.
+#
+# There are some scenario (from Nest project): 
+#   enlivener - scenario for the automatical creating Spatial and Organization 
+#	structrue of SON model (YZ is used for searching elements which has 
+#	already added).
+#   address-info - scenario for searching information about specified IP address.
+#
+#   Title:
+#	Num - the number of experiment.
+#	P - total time of parsing.
+#	Q - total time of quering.
+#	Avg - average time.
+#	Q(5%) - quantile 5%
+#	Q(50%) - quantile 50%
+#	Q(90%) - quantile 90%
+#
+#
+# Information about benchmark (see after results):
+#   - number 
+#   - count of the execution each list with queries.
+#   - count of elements into a database
+#   - starting date
+#   - ending date
+#   - commit's sha1 (see script info.sh)
+#   - some info about hardware and software (see script info.sh).
+#   
+#   Comments:
+#	Result of this benchmark has some specific. 
+#	Benchmark is run 50 times and then ru.petrsu.nest.yz.benchmark.benchmark/avg (from utils.clj) count average value.
+#	The bench_for_file.sh is:
+#	  for n in "1000 5000 10000 15000 20000 50000 100000"; do
+#	    java -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bench-norepl "nest.mom" $n 1 "test-list.txt" "list"
+#	  done;
+#	And then:
+#	  for i in `seq 1 50`; ./bench_for_file.sh; done;
+#
+#	Also parsing time is not counted.
+
+  Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
+;address-info-queries
+   7          0.0000     537546.0920      10750.9218      10475.3644      10624.7344      11287.4974
+   6          0.0000     275804.1636       5516.0833       5360.7356       5467.4024       5796.1192
+   5          0.0000     118962.8605       2379.2572       2297.0226       2355.7922       2463.8410
+   4          0.0000      92246.2543       1844.9251       1757.9200       1825.5250       1957.0390
+   3          0.0000      64062.8014       1281.2560       1222.9236       1274.2260       1333.2286
+   2          0.0000      34152.8344        683.0567        652.6781        678.1141        713.2182
+   1          0.0000      10387.7598        207.7552        193.9796        207.9800        218.2405
+
+  Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
+;enlivener-queries
+   7          0.0000    5712056.9738     114241.1395     106901.5549     112794.4585     122628.0227
+   6          0.0000    2934559.6177      58691.1924      54159.3805      59253.6699      61769.6875
+   5          0.0000    1168443.2516      23368.8650      20624.5957      23402.6746      25699.2594
+   4          0.0000     898591.3471      17971.8269      15375.6367      17880.1740      19887.6883
+   3          0.0000     619988.7672      12399.7753      10588.5178      12250.5610      14067.5907
+   2          0.0000     321595.8940       6431.9179       5190.2939       6354.5442       7920.3463
+   1          0.0000      94380.4650       1887.6093       1552.4768       1795.8269       2330.3505
+
+# 1. 50 1000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 2. 50 5000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 3. 50 10000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 4. 50 15000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 5. 50 20000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 6. 50 50000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 7. 50 100000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
