@@ -24,11 +24,11 @@
 #   - number 
 #   - count of the execution each list with queries.
 #   - count of elements into a database
-#   - starting date
-#   - ending date
 #   - commit's sha1 (see script info.sh)
 #   - some info about hardware and software (see script info.sh).
 #
+# Comments:
+#   - [1-7] Last query from enlivener-queries-hql was wrong (see commit ba0045e67642c118e661639d4ea1c2573dce8058).
 #
 
 #count=7
