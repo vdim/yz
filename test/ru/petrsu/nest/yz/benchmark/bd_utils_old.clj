@@ -79,35 +79,6 @@
              (.execute script export just-drop just-create))])))
 
 
-(defn init-model
-  "Inits model."
-  [state]
-  (do
-    (.addBuilding (:son state) (:building state))
-    (.setRootDevice (:son state) (:device state))
-    (.setRootOU (:son state) (:cou state))
-
-    (.addFloor (:building state) (:floor state))
-    (.addRoom (:floor state) (:room state))
-
-    (let [o (:occupancy state)]
-      (.setRoom o (:room state))
-      (.addDevice o (:device state))
-      (.setOU o (:sou state)))
-
-    (.addOU (:cou state) (:sou state))
-    (let [d (:device state)]
-      (.addLinkInterface d (:li state))
-      (.addLinkInterface d (:ei state))
-      (.addLinkInterface d (:vlan state)))
-
-    (.addNetworkInterface (:li state) (:ni state))
-    (.addNetworkInterface (:li state) (:ipv4 state))
-    (.addNetworkInterface (:ipn state) (:ni state))
-    (.addNetworkInterface (:ipn state) (:ipv4 state))
-    state))
-
-
 (defn change-model
   "Changes model: takes model and object of 
   model and inserts object into the model."
@@ -138,51 +109,25 @@
 
 
 (defn gen-bd
-  "Takes number of elements in BD, generates BD 
-  and returns SON."
+  "Takes number of elements in DB and generates DB. Returns SON."
   [n]
-  (let [r (Random.)
-        clc (count classes)
-        cn (count bu/names)
-        cd (count bu/descs)
-        se #(let [[cl k] (classes (.nextInt r clc))
-                  cl (if (nil? %) cl %)
-                  se (doto (.newInstance cl)
-                       (.setName (str (.getSimpleName cl) "_" (bu/names (.nextInt r cn))))
-                       (.setDescription (bu/descs (.nextInt r cd))))
-                  se (if (instance? Floor se) (doto se (.setNumber (Integer. (.nextInt r 100)))) se) 
-                  se (if (instance? Room se) (doto se (.setNumber (str (.nextInt r 100)))) se) 
-                  se (if (instance? IPv4Interface se) 
-                       (doto se (.setInetAddress (f/ip2b (bu/gen-ip r))))
-                       se)
-                  se (if (instance? IPNetwork se) 
-                       (doto se 
-                         (.setAddress (f/ip2b (bu/gen-ip r))) 
-                         (.setMask (f/ip2b (bu/gen-mask r))))
-                       se)
-                  se (if (instance? EthernetInterface se) 
-                       (doto se (.setMACAddress (f/mac2b (bu/gen-mac r))))
-                       se)]
-              [se k])
-        sm (init-model {:building ((se Building) 0)
-                        :floor ((se Floor) 0)
-                        :room ((se Room) 0)
-                        :occupancy ((se Occupancy) 0)
-                        :sou ((se SimpleOU) 0)
-                        :cou ((se CompositeOU) 0)
-                        :device ((se Device) 0)
-                        :network ((se Network) 0)
-                        :ni ((se NetworkInterface) 0)
-                        :ei ((se EthernetInterface) 0)
-                        :li ((se LinkInterface) 0)
-                        :ipn ((se IPNetwork) 0)
-                        :ipv4 ((se IPv4Interface) 0)
-                        :vlan ((se VLANInterface) 0)
-                        :son (SON.)})]
-    (loop [sm- sm, n- n]
-      (if (<= n- 0)
-        (:son sm-)
-        (recur (change-model sm- (se nil)) (dec n-))))))
+  (let [sm (bu/init-model {:building ((bu/gen-element Building classes) 0)
+                        :floor ((bu/gen-element Floor classes) 0)
+                        :room ((bu/gen-element Room classes) 0)
+                        :occupancy ((bu/gen-element Occupancy classes) 0)
+                        :sou ((bu/gen-element SimpleOU classes) 0)
+                        :cou ((bu/gen-element CompositeOU classes) 0)
+                        :device ((bu/gen-element Device classes) 0)
+                        :network ((bu/gen-element Network classes) 0)
+                        :ni ((bu/gen-element NetworkInterface classes) 0)
+                        :ei ((bu/gen-element EthernetInterface classes) 0)
+                        :li ((bu/gen-element LinkInterface classes) 0)
+                        :ipn ((bu/gen-element IPNetwork classes) 0)
+                        :ipv4 ((bu/gen-element IPv4Interface classes) 0)
+                        :vlan ((bu/gen-element VLANInterface classes) 0)
+                        :son (SON.)}) 
+        _ (dorun (repeatedly n #(change-model sm (bu/gen-element nil classes))))]
+    (:son sm)))
 
 
 (defn create-bd

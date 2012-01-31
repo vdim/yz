@@ -173,50 +173,50 @@
         (recur (dec n) (str res (v (.nextInt r cv))))))))
 
 
+(defn gen-element
+  "Generates element of the Nest model."
+  [claz classes]
+  (let [r (Random.)
+        [cl k] (classes (.nextInt r (count classes)))
+        cl (if (nil? claz) cl claz)
+        se (doto (.newInstance cl)
+             (.setName (str (.getSimpleName cl) "_" (names (.nextInt r (count names)))))
+             (.setDescription (descs (.nextInt r (count descs)))))
+        se (if (instance? Floor se) (doto se (.setNumber (Integer. (.nextInt r 100)))) se) 
+        se (if (instance? Room se) (doto se (.setNumber (str (.nextInt r 100)))) se) 
+        se (if (instance? IPv4Interface se) 
+             (doto se (.setInetAddress (f/ip2b (gen-ip r))))
+             se)
+        se (if (instance? IPNetwork se) 
+             (doto se 
+               (.setAddress (f/ip2b (gen-ip r))) 
+               (.setMask (f/ip2b (gen-mask r))))
+             se)
+        se (if (instance? EthernetInterface se) 
+             (doto se (.setMACAddress (f/mac2b (gen-mac r))))
+             se)]
+    [se k]))
+
+
 (defn gen-bd
   "Takes number of elements in BD, generates BD 
   and returns SON."
   [n]
-  (let [r (Random.)
-        clc (count classes)
-        cn (count names)
-        cd (count descs)
-        se #(let [[cl k] (classes (.nextInt r clc))
-                  cl (if (nil? %) cl %)
-                  se (doto (.newInstance cl)
-                       (.setName (str (.getSimpleName cl) "_" (names (.nextInt r cn))))
-                       (.setDescription (descs (.nextInt r cd))))
-                  se (if (instance? Floor se) (doto se (.setNumber (Integer. (.nextInt r 100)))) se) 
-                  se (if (instance? Room se) (doto se (.setNumber (str (.nextInt r 100)))) se) 
-                  se (if (instance? IPv4Interface se) 
-                       (doto se (.setInetAddress (f/ip2b (gen-ip r))))
-                       se)
-                  se (if (instance? IPNetwork se) 
-                       (doto se 
-                         (.setAddress (f/ip2b (gen-ip r))) 
-                         (.setMask (f/ip2b (gen-mask r))))
-                       se)
-                  se (if (instance? EthernetInterface se) 
-                       (doto se (.setMACAddress (f/mac2b (gen-mac r))))
-                       se)]
-              [se k])
-        sm (init-model {:building ((se Building) 0)
-                        :floor ((se Floor) 0)
-                        :room ((se Room) 0)
-                        :occupancy ((se Occupancy) 0)
-                        :sou ((se SimpleOU) 0)
-                        :cou ((se CompositeOU) 0)
-                        :device ((se Device) 0)
-                        :network ((se UnknownNetwork) 0)
-                        :ni ((se UnknownNetworkInterface) 0)
-                        :ei ((se EthernetInterface) 0)
-                        :li ((se UnknownLinkInterface) 0)
-                        :ipn ((se IPNetwork) 0)
-                        :ipv4 ((se IPv4Interface) 0)
-                        :vlan ((se VLANInterface) 0)
-                        :son (SON.)})]
-    (loop [sm- sm, n- n]
-      (if (<= n- 0)
-        (:son sm-)
-        (recur (change-model sm- (se nil)) (dec n-))))))
+  (let [sm (init-model {:building ((gen-element Building classes) 0)
+                        :floor ((gen-element Floor classes) 0)
+                        :room ((gen-element Room classes) 0)
+                        :occupancy ((gen-element Occupancy classes) 0)
+                        :sou ((gen-element SimpleOU classes) 0)
+                        :cou ((gen-element CompositeOU classes) 0)
+                        :device ((gen-element Device classes) 0)
+                        :network ((gen-element UnknownNetwork classes) 0)
+                        :ni ((gen-element UnknownNetworkInterface classes) 0)
+                        :ei ((gen-element EthernetInterface classes) 0)
+                        :li ((gen-element UnknownLinkInterface classes) 0)
+                        :ipn ((gen-element IPNetwork classes) 0)
+                        :ipv4 ((gen-element IPv4Interface classes) 0)
+                        :vlan ((gen-element VLANInterface classes) 0)
+                        :son (SON.)})
+        _ (dorun (repeatedly n #(change-model sm (gen-element nil classes))))]
+    (:son sm)))
 
