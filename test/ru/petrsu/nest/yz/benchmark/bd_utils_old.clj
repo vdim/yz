@@ -19,16 +19,15 @@
 
 (ns ru.petrsu.nest.yz.benchmark.bd-utils-old
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Code for generating nest DB (JPA variant)."}
-  (:require [ru.petrsu.nest.util.utils :as f] [ru.petrsu.nest.yz.benchmark.bd-utils :as bu])
+    :doc "Code for generating nest DB (JPA (old) variant)."}
+  (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu])
   (:import (ru.petrsu.nest.son.jpa Building Floor Room
                                    Occupancy SimpleOU CompositeOU Device 
                                    Network IPNetwork EthernetInterface LinkInterface 
                                    IPv4Interface NetworkInterface VLANInterface SON)
            (javax.persistence Persistence)
            (org.hibernate.tool.hbm2ddl SchemaExport)
-           (org.hibernate.cfg Configuration)
-           (java.util Random)))
+           (org.hibernate.cfg Configuration)))
 
 
 (def hibcfg

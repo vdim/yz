@@ -19,13 +19,12 @@
 
 (ns ru.petrsu.nest.yz.benchmark.bd-utils
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Usefull functions for working with bd for benchmark."}
+    :doc "Usefull functions for working with db for benchmark."}
   (:require [ru.petrsu.nest.util.utils :as f])
   (:import (ru.petrsu.nest.son Building Floor Room
                                Occupancy SimpleOU CompositeOU
                                Device UnknownNetwork UnknownNetworkInterface EthernetInterface
                                UnknownLinkInterface IPv4Interface IPNetwork VLANInterface SON)
-           (javax.persistence Persistence)
            (java.util Random)))
 
 
