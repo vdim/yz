@@ -216,6 +216,7 @@
                         :ipv4 ((gen-element IPv4Interface classes) 0)
                         :vlan ((gen-element VLANInterface classes) 0)
                         :son (SON.)})
-        _ (dorun (repeatedly n #(change-model sm (gen-element nil classes))))]
-    (:son sm)))
+        a-sm (atom sm)
+        _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element nil classes))))]
+    (:son @a-sm)))
 

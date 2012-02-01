@@ -125,8 +125,9 @@
                         :ipv4 ((bu/gen-element IPv4Interface classes) 0)
                         :vlan ((bu/gen-element VLANInterface classes) 0)
                         :son (SON.)}) 
-        _ (dorun (repeatedly n #(change-model sm (bu/gen-element nil classes))))]
-    (:son sm)))
+        a-sm (atom sm)
+        _ (dorun (repeatedly n #(swap! a-sm change-model (bu/gen-element nil classes))))]
+    (:son @a-sm)))
 
 
 (defn create-bd
