@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -19,7 +19,7 @@
 
 (ns ru.petrsu.nest.yz.yz
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Wrapper for using the YZ into the Java code."}
+    :doc "Wrapper for using the YZ from Java code."}
   (:require
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
@@ -42,13 +42,14 @@
 
 
 (defn- get-by-key
-  "Returns a value getting from the state for the specified key."
+  "Returns a value from the state for the specified key."
   [key, this]
   (key @(.state this)))
 
+
 (defn- create-state
-  "Creates state due to em. If f-mom is'not nil then
-  mom is extracted from file."
+  "Creates state due to em. If f-mom isn't nil then
+  MOM is extracted from file."
   [^ElementManager em, f-mom]
   (atom {:em em 
          :mom (if (nil? @*mom*) 
@@ -64,9 +65,9 @@
   "Defines constructors."
   ([^ElementManager em]
    [[] (create-state em nil)])
-
   ([^ElementManager em ^String f]
    [[] (create-state em f)]))
+
 
 (defn- pq
   "Performs YZ's query."
@@ -116,3 +117,4 @@
     (if (or (not= (count rows) 1) (not= (count (nth rows 0)) 1))
       (throw (Exception. "Result is not single."))
       (nth (nth rows 0) 0))))
+
