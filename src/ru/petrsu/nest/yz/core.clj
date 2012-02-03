@@ -82,7 +82,7 @@
 
 (declare process-preds, process-prop process-func)
 (defmacro check-arg
-  "Generates code for checking argument of predicate."
+  "Generates code for checking argument 'a' of object 'o'."
   [a, o]
   `(if (map? ~a) (process-preds ~o ~a) ~a))
 
@@ -489,19 +489,19 @@
 (defn get-qr
   "Takes result of parsing and returns result of quering."
   [parse-res ^PersistentArrayMap mom ^ElementManager em]
-  (do (reset! a-em em) 
-    (reset! a-mom mom)
-    (let [query-res (if (string? parse-res)     
-                      parse-res
-                      (try
-                        (run-query parse-res)
-                        (catch Throwable e (let [msg (.getMessage e)
-                                                 msg (if (nil? msg) (.toString e) msg)]
-                                             msg))))]
-      (if (string? query-res)
-        (Result. [] query-res [] ())
-        (let [rows (distinct (get-rows query-res))]
-          (Result. query-res nil (get-columns-lite rows) rows))))))
+  (reset! a-em em) 
+  (reset! a-mom mom)
+  (let [query-res (if (string? parse-res)
+                    parse-res
+                    (try
+                      (run-query parse-res)
+                      (catch Throwable e (let [msg (.getMessage e)
+                                               msg (if (nil? msg) (.toString e) msg)]
+                                            msg))))]
+    (if (string? query-res)
+      (Result. [] query-res [] ())
+      (let [rows (distinct (get-rows query-res))]
+        (Result. query-res nil (get-columns-lite rows) rows)))))
 
 
 (defn pquery
