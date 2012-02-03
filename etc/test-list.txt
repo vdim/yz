@@ -37,9 +37,19 @@
 #	  for i in `seq 1 50`; ./bench_for_file.sh; done;
 #
 #	Also parsing time is not counted.
+#
+#	- [1-7] without any fjclj function.
+#	- [8-14] pvfilter is used for filter-by-preds.
 
   Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;address-info-queries
+   14         0.0000     310109.8831       6202.1977       5727.8131       6200.9392       6787.0605
+   13         0.0000     160530.2140       3210.6043       3016.5533       3194.4908       3379.1152
+   12         0.0000      73220.3696       1464.4074       1365.1275       1461.6816       1529.7679
+   11         0.0000      56969.0353       1139.3807       1048.2869       1119.9574       1212.8268
+   10         0.0000      42550.8284        851.0166        796.3114        851.3757        900.6086
+   8          0.0000      25911.4724        518.2294        485.3323        520.2130        542.0387
+   8          0.0000       7820.8545        156.4171        143.0163        155.5953        168.8118
    7          0.0000     537546.0920      10750.9218      10475.3644      10624.7344      11287.4974
    6          0.0000     275804.1636       5516.0833       5360.7356       5467.4024       5796.1192
    5          0.0000     118962.8605       2379.2572       2297.0226       2355.7922       2463.8410
@@ -50,6 +60,13 @@
 
   Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;enlivener-queries
+   14         0.0000    6250356.2402     125007.1248     111408.8619     124184.7729     135410.5133
+   13         0.0000    3144394.4466      62887.8889      57027.7216      62154.5588      68727.0386
+   12         0.0000    1298184.0666      25963.6813      23055.1799      25434.8227      28647.3593
+   11         0.0000    1008834.4915      20176.6898      16594.4122      19978.1916      22876.1857
+   10         0.0000     671301.7877      13426.0358      11103.0689      13254.2141      15337.3860
+   9          0.0000     342710.6211       6854.2124       5554.3522       6838.8340       8117.5630
+   8          0.0000     102712.6008       2054.2520       1653.4434       2004.8600       2443.0495
    7          0.0000    5712056.9738     114241.1395     106901.5549     112794.4585     122628.0227
    6          0.0000    2934559.6177      58691.1924      54159.3805      59253.6699      61769.6875
    5          0.0000    1168443.2516      23368.8650      20624.5957      23402.6746      25699.2594
@@ -72,3 +89,16 @@
 
 # 7. 50 100000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2830 9d8c0424c1748142241b2e578fc19f61069f7a84 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
 
+# 8. 50 1000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 9. 50 5000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 10. 50 10000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 11. 50 15000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 12. 50 20000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 13. 50 50000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 14. 50 100000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
