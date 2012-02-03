@@ -203,10 +203,10 @@
   "Returns value of field. First we try to finding property
   due to getPropertyValue function of a ElementManager, 
   if is failed then we try to using reflection (e.g. getDeclaredField)."
-  [o, field-name]
+  [^Object o, field-name]
   (if (nil? o)
     nil
-    (let [field-name (if (keyword? field-name) (name field-name) field-name) 
+    (let [^String field-name (if (keyword? field-name) (name field-name) field-name) 
           v (try (.getPropertyValue @a-em o field-name)
               (catch Exception e (throw (Exception. (str "Not found property: " field-name)))))]
       (cond 
@@ -289,7 +289,7 @@
 
 
 (defn- eq-arrays?
-  "Returns true if array a1 equals arrya a2."
+  "Returns true if array a1 equals array a2."
   [a1 a2]
   (if (or (nil? a1) (nil? a2))
     nil
@@ -384,7 +384,6 @@
              (:sort then-)))))
 
 
-(declare process-nests)
 (defn- p-nest
   "Processes :nest value with some objects."
   [^PersistentArrayMap nest, objs]
