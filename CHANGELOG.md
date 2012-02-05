@@ -1,3 +1,11 @@
+## 0.0.1-alpha12 / ?.?.2012
+
+* Added support parameterized queries: floor#(number=$1)
+* Added support ALL modificator for collections into predicates: building#(∀floor.number=1)
+* Added support definition an exact type of class: ni^
+* Added identity(==) binary operation.
+* Added support default properties something like this: floor#(.=1)
+
 ## 0.0.1-alpha11 / 25.11.2011
 
 * Added support regular expressions into predicates: building#(name~"^Main.*ding$")
