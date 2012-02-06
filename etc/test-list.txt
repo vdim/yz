@@ -38,11 +38,19 @@
 #
 #	Also parsing time is not counted.
 #
-#	- [1-7] without any fjclj function.
+#	- [1-7] without any fjclj functions.
 #	- [8-14] pvfilter is used for filter-by-preds.
+#	- [14-21] binding is used for ElementManager (without any fjclj functions).
 
   Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;address-info-queries
+   21         0.0000     500060.1303      10001.2026       9857.5628       9943.1401      10221.4511
+   20         0.0000     257068.4138       5141.3683       5048.6323       5127.4715       5220.6834
+   19         0.0000     111283.0443       2225.6609       2170.6337       2215.7486       2268.4495
+   18         0.0000      86135.3406       1722.7068       1663.3311       1705.5891       1786.7052
+   17         0.0000      60318.4551       1206.3691       1153.2552       1208.3182       1236.8441
+   16         0.0000      32073.8329        641.4767        619.9362        640.6303        662.5766
+   15         0.0000       9613.6248        192.2725        181.7281        190.8573        202.3038
    14         0.0000     310109.8831       6202.1977       5727.8131       6200.9392       6787.0605
    13         0.0000     160530.2140       3210.6043       3016.5533       3194.4908       3379.1152
    12         0.0000      73220.3696       1464.4074       1365.1275       1461.6816       1529.7679
@@ -60,6 +68,13 @@
 
   Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;enlivener-queries
+   21         0.0000    5729611.0395     114592.2208     107400.6052     114462.8255     119760.8744
+   20         0.0000    2915133.9892      58302.6798      53390.7322      57813.0412      62985.3300
+   19         0.0000    1159549.1240      23190.9825      20465.5402      23120.9878      25587.7822
+   18         0.0000     919639.0251      18392.7805      15292.0275      18257.6239      20650.9964
+   17         0.0000     609383.6683      12187.6734      10557.7068      12098.6754      13812.1275
+   16         0.0000     323051.7618       6461.0352       5350.4092       6356.3497       7358.1236
+   15         0.0000      86767.1907       1735.3438       1370.4229       1696.9646       2108.5451
    14         0.0000    6250356.2402     125007.1248     111408.8619     124184.7729     135410.5133
    13         0.0000    3144394.4466      62887.8889      57027.7216      62154.5588      68727.0386
    12         0.0000    1298184.0666      25963.6813      23055.1799      25434.8227      28647.3593
@@ -102,3 +117,18 @@
 # 13. 50 50000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
 
 # 14. 50 100000 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2856 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 15. 50 1015 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2796 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 16. 50 5011 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2796 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 17. 50 10015 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2796 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 18. 50 15013 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2796 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 19. 50 20011 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2796 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 20. 50 49994 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2796 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 21. 50 99991 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2796 701fe1431a335ebed9339cad223c4c52c12eec3a 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
