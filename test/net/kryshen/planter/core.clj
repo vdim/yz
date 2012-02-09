@@ -1,17 +1,7 @@
-;;
-;; Copyright (C) 2011 Petrozavodsk State University
-;;
-;; This file is part of Nest.
-;;
-
 (ns net.kryshen.planter.core
   ^{:author "Michail Kryshen"
-    :doc "The planter that grows Java beans."} 
-  (:use clojure.java.shell)
-  (:require
-   (clojure.java [io :as io]))
+    :doc "The planter that grows Java beans."}
   (:import
-   (java.io File PushbackReader)
    java.util.UUID))
 
 (definterface RefBean
@@ -27,40 +17,7 @@
 (defrecord BeanSpec [classname name properties mixin specs])
 ;; specs: map mixin-or-interface-or-Object -> (overrides*)
 
-(defrecord BeanState [id properties access-listeners])
-
-
-(def ^:private 
-  beans
-  "Managed beans, map id -> object."
-  (ref nil))
-
-(def ^:private 
-  changed-beans
-  "Beans that need to be saved."
-  (agent #{}))
-
-(def ^:private 
-  save-requests (atom 0))
-
-(def ^:dynamic *data-dir* "data")
-
-(def ^:private 
-  log-writer (atom nil))
-
-(defn- check-log-writer [writer]
-  (or writer
-      (let [file (io/file *data-dir* "log")]
-        (io/make-parents file)
-        (io/writer file))))
-
-(defn- get-log-writer []
-  (or @log-writer
-      (swap! log-writer check-log-writer)))
-
-(defn- log [& objs]
-  (binding [*out* (get-log-writer)]
-    (apply println objs)))
+(defrecord BeanState [id properties loader access-listeners change-fns])
 
 (defn bean-id [^RefBean bean]
   (:id (.internalState bean)))
@@ -68,56 +25,11 @@
 (defn properties-ref [^RefBean bean]
   (:properties (.internalState bean)))
 
-(defn bean-instance
-  "Returns bean instance specified by class and id."
-  [^Class cls id]
-  (or
-   (.cast cls (get @beans id))
-   (dosync
-    (or
-     (.cast cls (get @beans id))
-     (let [b (.newInstance (.getConstructor cls (into-array [Object]))
-                           (into-array [id]))]
-       (alter beans assoc id b)
-       b)))))
+(defn- loader [^RefBean bean]
+  (:loader (.internalState bean)))
 
-(defn- store-contents
-  "Returns a sequence of sequences (class & ids) describing the
-  contents of the data store."
-  []
-  (->>
-   (.listFiles (io/file *data-dir*))
-   (filter (fn [^File f] (.isDirectory f)))
-   (map (fn [^File f]
-          (cons (Class/forName (.getName f))
-                (lazy-seq (.list f)))))))
-
-(defn instances-of
-  "Returns sequence of instances of the specified class."
-  [^Class cls]
-  ;; Instantiate all stored beans of classes assignable to cls.
-  (doseq [[c & ids] (store-contents)]
-    (if (.isAssignableFrom cls c)
-      (doseq [id ids]
-        (bean-instance c id))))
-  (filter (partial instance? cls) (vals @beans)))
-
-(defn- bean-file
-  ([bean]
-     (bean-file (class bean) (bean-id bean)))
-  ([^Class cls id]
-     (io/file (io/file *data-dir* (.getName cls)) (str id))))
-
-(defn- load-properties
-  "Reads bean properties from the data store."
-  [bean]
-  (let [file (bean-file bean)]
-    (log "Loading" (str file))
-    (with-open [in (io/reader file)]
-      (read (PushbackReader. in)))))
-
-(defn- ensure-loaded [bean properties]
-  (or properties (load-properties bean)))
+(defn- load-deref [bean ref]
+  (or @ref (ref-set ref ((loader bean) bean))))
 
 (defn- fire-property-access
   "Invokes property access listeners associated with the specified bean."
@@ -125,127 +37,29 @@
   (doseq [listener @(:access-listeners (.internalState bean))]
     (.propertyAccess ^PropertyAccessListener listener bean property)))
 
-(defn- properties*
-  "Returns bean properties without notifying access listeners. Must be
-  called in a transaction."
-  [bean]
-  (let [ref (properties-ref bean)]
-    (or @ref (alter ref (partial ensure-loaded bean)))))
-
 (defn properties
   "Returns bean properties."
   [bean]
   (fire-property-access bean nil)
   (let [ref (properties-ref bean)]
-    (or @ref
-        (dosync
-         (alter ref (partial ensure-loaded bean))))))
+    (or @ref (dosync (load-deref bean ref)))))
 
-(def ^:private 
-  ^:dynamic *saving*
-  "The bean being saved."
-  nil)
-
-(defn- register-change [changed known bean]
-  (if (and (not (identical? *saving* bean))
-           (contains? known (bean-id bean)))
-    (conj changed bean)
-    changed))
-
-(defn- alter-properties [bean f & args]
-  (send changed-beans register-change @beans bean)
-  (alter (properties-ref bean) #(apply f (ensure-loaded bean %) args)))
-
-(defn- alter-property [bean key f & args]
-  (alter-properties bean #(assoc % key (apply f (key %) args))))
-
-(defn save-properties!
-  [bean]
-  (io! "Writing to the data store while transaction is running.")
-  (let [file (bean-file bean)]
-    (log "Writing" (str file))
-    (io/make-parents file)
-    (with-open [fw (io/writer file)]
-      (binding [*print-dup* true
-                ;*verbose-defrecords* true
-                *out* fw]
-        (pr (properties bean))))))
-
-(defn register-bean [bean]
+(defn add-change-watch [^RefBean bean f]
   (dosync
-   (alter beans assoc (bean-id bean) bean)
-   (send changed-beans conj bean)))
+   (alter (:change-fns (.internalState bean)) conj f)))
 
-(defn- related [properties]
+(defn- fire-change [^RefBean bean removed added]
+  (doseq [change-fn @(:change-fns (.internalState bean))]
+    (change-fn bean removed added)))
+
+(defn related [properties]
   (filter (partial instance? RefBean)
           (mapcat #(if (coll? %) (seq %) [%]) (vals properties))))
-
-(defn- register-related
-  "Registeres new beans related to the specified beans.
-   Returns set of the newly registered beans."
-  [changed]
-  (dosync
-   (let [rels (mapcat (comp related properties) changed)
-         rels (remove #(contains? @beans (bean-id %)) rels)
-         id-rels (map #(vector (bean-id %) %) rels)]
-     (alter beans into id-rels)
-     (set rels))))
-
-(defn- save-changes! [changed]
-  (log "save-changes!")
-  (doseq [save changed]
-    (binding [*saving* save]
-      (save-properties! save)))
-  (let [new-changed (register-related changed)]
-    (if (empty? new-changed)
-      new-changed
-      (recur new-changed))))
-
-(defn- check-save! [changed]
-  (log "check-save!")
-  (if (seq changed)
-    (do
-      (save-changes! changed)
-      (send-off changed-beans check-save!))
-    (swap! save-requests dec))
-  (empty changed))
-  
-(defn save-all
-  "Writes all changes to the store. Returns immediately."
-  []
-  (log "save-all")
-  (swap! save-requests inc)
-  (send-off changed-beans check-save!)
-  nil)
-
-(defn save-all-and-wait []
-  (log "save-all-and-wait")
-  (io! "save-all-and-wait called in transaction.")
-  (save-all)
-  (loop []
-    (let [w (await-for 500 changed-beans)]
-      (log "save-all-and-wait: await-for" w)
-      (when-let [e (agent-error changed-beans)]
-        (log "save-all-and-wait: agent-error" e)
-        (restart-agent changed-beans @changed-beans)
-        (throw e))
-      (if-not (and w (zero? @save-requests))
-        (recur)))))
 
 (defn- array-class
   "Returns array type corresponding to the given class or symbol."
   [^Class cls]
   (class (java.lang.reflect.Array/newInstance cls 1)))
-
-(defmethod print-dup RefBean
-  [bean ^java.io.Writer writer]
-  (.write writer "#=(")
-  (.write writer (str `bean-instance))
-  (.write writer " ")
-  (print-dup (class bean) writer)
-  (.write writer " ")
-  (print-dup (bean-id bean) writer)
-  (.write writer ")"))
 
 (defmethod print-dup UUID
   [uuid ^java.io.Writer writer]
@@ -267,40 +81,22 @@
 (defn property-binding [^RefBean bean key]
   (key (.bindings bean)))
 
-(defn- remove-value
-  "Remove value from coll or disjoin if coll is a set."
-  [coll val]
+(defn- remove-values
+  "Remove vals from coll or disjoin if coll is a set."
+  [coll vals]
   (if (set? coll)
-    (disj coll val)
+    (apply disj coll vals)
     (into (empty coll)
-          (remove (partial = val) coll))))
-
-(defn- property-unbind
-  [bean key value]
-  (when-not (nil? bean)
-    (fire-property-access bean key)
-    (if (multivalued? bean key)
-      (alter-property bean key remove-value value)
-      (alter-properties bean assoc key nil))))
-
-(defn- property-bind
-  [bean key value]
-  (when-not (nil? bean)
-    (fire-property-access bean key)
-    (if (multivalued? bean key)
-      (alter-property bean key conj value)
-      (do
-        (when-let [bind (property-binding bean key)]
-          (property-unbind (key (properties* bean)) bind bean))
-        (alter-properties bean assoc key value)))))
+          (remove (set vals) coll))))
 
 (defn set-property [bean key value]
   (dosync
    (fire-property-access bean key)
-   (when-let [bind (property-binding bean key)]
-     (property-unbind (key (properties* bean)) bind bean)
-     (property-bind value bind bean))
-   (alter-properties bean assoc key value)))
+   (let [ref (properties-ref bean)
+         o (get (load-deref bean ref) key)]
+     (when (not= o value)
+       (alter ref assoc key value)
+       (fire-change bean {key o} {key value})))))
 
 (defn get-property [bean key]
   (key (properties bean)))
@@ -308,31 +104,67 @@
 (defn set-property-array [bean key array]
   (dosync
    (fire-property-access bean key)
-   (let [o (key (properties* bean))
-         v (into (empty o) (seq array))]
-     (when-let [bind (property-binding bean key)]
-       (doseq [x o]
-         (property-unbind x bind bean))
-       (doseq [x v]
-         (property-bind x bind bean)))
-     (alter-properties bean assoc key v))))
+   (let [ref (properties-ref bean)
+         c (get (load-deref bean ref) key)
+         cn (into (empty c) (seq array))]
+     (when (not= c cn)
+       (alter ref assoc key cn)
+       (fire-change bean {key c} {key cn})))))
 
 (defn get-property-array [bean key type]
   (into-array type (get-property bean key)))
 
-(defn property-add [bean key value]
+(defn property-add [bean key & values]
   (dosync
    (fire-property-access bean key)
-   (when-let [bind (property-binding bean key)]
-     (property-bind value bind bean))
-   (alter-property bean key conj value)))
+   (let [ref (properties-ref bean)
+         c (get (load-deref bean ref) key)
+         cn (apply conj c values)]
+     (when (not= c cn)
+       (alter ref assoc key cn)
+       (fire-change bean nil {key (into (empty c) values)})))))
 
-(defn property-remove [bean key value]
+(defn property-remove [bean key & values]
   (dosync
    (fire-property-access bean key)
-   (when-let [bind (property-binding bean key)]
-     (property-unbind value bind bean))
-   (alter-property bean key remove-value value)))
+   (let [ref (properties-ref bean)
+         c (get (load-deref bean ref) key)
+         cn (remove-values c values)]
+     (when (not= c cn)
+       (alter ref assoc key cn)
+       (fire-change bean {key (into (empty c) values)} nil)))))
+
+(defn- property-unbind
+  [bean key value]
+  (if (multivalued? bean key)
+    (property-remove bean key value)
+    (set-property bean key nil)))
+
+(defn- property-bind
+  [bean key value]
+  (if (multivalued? bean key)
+    (property-add bean key value)
+    (set-property bean key value)))
+
+(defn bind-changes
+  "Applies property bindings. Must be called in transaction."
+  [bean removed added]
+  ;; (binding [*out* *err*]
+  ;;   (println bean removed added))
+  (doseq [[k v] removed]
+    (when-not (nil? v)
+      (when-let [bind (property-binding bean k)]
+        (if (multivalued? bean k)
+          (doseq [vk v]
+            (property-unbind vk bind bean))
+          (property-unbind v bind bean)))))
+  (doseq [[k v] added]
+    (when-not (nil? v)
+      (when-let [bind (property-binding bean k)]
+        (if (multivalued? bean k)
+          (doseq [vk v]
+            (property-bind vk bind bean))
+          (property-bind v bind bean))))))
 
 (defn property-accessor
   "Returns accessor fn for the specified property."
@@ -410,17 +242,14 @@
 (defn- bean-methods [namespace bean-name properties]
   (mapcat (partial property-methods bean-name) properties))
 
-(def ^:private 
-  primitive-types
+(def ^:private primitive-types
   [Float/TYPE Integer/TYPE Long/TYPE Boolean/TYPE Character/TYPE
   Double/TYPE Byte/TYPE Short/TYPE Void/TYPE])
 
-(def ^:private 
-  primitive-syms
+(def ^:private primitive-syms
   (set (map #(symbol (.getName ^Class %)) primitive-types)))
 
-(def ^:private 
-  primitive-array-syms
+(def ^:private primitive-array-syms
   (set (map #(symbol (str % "s")) primitive-syms)))
 
 (defn- bean-spec? [obj]
@@ -521,7 +350,7 @@
         classname (or (:classname opts)
                       (bean-classname *ns* name))]
     `(do
-       (let [spec# (BeanSpec. ~classname '~name '~properties
+       (let [spec# (->BeanSpec ~classname '~name '~properties
                                ~mixin '~specs)]
          (def ~(with-meta name {:bean-spec true}) spec#)
          (def ~(symbol (str name "*")) (plural-type-spec spec#)))
@@ -625,14 +454,19 @@
          (defn ~(method-symbol name "init")
            ([]
               (~(method-symbol name "init")
-               (str (UUID/randomUUID))
                (~(method-symbol name "defaults"))))
-           ([id#]
-              (~(method-symbol name "init") id# nil))
-           ([id# properties#]
-              [[] (BeanState. id#
+           ([properties#]
+              [[] (BeanState. (str (UUID/randomUUID))
                               (ref properties#)
-                              (ref nil))]))))))
+                              nil
+                              (ref nil)
+                              (ref [bind-changes]))])
+           ([id# loader#]
+              [[] (BeanState. id#
+                              (ref nil)
+                              loader#
+                              (ref nil)
+                              (ref [bind-changes]))]))))))
 
 (defn- bean-specs
   "Returns a sequence of bean specs defined in the specified
@@ -659,17 +493,7 @@
      ;; Load the dummy classes to make gen-class see all interfaces as
      ;; empty and not include duplicate methods.
      (for [spec specs]
-           `(Class/forName ~(:classname spec)))
+       `(Class/forName ~(:classname spec)))
      ;; Generate actual implementations.
      (for [spec specs]
-         (bean-generator *ns* spec)))))
-
-
-(defn get-value
-  "Takes a SonElement and name of a property 
-  and returns value of its property."
-  [^RefBean o, ^String property]
-  (let [k (keyword property)
-        props (if (= k :id) (.internalState o) (properties o))]
-    (k props)))
-
+       (bean-generator *ns* spec)))))

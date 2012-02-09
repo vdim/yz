@@ -23,7 +23,7 @@
          project. This is needed for correct order of the compiling."}
   (:require
     (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu])
-    (net.kryshen.planter [core :as planter]) 
+    (net.kryshen.planter [store :as ps] [core :as pc]) 
     (ru.petrsu.nest [son :as sn]))
   (:import
     (ru.petrsu.nest.yz.core ElementManager)
@@ -32,11 +32,13 @@
 
 (defn ^ElementManager create-lsm
   "Returns LocalSonManager."
-  []
+  [store]
   (reify ElementManager
     (^java.util.Collection getElems [_ ^Class claz] 
-       (planter/instances-of claz))
+       (ps/instances-of store claz))
     (getClasses [_] ())
     
     (^Object getPropertyValue [this ^Object o, ^String property]
-       (planter/get-value o property))))
+       (if (= property "id")
+         (pc/bean-id o)
+         ((keyword property) (pc/properties o))))))

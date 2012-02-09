@@ -23,7 +23,7 @@
   (:use clojure.test)
   (:use clojure.java.shell)
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
-            [net.kryshen.planter.core :as planter]
+            [net.kryshen.planter.store :as planter]
             [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.son.local-sm :as lsm])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
@@ -85,6 +85,17 @@
   (em-memory son (create-id-cache son)))
 
 
+(defn create-emlm
+  "Returns implementation of the LocalSonManager 
+  for specified son."
+  [son]
+  (let [_ (sh "rm" "-Rf" "data") ; Dirty hack: deletes directory "data" before making queries.
+        store (planter/store "data")
+        _ (planter/register-bean store son)
+        _ (planter/save-all-and-wait store)]
+    (lsm/create-lsm store)))
+
+
 ;;
 ;; Definition fixtures (see doc string to the clojure.test namespace for more details).
 ;;
@@ -96,24 +107,19 @@
   ([son nf]
    (fn [f]
      (binding [*mom* (hb/mom-from-file nf)
-               *em* (em-memory son (create-id-cache son))]
+               *em* (create-emlm son)]
        (f)))))
 
 
 (defn setup-lm
   "Runs test queries using LocalSonManager storage from Nest project."
   ([son]
-   (setup-son son *file-mom*))
+   (setup-lm son *file-mom*))
   ([son nf]
    (fn [f]
-     (let [_ (sh "rm" "-Rf" "data") ; Dirty hack: deletes directory "data" before making queries.
-           _ (planter/register-bean son)
-           _ (planter/save-all-and-wait)
-           lm (lsm/create-lsm)]
-       (binding [*mom* (hb/mom-from-file nf)
-                 *em* lm]
-         (f)
-         (.close lm))))))
+     (binding [*mom* (hb/mom-from-file nf)
+               *em* (create-emlm son)]
+       (f)))))
 
 
 ;;
