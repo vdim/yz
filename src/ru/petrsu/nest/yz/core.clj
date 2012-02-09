@@ -79,6 +79,7 @@
 (def ^{:tag ElementManager} a-em (atom nil))
 (def a-mom (atom nil))
 
+(def ^{:tag ElementManager :dynamic true} *em*)
 
 (declare process-preds, process-prop process-func)
 (defmacro check-arg
@@ -285,7 +286,13 @@
   "Returns sequence of objects which belong to 'objs' 
   by specified 'field-name'."
   [^String field-name, objs]
-  (flatten (map #(get-fv % field-name) objs)))
+  (flatten (map #(let [fv (get-fv % field-name)] 
+                   ; DON'T REMOVE THIS IF.
+                   ; At least sets are not flattened.
+                   (if (instance? java.util.Collection fv) 
+                     (seq fv)
+                     fv))
+                objs)))
 
 
 (defn- eq-arrays?
