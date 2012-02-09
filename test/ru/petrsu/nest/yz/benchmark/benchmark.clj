@@ -35,6 +35,7 @@
             [ru.petrsu.nest.son.local-sm :as lsm]
             [clojure.java.io :as cio]
             [clojure.java.shell :as sh]
+            [net.kryshen.planter.store :as store]
             [clojure.pprint :as cp])
   (:import (java.util Date)
            (ru.petrsu.nest.yz.core ElementManager) 
@@ -294,7 +295,7 @@
             (local son manager by default).
       - n - times of execution each list with queries (1 by default)."
   ([mom] 
-   (bench-for-nest-queries mom (lsm/create-lsm) 1))
+   (bench-for-nest-queries mom (lsm/create-lsm (store/store "data")) 1))
   ([mom bd]
    (bench-for-nest-queries mom bd 1))
   ([mom bd n]
@@ -331,13 +332,13 @@
       - f - name of file for result (etc/yz-bench-list.txt by default).
   Use nil for indication value of parameter as default."
   ([mom] 
-   (bench-list-to-file mom (lsm/create-lsm) 1 bench-list-file))
+   (bench-list-to-file mom (lsm/create-lsm (store/store "data")) 1 bench-list-file))
   ([mom bd]
    (bench-list-to-file mom bd 1 bench-list-file))
   ([mom bd n]
    (bench-list-to-file mom bd n bench-list-file))
   ([mom bd n f]
-   (let [bd (if (nil? bd) (lsm/create-lsm) bd)
+   (let [bd (if (nil? bd) (lsm/create-lsm (store/store "data")) bd)
          n (if (nil? n) 1 n)
          f (if (nil? f) bench-list-file f)]
      (write-to-file n bd mom f false
