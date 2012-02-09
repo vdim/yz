@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -100,25 +100,25 @@
 ;; Definition fixtures (see doc string to the clojure.test namespace for more details).
 ;;
 
+(def type-em 
+  "Defines type of the ElementManager:
+    :localsonmanager - LocalSonManager (create-emlm function is used).
+    :memorymanager - MemoryElementManager (em-memory function is used)."
+  :memorymanager)
+
+
 (defn setup-son
-  "Setups specified son and then executes queries."
+  "Creates database for the specified son due to specified 
+  type of the ElementManager and then executes queries."
   ([son]
    (setup-son son *file-mom*))
   ([son nf]
    (fn [f]
      (binding [*mom* (hb/mom-from-file nf)
-               *em* (create-emlm son)]
-       (f)))))
-
-
-(defn setup-lm
-  "Runs test queries using LocalSonManager storage from Nest project."
-  ([son]
-   (setup-lm son *file-mom*))
-  ([son nf]
-   (fn [f]
-     (binding [*mom* (hb/mom-from-file nf)
-               *em* (create-emlm son)]
+               *em* (case type-em
+                      :localsonmanager (create-emlm son)
+                      :memorymanager (em-memory son (create-id-cache son))
+                      (throw (Exception. "ElementManager is not defined.")))]
        (f)))))
 
 
