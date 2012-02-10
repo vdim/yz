@@ -21,7 +21,9 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Running benchmark from command line for specified list of commits."}
   (:require [ru.petrsu.nest.yz.benchmark.benchmark :as bb] 
-            [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo])
+            [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo] 
+            [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
+            [ru.petrsu.nest.yz.queries.core :as qc])
   (:use ru.petrsu.nest.yz.hb-utils)
   (:import (javax.persistence Persistence)))
 
@@ -43,7 +45,13 @@
        "jpa" (let [em (.createEntityManager (Persistence/createEntityManagerFactory "nest-old"))
                    _ (buo/create-bd (Integer/parseInt bd) em)] 
                (bb/bench-to-file b-mom em (Integer/parseInt n) f))
-
+       
+       "lsm-list" (do (qc/create-emlm (bu/gen-bd (Integer/parseInt bd))) 
+                    (bb/bench-list-to-file b-mom nil (Integer/parseInt n) f))
+       
+       "lsm" (do (qc/create-emlm (bu/gen-bd (Integer/parseInt bd))) 
+                    (bb/bench-to-file b-mom nil (Integer/parseInt n) f))
+       
        "hql" (bb/bench-list-to-file-hql (Integer/parseInt bd) (Integer/parseInt n) f)
 
        (bb/bench-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)))

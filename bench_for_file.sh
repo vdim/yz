@@ -26,7 +26,7 @@ MOM_JPA="nest_jpa.mom"
 MOM_MEM="nest.mom"
 MOM=$MOM_JPA
 
-## Modificators: hql, jpa, jpa-list, list
+## Modificators: hql, jpa, jpa-list, list, lsm, lsm-list
 
 for n in $n_bd; do
 	if test $n -gt 20000; then

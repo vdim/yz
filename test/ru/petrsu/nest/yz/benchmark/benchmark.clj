@@ -272,11 +272,14 @@
   ([mom bd n]
    (bench-to-file mom bd n bench-file))
   ([mom bd n f]
-  (write-to-file n bd mom f false
-                 #(let [q (.substring %1 1)]
-                    (get-fs %3
-                            (bench-parsing n q mom) 
-                            (bench-quering n q mom %2))))))
+   (let [bd (if (nil? bd) (lsm/create-lsm (store/store "data")) bd)
+         n (if (nil? n) 1 n)
+         f (if (nil? f) bench-file f)]
+     (write-to-file n bd mom f false
+                    #(let [q (.substring %1 1)]
+                       (get-fs %3
+                               (bench-parsing n q mom) 
+                               (bench-quering n q mom %2)))))))
 
 
 (defn bench-for-list
