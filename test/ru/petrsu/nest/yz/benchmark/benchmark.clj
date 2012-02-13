@@ -162,7 +162,7 @@
                         (line-seq (cio/reader *f*)))]
     (cio/copy new-res (cio/file *f*))))
 
-
+(comment
 (defn -main
   "Main function for running benchmark from command 
   line (not repl). Need for jvisualvm."
@@ -170,7 +170,7 @@
   (let [son (bu/gen-bd 10000)
         mom (hb/mom-from-file "nest.mom")]
     (reduce #(str %1 (bench 15 %2 mom son)) "" yz/queries)))
-
+)
 
 ;; 
 ;; New version of structure of the file with benchmark's results.
@@ -403,3 +403,11 @@
                           rb1 (bench-for-list-hql n %2 ql)
                           avg_time (nth rb1 1)] ; Need for counting time per query.
                       (get-fs %3 0 (concat rb1 (list (/ avg_time (count ql)))))))))
+
+(defn -main
+  "Takes a number of elements and generates database."
+  [num]
+  (let [m {"hibernate.connection.url" (str "jdbc:derby:db-"num";create=true")}
+        em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest-old" m))]
+    (buo/create-bd (Integer/parseInt num) em)))
+
