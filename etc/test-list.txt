@@ -41,10 +41,19 @@
 #	- [1-7] without any fjclj functions.
 #	- [8-14] pvfilter is used for filter-by-preds.
 #	- [14-21] binding is used for ElementManager (without any fjclj functions).
-#	- [22.-28] deref of the a-em atom is done before executing .getPropertyValue method.
+#	- [22-28] deref of the a-em atom is done before executing .getPropertyValue method.
+#	- [29-34] LocalSonManager is used as storage (wihtout any fjclj functions). [10.02.2012]
+#
+#   35	      0.0	      0.0	      0.0	      0.0	      0.0	      0.0
 
   Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;address-info-queries
+   34         0.0000    1020434.4806      20408.6896      18293.7578      20309.7614      22299.9383
+   33         0.0000     245401.2822       4908.0256       3987.7882       4760.7601       5868.0041
+   32         0.0000     146922.5280       2938.4506       2746.3966       2929.9095       3088.0596
+   31         0.0000      87881.6829       1757.6337       1644.5548       1748.6247       1810.9923
+   30         0.0000      42750.7261        855.0145        815.9130        851.7595        888.3701
+   29         0.0000      20633.6565        412.6731        220.6632        254.3869        757.3533
    28         0.0000     498539.8668       9970.7973       9757.7803       9929.9524      10167.5583
    27         0.0000     258914.4887       5178.2898       5035.7231       5101.3235       5516.8640
    26         0.0000     112046.6773       2240.9335       2164.9762       2209.0672       2322.4509
@@ -76,6 +85,12 @@
 
   Num		P		Q		Avg	      Q(5%)           Q(50%)          Q(90%)
 ;enlivener-queries
+   34         0.0000    4140132.1447      82802.6429      75825.6538      82773.7728      87404.9995
+   33         0.0000    1152656.2218      23053.1244      21389.5699      22587.2260      25953.4486
+   32         0.0000     888791.7248      17775.8345      16473.2628      17624.3378      18877.7411
+   31         0.0000     568197.8024      11363.9560      10262.8937      11343.9916      12247.4055
+   30         0.0000     290761.7036       5815.2341       5363.2208       5797.8728       6201.8362
+   29         0.0000     104857.4449       2097.1489       1704.6292       2133.3466       2500.9897
    28         0.0000    5737994.6681     114759.8934     106040.9829     114388.2455     122924.4250
    27         0.0000    2822457.6556      56449.1531      51623.1263      56375.9832      59983.5813
    26         0.0000    1160414.4409      23208.2888      20665.1691      22907.8537      25749.9886
@@ -160,3 +175,15 @@
 # 27. 50 49998 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2787 eac604a75f18c79e6cc6db24e326856377441124 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
 
 # 28. 50 99989 class ru.petrsu.nest.yz.queries.core$em_memory$reify__2787 eac604a75f18c79e6cc6db24e326856377441124 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 29. 50 1015 class ru.petrsu.nest.son.local_sm$create_lsm$reify__2512 2561b869cf621ac5f75bb273d1e1e40b586e040c 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 30. 50 5013 class ru.petrsu.nest.son.local_sm$create_lsm$reify__2512 2561b869cf621ac5f75bb273d1e1e40b586e040c 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 31. 50 10014 class ru.petrsu.nest.son.local_sm$create_lsm$reify__2512 2561b869cf621ac5f75bb273d1e1e40b586e040c 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 32. 50 15010 class ru.petrsu.nest.son.local_sm$create_lsm$reify__2512 2561b869cf621ac5f75bb273d1e1e40b586e040c 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 33. 50 20008 class ru.petrsu.nest.son.local_sm$create_lsm$reify__2512 2561b869cf621ac5f75bb273d1e1e40b586e040c 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
+
+# 34. 50 50001 class ru.petrsu.nest.son.local_sm$create_lsm$reify__2512 2561b869cf621ac5f75bb273d1e1e40b586e040c 8 Intel(R) Xeon(R) CPU E5420 @ 2.50GHz 1075708 kB Linux nest x86_64
