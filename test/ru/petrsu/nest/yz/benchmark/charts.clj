@@ -115,8 +115,5 @@
    (let [r (get (get-res-from-file f [] q-or-list) q-or-list)
          cats (range 0 per) ; list with categories is list from 0 to period.
          lines (partition per (map #(% (ch characteristics)) r))
-         lines (for [i (range 0 (count lines)) 
-                     l lines 
-                     :when (= l (nth lines i))] 
-                 [(reverse l) (str (* i per) "-" (* (inc i) per))])]
+         lines (map-indexed (fn [i l] [(reverse l) (str (* i per) "-" (* (inc i) per))]) lines)]
      (ic/view (get-chart lines cats)))))
