@@ -67,3 +67,17 @@
    "li (n (d))"
    "{↑description}device"
    ])
+
+
+(def title-queries
+  "Russian descriptions of individual-queries  
+  (are needed for diagram's titles)."
+  ["Простая выборка" ; simple selection
+   "Простая выборка с простым условием" ; simple selection with simple filtering
+   "Простая выборка со сложным условием" ; simple selection with compose filtering
+   "Запрос на соединение" ; query with join
+   "Запрос на соединение" ; query with join
+   "Запрос на соединение" ; query with join
+   "Запрос с сортировкой" ; query with ordering
+   ])
+
