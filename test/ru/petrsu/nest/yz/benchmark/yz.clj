@@ -57,3 +57,13 @@
     (println (run-yz (queries (Integer/parseInt num)) em mom))
     (.close em)))
 
+(def individual-queries
+  "New variant of the list with YZ queries for benchmarks."
+  ["device"
+   "device#(name=\"Device_MB\")"
+   "device#(name=\"Device_MB\" && description=(\"Description.\" || \"Simple description.\"))"
+   "device (building)"
+   "building (device)"
+   "li (n (d))"
+   "{↑description}device"
+   ])

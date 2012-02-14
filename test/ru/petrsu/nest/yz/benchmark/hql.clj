@@ -66,3 +66,16 @@
     (println (run-hql (queries (Integer/parseInt num)) em))
     (.close em)))
 
+
+(def individual-queries
+  "New variant of the list with HQL queries for benchmarks."
+  ["from Device"
+   "from Device d where d.name='Device_MB'"
+   "from Device d where d.name='Device_MB' and (description='Description.' or description='Simple description.')"
+   "select d, d.occupancy.room.floor.building from Device as d"
+   "select b, d from Building as b left join b.floors as f left join f.rooms as r 
+           left join r.occupancies as o left join o.devices as d"
+   "select distinct li, ni.network, d from LinkInterface li join li.networkInterfaces ni join ni.network 
+           n join n.networkInterfaces ni2 join ni2.linkInterface.device d"
+   "from Device d order by d.description"
+   ])
