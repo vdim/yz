@@ -197,11 +197,17 @@
 
 
 (defn- get-fs
-  "Returns formatted string with specified characteristic."
-  [nb ptime charas]
-  (apply cp/cl-format 
-         nil (str "~4D ~15,4F" (apply str (repeat (count  charas) " ~15,4F")) "~%") 
-         nb ptime charas))
+  "Returns formatted string with specified characteristic.
+  If format? is supplied and false then returns simple
+  unformatted string with charactiristics througth space."
+  ([nb ptime charas]
+   (get-fs nb ptime charas true))
+  ([nb ptime charas format?]
+   (if format?
+     (apply cp/cl-format 
+            nil (str "~4D ~15,4F" (apply str (repeat (count charas) " ~15,4F")) "~%") 
+            nb ptime charas)
+     (str (reduce #(str %1 " " %2) (str nb " " ptime) charas) \newline))))
 
 
 (defn get-num-bench
