@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -44,7 +44,7 @@
                     (.startsWith %2 "#") %1
                     :else
                     (let [s (read-string (str "[" %2 "]"))]
-                      (if (and (not (nil? @cr)) (or (empty? ne) (contains? ne (first s))) (not-empty s) (every? number? s))
+                      (if (and (not (nil? @cr)) (or (empty? ne) (contains? ne (first s))) (not-empty s)) ;(every? number? s))
                         (assoc %1 @cr  (conj (get %1 @cr) s))
                         %1)))
              {} (line-seq (cio/reader f))))))
@@ -54,7 +54,8 @@
   "Defines correspondence between human denotes of characteristics and
   its number into vector with values of this characteristics.
   0 is number of experiment."
-  {:parsing 1
+  {:number 0
+   :parsing 1
    :total 2
    :avg 3
    :q5 4
@@ -117,3 +118,26 @@
          lines (partition per (map #(% (ch characteristics)) r))
          lines (map-indexed (fn [i l] [(reverse l) (str (* i per) "-" (* (inc i) per))]) (reverse lines))]
      (ic/view (get-chart lines cats)))))
+
+
+(defn bar-chart-by-lang
+  "Creates bar chart where categories is set of databases 
+  (in fact amount elements of databases), values is set of 
+  times of execution query (or list with queries),
+  and group-by's is set  languages (yz vs hql) times of executions."
+  [f ch q-or-list]
+  (let [r (get (get-res-from-file f) q-or-list)
+        ; Here we use file with result of benchmarks where there are
+        ; some addition fields besides the characteristics map: 
+        ; 7 is amount elements from db.
+        ; 8 is language of queries (for comparative diagramm). Example:
+        ; 1 0.0000 72344.5430 1446.8909 1018.0772 1407.5066 1800.0106 1000 "hql"
+        lines (reverse (map (fn [l] {:time (l (ch characteristics)) 
+                                     :db (l 7) 
+                                     :lang (l 8)}) 
+                            r))]
+    (ic/view (ic/with-data (ic/dataset [:time :db :lang] lines)
+                           (bar-chart :db :time :group-by :lang 
+                                      :legend true :x-label "Amount elements"
+                                      :y-label "Time (msecs)")))))
+
