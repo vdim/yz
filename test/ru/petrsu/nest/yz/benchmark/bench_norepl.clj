@@ -29,31 +29,24 @@
 
 
 (defn -main
-  "Running benchmark due to specified parameters for benchmark (fmom bd n f l).
-  modificator defines whether we run bench-for-list-file or bench-to-file."
-  ([fmom bd n f]
-   (-main fmom bd n f ""))
-  ([fmom bd n f modificator]
-   (let [b-mom (mom-from-file fmom)]
-     (case modificator
-       "list" (bb/bench-list-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)
-
-       "jpa-list" (let [em (.createEntityManager (Persistence/createEntityManagerFactory "nest-old"))
-                        _ (buo/create-bd (Integer/parseInt bd) em)] 
-                    (bb/bench-list-to-file b-mom em (Integer/parseInt n) f))
-
-       "jpa" (let [em (.createEntityManager (Persistence/createEntityManagerFactory "nest-old"))
-                   _ (buo/create-bd (Integer/parseInt bd) em)] 
-               (bb/bench-to-file b-mom em (Integer/parseInt n) f))
-       
-       "lsm-list" (do (qc/create-emlm (bu/gen-bd (Integer/parseInt bd))) 
-                    (bb/bench-list-to-file b-mom nil (Integer/parseInt n) f))
-       
-       "lsm" (do (qc/create-emlm (bu/gen-bd (Integer/parseInt bd))) 
-                    (bb/bench-to-file b-mom nil (Integer/parseInt n) f))
-       
-       "hql" (bb/bench-list-to-file-hql (Integer/parseInt bd) (Integer/parseInt n) f)
-
-       (bb/bench-to-file b-mom (Integer/parseInt bd) (Integer/parseInt n) f)))
-   (System/exit 0)))
+  "Runs benchmark due to specified parameters for benchmark (fmom bd n f).
+    mod-bd defines type of database (jpa, lsm, mem). 
+    func defines type of function (list, ind).
+    lang defines language (hql or yz)."
+  [fmom bd n f mod-bd func, lang]
+  (let [b-mom (mom-from-file fmom)
+        n (Integer/parseInt n)
+        bd (Integer/parseInt bd)
+        bd (case mod-bd
+             "jpa" (buo/create-bd 
+                     bd (.createEntityManager (Persistence/createEntityManagerFactory "nest-old")))
+             "lsm" (qc/create-emlm (bu/gen-bd bd))
+             "mem" bd
+             nil)]
+    (cond 
+      (and (= func "list") (= lang "yz")) (bb/bench-list-to-file b-mom bd n f) 
+      (and (= func "list") (= lang "hql")) (bb/bench-list-to-file-hql bd n f)
+      (and (= func "ind") (= lang "yz")) (bb/bench-to-file b-mom bd n f)
+      (and (= func "ind") (= lang "hql")) (bb/bench-to-file-hql bd n f)))
+  (System/exit 0))
 

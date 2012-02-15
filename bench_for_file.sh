@@ -13,25 +13,24 @@ JAVA_OPTS=""
 ## Classpath
 CP=`lein classpath`
 
-## Files with results of benchmarks
-FILE_NEW="etc/yz-bench-new.txt"
-FILE_LIST="etc/yz-bench-list.txt"
-FILE_HQL="etc/hql-bench-list.txt"
-FILE_JPA="etc/jpa-bench-list.txt"
-FILE_OTH=""
-FILE=$FILE_JPA
+## File with result of benchmark.
+FILE=""
 
 ## MOM
 MOM_JPA="nest_jpa.mom"
 MOM_MEM="nest.mom"
-MOM=$MOM_JPA
+MOM=$MOM_MEM
 
-## Modificators: hql, jpa, jpa-list, list, lsm, lsm-list
+## Modificator of database: jpa, lsm, mem.
+## Modificator of function: list, ind
+## Modificator of language: hql, yz.
+## 
+## Note: lsm and jpa database compatible only with yz language.
 
 for n in $n_bd; do
 	if test $n -gt 20000; then
-	    JAVA_OPTS="-Xss256M -Xmx2G"
+	    JAVA_OPTS="-Xss256M -Xmx512M"
 	fi;
-        java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bench-norepl $MOM $n 50 $FILE "jpa-list"
+        java $JAVA_OPTS -cp $CP clojure.main --main ru.petrsu.nest.yz.benchmark.bench-norepl $MOM $n 1 $FILE "mem" "list" "yz"
 done;
 
