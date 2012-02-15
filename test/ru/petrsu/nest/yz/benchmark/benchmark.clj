@@ -394,6 +394,19 @@
     (reduce #(map + %1 (bench-quering-hql n %2 em)) [0 0 0 0 0] qlist)))
 
 
+(defn- bench-hql
+  "Benchmark for queries HQL's queries."
+  [bd-n n f list?]
+  (let [bd-n (if (nil? bd-n) 1000 bd-n)
+        n (if (nil? n) 1 n)
+        f (if (nil? f) bench-list-file-hql f)]
+    (write-to-file n bd-n nil f true
+                   #(let [ql (if list? (get-def %1) [(subs %1 1)])
+                          rb1 (bench-for-list-hql n %2 ql)
+                          avg_time (nth rb1 1)] ; Need for counting time per query.
+                      (get-fs %3 0 (concat rb1 (list (/ avg_time (count ql)))))))))
+
+
 (defn bench-list-to-file-hql
   "Benchmark for queries from Nest project + qlist from test-parsing.clj. Parameters: 
       - bd-n - amount elements of a DB.
@@ -401,14 +414,15 @@
       - f - name of file for result (etc/yz-bench-list.txt by default).
   Use nil for indication value of parameter as default."
   [bd-n n f]
-  (let [bd-n (if (nil? bd-n) 1000 bd-n)
-        n (if (nil? n) 1 n)
-        f (if (nil? f) bench-list-file-hql f)]
-    (write-to-file n bd-n nil f true
-                   #(let [ql (get-def %1)
-                          rb1 (bench-for-list-hql n %2 ql)
-                          avg_time (nth rb1 1)] ; Need for counting time per query.
-                      (get-fs %3 0 (concat rb1 (list (/ avg_time (count ql)))))))))
+  (bench-hql bd-n n f true))
+
+
+(defn bench-to-file-hql
+  "Benchmark for individual HQL's queries. 
+  See bench-list-to-file-hql doc string for more details about parameters."
+  [bd-n n f]
+  (bench-hql bd-n n f false))
+
 
 (defn -main
   "Takes a number of elements and generates database."
@@ -416,4 +430,3 @@
   (let [m {"hibernate.connection.url" (str "jdbc:derby:db-"num";create=true")}
         em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest-old" m))]
     (buo/create-bd (Integer/parseInt num) em)))
-
