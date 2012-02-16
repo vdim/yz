@@ -21,7 +21,8 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "System for benchmarking different types of queries."}
   (:use ru.petrsu.nest.yz.core 
-        ru.petrsu.nest.yz.yz-factory
+        ru.petrsu.nest.yz.yz-factory 
+        ru.petrsu.nest.yz.hb-utils
         incanter.stats)
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo]
@@ -36,7 +37,8 @@
             [clojure.java.io :as cio]
             [clojure.java.shell :as sh]
             [net.kryshen.planter.store :as store]
-            [clojure.pprint :as cp])
+            [clojure.pprint :as cp]
+            [clojure.string :as cs])
   (:import (java.util Date)
            (ru.petrsu.nest.yz.core ElementManager) 
            (javax.persistence Persistence EntityManager)))
@@ -45,9 +47,13 @@
 (defn ^javax.persistence.EntityManager create-em
   "Returns EntityManager due to specified name (bench is default)."
   ([]
-   (create-em "bench"))
+   (create-em "bench" {}))
   ([n]
-   (.createEntityManager (Persistence/createEntityManagerFactory n))))
+   (create-em n {}))
+  ([n m]
+   (if (empty? m)
+     (.createEntityManager (Persistence/createEntityManagerFactory n)))
+     (.createEntityManager (Persistence/createEntityManagerFactory n m))))
 
 
 (defn ^javax.persistence.EntityManager get-clean-bd
@@ -360,7 +366,7 @@
 (defn bench-list-tpq
   "Takes list with queries (qlist) and parameters of database (mom bd n) 
   and returns vector where each element is vector
-  where first element is time and second element is query
+  where first element is execution time and second element is query
   (result vector is sorted by time for query)."
   [mom bd n qlist] 
   (let [bd (if (number? bd) (qc/create-emm (bu/gen-bd bd)) bd)]
@@ -424,9 +430,56 @@
   (bench-hql bd-n n f false))
 
 
+(defn bench-ind-query
+  "Benchmark queries from yz's and hql's individual list queries
+  (arguments are got from *command-line-args*). 
+  Parameters:
+      q-num defines index of query from vector (use -1 for all queries).
+      db-type defines type of database (mem, hdd). It is suppose that
+        if type is mem then we must generate database otherwise we only
+        should connect to database.
+      url, dialect driver defines values of hibernate.connection.url, 
+        hibernate.dialect and hibernate.connection.driver_class 
+        hibernate settings correspondingly.
+      hql-db-label - lable for the chart's legend.
+      db-n - amount elements of DB.
+
+  Note_1: result of benchmark is saved to the number_query.txt file.
+  Note_2: runs one times."
+  [q-num db-type hb-settings hql-db-label db-n]
+  (let [[url dialect driver] (cs/split hb-settings #"\s")
+        [qs-yz qs-hql] (if (= q-num -1) 
+                         [yz/individual-queries hql/individual-queries]
+                         [[(yz/individual-queries q-num)] [(hql/individual-queries q-num)]])
+        
+        hql-em (let [m {"hibernate.connection.url" (cs/replace url "NUM" (str db-n))
+                        "hibernate.dialect" dialect
+                        "hibernate.connection.driver_class" driver}
+                     em (create-em "nest-old" m)
+                     _ (if (= "mem" db-type) 
+                         (buo/create-bd db-n em)
+                         (lsm/create-lsm (store/store (str "data-"db-n))))]
+                 em)
+        n 1 ; Count of execution.
+
+        b-mom (mom-from-file "nest.mom")
+        yz-em (if (= "mem" db-type) (bu/gen-bd db-n))]
+    [(map-indexed #(let [f (str (if (= q-num -1) %1 q-num) ".txt")
+                         ne (get-num-bench f)]
+                     (with-open [wrtr (cio/writer f :append true)]
+                       (.write wrtr (get-fs 0 0 (concat (bench-quering-hql n %2 hql-em) 
+                                                        [db-n (str "\"hql-"db-type"-"hql-db-label"\"")]) false)))) qs-hql)
+     (map-indexed #(let [f (str (if (= q-num -1) %1 q-num) ".txt")
+                         ne (get-num-bench f)]
+                     (with-open [wrtr (cio/writer f :append true)]
+                       (.write wrtr (get-fs 0 0 (concat (bench-quering n %2 b-mom yz-em) 
+                                                        [db-n (str "\"yz-"db-type"\"")]) false)))) qs-yz)]))
+
+
 (defn -main
   "Takes a number of elements and generates database."
   [num]
   (let [m {"hibernate.connection.url" (str "jdbc:derby:db-"num";create=true")}
         em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest-old" m))]
     (buo/create-bd (Integer/parseInt num) em)))
+
