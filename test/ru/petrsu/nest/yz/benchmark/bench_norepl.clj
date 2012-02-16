@@ -19,7 +19,7 @@
 
 (ns ru.petrsu.nest.yz.benchmark.bench-norepl
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Running benchmark from command line for specified list of commits."}
+    :doc "Runs benchmark from command line for specified list of parameters."}
   (:require [ru.petrsu.nest.yz.benchmark.benchmark :as bb] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo] 
             [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
@@ -29,11 +29,16 @@
 
 
 (defn -main
-  "Runs benchmark due to specified parameters for benchmark (fmom bd n f).
-    mod-bd defines type of database (jpa, lsm, mem). 
-    func defines type of function (list, ind).
-    lang defines language (hql or yz)."
-  [fmom bd n f mod-bd func, lang]
+  "Runs benchmark due to specified parameters for benchmark (fmom bd n f):
+      fmom - path to a file with map of model.
+      bd - amount elements of DB.
+      n - count of execution times.
+      f - file with query (or list of queries) and for result of benchmark.
+    Another parameters:
+      mod-bd defines type of database (jpa, lsm, mem). 
+      func defines type of function (list, ind).
+      lang defines language (hql or yz)."
+  [fmom bd n f mod-bd func lang]
   (let [b-mom (mom-from-file fmom)
         n (Integer/parseInt n)
         bd (Integer/parseInt bd)
