@@ -14,4 +14,4 @@ ddl.sql
 logs/
 .lein-deps-sum
 .lein-failures
-data/
+data*
