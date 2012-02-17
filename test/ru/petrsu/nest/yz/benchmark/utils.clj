@@ -91,6 +91,4 @@
         ; sorts lines by amount elements in DB.
         r (sort-by #((read-string (str "[" % "]")) 7) r)]
     (with-open [wrtr (cio/writer f-dest)]
-      (.write 
-        wrtr
-        (reduce str "" r)))))
+      (.write wrtr (reduce str r)))))
