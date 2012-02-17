@@ -43,7 +43,7 @@
         res (reduce (fn [m [k v]] 
                       (assoc m k (map #(let [s-times (apply + %)]
                                          (concat [s-times (/ s-times n)] 
-                                                 (quantile % :probs [0.05, 0.5 0.9]))) v))) 
+                                                 (quantile % :probs vprobs))) v))) 
                     {} times)
         res (reduce (fn [s [k v]] 
                       (str s k \newline (reduce str "" (map #(get-fs 1 0 %) v)) \newline)) 
@@ -70,3 +70,26 @@
             (line-seq (cio/reader f)))] 
     (cio/copy new-res (cio/file f))))
 
+
+(defn avg-for-ind
+  "Evaluates average values for file with result of benchmarks
+  for individual queries. Parameters: 
+    f - name of file."
+  [f-src f-dest]
+  (let [; r is map where key is amount element from BD and databases label, and
+        ; value is set of result of benchmark.
+        r (reduce #(let [v (read-string (str "[" %2 "]"))
+                         k (str (v 7) " " (v 8))
+                         new-value (conj (get %1 k) (v 2))]
+                     (assoc %1 k new-value))
+                  {}
+                  (line-seq (cio/reader f-src)))
+        r (map (fn [[k v]] (get-fs 0 0 (conj (vec (concat [(apply + v) (/ (apply + v) (count k))] 
+                                                          (quantile v :probs vprobs))) k) false))
+               r)
+        ; sorts lines
+        r (sort-by #((read-string (str "[" % "]")) 7) r)]
+    (with-open [wrtr (cio/writer f-dest)]
+      (.write 
+        wrtr
+        (reduce str "" r)))))
