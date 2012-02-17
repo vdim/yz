@@ -30,7 +30,7 @@
 (defn- get-res-from-file
   "Takes file with result of benchmark and collection with
   number of experiments (empty or is not supplied for all)
-  and returns map where value of \"\;...\" strings ->
+  and returns map where value of \";...\" strings ->
   result of benchmark. if q-or-list is not supplied then 
   :all key is used."
   ([f]
@@ -48,7 +48,7 @@
                     :else
                     (let [s (read-string (str "[" %2 "]"))]
                       (if (and (not (nil? @cr)) (or (empty? ne) (contains? ne (first s))) (not-empty s)) ;(every? number? s))
-                        (assoc %1 @cr  (conj (get %1 @cr) s))
+                        (assoc %1 @cr (conj (get %1 @cr) s))
                         %1)))
              {} (line-seq (cio/reader f))))))
 
