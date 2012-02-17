@@ -88,12 +88,14 @@
 (defn create-emlm
   "Returns implementation of the LocalSonManager 
   for specified son."
-  [son]
-  (let [_ (sh "rm" "-Rf" "data") ; Dirty hack: deletes directory "data" before making queries.
-        store (planter/store "data")
-        _ (planter/register-bean store son)
-        _ (planter/save-all-and-wait store)]
-    (lsm/create-lsm store)))
+  ([son]
+   (create-emlm son "data"))
+  ([son dir]
+   (let [_ (sh "rm" "-Rf" dir) ; Dirty hack: deletes directory with database before making queries.
+         store (planter/store dir)
+         _ (planter/register-bean store son)
+         _ (planter/save-all-and-wait store)]
+     (lsm/create-lsm store))))
 
 
 ;;
