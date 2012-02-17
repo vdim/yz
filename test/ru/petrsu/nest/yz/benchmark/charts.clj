@@ -29,11 +29,14 @@
 
 (defn- get-res-from-file
   "Takes file with result of benchmark and collection with
-  number of experiments (empty or is not supplied for all)."
+  number of experiments (empty or is not supplied for all)
+  and returns map where value of \"\;...\" strings ->
+  result of benchmark. if q-or-list is not supplied then 
+  :all key is used."
   ([f]
-   (get-res-from-file f [] nil))
+   (get-res-from-file f [] :all))
   ([f, num-exps]
-   (get-res-from-file f num-exps nil))
+   (get-res-from-file f num-exps :all))
   ([f, num-exps, q-or-list]
    (let [ne (set num-exps)
          cr (atom q-or-list)]
