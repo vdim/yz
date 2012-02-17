@@ -74,7 +74,8 @@
 (defn avg-for-ind
   "Evaluates average values for file with result of benchmarks
   for individual queries. Parameters: 
-    f - name of file."
+    f-src - file with result of benchmark.
+    f-dest - file for average values."
   [f-src f-dest]
   (let [; r is map where key is amount element from BD and databases label, and
         ; value is set of result of benchmark.
@@ -87,7 +88,7 @@
         r (map (fn [[k v]] (get-fs 0 0 (conj (vec (concat [(apply + v) (/ (apply + v) (count k))] 
                                                           (quantile v :probs vprobs))) k) false))
                r)
-        ; sorts lines
+        ; sorts lines by amount elements in DB.
         r (sort-by #((read-string (str "[" % "]")) 7) r)]
     (with-open [wrtr (cio/writer f-dest)]
       (.write 
