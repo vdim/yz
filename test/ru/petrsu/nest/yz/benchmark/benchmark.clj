@@ -44,6 +44,11 @@
            (javax.persistence Persistence EntityManager)))
 
 
+(def vprobs
+  "Defines vector with probabilities."
+  [0.05 0.5 0.9])
+
+
 (defn ^javax.persistence.EntityManager create-em
   "Returns EntityManager due to specified name (bench is default)."
   ([]
@@ -126,7 +131,7 @@
               (qc/create-emm son-or-em))
          times (do-times-q (partial pquery query mom em) n)
          s-times (apply + times)]
-     (concat [s-times (/ s-times n)] (quantile times :probs [0.05, 0.5 0.9])))))
+     (concat [s-times (/ s-times n)] (quantile times :probs vprobs)))))
 
 
 (defn bench
@@ -198,7 +203,6 @@
 ;; ;query2
 ;;  10.    047.120965   7029.25291 
 ;;   9.   2047.120965 544729.25291 
-;;
 ;;
 
 
@@ -388,7 +392,7 @@
   (let [f #(.. em (createQuery %1) getResultList)
         times (do-times-hql (partial f query) n)
         s-times (apply + times)]
-    (concat [s-times (/ s-times n)] (quantile times :probs [0.05, 0.5 0.9]))))
+    (concat [s-times (/ s-times n)] (quantile times :probs vprobs))))
 
 
 (defn bench-for-list-hql
