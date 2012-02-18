@@ -41,7 +41,7 @@
    (let [ne (set num-exps)
          cr (atom q-or-list)]
      (reduce #(cond (.startsWith %2 ";") 
-                    (if (or (nil? q-or-list) (= (subs %2 1) @cr))
+                    (if (or (= :all q-or-list) (= (subs %2 1) @cr))
                       (do (reset! cr (subs %2 1)) (assoc %1 (subs %2 1) []))
                       %1)
                     (.startsWith %2 "#") %1
@@ -64,7 +64,9 @@
    :q5 4
    :q50 5
    :q90 6
-   :per-query 7})
+   :per-query 7
+   :amount-elems 7
+   :legend-label 8})
 
 
 (defn- get-chart
@@ -124,10 +126,10 @@
 
 
 (defn bar-chart-by-lang
-  "Creates bar chart where categories is set of databases 
+  "Creates bar chart (JFreeChart object) where categories is set of databases 
   (in fact amount elements of databases), values is set of 
   times of execution query (or list with queries),
-  and group-by's is set  languages (yz vs hql) times of executions."
+  and group-by's category is set languages (yz vs hql) times of executions."
   [f ch q-or-list]
   (let [r (get (get-res-from-file f) q-or-list)
         ; Here we use file with result of benchmarks where there are
@@ -136,11 +138,22 @@
         ; 8 is language of queries (for comparative diagramm). Example:
         ; 1 0.0000 72344.5430 1446.8909 1018.0772 1407.5066 1800.0106 1000 "hql"
         lines (reverse (map (fn [l] {:time (l (ch characteristics)) 
-                                     :db (l 7) 
-                                     :lang (l 8)}) 
+                                     :db (l (:amount-elems characteristics)) 
+                                     :lang (l (:legend-label characteristics))}) 
                             r))]
-    (ic/view (ic/with-data (ic/dataset [:time :db :lang] lines)
-                           (bar-chart :db :time :group-by :lang 
-                                      :legend true :x-label "Amount elements"
-                                      :y-label "Time (msecs)")))))
+    (ic/with-data (ic/dataset [:time :db :lang] lines)
+                  (bar-chart :db :time :group-by :lang 
+                             :legend true :x-label "Amount elements"
+                             :y-label "Time (msecs)"))))
+
+
+(defn gen-bar-charts
+  "Generates bar charts from files with benchmarks of 
+  individual queries (0.txt, 1.txt ...) and saves it to
+  corresponding file (0.png, 1.png ...). Parameters:
+    - path to files with benchmarks."
+  [path]
+  (map #(let [f (str path "/" % ".txt")
+              gf (str path "/" % ".png")] 
+          (ic/save (bar-chart-by-lang f :q50 :all) gf)) (range 0 7)))
 
