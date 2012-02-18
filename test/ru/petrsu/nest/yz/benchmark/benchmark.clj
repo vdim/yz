@@ -434,9 +434,20 @@
   (bench-hql bd-n n f false))
 
 
+(defn- create-hm
+  "Returns map with hibernate settings: url, dialect, 
+  driver and hbm2ddl.auto (empty by default)"
+  ([url dialect driver]
+   (create-hm url dialect driver ""))
+  ([url dialect driver hbm2ddl]
+   {"hibernate.connection.url" url
+    "hibernate.dialect" dialect
+    "hibernate.connection.driver_class" driver
+    "hibernate.hbm2ddl.auto" hbm2ddl}))
+
+
 (defn bench-ind-query
-  "Benchmark queries from yz's and hql's individual list queries
-  (arguments are got from *command-line-args*). 
+  "Benchmark queries from yz's and hql's individual list queries. 
   Parameters:
       q-num defines index of query from vector (use -1 for all queries).
       db-type defines type of database (mem, hdd). It is suppose that
@@ -456,9 +467,7 @@
                          [yz/individual-queries hql/individual-queries]
                          [[(yz/individual-queries q-num)] [(hql/individual-queries q-num)]])
         
-        hql-em (let [m {"hibernate.connection.url" (cs/replace url "NUM" (str db-n))
-                        "hibernate.dialect" dialect
-                        "hibernate.connection.driver_class" driver}
+        hql-em (let [m (create-hm (cs/replace url "NUM" (str db-n)) dialect driver)
                      em (create-em "nest-old" m)
                      _ (if (= "mem" db-type) 
                          (buo/create-bd db-n em)
@@ -480,10 +489,17 @@
                                                         [db-n (str "\"yz-"db-type"\"")]) false)))) qs-yz)]))
 
 
-(defn -main
-  "Takes a number of elements and generates database."
-  [num]
-  (let [m {"hibernate.connection.url" (str "jdbc:derby:db-"num";create=true")}
-        em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory "nest-old" m))]
-    (buo/create-bd (Integer/parseInt num) em)))
+(defn generate-bd
+  "Takes a number of elements and connection 
+  string and generates database. 
+
+  DON'T REMOVE THIS FUNCTION: it is used into the cr_bd.sh script."
+  [num conn-s]
+  (if (.startsWith conn-s "jdbc")
+    (let [[url dialect driver] (cs/split conn-s #"\s")
+          m (create-hm url dialect driver "create-drop")]
+      (buo/create-bd num (create-em "nest-old" m)))
+    (qc/create-emlm (bu/gen-bd num) conn-s))
+
+  (System/exit 0))
 
