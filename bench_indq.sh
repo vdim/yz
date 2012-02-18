@@ -22,7 +22,7 @@ url_h2="jdbc:h2:db-h2-NUM/db"
 url_h2_mem="jdbc:h2:mem:db1;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"
 dialect_h2="org.hibernate.dialect.H2Dialect"
 driver_h2="org.h2.Driver"
-h2="$url_h2_mem $dialect_h2 $driver_h2"
+h2="$url_h2 $dialect_h2 $driver_h2"
 
 
 ## HSQLDB settings.
@@ -40,6 +40,8 @@ clj_file="test/ru/petrsu/nest/yz/benchmark/benchmark.clj"
 clj_func="ru.petrsu.nest.yz.benchmark.benchmark/bench-ind-query"
 
 for n in $n_bd; do
-    java -cp $CP clojure.main -i $clj_file -e "($clj_func -1 \"mem\" \"$db\" \"h2\" $n)" 
+    # Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
+    # For more details see doc string for the clojure.main/main function.
+    java -cp $CP clojure.main -i $clj_file -e "($clj_func 0 \"hdd\" \"$db\" \"h2\" $n)" 
 done;
 
