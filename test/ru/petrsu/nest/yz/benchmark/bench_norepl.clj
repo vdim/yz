@@ -46,7 +46,7 @@
         bd (case mod-bd
              "jpa" (buo/create-bd 
                      bd (.createEntityManager (Persistence/createEntityManagerFactory "nest-old")))
-             "lsm" (create-lsm (store/store (str "data-"n)))
+             "lsm" (create-lsm (store/store (str "data-"bd)))
              "lsm-gen" (qc/create-emlm (bu/gen-bd bd))
              "mem" bd
              nil)]
