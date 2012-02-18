@@ -21,7 +21,8 @@ MOM_JPA="nest_jpa.mom"
 MOM_MEM="nest.mom"
 MOM=$MOM_MEM
 
-## Modificator of database: jpa, lsm, mem.
+## Modificator of database: jpa, lsm (get database from "data-NUM" directory), 
+## lsm-gen (use in case you want to generate database),  mem.
 ## Modificator of function: list, ind
 ## Modificator of language: hql, yz.
 ## 

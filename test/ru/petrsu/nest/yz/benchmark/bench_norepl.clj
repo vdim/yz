@@ -23,8 +23,9 @@
   (:require [ru.petrsu.nest.yz.benchmark.benchmark :as bb] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo] 
             [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
+            [net.kryshen.planter.store :as store] 
             [ru.petrsu.nest.yz.queries.core :as qc])
-  (:use ru.petrsu.nest.yz.hb-utils)
+  (:use ru.petrsu.nest.yz.hb-utils ru.petrsu.nest.son.local-sm)
   (:import (javax.persistence Persistence)))
 
 
@@ -35,7 +36,7 @@
       n - count of execution times.
       f - file with query (or list of queries) and for result of benchmark.
     Another parameters:
-      mod-bd defines type of database (jpa, lsm, mem). 
+      mod-bd defines type of database (jpa, lsm, lsm-gen mem). 
       func defines type of function (list, ind).
       lang defines language (hql or yz)."
   [fmom bd n f mod-bd func lang]
@@ -45,7 +46,8 @@
         bd (case mod-bd
              "jpa" (buo/create-bd 
                      bd (.createEntityManager (Persistence/createEntityManagerFactory "nest-old")))
-             "lsm" (qc/create-emlm (bu/gen-bd bd))
+             "lsm" (create-lsm (store/store (str "data-"n)))
+             "lsm-gen" (qc/create-emlm (bu/gen-bd bd))
              "mem" bd
              nil)]
     (cond 
