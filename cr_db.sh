@@ -3,6 +3,8 @@
 # Copyright (C) 2012 Vyacheslav Dimitrov, Petrozavodsk State University
 #
 # Generates databases.
+# Usage: ./cr_db [db_name]
+# db_hame may be h2, derby, hsqldb, lsm (lsm by default).
 #
 
 # Set with amount elements of database.
@@ -43,9 +45,18 @@ for n in $n_bd; do
 
 	# LocalSonManager url.
 	url_lsm="data-$n"
+	lsm="$url_lsm"
 
 	# Define current connection string.
-	url=$url_lsm
+	url=$lsm
+	if test "$#" -gt 0; then
+	    case "$1" in
+		"h2") url=$h2 ;;
+		"derby") url=$derby ;;
+		"hsqldb") url=$hsqldb ;;
+		"lsm") url=$lsm ;;
+	    esac
+	fi;
 
 	# Run generate-bd function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
 	# For more details see doc string for the clojure.main/main function.
