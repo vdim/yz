@@ -93,3 +93,14 @@
         r (sort-by #((read-string (str "[" % "]")) 7) r)]
     (with-open [wrtr (cio/writer f-dest)]
       (.write wrtr (reduce str r)))))
+
+
+(defn avg-for-inds
+  "Creates files with averages (due to the avg-for-ind function) 
+  values of result of benchmark."
+  [path-src path-dest]
+  (map #(let [f (str "/" % ".txt")
+              fs (str path-src f)
+              fd (str path-dest f)]
+          (avg-for-ind fs fd)) (range 0 7)))
+
