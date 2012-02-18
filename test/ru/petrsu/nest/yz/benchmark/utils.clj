@@ -77,7 +77,8 @@
     f-src - file with result of benchmark.
     f-dest - file for average values."
   [f-src f-dest]
-  (let [; r is map where key is amount element from BD and databases label, and
+  (let [; r is map where key is string from amount 
+        ; elements of DB and some label, and
         ; value is set of result of benchmark.
         r (reduce #(let [v (read-string (str "[" %2 "]"))
                          k (str (v 7) " " (v 8))
