@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -75,9 +75,9 @@
   ["Простая выборка" ; simple selection
    "Простая выборка с простым условием" ; simple selection with simple filtering
    "Простая выборка со сложным условием" ; simple selection with compose filtering
-   "Запрос на соединение" ; query with join
-   "Запрос на соединение" ; query with join
-   "Запрос на соединение" ; query with join
-   "Запрос с сортировкой" ; query with ordering
+   "Запрос на соединение: device (building)" ; query with join
+   "Запрос на соединение: building (device)" ; query with join
+   "Запрос на соединение: li (n (d))" ; query with join
+   "Сортировка" ; query with ordering
    ])
 
