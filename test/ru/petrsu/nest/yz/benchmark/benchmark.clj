@@ -449,44 +449,44 @@
 (defn bench-ind-query
   "Benchmark queries from yz's and hql's individual list queries. 
   Parameters:
-      lang defines languages of benchmark (yz or hql).
       q-num defines index of query from vector (use -1 for all queries).
       db-type defines type of database (mem, hdd). It is suppose that
         if type is mem then we must generate database otherwise we only
         should connect to database.
-      conn-s - connection string (must contain url (hibernate.connection.url), 
-        dialect (hibernate.dialect), driver (hibernate.connection.driver_class) 
-        for hql and path to directory with data for yz).
-      legend-label - lable for the chart's legend.
+      url, dialect driver defines values of hibernate.connection.url, 
+        hibernate.dialect and hibernate.connection.driver_class 
+        hibernate settings correspondingly.
+      hql-db-label - lable for the chart's legend.
       db-n - amount elements of DB.
 
-  Note #1: result of benchmark is saved to the number_query.txt file.
-  Note #2: benchmark is run once."
-  [lang q-num db-type conn-s legend-label db-n]
-  (let [em (if (= lang "yz")
-             (if (= "mem" db-type) 
-               (bu/gen-bd db-n)
-               (lsm/create-lsm (store/store conn-s)))
-             (let [[url dialect driver] (cs/split conn-s #"\s")
-                   hbm2ddl (if (= db-type "mem") "create-drop" "")
-                   em (create-em "nest-old" (create-hm url dialect driver hbm2ddl))
-                   _ (if (= "mem" db-type) 
-                       (buo/create-bd db-n em))]
-               em))
-        qs (if (= lang "yz") 
-             yz/individual-queries 
-             hql/individual-queries)
-        qs (if (= q-num -1) qs [(qs q-num)])
-
+  Note_1: result of benchmark is saved to the number_query.txt file.
+  Note_2: runs one times."
+  [q-num db-type hb-settings hql-db-label db-n]
+  (let [[url dialect driver] (cs/split hb-settings #"\s")
+        [qs-yz qs-hql] (if (= q-num -1) 
+                         [yz/individual-queries hql/individual-queries]
+                         [[(yz/individual-queries q-num)] [(hql/individual-queries q-num)]])
+        
+        hql-em (let [m (create-hm (cs/replace url "NUM" (str db-n)) dialect driver)
+                     em (create-em "nest-old" m)
+                     _ (if (= "mem" db-type) 
+                         (buo/create-bd db-n em)
+                         (lsm/create-lsm (store/store (str "data-"db-n))))]
+                 em)
         n 1 ; Count of execution.
-        mom (mom-from-file "nest.mom")]
-    
-    (map-indexed #(let [f (str (if (= q-num -1) %1 q-num) ".txt")]
-                    (with-open [wrtr (cio/writer f :append true)]
-                      (.write wrtr (get-fs 0 0 (concat (if (= lang "yz") 
-                                                         (bench-quering n %2 mom em)
-                                                         (bench-quering-hql n %2 em))
-                                                       [db-n legend-label]) false)))) qs)))
+
+        b-mom (mom-from-file "nest.mom")
+        yz-em (if (= "mem" db-type) (bu/gen-bd db-n))]
+    [(map-indexed #(let [f (str (if (= q-num -1) %1 q-num) ".txt")
+                         ne (get-num-bench f)]
+                     (with-open [wrtr (cio/writer f :append true)]
+                       (.write wrtr (get-fs 0 0 (concat (bench-quering-hql n %2 hql-em) 
+                                                        [db-n (str "\"hql-"db-type"-"hql-db-label"\"")]) false)))) qs-hql)
+     (map-indexed #(let [f (str (if (= q-num -1) %1 q-num) ".txt")
+                         ne (get-num-bench f)]
+                     (with-open [wrtr (cio/writer f :append true)]
+                       (.write wrtr (get-fs 0 0 (concat (bench-quering n %2 b-mom yz-em) 
+                                                        [db-n (str "\"yz-"db-type"\"")]) false)))) qs-yz)]))
 
 
 (defn generate-bd

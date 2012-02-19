@@ -507,9 +507,8 @@
                                             msg))))]
     (if (string? query-res)
       (Result. [] query-res [] ())
-      (Result. query-res nil [] ()))))
-      ;(let [rows (distinct (get-rows query-res))]
-      ;  (Result. query-res nil (get-columns-lite rows) rows)))))
+      (let [rows (distinct (get-rows query-res))]
+        (Result. query-res nil (get-columns-lite rows) rows)))))
 
 
 (defn pquery
