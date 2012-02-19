@@ -28,11 +28,13 @@
 
 
 (defn- get-res-from-file
-  "Takes file with result of benchmark and collection with
-  number of experiments (empty or is not supplied for all)
-  and returns map where value of \";...\" strings ->
-  result of benchmark. if q-or-list is not supplied then 
-  :all key is used."
+  "Takes name of a file with result of benchmark and collection with
+  number of experiments (empty for all) and returns map where 
+  key is value of string such as \";...\" (in fact query or name of list 
+  with queries), and value is list with result of benchmark. 
+  You can specify query or name of list with queries by suppling q-or-list.
+  if q-or-list is not supplied then function returns result of benchmark for 
+  all strings after ';' from file."
   ([f]
    (get-res-from-file f [] :all))
   ([f, num-exps]
@@ -56,7 +58,16 @@
 (def ^:private characteristics
   "Defines correspondence between human denotes of characteristics and
   its number into vector with values of this characteristics.
-  0 is number of experiment."
+    0 - number of experiment.
+    1 - time of parsing.
+    2 - total time of execution.
+    3 - average time of execution.
+    4 - quantile 5%.
+    5 - quantile 50%.
+    6 - quantile 90%.
+    7 - time per query (for list with queries).
+    7 - amount elements from database (truly for individual queries).
+    8 - label for legend of bar chart (truly for individual queries)."
   {:number 0
    :parsing 1
    :total 2
@@ -90,9 +101,9 @@
   Characteristics for quering are below:
     - :total - total time
     - :avg - average time per query (or list with queries)
-    - :q5 - quntile 5%
-    - :q50 - quntile 50%
-    - :q90 - quntile 90%.
+    - :q5 - quantile 5%
+    - :q50 - quantile 50%
+    - :q90 - quantile 90%
     - :per-query - time per query (truly for list with queries)."
   ([f]
    (simple-line-chart f [] :q50))
