@@ -24,6 +24,7 @@
         incanter.charts)
   (:require [clojure.java.io :as cio]
             [ru.petrsu.nest.yz.benchmark.benchmark :as bb]
+            [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [incanter.core :as ic]))
 
 
@@ -166,5 +167,8 @@
   [path]
   (map #(let [f (str path "/" % ".txt")
               gf (str path "/" % ".png")] 
-          (ic/save (bar-chart-by-lang f :q50 :all) gf)) (range 0 7)))
+          (ic/save (set-title (bar-chart-by-lang f :q50 :all) 
+                              (yz/title-queries %))
+                   gf :width 1024 :height 768))
+       (range 0 (count yz/individual-queries))))
 
