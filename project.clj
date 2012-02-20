@@ -8,6 +8,6 @@
         ru.petrsu.nest.yz.yz
         ru.petrsu.nest.yz.yz-factory]
   :java-source-path "./src/"
-  :jar-exclusions [#"\.swp$"]
+  :jar-exclusions [#"\.swp$|\.java$"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false)
