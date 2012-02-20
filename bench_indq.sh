@@ -39,6 +39,9 @@ database="h2"
 # -1 is used for all queries.
 q_num=-1
 
+# Count of execution.
+c=1
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Benchmark individual queries.
@@ -49,7 +52,8 @@ Options:
     -d, --database <database> database (h2, derby, hsqldb, lsm). h2 by default.
     -q, --query-num <num>   number of query (use -1 for benchmarking all queries) 
 			    from vector. -1 by default.
-    -n, --elems-database    list with amount elements into databases
+    -n, --elems-database <\"el1 el2 ...\"> list with amount elements into databases
+    -c, --count <num>	    count of execution. 1 by default.
     -h, --help		    display this help message and exit"
 
 # Handling options.
@@ -61,6 +65,7 @@ while true; do
         -q|--query-num) q_num=$2; shift 2;;
         -h|--help) echo "$usage"; exit 0 ;; 
 	-n|--elems-database) n_db=$2; shift 2;;
+	-c|--count) c=$2; shift 2;;
         -*) echo "unknown option $1" >&2 ; exit 1 ;;
 	*) break ;;
     esac
@@ -69,47 +74,49 @@ done
 # Classpath
 CP=`lein classpath`
 
-for n in $n_db; do
+for i in `seq $c`; do
+    echo $i
+    for n in $n_db; do
 
-    # Derby url.
-    url_derby="jdbc:derby:db-$n;create=true"
-    derby="$url_derby $dialect_derby $driver_derby"
+	# Derby url.
+	url_derby="jdbc:derby:db-$n;create=true"
+	derby="$url_derby $dialect_derby $driver_derby"
 
-    # H2 url.
-    url_h2="jdbc:h2:db-h2-$n/db"
-    url_h2_mem="jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"
-    if test "$db_type" = "mem"; then
-	h2="$url_h2_mem $dialect_h2 $driver_h2"
-    else
-	h2="$url_h2 $dialect_h2 $driver_h2"
-    fi;
+	# H2 url.
+	url_h2="jdbc:h2:db-h2-$n/db"
+	url_h2_mem="jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"
+	if test "$db_type" = "mem"; then
+	    h2="$url_h2_mem $dialect_h2 $driver_h2"
+	else
+	    h2="$url_h2 $dialect_h2 $driver_h2"
+	fi;
 
-    # HSQLDB url.
-    url_hsqldb="jdbc:hsqldb:db-hsqldb-$n/db"
-    url_hsqldb_mem="jdbc:hsqldb:mem:db"
-    if test "$db_type" = "mem"; then
-	hsqldb="$url_hsqldb_mem $dialect_hsqldb $driver_hsqldb"
-    else
-	hsqldb="$url_hsqldb $dialect_hsqldb $driver_hsqldb"
-    fi;
+	# HSQLDB url.
+	url_hsqldb="jdbc:hsqldb:db-hsqldb-$n/db"
+	url_hsqldb_mem="jdbc:hsqldb:mem:db"
+	if test "$db_type" = "mem"; then
+	    hsqldb="$url_hsqldb_mem $dialect_hsqldb $driver_hsqldb"
+	else
+	    hsqldb="$url_hsqldb $dialect_hsqldb $driver_hsqldb"
+	fi;
 
-    # LocalSonManager url.
-    url_lsm="data-$n"
-    lsm="$url_lsm"
+	# LocalSonManager url.
+	url_lsm="data-$n"
+	lsm="$url_lsm"
 
-    # Define current connection string.
-    url=$h2
-    case $database in
-	"h2") url=$h2 ;;
-	"derby") url=$derby ;;
-	"hsqldb") url=$hsqldb ;;
-	"lsm") url=$lsm ;;
-    esac
+	# Define current connection string.
+	url=$h2
+	case $database in
+	    "h2") url=$h2 ;;
+	    "derby") url=$derby ;;
+	    "hsqldb") url=$hsqldb ;;
+	    "lsm") url=$lsm ;;
+	esac
 
-    # Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
-    # For more details see doc string for the clojure.main/main function.
-    # For more details about parameters of the bench-ind-query function see doc string for
-    # ru.petrsu.nest.yz.benchmark.benchmark/bench-ind-query.
-    java -cp $CP clojure.main -i $clj_file -e "($clj_func \"$lang\" $q_num \"$db_type\" \"$url\" \"$lang-$db_type-$database\" $n)" 
+	# Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
+	# For more details see doc string for the clojure.main/main function.
+	# For more details about parameters of the bench-ind-query function see doc string for
+	# ru.petrsu.nest.yz.benchmark.benchmark/bench-ind-query.
+	java -cp $CP clojure.main -i $clj_file -e "($clj_func \"$lang\" $q_num \"$db_type\" \"$url\" \"$lang-$db_type-$database\" $n)" 
+    done;
 done;
-
