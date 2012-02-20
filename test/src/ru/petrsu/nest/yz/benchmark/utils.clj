@@ -86,7 +86,7 @@
                      (assoc %1 k new-value))
                   {}
                   (line-seq (cio/reader f-src)))
-        r (map (fn [[k v]] (get-fs 0 0 (conj (vec (concat [(apply + v) (/ (apply + v) (count k))] 
+        r (map (fn [[k v]] (get-fs 0 0 (conj (vec (concat [(apply + v) (/ (apply + v) (count v))] 
                                                           (quantile v :probs vprobs))) k) false))
                r)
         ; sorts lines by amount elements in DB.
@@ -102,5 +102,5 @@
   (map #(let [f (str "/" % ".txt")
               fs (str path-src f)
               fd (str path-dest f)]
-          (avg-for-ind fs fd)) (range 0 7)))
+          (avg-for-ind fs fd)) (range 0 (count yz/individual-queries))))
 
