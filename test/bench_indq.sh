@@ -23,7 +23,7 @@ driver_hsqldb="org.hsqldb.jdbcDriver"
 # Set with amount elements into database.
 n_db="1000 5000 10000 15000 20000 50000 100000"
 
-clj_file="test/ru/petrsu/nest/yz/benchmark/benchmark.clj"
+clj_file="src/ru/petrsu/nest/yz/benchmark/benchmark.clj"
 clj_func="ru.petrsu.nest.yz.benchmark.benchmark/bench-ind-query"
 
 # Define default language
