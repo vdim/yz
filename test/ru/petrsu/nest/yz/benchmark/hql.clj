@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -20,7 +20,8 @@
 (ns ru.petrsu.nest.yz.benchmark.hql
     ^{:author "Vyacheslav Dimitrov"
           :doc "HQL queries for benchmark."}
-    (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]))
+  (:use ru.petrsu.nest.yz.queries.nest-queries)
+  (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]))
 
 
 (def queries
@@ -78,4 +79,6 @@
    "select distinct li, ni.network, d from LinkInterface li join li.networkInterfaces ni join ni.network 
            n join n.networkInterfaces ni2 join ni2.linkInterface.device d"
    "from Device d order by d.description"
+   enlivener-queries-hql
+   address-info-queries-hql
    ])

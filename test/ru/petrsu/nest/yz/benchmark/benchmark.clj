@@ -302,7 +302,7 @@
   "Takes info about benchmark and list with queries and
   returns vector with two elements where first is time of
   parsing and second is vector with characteristics of querying."
-  [mom bd n qlist]
+  [n qlist mom bd]
   [(reduce #(+ %1 (bench-parsing n %2 mom)) 0 qlist)
    (reduce #(map + %1 (bench-quering n %2 mom bd)) [0 0 0 0 0] qlist)])
 
@@ -318,9 +318,9 @@
   ([mom bd]
    (bench-for-nest-queries mom bd 1))
   ([mom bd n]
-   (let [[p-ai q-ai] (bench-for-list mom bd n nq/address-info-queries)
-         [p-e q-e] (bench-for-list mom bd n nq/enlivener-queries)
-         [p-tp q-tp] (bench-for-list mom bd n  tp/qlist)]
+   (let [[p-ai q-ai] (bench-for-list n nq/address-info-queries mom bd)
+         [p-e q-e] (bench-for-list n nq/enlivener-queries mom bd)
+         [p-tp q-tp] (bench-for-list n tp/qlist mom bd)]
      (str "ParsingAI: " p-ai \newline "QueringAI: " q-ai \newline 
           "ParsingE: " p-e \newline "QueringE: " q-e \newline 
           "ParsingTP: " p-tp \newline "QueringTP: " q-tp))))
@@ -362,7 +362,7 @@
          f (if (nil? f) bench-list-file f)]
      (write-to-file n bd mom f false
                     #(let [ql (get-def %1)
-                           [rb0 rb1] (bench-for-list mom %2 n ql)
+                           [rb0 rb1] (bench-for-list n ql mom %2)
                            avg_time (nth rb1 1)] ; Need for counting time per query.
                        (get-fs %3 rb0 (concat rb1 (list (/ avg_time (count ql))))))))))
 
@@ -398,10 +398,8 @@
 (defn bench-for-list-hql
   "Takes list with HQL's queries and
   returns time of the querying."
-  [n bd-n qlist]
-  (let [^EntityManager em (create-em "nest-old")
-        _ (buo/create-bd bd-n em)]
-    (reduce #(map + %1 (bench-quering-hql n %2 em)) [0 0 0 0 0] qlist)))
+  [n qlist em]
+  (reduce #(map + %1 (bench-quering-hql n %2 em)) [0 0 0 0 0] qlist))
 
 
 (defn- bench-hql
@@ -412,7 +410,7 @@
         f (if (nil? f) bench-list-file-hql f)]
     (write-to-file n bd-n nil f true
                    #(let [ql (if list? (get-def %1) [(subs %1 1)])
-                          rb1 (bench-for-list-hql n %2 ql)
+                          rb1 (bench-for-list-hql n ql %2)
                           avg_time (nth rb1 1)] ; Need for counting time per query.
                       (get-fs %3 0 (concat rb1 (list (/ avg_time (count ql)))))))))
 
@@ -468,7 +466,9 @@
                (bu/gen-bd db-n)
                (lsm/create-lsm (store/store conn-s)))
              (let [[url dialect driver] (cs/split conn-s #"\s")
-                   hbm2ddl (if (= db-type "mem") "create-drop" "")
+                   
+                   ; For memory database we must create structure of database.
+                   hbm2ddl (if (= db-type "mem") "create-drop" "") 
                    em (create-em "nest-old" (create-hm url dialect driver hbm2ddl))
                    _ (if (= "mem" db-type) 
                        (buo/create-bd db-n em))]
@@ -483,10 +483,14 @@
     
     (map-indexed #(let [f (str (if (= q-num -1) %1 q-num) ".txt")]
                     (with-open [wrtr (cio/writer f :append true)]
-                      (.write wrtr (get-fs 0 0 (concat (if (= lang "yz") 
-                                                         (bench-quering n %2 mom em)
-                                                         (bench-quering-hql n %2 em))
-                                                       [db-n legend-label]) false)))) qs)))
+                      (.write wrtr (get-fs 0 0 (flatten (concat (if (= lang "yz") 
+                                                                  (if (vector? %2)
+                                                                    (bench-for-list n %2 mom em)
+                                                                    (bench-quering n %2 mom em))
+                                                                  (if (vector? %2)
+                                                                    (bench-for-list-hql n %2 em)
+                                                                    (bench-quering-hql n %2 em)))
+                                                                [db-n legend-label])) false)))) qs)))
 
 
 (defn generate-bd

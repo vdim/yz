@@ -20,8 +20,8 @@
 (ns ru.petrsu.nest.yz.benchmark.yz
     ^{:author "Vyacheslav Dimitrov"
           :doc "YZ queries for benchmark."}
-  (:use ru.petrsu.nest.yz.core)
-  (:require [ru.petrsu.nest.yz.hb-utils :as hu]
+  (:use ru.petrsu.nest.yz.core ru.petrsu.nest.yz.queries.nest-queries)
+  (:require [ru.petrsu.nest.yz.hb-utils :as hu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]))
 
 
@@ -57,6 +57,7 @@
     (println (run-yz (queries (Integer/parseInt num)) em mom))
     (.close em)))
 
+
 (def individual-queries
   "New variant of the list with YZ queries for benchmarks."
   ["device"
@@ -66,6 +67,8 @@
    "building (device)"
    "li (n (d))"
    "{↑description}device"
+   enlivener-queries
+   address-info-queries
    ])
 
 
@@ -79,5 +82,7 @@
    "Запрос на соединение: building (device)" ; query with join
    "Запрос на соединение: li (n (d))" ; query with join
    "Сортировка" ; query with ordering
+   "Сценарий: enlivener-queries" ; enlivener-queries scenario
+   "Сценарий: address-info-queries" ; address-info-queries scenario
    ])
 
