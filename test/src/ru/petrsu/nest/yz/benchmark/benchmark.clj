@@ -485,10 +485,10 @@
                     (with-open [wrtr (cio/writer f :append true)]
                       (.write wrtr (get-fs 0 0 (flatten (concat (if (= lang "yz") 
                                                                   (if (vector? %2)
-                                                                    (bench-for-list n %2 mom em)
+                                                                    (next (bench-for-list n %2 mom em)) ; next excludes result of parsing.
                                                                     (bench-quering n %2 mom em))
                                                                   (if (vector? %2)
-                                                                    (bench-for-list-hql n %2 em)
+                                                                    (bench-for-list-hql n %2 em) 
                                                                     (bench-quering-hql n %2 em)))
                                                                 [db-n legend-label])) false)))) qs)))
 
