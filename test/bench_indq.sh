@@ -79,8 +79,13 @@ for i in `seq $c`; do
     for n in $n_db; do
 
 	# Derby url.
-	url_derby="jdbc:derby:db-$n;create=true"
-	derby="$url_derby $dialect_derby $driver_derby"
+	url_derby="jdbc:derby:db-$n"
+	url_derby_mem="jdbc:derby:memory:db;create=true";
+	if test "$db_type" = "mem"; then
+	    derby="$url_derby_mem $dialect_derby $driver_derby"
+	else
+	    derby="$url_derby $dialect_derby $driver_derby"
+	fi;
 
 	# H2 url.
 	url_h2="jdbc:h2:db-h2-$n/db"
@@ -93,7 +98,7 @@ for i in `seq $c`; do
 
 	# HSQLDB url.
 	url_hsqldb="jdbc:hsqldb:db-hsqldb-$n/db"
-	url_hsqldb_mem="jdbc:hsqldb:mem:db"
+	url_hsqldb_mem="jdbc:hsqldb:mem:db;create=true"
 	if test "$db_type" = "mem"; then
 	    hsqldb="$url_hsqldb_mem $dialect_hsqldb $driver_hsqldb"
 	else
