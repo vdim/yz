@@ -30,7 +30,7 @@ clj_func="ru.petrsu.nest.yz.benchmark.benchmark/bench-ind-query"
 lang="hql"
 
 # Define default type
-db_type="mem"
+db_type="ram"
 
 # Define default database.
 database="h2"
@@ -54,7 +54,7 @@ Benchmark individual queries.
 
 Options:
     -l, --lang <lang>	    language of benchmark (yz or hql). hql by default.
-    -t, --db_type <type>    type of database (mem or hdd). mem by default.
+    -t, --db_type <type>    type of database (ram or hdd). ram by default.
     -d, --database <database> database (h2, derby, hsqldb, lsm). h2 by default.
     -q, --query-num <num>   number of query (use -1 for benchmarking all queries) 
 			    from vector. -1 by default.
@@ -90,27 +90,27 @@ for i in `seq $c`; do
 
 	# Derby url.
 	url_derby="jdbc:derby:db-$n"
-	url_derby_mem="jdbc:derby:memory:db;create=true";
-	if test "$db_type" = "mem"; then
-	    derby="$url_derby_mem $dialect_derby $driver_derby"
+	url_derby_ram="jdbc:derby:memory:db;create=true";
+	if test "$db_type" = "ram"; then
+	    derby="$url_derby_ram $dialect_derby $driver_derby"
 	else
 	    derby="$url_derby $dialect_derby $driver_derby"
 	fi;
 
 	# H2 url.
 	url_h2="jdbc:h2:db-h2-$n/db"
-	url_h2_mem="jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"
-	if test "$db_type" = "mem"; then
-	    h2="$url_h2_mem $dialect_h2 $driver_h2"
+	url_h2_ram="jdbc:h2:mem:db;DB_CLOSE_DELAY=-1;MVCC=TRUE;create=true"
+	if test "$db_type" = "ram"; then
+	    h2="$url_h2_ram $dialect_h2 $driver_h2"
 	else
 	    h2="$url_h2 $dialect_h2 $driver_h2"
 	fi;
 
 	# HSQLDB url.
 	url_hsqldb="jdbc:hsqldb:db-hsqldb-$n/db"
-	url_hsqldb_mem="jdbc:hsqldb:mem:db;create=true"
-	if test "$db_type" = "mem"; then
-	    hsqldb="$url_hsqldb_mem $dialect_hsqldb $driver_hsqldb"
+	url_hsqldb_ram="jdbc:hsqldb:mem:db;create=true"
+	if test "$db_type" = "ram"; then
+	    hsqldb="$url_hsqldb_ram $dialect_hsqldb $driver_hsqldb"
 	else
 	    hsqldb="$url_hsqldb $dialect_hsqldb $driver_hsqldb"
 	fi;

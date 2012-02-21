@@ -449,8 +449,8 @@
   Parameters:
       lang defines languages of benchmark (yz or hql).
       q-num defines index of query from vector (use -1 for all queries).
-      db-type defines type of database (mem, hdd). It is suppose that
-        if type is mem then we must generate database otherwise we only
+      db-type defines type of database (ram, hdd). It is suppose that
+        if type is ram then we must generate database otherwise we only
         should connect to database.
       conn-s - connection string (must contain url (hibernate.connection.url), 
         dialect (hibernate.dialect), driver (hibernate.connection.driver_class) 
@@ -463,15 +463,15 @@
   Note #2: benchmark is run once."
   [lang q-num db-type conn-s legend-label db-n f-prefix]
   (let [em (if (= lang "yz")
-             (if (= "mem" db-type) 
+             (if (= "ram" db-type) 
                (bu/gen-bd db-n)
                (lsm/create-lsm (store/store conn-s)))
              (let [[url dialect driver] (cs/split conn-s #"\s")
                    
-                   ; For memory database we must create structure of database.
-                   hbm2ddl (if (= db-type "mem") "create-drop" "") 
+                   ; For RAM database we must create structure of database.
+                   hbm2ddl (if (= db-type "ram") "create-drop" "") 
                    em (create-em "nest-old" (create-hm url dialect driver hbm2ddl))
-                   _ (if (= "mem" db-type) 
+                   _ (if (= "ram" db-type) 
                        (buo/create-bd db-n em))]
                em))
         qs (if (= lang "yz") 
