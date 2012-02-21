@@ -42,6 +42,9 @@ q_num=-1
 # Count of execution.
 c=1
 
+# Prefix is empty by default.
+prefix=""
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Benchmark individual queries.
@@ -54,6 +57,7 @@ Options:
 			    from vector. -1 by default.
     -n, --elems-database <\"el1 el2 ...\"> list with amount elements into databases
     -c, --count <num>	    count of execution. 1 by default.
+    -p, --prefix <prefix>   prefix for files for result of benchmark. Empty by default.
     -h, --help		    display this help message and exit"
 
 # Handling options.
@@ -66,6 +70,7 @@ while true; do
         -h|--help) echo "$usage"; exit 0 ;; 
 	-n|--elems-database) n_db=$2; shift 2;;
 	-c|--count) c=$2; shift 2;;
+	-p|--prefix) prefix=$2; shift 2;;
         -*) echo "unknown option $1" >&2 ; exit 1 ;;
 	*) break ;;
     esac
@@ -118,10 +123,12 @@ for i in `seq $c`; do
 	    "lsm") url=$lsm ;;
 	esac
 
+	params="\"$lang\" $q_num \"$db_type\" \"$url\" \"$lang-$db_type-$database\" $n \"$prefix\""
+	
 	# Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
 	# For more details see doc string for the clojure.main/main function.
 	# For more details about parameters of the bench-ind-query function see doc string for
 	# ru.petrsu.nest.yz.benchmark.benchmark/bench-ind-query.
-	java -cp $CP clojure.main -i $clj_file -e "($clj_func \"$lang\" $q_num \"$db_type\" \"$url\" \"$lang-$db_type-$database\" $n)" 
+	java -cp $CP clojure.main -i $clj_file -e "($clj_func $params)"
     done;
 done;

@@ -457,10 +457,11 @@
         for hql and path to directory with data for yz).
       legend-label - lable for the chart's legend.
       db-n - amount elements of DB.
+      f-prefix - defines prefix for file in which result of benchmark is saved.
 
-  Note #1: result of benchmark is saved to the number_query.txt file.
+  Note #1: result of benchmark is saved to the f-prefixnumber_query.txt file.
   Note #2: benchmark is run once."
-  [lang q-num db-type conn-s legend-label db-n]
+  [lang q-num db-type conn-s legend-label db-n f-prefix]
   (let [em (if (= lang "yz")
              (if (= "mem" db-type) 
                (bu/gen-bd db-n)
@@ -481,7 +482,7 @@
         n 1 ; Count of execution.
         mom (mom-from-file "nest.mom")]
     
-    (map-indexed #(let [f (str (if (= q-num -1) %1 q-num) ".txt")]
+    (map-indexed #(let [f (str f-prefix (if (= q-num -1) %1 q-num) ".txt")]
                     (with-open [wrtr (cio/writer f :append true)]
                       (.write wrtr (get-fs 0 0 (flatten (concat (if (= lang "yz") 
                                                                   (if (vector? %2)
