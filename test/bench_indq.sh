@@ -8,8 +8,8 @@
 
 
 ## Derby settings.
-dialect="org.hibernate.dialect.DerbyDialect"
-driver="org.apache.derby.jdbc.EmbeddedDriver"
+dialect_derby="org.hibernate.dialect.DerbyDialect"
+driver_derby="org.apache.derby.jdbc.EmbeddedDriver"
 
 ## H2 settings.
 dialect_h2="org.hibernate.dialect.H2Dialect"
