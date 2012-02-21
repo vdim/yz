@@ -45,6 +45,9 @@ c=1
 # Prefix is empty by default.
 prefix=""
 
+# Addition label for legend of chart is empty by default.
+label=""
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Benchmark individual queries.
@@ -58,6 +61,7 @@ Options:
     -n, --elems-database <\"el1 el2 ...\"> list with amount elements into databases
     -c, --count <num>	    count of execution. 1 by default.
     -p, --prefix <prefix>   prefix for files for result of benchmark. Empty by default.
+    -b, --label <label>	    addition label for chart's legend.
     -h, --help		    display this help message and exit"
 
 # Handling options.
@@ -71,6 +75,7 @@ while true; do
 	-n|--elems-database) n_db=$2; shift 2;;
 	-c|--count) c=$2; shift 2;;
 	-p|--prefix) prefix=$2; shift 2;;
+	-b|--label) label="-$2"; shift 2;;
         -*) echo "unknown option $1" >&2 ; exit 1 ;;
 	*) break ;;
     esac
@@ -123,7 +128,7 @@ for i in `seq $c`; do
 	    "lsm") url=$lsm ;;
 	esac
 
-	params="\"$lang\" $q_num \"$db_type\" \"$url\" \"$lang-$db_type-$database\" $n \"$prefix\""
+	params="\"$lang\" $q_num \"$db_type\" \"$url\" \"$lang-$db_type-$database$label\" $n \"$prefix\""
 	
 	# Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
 	# For more details see doc string for the clojure.main/main function.
