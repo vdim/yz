@@ -5,11 +5,12 @@
                  [org.hibernate/hibernate-entitymanager "3.6.1.Final"]
                  [org.apache.derby/derby "10.7.1.1"]
                  [com.h2database/h2 "1.3.160"]
+                 [hsqldb/hsqldb "1.8.0.10"]
                  [org.clojure/algo.monads "0.1.0"] 
                  [incanter/incanter-charts "1.3.0-SNAPSHOT"]
                  [incanter/incanter-core "1.3.0-SNAPSHOT"]
                  [ru.petrsu.nest/yz "0.0.1-alpha11"]]
-  :java-source-path "."
+  :java-source-path "src/"
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false
   :omit-source true
