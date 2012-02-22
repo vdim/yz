@@ -63,7 +63,7 @@ for n in $n_db; do
 	h2="$url_h2 $dialect_h2 $driver_h2"
 
 	# HSQLDB url.
-	url_hsqldb="jdbc:hsqldb:db-hsqldb-$n/db"
+	url_hsqldb="jdbc:hsqldb:file:db-hsqldb-$n/db;shutdown=true;hsqldb.write_delay=false"
 	hsqldb="$url_hsqldb $dialect_hsqldb $driver_hsqldb"
 
 	# LocalSonManager url.

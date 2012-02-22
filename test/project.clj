@@ -5,7 +5,7 @@
                  [org.hibernate/hibernate-entitymanager "3.6.1.Final"]
                  [org.apache.derby/derby "10.7.1.1"]
                  [com.h2database/h2 "1.3.160"]
-                 [hsqldb/hsqldb "1.8.0.10"]
+                 [org.hsqldb/hsqldb "2.2.4"]
                  [org.clojure/algo.monads "0.1.0"] 
                  [incanter/incanter-charts "1.3.0-SNAPSHOT"]
                  [incanter/incanter-core "1.3.0-SNAPSHOT"]
@@ -16,5 +16,4 @@
   :omit-source true
   :repl-init ru.petrsu.nest.yz.init
   :test-path "src/"
-  :resources-path "test-resource/"
-  )
+  :resources-path "test-resource/")
