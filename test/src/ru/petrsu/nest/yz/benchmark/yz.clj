@@ -86,3 +86,10 @@
    "Сценарий: address-info-queries" ; address-info-queries scenario
    ])
 
+
+(def individual-queries-jpa
+  "YZ queries with JPA's scenarios."
+  (vec (concat 
+         (take 7 individual-queries)
+         [enlivener-queries-jpa
+          address-info-queries-jpa])))

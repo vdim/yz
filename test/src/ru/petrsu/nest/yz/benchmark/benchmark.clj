@@ -462,36 +462,51 @@
   Note #1: result of benchmark is saved to the f-prefixnumber_query.txt file.
   Note #2: benchmark is run once."
   [lang q-num db-type conn-s legend-label db-n f-prefix]
-  (let [em (if (= lang "yz")
-             (if (= "ram" db-type) 
+  (let [jdbc? (.startsWith conn-s "jdbc")
+        ram? (= "ram" db-type)
+        yz? (= lang "yz")
+
+        ; Define storage.
+        em (if-not jdbc?
+             (if ram?
                (bu/gen-bd db-n)
                (lsm/create-lsm (store/store conn-s)))
              (let [[url dialect driver] (cs/split conn-s #"\s")
                    
+                   em (create-em "nest-old" 
+                                 (create-hm url dialect driver (if ram? "create-drop" "")))
                    ; For RAM database we must create structure of database.
-                   hbm2ddl (if (= db-type "ram") "create-drop" "") 
-                   em (create-em "nest-old" (create-hm url dialect driver hbm2ddl))
-                   _ (if (= "ram" db-type) 
-                       (buo/create-bd db-n em))]
+                   _ (if ram? (buo/create-bd db-n em))
+                   em (if yz? (-createJPAElementManager em) em)]
                em))
-        qs (if (= lang "yz") 
-             yz/individual-queries 
+        
+        ; Define vector with queries.
+        qs (if yz?
+             (if jdbc?
+               yz/individual-queries-jpa
+               yz/individual-queries)
              hql/individual-queries)
         qs (if (= q-num -1) qs [(qs q-num)])
-
-        n 1 ; Count of execution.
-        mom (mom-from-file "nest.mom")]
+        
+        ; Count of execution.
+        n 1 
+        
+        ; Map of model (needed for YZ language).
+        mom (let [f (if jdbc? "nest_jpa.mom" "nest.mom")] 
+              (mom-from-file f))
+        ]
     
     (map-indexed #(let [f (str f-prefix (if (= q-num -1) %1 q-num) ".txt")]
                     (with-open [wrtr (cio/writer f :append true)]
-                      (.write wrtr (get-fs 0 0 (flatten (concat (if (= lang "yz") 
+                      (.write wrtr (get-fs 0 0 (flatten (concat (if yz?
                                                                   (if (vector? %2)
                                                                     (next (bench-for-list n %2 mom em)) ; next excludes result of parsing.
                                                                     (bench-quering n %2 mom em))
                                                                   (if (vector? %2)
                                                                     (bench-for-list-hql n %2 em) 
                                                                     (bench-quering-hql n %2 em)))
-                                                                [db-n legend-label])) false)))) qs)))
+                                                                [db-n legend-label])) false)))) 
+                 qs)))
 
 
 (defn generate-bd
