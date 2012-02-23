@@ -16,4 +16,6 @@
   :omit-source true
   :repl-init ru.petrsu.nest.yz.init
   :test-path "src/"
+  :source-path "../src"
+  :compile-path "../classes"
   :resources-path "test-resource/")

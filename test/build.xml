@@ -3,7 +3,7 @@
 <project name="YZ" default="compile.son">
     
     <property name="src"         value="src"/>
-    <property name="classes"       value="classes"/>
+    <property name="classes"       value="../classes"/>
     <property name="lib"       value="lib"/>
     
     
