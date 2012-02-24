@@ -53,5 +53,5 @@ You should have received a copy of the GNU Lesser General Public
 License along with YZ.  If not, see [http://www.gnu.org/licenses/] (http://www.gnu.org/licenses/).
 
 ## Links
-* [Installation] (https://github.com/vdim/yz/blob/stable/doc/INSTALLATION.md)
+* [Installation] (https://github.com/vdim/yz/blob/master/doc/INSTALLATION.md)
 
