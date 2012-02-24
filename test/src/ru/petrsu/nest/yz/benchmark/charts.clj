@@ -155,7 +155,7 @@
   "Creates bar chart (JFreeChart object) where categories is set of databases 
   (in fact amount elements of databases), values is set of 
   times of execution query (or list with queries),
-  and group-by's category is set languages (yz vs hql) times of executions."
+  and group-by's category is set of labels (use empty set for all labels)."
   [f ch labels]
   (let [r (get-res-from-ind-file f labels)
         ; Here we use file with result of benchmarks where there are
@@ -184,7 +184,8 @@
   corresponding file (0.png, 1.png ...). Parameters:
     path-i - path to files with benchmarks.
     path-c - path for files with charts (if path-c is 
-             not supplied then path-i is used instead of.)."
+             not supplied then path-i is used instead of).
+    labels - set of labels (group-by's category)."
   ([path-i]
    (gen-bar-charts path-i path-i #{}))
   ([path-i path-c]
