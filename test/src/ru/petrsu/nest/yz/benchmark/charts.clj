@@ -137,22 +137,41 @@
      (ic/view (get-chart lines cats)))))
 
 
+(defn- get-res-from-ind-file
+  "Returns lines from specified file with result
+  of benchmark of individual queries which labels
+  are in set with labels."
+  ([f]
+   (get-res-from-ind-file f #{}))
+  ([f, labels]
+   (reduce #(let [s (read-string (str "[" %2 "]"))]
+              (if (or (empty? labels) (contains? labels (name (last s))))
+                (conj %1 s)
+                %1))
+           [] (line-seq (cio/reader f)))))
+
+
 (defn bar-chart-by-lang
   "Creates bar chart (JFreeChart object) where categories is set of databases 
   (in fact amount elements of databases), values is set of 
   times of execution query (or list with queries),
   and group-by's category is set languages (yz vs hql) times of executions."
-  [f ch q-or-list]
-  (let [r (get (get-res-from-file f) q-or-list)
+  [f ch labels]
+  (let [r (get-res-from-ind-file f labels)
         ; Here we use file with result of benchmarks where there are
         ; some addition fields besides the characteristics map: 
         ; 7 is amount elements from db.
-        ; 8 is language of queries (for comparative diagramm). Example:
+        ; 8 is some label (for comparative diagramm). Example:
         ; 1 0.0000 72344.5430 1446.8909 1018.0772 1407.5066 1800.0106 1000 "hql"
-        lines (reverse (map (fn [l] {:time (l (ch characteristics)) 
-                                     :db (l (:amount-elems characteristics)) 
-                                     :lang (l (:legend-label characteristics))}) 
-                            r))]
+        lines (map (fn [l] {:time (l (ch characteristics)) 
+                            :db (l (:amount-elems characteristics)) 
+                            :lang (l (:legend-label characteristics))}) 
+                   r)
+        lines (sort #(let [i (compare (:db %1) (:db %2))]
+                       (if (= 0 i)
+                         (compare (name (:lang %1)) (name (:lang %2)))
+                         i)) 
+                    lines)]
     (ic/with-data (ic/dataset [:time :db :lang] lines)
                   (bar-chart :db :time :group-by :lang 
                              :legend true :x-label "Amount elements"
@@ -163,12 +182,18 @@
   "Generates bar charts from files with benchmarks of 
   individual queries (0.txt, 1.txt ...) and saves it to
   corresponding file (0.png, 1.png ...). Parameters:
-    - path to files with benchmarks."
-  [path]
-  (map #(let [f (str path "/" % ".txt")
-              gf (str path "/" % ".png")] 
-          (ic/save (set-title (bar-chart-by-lang f :q50 :all) 
-                              (yz/title-queries %))
-                   gf :width 1024 :height 768))
-       (range 0 (count yz/individual-queries))))
+    path-i - path to files with benchmarks.
+    path-c - path for files with charts (if path-c is 
+             not supplied then path-i is used instead of.)."
+  ([path-i]
+   (gen-bar-charts path-i path-i #{}))
+  ([path-i path-c]
+   (gen-bar-charts path-i path-c #{}))
+  ([path-i path-c labels]
+   (map #(let [f (str path-i "/" % ".txt")
+               gf (str path-c "/" % ".png")] 
+          (ic/save (set-title (bar-chart-by-lang f :q50 labels) 
+                               (yz/title-queries %))
+                    gf :width 1024 :height 768))
+        (range 0 (count yz/individual-queries)))))
 
