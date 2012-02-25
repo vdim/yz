@@ -21,10 +21,12 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Creates charts for results of benchmarks."}
   (:use incanter.stats
-        incanter.charts)
+        incanter.charts 
+        ru.petrsu.nest.yz.queries.nest-queries)
   (:require [clojure.java.io :as cio]
             [ru.petrsu.nest.yz.benchmark.benchmark :as bb]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
+            [ru.petrsu.nest.yz.benchmark.hql :as hql]
             [incanter.core :as ic]))
 
 
@@ -197,4 +199,36 @@
                                (yz/title-queries %))
                     gf :width 1024 :height 768))
         (range 0 (count yz/individual-queries)))))
+
+
+(defn chart-by-vquery
+  "Creates bar chart for capacity of querie's text.
+  Parameters:
+    f is name of file where bar chart will be saved."
+  [f]
+  (let [data [{:lang "yz" :scenario "address-info" 
+               :volume (reduce + (map count address-info-queries-jpa))}
+              {:lang "hql" :scenario "address-info" 
+               :volume (reduce + (map count address-info-queries-hql))} 
+              {:lang "yz" :scenario "enlivener" 
+               :volume (reduce + (map count enlivener-queries-jpa))}
+              {:lang "hql" :scenario "enlivener" 
+               :volume (reduce + (map count enlivener-queries-hql))} 
+              {:lang "yz" :scenario "treenest" 
+               :volume (reduce + (map count tree-queries-jpa))}
+              {:lang "hql" :scenario "treenest" 
+               :volume (reduce + (map count tree-queries-hql))} 
+              {:lang "yz" :scenario "individual" 
+               :volume (reduce + (map count (take 7 yz/individual-queries)))}
+              {:lang "hql" :scenario "individual" 
+               :volume (reduce + (map count (take 7 hql/individual-queries)))} 
+              ]]
+    (ic/save (ic/with-data 
+               (ic/dataset [:lang :scenario :volume] data) 
+               (bar-chart :scenario :volume 
+                          :group-by :lang
+                          :legend true 
+                          :x-label "Count of characters." 
+                          :y-label "Lists")) 
+             f :width 1024 :height 768)))
 
