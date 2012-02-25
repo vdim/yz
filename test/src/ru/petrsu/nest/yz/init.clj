@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -29,6 +29,7 @@
         ru.petrsu.nest.yz.benchmark.benchmark
         ru.petrsu.nest.yz.parsing
         ru.petrsu.nest.yz.core
+        ru.petrsu.nest.yz.yz-factory
         ru.petrsu.nest.son.local-sm
         
         clojure.repl clojure.pprint clojure.java.io
@@ -40,8 +41,11 @@
                                IPv4Interface, UnknownLinkInterface,
                                CompositeOU, SimpleOU, Occupancy)))
 
-;; MOM the SON model from the Nest project.
+;; MOM of the SON model from the Nest project (lsm version).
 (def i-mom (mom-from-file "nest.mom"))
+
+;; MOM of the SON model from the Nest project (jpa version).
+(def jpa-mom (mom-from-file "nest_jpa.mom"))
 
 ;; Vector with all classes from SON model 
 ;; (Sometimes It is needed for testing functions from the hb-utils namespace.)
