@@ -78,9 +78,9 @@
   expression and after it and second element is result of 
   expr's evaluation."
   [expr]
-  `(let [s-mem# (.getCommitted (.getHeapMemoryUsage (ManagementFactory/getMemoryMXBean)))
+  `(let [s-mem# (.getUsed (.getHeapMemoryUsage (ManagementFactory/getMemoryMXBean)))
          ret# ~expr
-         e-mem# (.getCommitted (.getHeapMemoryUsage (ManagementFactory/getMemoryMXBean)))]
+         e-mem# (.getUsed (.getHeapMemoryUsage (ManagementFactory/getMemoryMXBean)))]
      [(/ (double (- e-mem# s-mem#)) 1024.0) ret#]))
 
 
