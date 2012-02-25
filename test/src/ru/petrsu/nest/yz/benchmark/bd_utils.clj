@@ -25,6 +25,7 @@
                                Occupancy SimpleOU CompositeOU
                                Device UnknownNetwork UnknownNetworkInterface EthernetInterface
                                UnknownLinkInterface IPv4Interface IPNetwork VLANInterface SON)
+           (java.lang.management ManagementFactory)
            (java.util Random)))
 
 
@@ -47,6 +48,40 @@
   `(let [start# (. System (nanoTime))
          ret# ~expr]
      [(/ (double (- (. System (nanoTime)) start#)) 1000000.0) ret#]))
+
+
+(defn current-thread-time
+  "Returns current thread time (cpu or user). type is keyword which
+  defines type of time (:cpu or :user)."
+  [type]
+  (if (= type :user)
+    (.getCurrentThreadUserTime (ManagementFactory/getThreadMXBean))
+    (.getCurrentThreadCpuTime (ManagementFactory/getThreadMXBean))))
+
+
+(defmacro thread-time
+  "Returns vector where first element is value of current
+  thread time (cpu or user; in fact difference between current
+  thread time before evaluation of expr and after it; time is
+  measurement in milliseconds) before evaluation of expr and 
+  second element is result of expr's evaluation."
+  [expr type]
+  `(let [s-time# (current-thread-time ~type)
+         ret# ~expr
+         e-time# (current-thread-time ~type)]
+     [(/ (double (- e-time# s-time#)) 1000000.0) ret#]))
+
+
+(defmacro thread-memory
+  "Returns vector where first element is value of difference
+  between committed memory (in KBytes) before evaluation of 
+  expression and after it and second element is result of 
+  expr's evaluation."
+  [expr]
+  `(let [s-mem# (.getCommitted (.getHeapMemoryUsage (ManagementFactory/getMemoryMXBean)))
+         ret# ~expr
+         e-mem# (.getCommitted (.getHeapMemoryUsage (ManagementFactory/getMemoryMXBean)))]
+     [(/ (double (- e-mem# s-mem#)) 1024.0) ret#]))
 
 
 (def names

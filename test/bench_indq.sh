@@ -51,6 +51,9 @@ label=""
 # Default java options.
 JAVA_OPTIONS=""
 
+# Default measurement
+measurement="time"
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Benchmark individual queries.
@@ -61,12 +64,14 @@ Options:
     -d, --database <database> database (h2, derby, hsqldb, lsm). h2 by default.
     -q, --query-num <num>   number of query (use -1 for benchmarking all queries) 
 			    from vector. -1 by default.
-    -n, --elems-database <\"el1 el2 ...\"> list with amount elements into databases
+    -n, --elems-database <\"el1\">... list with amount elements into databases
     -c, --count <num>	    count of execution. 1 by default.
     -p, --prefix <prefix>   prefix for files for result of benchmark. Empty by default.
     -b, --label <label>	    addition label for chart's legend.
     -j, --java-options <\"options\"> define java options.
-    -h, --help		    display this help message and exit"
+    -m, --measurement <measure> type of measurement (time, thread-time-cpu, thread-time-user, memory).
+			    time by default.
+    -h, --help		    display this help message and exit."
 
 # Handling options.
 while true; do
@@ -80,7 +85,8 @@ while true; do
 	-c|--count) c=$2; shift 2;;
 	-p|--prefix) prefix=$2; shift 2;;
 	-j|--java-options) JAVA_OPTIONS=$2; shift 2;;
-	-b|--label) label="-$2"; shift 2;;
+	-b|--label) label="-$2"; shift 2;; 
+	-m|--measurement) measurement="$2"; shift 2;;
         -*) echo "unknown option $1" >&2 ; exit 1 ;;
 	*) break ;;
     esac
@@ -117,7 +123,7 @@ for i in `seq $c`; do
 	# Define current connection string.
 	conns=${!database}
 	
-	params="\"$lang\" $q_num \"$db_type\" \"$conns\" \"$lang-$db_type-$database$label\" $n \"$prefix\""
+	params="\"$lang\" $q_num \"$db_type\" \"$conns\" \"$lang-$db_type-$database$label\" $n \"$prefix\" \"$measurement\""
 
 	# Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
 	# For more details see doc string for the clojure.main/main function.

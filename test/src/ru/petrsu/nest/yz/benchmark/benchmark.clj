@@ -41,6 +41,7 @@
             [clojure.string :as cs])
   (:import (java.util Date)
            (ru.petrsu.nest.yz.core ElementManager) 
+           (java.lang.management ManagementFactory)
            (javax.persistence Persistence EntityManager)))
 
 
@@ -100,11 +101,24 @@
    ((getf ql) num, n, {})))
 )
 
+(def ^:dynamic *measurement* 
+  "Defines measurement for benchmarking. It may be:
+    - :time (by default);
+    - :thread-time-cpu; 
+    - :thread-time-user;
+    - :memory."
+  :time)
+
 
 (defn- do-times-q
   "Returns sequence of time (n times) of execution some function f."
   [f, n]
-  (repeatedly n #(let [[t r] (bu/brtime (f))]
+  (repeatedly n #(let [[t r] (case *measurement*
+                               :thread-time-cpu (bu/thread-time (f) :cpu)
+                               :thread-time-user (bu/thread-time (f) :user)
+                               :memory (bu/thread-memory (f))
+                               :time (bu/brtime (f))
+                               (throw (Exception. (str "Unknown type of measurement: " (name *measurement*)))))]
                    (if (nil? (:error r)) t (throw (Exception. (:error r)) )))))
 
 
@@ -129,6 +143,7 @@
          em (if (instance? ElementManager son-or-em)
               son-or-em
               (qc/create-emm son-or-em))
+ 
          times (do-times-q (partial pquery query mom em) n)
          s-times (apply + times)]
      (concat [s-times (/ s-times n)] (quantile times :probs vprobs)))))
@@ -458,10 +473,11 @@
       legend-label - lable for the chart's legend.
       db-n - amount elements of DB.
       f-prefix - defines prefix for file in which result of benchmark is saved.
+      measurement - type of measurement (time, thread-time-cpu, thread-time-user, memory).
 
   Note #1: result of benchmark is saved to the f-prefixnumber_query.txt file.
   Note #2: benchmark is run once."
-  [lang q-num db-type conn-s legend-label db-n f-prefix]
+  [lang q-num db-type conn-s legend-label db-n f-prefix measurement]
   (let [jdbc? (.startsWith conn-s "jdbc")
         ram? (= "ram" db-type)
         yz? (= lang "yz")
@@ -493,19 +509,19 @@
         
         ; Map of model (needed for YZ language).
         mom (let [f (if jdbc? "nest_jpa.mom" "nest.mom")] 
-              (mom-from-file f))
-        ]
+              (mom-from-file f))]
     
     (map-indexed #(let [f (str f-prefix (if (= q-num -1) %1 q-num) ".txt")]
                     (with-open [wrtr (cio/writer f :append true)]
-                      (.write wrtr (get-fs 0 0 (flatten (concat (if yz?
-                                                                  (if (vector? %2)
-                                                                    (next (bench-for-list n %2 mom em)) ; next excludes result of parsing.
-                                                                    (bench-quering n %2 mom em))
-                                                                  (if (vector? %2)
-                                                                    (bench-for-list-hql n %2 em) 
-                                                                    (bench-quering-hql n %2 em)))
-                                                                [db-n legend-label])) false)))) 
+                      (binding [*measurement* (keyword measurement)]
+                        (.write wrtr (get-fs 0 0 (flatten (concat (if yz?
+                                                                    (if (vector? %2)
+                                                                      (next (bench-for-list n %2 mom em)) ; next excludes result of parsing.
+                                                                      (bench-quering n %2 mom em))
+                                                                    (if (vector? %2)
+                                                                      (bench-for-list-hql n %2 em) 
+                                                                      (bench-quering-hql n %2 em)))
+                                                                  [db-n *measurement* legend-label])) false)))))
                  qs)))
 
 
