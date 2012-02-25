@@ -69,6 +69,7 @@
    "{↑description}device"
    enlivener-queries
    address-info-queries
+   tree-queries
    ])
 
 
@@ -84,6 +85,7 @@
    "Сортировка" ; query with ordering
    "Сценарий: enlivener-queries" ; enlivener-queries scenario
    "Сценарий: address-info-queries" ; address-info-queries scenario
+   "Сценарий: tree-queries" ; tree-queries scenario
    ])
 
 
@@ -92,4 +94,5 @@
   (vec (concat 
          (take 7 individual-queries)
          [enlivener-queries-jpa
-          address-info-queries-jpa])))
+          address-info-queries-jpa
+          tree-queries-jpa])))

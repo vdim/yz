@@ -175,7 +175,16 @@
      "aou#(name = \"Медицинский факультет\" && cou.id = \"4b946015-daf1-428e-b79b-4071853fb4ec\")"
      "o#(r.id = \"e177d321-5158-4da4-85a9-33ca7249096d\" && sou.id = \"a5b7876f-ccda-472a-b8f3-7b43bf90f6ad\")"
      "li#(description != nil && description != \"\") (n (d))"])
-  
+ 
+
+(def tree-queries
+  ^{:doc "Queries which are used for building SON tree."}
+  ["n#(sou.id = \"c29c4a2e-2cb4-4e91-93f1-901cd6b489dc\")"
+   "d#(sou.id = \"9b8078d6-9fb0-4c61-aa32-06be4942e7f8\" && n.id = \"a5b7876f-ccda-472a-b8f3-7b43bf90f6ad\")"
+   "n#(r.id = \"a6bce25b-51c3-4672-93b3-8666701aec0b\")" 
+   "d#(r.id = \"e067fc71-df26-416f-afa0-6c09953b9480\" && n.id = \"104a5137-4b1f-4acc-a1af-ea009970a72d\")"])
+
+
 (defmacro is-list?
   [queries]
   (concat
@@ -187,6 +196,7 @@
 
 (is-list? address-info-queries)
 (is-list? enlivener-queries)
+(is-list? tree-queries)
 
 (def address-info-queries-hql
   ^{:doc "HQL queries which are used with AddressInfo Nestling."}
@@ -336,6 +346,18 @@
      ni2 join ni2.linkInterface.device d where li.description != null and li.description != ''"])
 
 
+(def tree-queries-hql
+  ^{:doc "Queries which are used for building SON tree."}
+  ["select distinct n from Network n join n.networkInterfaces nis 
+   where nis.linkInterface.device.occupancy.OU.id = 1"
+   "select distinct d from Device d join d.linkInterfaces li join li.networkInterfaces nis
+   where d.occupancy.OU.id=2 and nis.network.id=3"
+   "select distinct n from Network n join n.networkInterfaces nis 
+   where nis.linkInterface.device.occupancy.room.id = 4"
+   "select distinct d from Device d join d.linkInterfaces li join li.networkInterfaces nis
+   where d.occupancy.room.id=5 and nis.network.id=6"])
+
+
 (def address-info-queries-jpa
   ^{:doc "JPA queries which are used with AddressInfo Nestling."}
   ["d#(ni.inetAddress = @(ip2b \"192.168.112.48\"))"
@@ -480,3 +502,11 @@
      "aou#(name = \"Медицинский факультет\" && cou.id = 43)"
      "o#(r.id = 39 && sou.id = 40)"
      "li#(description != nil && description != \"\") (n (d))"])
+
+
+(def tree-queries-jpa
+  ^{:doc "JPA queries which are used for building SON tree."}
+  ["n#(sou.id = 1)"
+   "d#(sou.id = 2 && n.id = 3)"
+   "n#(r.id = 4)" 
+   "d#(r.id = 5 && n.id = 6)"])

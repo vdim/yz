@@ -81,4 +81,5 @@
    "from Device d order by d.description"
    enlivener-queries-hql
    address-info-queries-hql
+   tree-queries-hql
    ])
