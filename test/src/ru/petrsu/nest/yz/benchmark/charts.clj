@@ -30,6 +30,38 @@
             [incanter.core :as ic]))
 
 
+(def title-queries-ru
+  "Russian descriptions of individual-queries  
+  (are needed for diagram's titles)."
+  ["Простая выборка" ; simple selection
+   "Простая выборка с простым условием" ; simple selection with simple filtering
+   "Простая выборка со сложным условием" ; simple selection with compose filtering
+   "Запрос на соединение: device (building)" ; query with join
+   "Запрос на соединение: building (device)" ; query with join
+   "Запрос на соединение: li (n (d))" ; query with join
+   "Сортировка" ; query with ordering
+   "Сценарий: enlivener-queries" ; enlivener-queries scenario
+   "Сценарий: address-info-queries" ; address-info-queries scenario
+   "Сценарий: tree-queries" ; tree-queries scenario
+   ])
+
+
+(def title-queries-en
+  "English descriptions of individual-queries  
+  (are needed for diagram's titles)."
+  ["Simple selection" ; simple selection
+   "Simple selection with simple condition" ; simple selection with simple filtering
+   "simple selection with compose condition" ; simple selection with compose filtering
+   "Query with join: device (building)" ; query with join
+   "Query with join: building (device)" ; query with join
+   "Query with join: li (n (d))" ; query with join
+   "Ordering" ; query with ordering
+   "Scenario: enlivener-queries" ; enlivener-queries scenario
+   "Scenario: address-info-queries" ; address-info-queries scenario
+   "Scenario: tree-queries" ; tree-queries scenario
+   ])
+
+
 (defn- get-res-from-file
   "Takes name of a file with result of benchmark and collection with
   number of experiments (empty for all) and returns map where 
@@ -158,7 +190,7 @@
   (in fact amount elements of databases), values is set of 
   times of execution query (or list with queries),
   and group-by's category is set of labels (use empty set for all labels)."
-  [f ch labels]
+  [f ch labels [x y title]]
   (let [r (get-res-from-ind-file f labels)
         ; Here we use file with result of benchmarks where there are
         ; some addition fields besides the characteristics map: 
@@ -176,8 +208,8 @@
                     lines)]
     (ic/with-data (ic/dataset [:time :db :lang] lines)
                   (bar-chart :db :time :group-by :lang 
-                             :legend true :x-label "Amount elements"
-                             :y-label "Time (msecs)"))))
+                             :legend true :x-label x
+                             :y-label y :title title))))
 
 
 (defn gen-bar-charts
@@ -189,46 +221,56 @@
              not supplied then path-i is used instead of).
     labels - set of labels (group-by's category)."
   ([path-i]
-   (gen-bar-charts path-i path-i #{}))
+   (gen-bar-charts path-i path-i #{} :en))
   ([path-i path-c]
-   (gen-bar-charts path-i path-c #{}))
+   (gen-bar-charts path-i path-c #{} :en))
   ([path-i path-c labels]
-   (map #(let [f (str path-i "/" % ".txt")
-               gf (str path-c "/" % ".png")] 
-          (ic/save (set-title (bar-chart-by-lang f :q50 labels) 
-                               (yz/title-queries %))
-                    gf :width 1024 :height 768))
-        (range 0 (count yz/individual-queries)))))
+   (gen-bar-charts path-i path-c labels :en))
+  ([path-i path-c labels mode]
+   (let [[x y titles] (case mode 
+                       :ru ["Количество элементов" "Время (мс)" title-queries-ru]
+                       :en ["Amount Elements" "Time (msecs)" title-queries-en]
+                        (throw (Exception. (str "Unknown language: " (name mode)))))]
+     (map #(let [f (str path-i "/" % ".txt")
+                 gf (str path-c "/" % ".png")] 
+            (ic/save (bar-chart-by-lang f :q50 labels [x y (titles %)]) 
+                      gf :width 1024 :height 768))
+          (range 0 (count yz/individual-queries))))))
 
 
 (defn chart-by-vquery
   "Creates bar chart for capacity of querie's text.
   Parameters:
     f is name of file where bar chart will be saved."
-  [f]
-  (let [data [{:lang "yz" :scenario "address-info" 
-               :volume (reduce + (map count address-info-queries-jpa))}
-              {:lang "hql" :scenario "address-info" 
-               :volume (reduce + (map count address-info-queries-hql))} 
-              {:lang "yz" :scenario "enlivener" 
-               :volume (reduce + (map count enlivener-queries-jpa))}
-              {:lang "hql" :scenario "enlivener" 
-               :volume (reduce + (map count enlivener-queries-hql))} 
-              {:lang "yz" :scenario "treenest" 
-               :volume (reduce + (map count tree-queries-jpa))}
-              {:lang "hql" :scenario "treenest" 
-               :volume (reduce + (map count tree-queries-hql))} 
-              {:lang "yz" :scenario "individual" 
-               :volume (reduce + (map count (take 7 yz/individual-queries)))}
-              {:lang "hql" :scenario "individual" 
-               :volume (reduce + (map count (take 7 hql/individual-queries)))} 
-              ]]
-    (ic/save (ic/with-data 
-               (ic/dataset [:lang :scenario :volume] data) 
-               (bar-chart :scenario :volume 
-                          :group-by :lang
-                          :legend true 
-                          :x-label "Count of characters." 
-                          :y-label "Lists")) 
-             f :width 1024 :height 768)))
+  ([f]
+   (chart-by-vquery f :ru))
+  ([f mode]
+   (let [[y, x, title] (case mode 
+                         :ru ["Количество символов" "Списки" "Размер текста запросов"]
+                         :en ["Count of characters" "Lists" "Volume of query's text"]
+                         (throw (Exception. (str "Unknown language: " (name mode)))))
+         data [{:lang "yz" :scenario "address-info" 
+                :volume (reduce + (map count address-info-queries-jpa))}
+               {:lang "hql" :scenario "address-info" 
+                :volume (reduce + (map count address-info-queries-hql))} 
+               {:lang "yz" :scenario "enlivener" 
+                :volume (reduce + (map count enlivener-queries-jpa))}
+               {:lang "hql" :scenario "enlivener" 
+                :volume (reduce + (map count enlivener-queries-hql))} 
+               {:lang "yz" :scenario "treenest" 
+                :volume (reduce + (map count tree-queries-jpa))}
+               {:lang "hql" :scenario "treenest" 
+                :volume (reduce + (map count tree-queries-hql))} 
+               {:lang "yz" :scenario "individual" 
+                :volume (reduce + (map count (take 7 yz/individual-queries)))}
+               {:lang "hql" :scenario "individual" 
+                :volume (reduce + (map count (take 7 hql/individual-queries)))} 
+               ]]
+     (ic/save (ic/with-data 
+                (ic/dataset [:lang :scenario :volume] data) 
+                (bar-chart :scenario :volume 
+                           :group-by :lang
+                           :legend true 
+                           :x-label x :y-label y :title title)) 
+              f :width 1024 :height 768))))
 

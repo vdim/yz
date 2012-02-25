@@ -73,22 +73,6 @@
    ])
 
 
-(def title-queries
-  "Russian descriptions of individual-queries  
-  (are needed for diagram's titles)."
-  ["Простая выборка" ; simple selection
-   "Простая выборка с простым условием" ; simple selection with simple filtering
-   "Простая выборка со сложным условием" ; simple selection with compose filtering
-   "Запрос на соединение: device (building)" ; query with join
-   "Запрос на соединение: building (device)" ; query with join
-   "Запрос на соединение: li (n (d))" ; query with join
-   "Сортировка" ; query with ordering
-   "Сценарий: enlivener-queries" ; enlivener-queries scenario
-   "Сценарий: address-info-queries" ; address-info-queries scenario
-   "Сценарий: tree-queries" ; tree-queries scenario
-   ])
-
-
 (def individual-queries-jpa
   "YZ queries with JPA's scenarios."
   (vec (concat 
