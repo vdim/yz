@@ -246,7 +246,7 @@
    (chart-by-vquery f :ru))
   ([f mode]
    (let [[y, x, title] (case mode 
-                         :ru ["Количество символов" "Списки" "Размер текста запросов"]
+                         :ru ["Количество символов" "Списки" "Объем текста запросов"]
                          :en ["Count of characters" "Lists" "Volume of query's text"]
                          (throw (Exception. (str "Unknown language: " (name mode)))))
          data [{:lang "yz" :scenario "address-info" 
