@@ -194,7 +194,7 @@
   [query k]
   (let [rq (c/pquery query *mom* *em*)]
     (if (not (nil? (:error rq)))
-      (throw Exception e "Query exception.")
+      (throw (Exception. (str "Query exception: " (:error rq))))
       (k rq))))
 
 (defn r-query
