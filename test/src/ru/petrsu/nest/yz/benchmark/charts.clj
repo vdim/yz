@@ -262,9 +262,9 @@
                {:lang "hql" :scenario "treenest" 
                 :volume (reduce + (map count tree-queries-hql))} 
                {:lang "yz" :scenario "individual" 
-                :volume (reduce + (map count (take 7 yz/individual-queries)))}
+                :volume (reduce + (map count (filter string? yz/individual-queries)))}
                {:lang "hql" :scenario "individual" 
-                :volume (reduce + (map count (take 7 hql/individual-queries)))} 
+                :volume (reduce + (map count (filter string? hql/individual-queries)))} 
                ]]
      (ic/save (ic/with-data 
                 (ic/dataset [:lang :scenario :volume] data) 
