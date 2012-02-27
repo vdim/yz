@@ -79,7 +79,7 @@
 (def ^{:tag ElementManager} a-em (atom nil))
 (def a-mom (atom nil))
 
-(declare process-preds, process-prop process-func)
+(declare process-prop process-func get-objs)
 (defn filter-by-preds
   "Gets sequence of objects and vector with predicates and
   returns new sequence of objects which are filtered by this predicates."
@@ -97,19 +97,22 @@
                              (assoc %2 :value (nth (process-func (:value %2) nil) 0))
                              %2))) [] preds)
 
+          ; Memoized version of the get-objs function.
+          m-go (memoize get-objs)
+
           ; Define function for checking objects.
           [preds-p preds-f]
           (reduce (fn [[params s] p] 
                     (if (map? p) 
                       [(conj params p)
-                       (conj s (str "(ru.petrsu.nest.yz.core/process-preds %1 %" (+ (count params) 2) ")"))]
+                       (conj s (str "(ru.petrsu.nest.yz.core/process-preds %1 %2 %" (+ (count params) 3) ")"))]
                       [params
                        (conj (pop (pop s)) (str "(" (name p) " " 
                                                 (peek s) " " 
                                                 (peek (pop s)) ")"))]))
                   [[] []]  preds)
           f (read-string (str "#=(eval #" (preds-f 0) ")"))] 
-      (filter #(apply f % preds-p) objs))))
+      (filter #(apply f m-go % preds-p) objs))))
 
 
 (defn- sort-rq
@@ -271,7 +274,6 @@
                            (vec (map (fn [lp] (conj lp %2)) %1))) [[]] params)]
     (map #(apply (:func f-map) %) lparams)))
 
-
 (defn- get-objs
   "Returns sequence of objects which belong to 'objs' 
   by specified 'field-name'."
@@ -295,12 +297,12 @@
 
 (defn process-preds
   "Processes restrictions."
-  [o, pred]
+  [m-go, o, pred]
   (let [{:keys [all ids func value]} pred
         value (if (keyword? value) (get-qp value) value)
         objs (cond (vector? ids) 
                    (reduce (fn [r {:keys [id cl]}]
-                             (let [objs- (reduce #(get-objs %2 %1) r id)]
+                             (let [objs- (reduce #(m-go %2 %1) r id)]
                               (if (nil? cl)
                                 objs-
                                 (filter (partial instance? cl) objs-))))
