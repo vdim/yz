@@ -252,23 +252,15 @@
                          :ru ["Количество символов" "Списки" "Объем текста запросов"]
                          :en ["Count of characters" "Lists" "Volume of query's text"]
                          (throw (Exception. (str "Unknown language: " (name mode)))))
-         data [{:lang "yz" :scenario "address-info" 
-                :volume (reduce + (map count address-info-queries-jpa))}
-               {:lang "hql" :scenario "address-info" 
-                :volume (reduce + (map count address-info-queries-hql))} 
-               {:lang "yz" :scenario "enlivener" 
-                :volume (reduce + (map count enlivener-queries-jpa))}
-               {:lang "hql" :scenario "enlivener" 
-                :volume (reduce + (map count enlivener-queries-hql))} 
-               {:lang "yz" :scenario "treenest" 
-                :volume (reduce + (map count tree-queries-jpa))}
-               {:lang "hql" :scenario "treenest" 
-                :volume (reduce + (map count tree-queries-hql))} 
-               {:lang "yz" :scenario "individual" 
-                :volume (reduce + (map count (filter string? yz/individual-queries)))}
-               {:lang "hql" :scenario "individual" 
-                :volume (reduce + (map count (filter string? hql/individual-queries)))} 
-               ]]
+         m (fn [l s v] {:lang l :scenario s :volume (reduce + (map count v))})
+         data [(m "yz" "address-info" address-info-queries-jpa) 
+               (m "hql" "address-info" address-info-queries-hql) 
+               (m "yz" "enlivener" enlivener-queries-jpa) 
+               (m "hql" "enlivener" enlivener-queries-hql)
+               (m "yz" "treenest" tree-queries-jpa) 
+               (m "hql" "treenest" tree-queries-hql)
+               (m "yz" "individual" (filter string? yz/individual-queries)) 
+               (m "hql" "individual" (filter string? hql/individual-queries))]]
      (ic/save (ic/with-data 
                 (ic/dataset [:lang :scenario :volume] data) 
                 (bar-chart :scenario :volume 
