@@ -79,7 +79,6 @@
 (def ^{:tag ElementManager} a-em (atom nil))
 (def a-mom (atom nil))
 
-(def a-go (atom 0))
 
 (declare process-prop process-func get-objs)
 (defn filter-by-preds
@@ -101,7 +100,6 @@
 
           ; Memoized version of the get-objs function.
           m-go (memoize (fn [ids o]
-                          (swap! a-go inc)
                           (cond (vector? ids) 
                               (reduce (fn [r {:keys [id cl]}]
                                         (let [objs- (reduce #(get-objs %2 %1) r id)]
