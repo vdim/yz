@@ -79,30 +79,7 @@
 (def ^{:tag ElementManager} a-em (atom nil))
 (def a-mom (atom nil))
 
-(def ^{:tag ElementManager :dynamic true} *em*)
-
 (declare process-preds, process-prop process-func)
-(defmacro check-arg
-  "Generates code for checking argument 'a' of object 'o'."
-  [a, o]
-  `(if (map? ~a) (process-preds ~o ~a) ~a))
-
-
-(defn- pp-func
-  "Defines whether specified object o satisfies to specified
-  vector with predicates preds."
-  [o, ^PersistentVector preds]
-  (let [rp (reduce #(if (map? %2) 
-                      (conj %1 %2)
-                      (let [fa (peek %1)
-                            sa (peek (pop %1))
-                            r (if (= %2 :and) 
-                                (and (check-arg fa o) (check-arg sa o))
-                                (or (check-arg fa o) (check-arg sa o)))]
-                        (conj (pop (pop %1)) r))) [] preds)]
-    (check-arg (rp 0) o)))
-
-
 (defn filter-by-preds
   "Gets sequence of objects and vector with predicates and
   returns new sequence of objects which are filtered by this predicates."
@@ -118,8 +95,21 @@
                          (let [params (:params (:value %2))]
                            (if (and params (not (some vector? params)))
                              (assoc %2 :value (nth (process-func (:value %2) nil) 0))
-                             %2))) [] preds)] 
-      (filter #(pp-func % preds) objs))))
+                             %2))) [] preds)
+
+          ; Define function for checking objects.
+          [preds-p preds-f]
+          (reduce (fn [[params s] p] 
+                    (if (map? p) 
+                      [(conj params p)
+                       (conj s (str "(ru.petrsu.nest.yz.core/process-preds %1 %" (+ (count params) 2) ")"))]
+                      [params
+                       (conj (pop (pop s)) (str "(" (name p) " " 
+                                                (peek s) " " 
+                                                (peek (pop s)) ")"))]))
+                  [[] []]  preds)
+          f (read-string (str "#=(eval #" (preds-f 0) ")"))] 
+      (filter #(apply f % preds-p) objs))))
 
 
 (defn- sort-rq
@@ -303,7 +293,7 @@
     (java.util.Arrays/equals a1 a2)))
 
 
-(defn- process-preds
+(defn process-preds
   "Processes restrictions."
   [o, pred]
   (let [{:keys [all ids func value]} pred
@@ -507,8 +497,9 @@
                                             msg))))]
     (if (string? query-res)
       (Result. [] query-res [] ())
-      (let [rows (distinct (get-rows query-res))]
-        (Result. query-res nil (get-columns-lite rows) rows)))))
+      (Result. query-res nil [] ()))))
+      ;(let [rows (distinct (get-rows query-res))]
+      ;  (Result. query-res nil (get-columns-lite rows) rows)))))
 
 
 (defn pquery
