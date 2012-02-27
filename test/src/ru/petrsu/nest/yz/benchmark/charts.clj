@@ -219,7 +219,8 @@
     path-i - path to files with benchmarks.
     path-c - path for files with charts (if path-c is 
              not supplied then path-i is used instead of).
-    labels - set of labels (group-by's category)."
+    labels - set of labels (group-by's category).
+    mode - type of language (:ru and :en are supported now)."
   ([path-i]
    (gen-bar-charts path-i path-i #{} :en))
   ([path-i path-c]
@@ -233,8 +234,10 @@
                         (throw (Exception. (str "Unknown language: " (name mode)))))]
      (map #(let [f (str path-i "/" % ".txt")
                  gf (str path-c "/" % ".png")] 
-            (ic/save (bar-chart-by-lang f :q50 labels [x y (titles %)]) 
-                      gf :width 1024 :height 768))
+             (try
+               (ic/save (bar-chart-by-lang f :q50 labels [x y (titles %)]) 
+                        gf :width 1024 :height 768)
+               (catch java.io.FileNotFoundException e nil)))
           (range 0 (count yz/individual-queries))))))
 
 

@@ -102,5 +102,8 @@
   (map #(let [f (str "/" % ".txt")
               fs (str path-src f)
               fd (str path-dest f)]
-          (avg-for-ind fs fd)) (range 0 (count yz/individual-queries))))
+          (try
+            (avg-for-ind fs fd)
+            (catch java.io.FileNotFoundException e nil))) 
+          (range 0 (count yz/individual-queries))))
 
