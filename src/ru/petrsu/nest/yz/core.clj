@@ -79,6 +79,8 @@
 (def ^{:tag ElementManager} a-em (atom nil))
 (def a-mom (atom nil))
 
+(def a-go (atom 0))
+
 (declare process-prop process-func get-objs)
 (defn filter-by-preds
   "Gets sequence of objects and vector with predicates and
@@ -98,7 +100,17 @@
                              %2))) [] preds)
 
           ; Memoized version of the get-objs function.
-          m-go (memoize get-objs)
+          m-go (memoize (fn [ids o]
+                          (swap! a-go inc)
+                          (cond (vector? ids) 
+                              (reduce (fn [r {:keys [id cl]}]
+                                        (let [objs- (reduce #(get-objs %2 %1) r id)]
+                                          (if (nil? cl)
+                                            objs-
+                                            (filter (partial instance? cl) objs-))))
+                                      [o]
+                                      ids)
+                              (map? ids) (process-func ids o))))
 
           ; Define function for checking objects.
           [preds-p preds-f]
@@ -300,15 +312,7 @@
   [m-go, o, pred]
   (let [{:keys [all ids func value]} pred
         value (if (keyword? value) (get-qp value) value)
-        objs (cond (vector? ids) 
-                   (reduce (fn [r {:keys [id cl]}]
-                             (let [objs- (reduce #(m-go %2 %1) r id)]
-                              (if (nil? cl)
-                                objs-
-                                (filter (partial instance? cl) objs-))))
-                           [o]
-                           ids)
-                   (map? ids) (process-func ids o))
+        objs (m-go ids o)
 
         ;; If objects from objs are arrays then we must compare two arrays.
         func (let [cl (if (empty? objs) nil (class (nth objs 0)))]
