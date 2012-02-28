@@ -99,13 +99,18 @@
 
 (defn avg-for-inds
   "Creates files with averages (due to the avg-for-ind function) 
-  values of result of benchmark."
-  [path-src path-dest]
-  (map #(let [f (str "/" % ".txt")
-              fs (str path-src f)
-              fd (str path-dest f)]
-          (try
-            (avg-for-ind fs fd)
-            (catch java.io.FileNotFoundException e nil))) 
-          (range 0 (count yz/individual-queries))))
+  values of result of benchmark. Parameters:
+    path-src - path with files with result of benchmark.
+    path-dest - path for files with averages values.
+    prefix (if any) - prefix of name of file with result of benchmark."
+  ([path-src path-dest]
+   (avg-for-inds path-src path-dest ""))
+  ([path-src path-dest prefix]
+   (map #(let [f (str "/" prefix % ".txt")
+               fs (str path-src f)
+               fd (str path-dest f)]
+           (try
+             (avg-for-ind fs fd)
+             (catch java.io.FileNotFoundException e nil))) 
+        (range 0 (count yz/individual-queries)))))
 
