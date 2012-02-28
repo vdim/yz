@@ -521,7 +521,7 @@
                                                                     (if (vector? %2)
                                                                       (bench-for-list-hql n %2 em) 
                                                                       (bench-quering-hql n %2 em)))
-                                                                  [db-n *measurement* legend-label])) false)))))
+                                                                  [db-n legend-label *measurement*])) false)))))
                  qs)))
 
 
@@ -539,3 +539,28 @@
 
   (System/exit 0))
 
+
+(def ind-chars
+  "Defines correspondence between human denotes of characteristics from
+  files with benchmark of individual queries and
+  its number into vector with values of this characteristics.
+    0 - number of experiment.
+    1 - time of parsing.
+    2 - total time of execution.
+    3 - average time of execution.
+    4 - quantile 5%.
+    5 - quantile 50%.
+    6 - quantile 90%.
+    7 - amount elements from database.
+    8 - label for legend of bar chart.
+    9 - type of measure."
+  {:number 0
+   :parsing 1
+   :total 2
+   :avg 3
+   :q5 4
+   :q50 5
+   :q90 6
+   :amount-elems 7
+   :legend-label 8
+   :measure 9})

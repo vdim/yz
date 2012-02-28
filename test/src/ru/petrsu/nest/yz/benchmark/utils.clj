@@ -78,11 +78,13 @@
     f-dest - file for average values."
   [f-src f-dest]
   (let [; r is map where key is string from amount 
-        ; elements of DB and some label, and
+        ; elements of DB, some label and type of measurement, and
         ; value is set of result of benchmark.
         r (reduce #(let [v (read-string (str "[" %2 "]"))
-                         k (str (v 7) " " (v 8))
-                         new-value (conj (get %1 k) (v 2))]
+                         k (str (v (:amount-elems ind-chars)) 
+                                " " (v (:legend-label ind-chars))
+                                " " (v (:measure ind-chars)))
+                         new-value (conj (get %1 k) (v (:total ind-chars)))]
                      (assoc %1 k new-value))
                   {}
                   (line-seq (cio/reader f-src)))
@@ -90,7 +92,7 @@
                                                           (quantile v :probs vprobs))) k) false))
                r)
         ; sorts lines by amount elements in DB.
-        r (sort-by #((read-string (str "[" % "]")) 7) r)]
+        r (sort-by #((read-string (str "[" % "]")) (:amount-elems ind-chars)) r)]
     (with-open [wrtr (cio/writer f-dest)]
       (.write wrtr (reduce str r)))))
 

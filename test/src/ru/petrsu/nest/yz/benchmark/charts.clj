@@ -179,7 +179,7 @@
    (get-res-from-ind-file f #{}))
   ([f, labels]
    (reduce #(let [s (read-string (str "[" %2 "]"))]
-              (if (or (empty? labels) (contains? labels (name (last s))))
+              (if (or (empty? labels) (contains? labels (s (:legend-label bb/ind-chars))))
                 (conj %1 s)
                 %1))
            [] (line-seq (cio/reader f)))))
@@ -249,7 +249,7 @@
   "Creates bar chart for capacity of querie's text.
   Parameters:
     f - name of file where bar chart will be saved.
-    mode - language of titles (:ru and :en are supported now)."
+    mode - language of titles (:ru and :en are supported now, :ru by default)."
   ([f]
    (chart-by-vquery f :ru))
   ([f mode]
