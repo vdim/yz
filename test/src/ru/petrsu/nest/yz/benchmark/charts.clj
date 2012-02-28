@@ -100,9 +100,7 @@
     4 - quantile 5%.
     5 - quantile 50%.
     6 - quantile 90%.
-    7 - time per query (for list with queries).
-    7 - amount elements from database (truly for individual queries).
-    8 - label for legend of bar chart (truly for individual queries)."
+    7 - time per query (for list with queries)."
   {:number 0
    :parsing 1
    :total 2
@@ -110,9 +108,7 @@
    :q5 4
    :q50 5
    :q90 6
-   :per-query 7
-   :amount-elems 7
-   :legend-label 8})
+   :per-query 7})
 
 
 (defn- get-chart
@@ -179,7 +175,7 @@
    (get-res-from-ind-file f #{}))
   ([f, labels]
    (reduce #(let [s (read-string (str "[" %2 "]"))]
-              (if (or (empty? labels) (contains? labels (s (:legend-label bb/ind-chars))))
+              (if (or (empty? labels) (contains? labels (name (s (:legend-label bb/ind-chars)))))
                 (conj %1 s)
                 %1))
            [] (line-seq (cio/reader f)))))
@@ -188,22 +184,23 @@
 (defn bar-chart-by-lang
   "Creates bar chart (JFreeChart object) where categories is set of databases 
   (in fact amount elements of databases), values is set of 
-  times of execution query (or list with queries),
-  and group-by's category is set of labels (use empty set for all labels)."
+  some characteristic of query (or list with queries),
+  and group-by's category is set of labels (use empty set for all labels).
+    f - name of a file with result of benchmark (suppose that it is file with
+        benchmark of individual queries).
+    ch - characteristic of execution a query.
+    labels - set of labels which are used for group-by's category of chart.
+    [x y title] - vector with x, y labels and title of chart 
+                  ([nil nil nil] by default)."
   ([f ch]
    (bar-chart-by-lang f ch #{} [nil nil nil]))
   ([f ch labels]
    (bar-chart-by-lang f ch labels [nil nil nil]))
   ([f ch labels [x y title]]
    (let [r (get-res-from-ind-file f labels)
-         ; Here we use file with result of benchmarks where there are
-         ; some addition fields besides the characteristics map: 
-         ; 7 is amount elements from db.
-         ; 8 is some label (for comparative diagramm). Example:
-         ; 1 0.0000 72344.5430 1446.8909 1018.0772 1407.5066 1800.0106 1000 "hql"
-         lines (map (fn [l] {:time (l (ch characteristics)) 
-                             :db (l (:amount-elems characteristics)) 
-                             :lang (l (:legend-label characteristics))}) 
+         lines (map (fn [l] {:time (l (ch bb/ind-chars)) 
+                             :db (l (:amount-elems bb/ind-chars)) 
+                             :lang (l (:legend-label bb/ind-chars))})
                     r)
          lines (sort #(let [i (compare (:db %1) (:db %2))]
                         (if (= 0 i)
