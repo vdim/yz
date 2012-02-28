@@ -190,26 +190,30 @@
   (in fact amount elements of databases), values is set of 
   times of execution query (or list with queries),
   and group-by's category is set of labels (use empty set for all labels)."
-  [f ch labels [x y title]]
-  (let [r (get-res-from-ind-file f labels)
-        ; Here we use file with result of benchmarks where there are
-        ; some addition fields besides the characteristics map: 
-        ; 7 is amount elements from db.
-        ; 8 is some label (for comparative diagramm). Example:
-        ; 1 0.0000 72344.5430 1446.8909 1018.0772 1407.5066 1800.0106 1000 "hql"
-        lines (map (fn [l] {:time (l (ch characteristics)) 
-                            :db (l (:amount-elems characteristics)) 
-                            :lang (l (:legend-label characteristics))}) 
-                   r)
-        lines (sort #(let [i (compare (:db %1) (:db %2))]
-                       (if (= 0 i)
-                         (compare (name (:lang %1)) (name (:lang %2)))
-                         i)) 
-                    lines)]
-    (ic/with-data (ic/dataset [:time :db :lang] lines)
-                  (bar-chart :db :time :group-by :lang 
-                             :legend true :x-label x
-                             :y-label y :title title))))
+  ([f ch]
+   (bar-chart-by-lang f ch #{} [nil nil nil]))
+  ([f ch labels]
+   (bar-chart-by-lang f ch labels [nil nil nil]))
+  ([f ch labels [x y title]]
+   (let [r (get-res-from-ind-file f labels)
+         ; Here we use file with result of benchmarks where there are
+         ; some addition fields besides the characteristics map: 
+         ; 7 is amount elements from db.
+         ; 8 is some label (for comparative diagramm). Example:
+         ; 1 0.0000 72344.5430 1446.8909 1018.0772 1407.5066 1800.0106 1000 "hql"
+         lines (map (fn [l] {:time (l (ch characteristics)) 
+                             :db (l (:amount-elems characteristics)) 
+                             :lang (l (:legend-label characteristics))}) 
+                    r)
+         lines (sort #(let [i (compare (:db %1) (:db %2))]
+                        (if (= 0 i)
+                          (compare (name (:lang %1)) (name (:lang %2)))
+                          i)) 
+                     lines)]
+     (ic/with-data (ic/dataset [:time :db :lang] lines)
+                   (bar-chart :db :time :group-by :lang 
+                              :legend true :x-label x
+                              :y-label y :title title)))))
 
 
 (defn gen-bar-charts
@@ -244,7 +248,8 @@
 (defn chart-by-vquery
   "Creates bar chart for capacity of querie's text.
   Parameters:
-    f is name of file where bar chart will be saved."
+    f - name of file where bar chart will be saved.
+    mode - language of titles (:ru and :en are supported now)."
   ([f]
    (chart-by-vquery f :ru))
   ([f mode]
