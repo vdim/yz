@@ -116,7 +116,7 @@
   (repeatedly n #(let [[t r] (case *measurement*
                                :thread-time-cpu (bu/thread-time (f) :cpu)
                                :thread-time-user (bu/thread-time (f) :user)
-                               :memory (bu/thread-memory (f))
+                               :memory (do (System/gc) (bu/thread-memory (f)))
                                :time (bu/brtime (f))
                                (throw (Exception. (str "Unknown type of measurement: " (name *measurement*)))))]
                    (if (nil? (:error r)) t (throw (Exception. (:error r)) )))))
