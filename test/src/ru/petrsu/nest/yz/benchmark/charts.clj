@@ -115,7 +115,7 @@
   "Takes set of lines and categories and returns 
   line-chart from incanter library.
   Lines must be vector where first element is list with data 
-  (by categories, amount elements of this list must be equal 
+  (amount elements of this list must be equal 
   amount of categories), second element is label."
   [lines cats]
   (let [chart (line-chart cats ((nth lines 0) 0) :series-label ((nth lines 0) 1) :legend true) 
@@ -126,16 +126,8 @@
 (defn simple-line-chart
   "Creates simple line chart for specified file with result of benchmarks,
   collection with numbers of experiments (all by default) and some
-  characteristic of benchmark (quntile 50% by default). Characteristic's
-  keys are:
-    - :parsing - total time of parsing
-  Characteristics for quering are below:
-    - :total - total time
-    - :avg - average time per query (or list with queries)
-    - :q5 - quantile 5%
-    - :q50 - quantile 50%
-    - :q90 - quantile 90%
-    - :per-query - time per query (truly for list with queries)."
+  characteristic of benchmark (quantile 50% by default). Characteristic 
+  must be some key from the characteristics map."
   ([f]
    (simple-line-chart f [] :q50))
   ([f num-exps]
@@ -155,8 +147,8 @@
     per - period of number experiments;
     q-or-list - query or list's name with queries 
         (more simple q-or-list is string after ';' symbol from file with benchmarks).
-    ch - characteristic of benchmark (see doc string for simple-line-chart).
-        :q50 by default."
+    ch - characteristic of benchmark (see doc string for the 
+        definition of the characteristic map). :q50 by default."
   ([f per q-or-list]
    (line-chart-by-expers f per q-or-list :q50))
   ([f per q-or-list ch]
@@ -188,7 +180,7 @@
   and group-by's category is set of labels (use empty set for all labels).
     f - name of a file with result of benchmark (suppose that it is file with
         benchmark of individual queries).
-    ch - characteristic of execution a query.
+    ch - characteristic of execution a query (see definition of the characteristic map).
     labels - set of labels which are used for group-by's category of chart.
     [x y title] - vector with x, y labels and title of chart 
                   ([nil nil nil] by default)."
