@@ -271,3 +271,14 @@
                            :x-label x :y-label y :title title)) 
               f :width 1024 :height 768))))
 
+
+(def c-labels
+  "Vector with sets of labels which are compared."
+  [#{"yz-hdd-derby" "hql-hdd-derby" "yz-hdd-lsm"} 
+   #{"yz-hdd-hsqldb" "hql-hdd-hsqldb" "yz-hdd-lsm"}
+   #{"yz-hdd-h2" "hql-hdd-h2" "yz-hdd-lsm"}
+   #{"yz-ram-derby" "hql-ram-derby" "yz-ram-mem"}
+   #{"yz-ram-hsqldb" "hql-ram-hsqldb" "yz-ram-mem"}
+   #{"yz-ram-h2" "hql-ram-h2" "yz-ram-mem"}])
+
+
