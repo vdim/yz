@@ -485,8 +485,10 @@
         ; Define storage.
         em (if-not jdbc?
              (if ram?
-               (bu/gen-bd db-n)
-               (lsm/create-lsm (store/store conn-s)))
+               (if (.startsWith conn-s "lsm:")
+                 (qc/create-emlm (bu/gen-bd db-n)) ; generate and save lsm DB, and then use it
+                 (bu/gen-bd db-n)) ; generate and use MemoryElementManager (mem) DB.
+               (lsm/create-lsm (store/store (subs conn-s 4)))) ; use existing lsm DB.
              (let [[url dialect driver] (cs/split conn-s #"\s")
                    
                    em (create-em "nest-old" 

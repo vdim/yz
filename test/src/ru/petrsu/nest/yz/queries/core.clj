@@ -94,7 +94,7 @@
    (let [_ (sh "rm" "-Rf" dir) ; Dirty hack: deletes directory with database before making queries.
          store (planter/store dir)
          _ (planter/register-bean store son)
-         _ (planter/save-all-and-wait store)]
+         _ (planter/save-all store)]
      (lsm/create-lsm store))))
 
 

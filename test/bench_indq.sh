@@ -118,7 +118,7 @@ for i in `seq $c`; do
 	hsqldb="${!url} $dialect_hsqldb $driver_hsqldb"
 	
 	# LocalSonManager url.
-	lsm="data-$n"
+	lsm=$database":data-$n"
 
 	# Define current connection string.
 	conns=${!database}
