@@ -76,11 +76,8 @@
   [result error columns rows])
 
 
-;(def ^{:tag ElementManager} a-em (atom nil))
-;(def a-mom (atom nil))
-
-(def ^{:tag ElementManager :dynamic true} *em*)
-(def ^{:dynamic true} *mom*)
+(def ^{:tag ElementManager} a-em (atom nil))
+(def a-mom (atom nil))
 
 
 (declare process-prop process-func get-objs)
@@ -197,11 +194,11 @@
 (defn- select-elems
   "Returns from storage objects which have ':what' class from nest."
   [nest]
-  (let [;^ElementManager em @a-em
+  (let [^ElementManager em @a-em
         {:keys [^Class what ^PersistentVector preds sort exactly]} nest]
-    (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager *em*)
-      (sort-rq (.getElems *em* what preds) sort false)
-      (let [elems (.getElems *em* what)
+    (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
+      (sort-rq (.getElems em what preds) sort false)
+      (let [elems (.getElems em what)
             elems (if exactly (filter #(= (class %) what) elems) elems)]
         (sort-rq (filter-by-preds elems preds) sort false)))))
 
@@ -213,9 +210,8 @@
   [^Object o, field-name]
   (if (nil? o)
     nil
-    (let [;^ElementManager em @a-em
-          ^String field-name (if (keyword? field-name) (name field-name) field-name) 
-          v (try (.getPropertyValue *em* o field-name)
+    (let [^String field-name (if (keyword? field-name) (name field-name) field-name) 
+          v (try (.getPropertyValue @a-em o field-name)
               (catch Exception e (throw (Exception. (str "Not found property: " field-name)))))]
       (cond 
         ; If value is nil then function returns nil.
@@ -231,8 +227,7 @@
 
         ; If value is an array then we check whether a type of the array from the MOM, If true then
         ; we returns a collection from this array.
-        ;(and (.isArray (class v)) (get @a-mom (.getComponentType (class v)))) (seq v)
-        (and (.isArray (class v)) (get *mom* (.getComponentType (class v)))) (seq v)
+        (and (.isArray (class v)) (get @a-mom (.getComponentType (class v)))) (seq v)
 
         ; Returns value.
         :else v))))
@@ -276,8 +271,7 @@
                            (= "&" %) obj 
 
                            ; param is value of the default property.
-                           ;(= "&." %) (get-fv obj (:dp (get @a-mom (class obj))))
-                           (= "&." %) (get-fv obj (:dp (get *mom* (class obj))))
+                           (= "&." %) (get-fv obj (:dp (get @a-mom (class obj))))
 
                            ; param is value of some property of the object.
                            (and (string? %) (.startsWith % "&.")) (get-fv obj (.substring % 2))
@@ -358,8 +352,7 @@
             (first fr)
             fr))
         (= prop :#self-object#) obj
-        ;(= prop :#default-property#) (get-fv obj (:dp (get @a-mom (class obj))))
-        (= prop :#default-property#) (get-fv obj (:dp (get *mom* (class obj))))
+        (= prop :#default-property#) (get-fv obj (:dp (get @a-mom (class obj))))
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
                      res
@@ -497,10 +490,8 @@
 (defn get-qr
   "Takes result of parsing and returns result of quering."
   [parse-res ^PersistentArrayMap mom ^ElementManager em]
-  ;(reset! a-em em) 
-  ;(reset! a-mom mom)
-  (binding [*em* em
-            *mom* mom]
+  (reset! a-em em) 
+  (reset! a-mom mom)
   (let [query-res (if (string? parse-res)
                     parse-res
                     (try
@@ -510,9 +501,9 @@
                                             msg))))]
     (if (string? query-res)
       (Result. [] query-res [] ())
-      (Result. query-res nil [] ())))))
+      (Result. query-res nil [] ()))))
       ;(let [rows (distinct (get-rows query-res))]
-      ;  (Result. query-res nil (get-columns-lite rows) rows))))))
+      ;  (Result. query-res nil (get-columns-lite rows) rows)))))
 
 
 (defn pquery
