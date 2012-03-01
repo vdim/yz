@@ -80,7 +80,7 @@
 (def a-mom (atom nil))
 
 
-(declare process-prop process-func get-objs)
+(declare process-preds process-prop process-func get-objs)
 (defn filter-by-preds
   "Gets sequence of objects and vector with predicates and
   returns new sequence of objects which are filtered by this predicates."
@@ -111,18 +111,16 @@
                               (map? ids) (process-func ids o))))
 
           ; Define function for checking objects.
-          [preds-p preds-f]
-          (reduce (fn [[params s] p] 
+          [f]
+          (reduce (fn [s p] 
                     (if (map? p) 
-                      [(conj params p)
-                       (conj s (str "(ru.petrsu.nest.yz.core/process-preds %1 %2 %" (+ (count params) 3) ")"))]
-                      [params
-                       (conj (pop (pop s)) (str "(" (name p) " " 
-                                                (peek s) " " 
-                                                (peek (pop s)) ")"))]))
-                  [[] []]  preds)
-          f (read-string (str "#=(eval #" (preds-f 0) ")"))] 
-      (filter #(apply f m-go % preds-p) objs))))
+                      (conj s #(process-preds %1 %2 p))
+                      (conj (pop (pop s)) 
+                            (if (= p :and)
+                              #(and ((peek s) %1 %2) ((peek (pop s)) %1 %2))
+                              #(or ((peek s) %1 %2) ((peek (pop s)) %1 %2))))))
+                  []  preds)]
+      (filter #(f m-go %) objs))))
 
 
 (defn- sort-rq
@@ -310,26 +308,25 @@
   [m-go, o, pred]
   (let [{:keys [all ids func value]} pred
         value (if (keyword? value) (get-qp value) value)
-        objs (m-go ids o)
-
-        ;; If objects from objs are arrays then we must compare two arrays.
-        func (let [cl (if (empty? objs) nil (class (nth objs 0)))]
-               (if (and cl (.isArray cl)) eq-arrays? func))
-        ;; Check function for a regular expression
-        func (if (= func #'clojure.core/re-find) 
-               (fn [o value] 
-                 (if (or (nil? value) (nil? o)) ; Prevent NullPointerException.
-                   nil
-                   (re-find (re-pattern value) o)))
-               func)
-        func #(try (func %1 %2)
-                ; If exception is caused then value is returned as nil.
-                (catch Exception e nil))
-        ;; Define filter function.
-        f (if all every? some)]
-    (cond (nil? (seq objs)) false
-          (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
-          :else (f #(func % value) objs))))
+        objs (m-go ids o)]
+    (and (seq objs)
+         (let [;; If objects from objs are arrays then we must compare two arrays.
+               func (let [cl (class (nth objs 0))]
+                      (if (and cl (.isArray cl)) eq-arrays? func))
+               ;; Check function for a regular expression
+               func (if (= func #'clojure.core/re-find) 
+                      (fn [o value] 
+                        (if (or (nil? value) (nil? o)) ; Prevent NullPointerException.
+                          nil
+                          (re-find (re-pattern value) o)))
+                      func)
+               func #(try (func %1 %2)
+                       ; If exception is caused then value is returned as nil.
+                       (catch Exception e nil))
+               ;; Define filter function.
+               f (if all every? some)]
+           (if (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
+             (f #(func % value) objs))))))
 
 
 (defn- get-objs-by-path
