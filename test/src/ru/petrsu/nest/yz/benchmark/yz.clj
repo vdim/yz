@@ -70,6 +70,13 @@
    enlivener-queries
    address-info-queries
    tree-queries
+
+   ; Addition queries
+   "building[name description]"
+   "device#(name=\"Device_MB\" && description=\"Description\")"
+   "device#(name=(\"Device_MB\" || \"Device_TK\"))"
+   "device (building#(name=\"Building_MB\"))"
+   "device (building#(name=(\"Building_MB\" || \"Building_TK\")))"
    ])
 
 

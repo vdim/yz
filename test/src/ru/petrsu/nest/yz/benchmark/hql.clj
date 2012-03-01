@@ -82,4 +82,12 @@
    enlivener-queries-hql
    address-info-queries-hql
    tree-queries-hql
+
+   ; Addition queries
+   "select b.name, b.description from Building b"
+   "from Device d where d.name='Device_MB' and d.description='Description'"
+   "from Device d where d.name='Device_MB' or d.name='Device_TK'"
+   "select d, b from Device d join d.occupancy.room.floor.building b where b.name='Building_MB'"
+   "select d, b from Device d join d.occupancy.room.floor.building b 
+          where b.name='Building_MB' or b.name='Building_TK'"
    ])
