@@ -83,7 +83,7 @@
    address-info-queries-hql
    tree-queries-hql
 
-   ; Addition queries
+   ; Additional queries
    "select b.name, b.description from Building b"
    "from Device d where d.name='Device_MB' and d.description='Description'"
    "from Device d where d.name='Device_MB' or d.name='Device_TK'"

@@ -71,7 +71,7 @@
    address-info-queries
    tree-queries
 
-   ; Addition queries
+   ; Additional queries
    "building[name description]"
    "device#(name=\"Device_MB\" && description=\"Description\")"
    "device#(name=(\"Device_MB\" || \"Device_TK\"))"
@@ -86,4 +86,8 @@
          (take 7 individual-queries)
          [enlivener-queries-jpa
           address-info-queries-jpa
-          tree-queries-jpa])))
+          tree-queries-jpa]
+
+         ; Additional queries
+         (drop 10 individual-queries)
+         )))
