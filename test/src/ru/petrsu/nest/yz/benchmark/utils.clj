@@ -114,3 +114,17 @@
              (catch java.io.FileNotFoundException e nil))) 
         (range 0 (count yz/individual-queries)))))
 
+
+(defn interchange-m-and-lb
+  "Interchanges measurement and label due to new format
+  of benchmark result output. 
+    f - defines file with result of benchmark."
+  [f]
+  (let [r (reduce #(let [s (read-string  (str "[" %2 "]"))
+                         s (conj (vec (butlast (butlast s))) (last s) (last (butlast s)))]
+                     (str %1 (apply str (interpose " " s)) \newline))
+                  ""
+                  (line-seq (cio/reader f)))]
+    (with-open [wrtr (cio/writer f)]
+      (.write wrtr r))))
+
