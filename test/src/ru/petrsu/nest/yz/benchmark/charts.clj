@@ -43,6 +43,12 @@
    "Сценарий: enlivener-queries" ; enlivener-queries scenario
    "Сценарий: address-info-queries" ; address-info-queries scenario
    "Сценарий: tree-queries" ; tree-queries scenario
+   ""
+   ""
+   ""
+   ""
+   ""
+   ""
    ])
 
 
@@ -59,6 +65,12 @@
    "Scenario: enlivener-queries" ; enlivener-queries scenario
    "Scenario: address-info-queries" ; address-info-queries scenario
    "Scenario: tree-queries" ; tree-queries scenario
+   ""
+   ""
+   ""
+   ""
+   ""
+   ""
    ])
 
 
@@ -213,20 +225,23 @@
     path-c - path for files with charts (if path-c is 
              not supplied then path-i is used instead of).
     labels - set of labels (group-by's category).
-    mode - type of language (:ru and :en are supported now)."
+    mode - type of language (:ru and :en are supported now).
+    prefix - prefix for files with benchmark (empty by default)."
   ([path-i]
-   (gen-bar-charts path-i path-i #{} :en))
+   (gen-bar-charts path-i path-i #{} :en ""))
   ([path-i path-c]
-   (gen-bar-charts path-i path-c #{} :en))
+   (gen-bar-charts path-i path-c #{} :en ""))
   ([path-i path-c labels]
-   (gen-bar-charts path-i path-c labels :en))
+   (gen-bar-charts path-i path-c labels :en ""))
   ([path-i path-c labels mode]
+   (gen-bar-charts path-i path-c labels mode ""))
+  ([path-i path-c labels mode prefix]
    (let [[x y titles] (case mode 
                        :ru ["Количество элементов" "Время (мс)" title-queries-ru]
                        :en ["Amount Elements" "Time (msecs)" title-queries-en]
                         (throw (Exception. (str "Unknown language: " (name mode)))))]
-     (map #(let [f (str path-i "/" % ".txt")
-                 gf (str path-c "/" % ".png")] 
+     (map #(let [f (str path-i "/" prefix % ".txt")
+                 gf (str path-c "/" prefix % ".png")] 
              (try
                (ic/save (bar-chart-by-lang f :q50 labels [x y (titles %)]) 
                         gf :width 1024 :height 768)
