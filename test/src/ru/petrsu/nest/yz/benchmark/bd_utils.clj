@@ -41,7 +41,7 @@
 
 (defmacro brtime
   "Like Clojure's macros time, but doesn't have side effect 
-  (something prints) and returns vector where firs element is 
+  (something prints) and returns vector where first element is 
   time which is taken for evaluating an expr and second
   element is result of the expression."
   [expr]
@@ -74,7 +74,7 @@
 
 (defmacro thread-memory
   "Returns vector where first element is value of difference
-  between committed memory (in KBytes) before evaluation of 
+  between used memory (in KBytes) before evaluation of 
   expression and after it and second element is result of 
   expr's evaluation."
   [expr]
