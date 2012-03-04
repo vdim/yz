@@ -158,13 +158,18 @@
 (defn ^EntityManager c-em
   "Returns implementation of the ElementManager for collections."
   [^Collection coll, ^Collection classes]
-  (reify ElementManager
-    (^Collection getElems [_ ^Class _] coll)
-    (^Collection getClasses [_] classes)
-   
-    ;; Value is got from bean of the object o.
-    (^Object getPropertyValue [this ^Object o, ^String property]
-       ((keyword property) (bean o)))))
+  (let [cls (if (or (nil? classes) (empty? classes))
+              (if (empty? coll)
+                nil 
+                [(class (nth coll 0))])
+              classes)]
+    (reify ElementManager
+      (^Collection getElems [_ ^Class _] coll)
+      (^Collection getClasses [_] cls)
+      
+      ;; Value is got from bean of the object o.
+      (^Object getPropertyValue [this ^Object o, ^String property]
+         ((keyword property) (bean o))))))
 
 
 (defn ^EntityManager -createCollectionElementManager
