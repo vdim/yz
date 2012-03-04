@@ -45,12 +45,6 @@
                          [javax.persistence.EntityManager] 
                          ru.petrsu.nest.yz.core.ElementManager]
 
-                        ;; Memory's element manager.
-                        ^{:static true} 
-                        [createMemoryElementManager 
-                         [java.util.List] 
-                         ru.petrsu.nest.yz.core.ElementManager]
-                        
                         ;; Collection's element manager (version with collection).
                         ^{:static true} 
                         [createCollectionElementManager 
@@ -158,19 +152,6 @@
   "Returns implementation of JPA's ElementManager."
   [^EntityManager em]
   (JPAElementManager. em))
-
-
-(defn ^EntityManager -createMemoryElementManager
-  "Returns implementation of memory's ElementManager."
-  [^List classes]
-  (reify ElementManager
-    (^java.util.Collection getElems [_ ^Class claz] 
-       (throw (UnsupportedOperationException. "Not supported yet.")))
-    (getClasses [_] classes)
-    
-    ;; Value is got from bean of the object o.
-    (^Object getPropertyValue [this ^Object o, ^String property]
-       ((keyword property) (bean o)))))
 
 
 (defn ^EntityManager c-em
