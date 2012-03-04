@@ -49,9 +49,19 @@
                         ^{:static true} 
                         [createMemoryElementManager 
                          [java.util.List] 
+                         ru.petrsu.nest.yz.core.ElementManager]
+                        
+                        ;; Collection's element manager (version with collection).
+                        ^{:static true} 
+                        [createCollectionElementManager 
+                         [java.util.Collection]
+                         ru.petrsu.nest.yz.core.ElementManager]
+
+                        ;; Collection's element manager (version with collection and classes).
+                        ^{:static true} 
+                        [createCollectionElementManager 
+                         [java.util.Collection java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]]))
-
-
 
 
 (defn- contains-f?
@@ -149,6 +159,7 @@
   [^EntityManager em]
   (JPAElementManager. em))
 
+
 (defn ^EntityManager -createMemoryElementManager
   "Returns implementation of memory's ElementManager."
   [^List classes]
@@ -162,15 +173,21 @@
        ((keyword property) (bean o)))))
 
 
-(defn ^EntityManager -createCollectionElementManager
-  "Collection's ElementManager."
-  [^Collection coll]
+(defn ^EntityManager c-em
+  "Returns implementation of the ElementManager for collections."
+  [^Collection coll, ^Collection classes]
   (reify ElementManager
     (^Collection getElems [_ ^Class _] coll)
-    (getClasses [_] 
-      (throw (UnsupportedOperationException. "Not supported yet.")))
-    
+    (^Collection getClasses [_] classes)
+   
     ;; Value is got from bean of the object o.
     (^Object getPropertyValue [this ^Object o, ^String property]
        ((keyword property) (bean o)))))
 
+
+(defn ^EntityManager -createCollectionElementManager
+  "Collection's ElementManager."
+  ([^Collection coll]
+   (c-em coll nil))
+  ([^Collection coll, ^Collection classes]
+   (c-em coll classes)))
