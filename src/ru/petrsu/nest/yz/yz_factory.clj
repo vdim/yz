@@ -26,10 +26,11 @@
           - JPA's ElementManager (method createJPAElementManager). For getting it
             you must pass your javax.persistence.EntityManager.
 
-          - Memory's ElementManager (method createMemoryElementManager). 
-            It is simple element manager which keeps elements
-            direct in memory. It may be useful for the testing your model or some YZ's query.
-            For getting it you must pass your list of classes (for creating the MOM)."}
+          - Collection's ElementManager (method createCollectionElementManager). 
+            It is simple collection's element manager worked with elements
+            direct in memory. For getting it you must specify your collection
+            with elements and list of classes for MOM if any."}
+
   (:require
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
