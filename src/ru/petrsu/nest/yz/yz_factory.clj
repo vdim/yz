@@ -36,7 +36,7 @@
     (javax.persistence EntityManager)
     (javax.persistence.criteria CriteriaQuery CriteriaBuilder Predicate Root)
     (ru.petrsu.nest.yz.core ElementManager ExtendedElementManager)
-    (java.util List)
+    (java.util List Collection)
     (clojure.lang PersistentArrayMap PersistentVector Keyword))
   (:gen-class :name ru.petrsu.nest.yz.ElementManagerFactory
               :methods [;; JPA's element manager.
@@ -161,4 +161,16 @@
     (^Object getPropertyValue [this ^Object o, ^String property]
        ((keyword property) (bean o)))))
 
+
+(defn ^EntityManager -createCollectionElementManager
+  "Collection's ElementManager."
+  [^Collection coll]
+  (reify ElementManager
+    (^Collection getElems [_ ^Class _] coll)
+    (getClasses [_] 
+      (throw (UnsupportedOperationException. "Not supported yet.")))
+    
+    ;; Value is got from bean of the object o.
+    (^Object getPropertyValue [this ^Object o, ^String property]
+       ((keyword property) (bean o)))))
 
