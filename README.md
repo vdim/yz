@@ -33,6 +33,7 @@ YZ[ˈiːzi] is simple (easy) string-based query language for an object model.
 * Updating.
 * Grouping.
 
+
 ## Restriction
 Project is in alpha stage and it is just prototype, not for production use.
 
@@ -54,4 +55,5 @@ License along with YZ.  If not, see [http://www.gnu.org/licenses/] (http://www.g
 
 ## Links
 * [Installation] (https://github.com/vdim/yz/blob/master/doc/INSTALLATION.md)
+* [Testing and benchmarking] (https://github.com/vdim/yz/blob/master/doc/TESTING.md)
 
