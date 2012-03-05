@@ -33,6 +33,10 @@ YZ[ˈiːzi] is simple (easy) string-based query language for an object model.
 * Updating.
 * Grouping.
 
+#### Supported backends:
+
+* Java collections.
+* JPA.
 
 ## Restriction
 Project is in alpha stage and it is just prototype, not for production use.
