@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.yz-factory
   ^{:author "Vyacheslav Dimitrov"
     :doc "Factory for creating different types of the ElementManager 
-         (see code from the core.clj file.).
+         (see code from the core.clj file) and the QueryYZ instances.
 
          At the present moment factory supports the following ElementManagers:
           - JPA's ElementManager (method createJPAElementManager). For getting it
@@ -37,9 +37,10 @@
     (javax.persistence EntityManager)
     (javax.persistence.criteria CriteriaQuery CriteriaBuilder Predicate Root)
     (ru.petrsu.nest.yz.core ElementManager ExtendedElementManager)
+    (ru.petrsu.nest.yz QueryYZ)
     (java.util List Collection)
     (clojure.lang PersistentArrayMap PersistentVector Keyword))
-  (:gen-class :name ru.petrsu.nest.yz.ElementManagerFactory
+  (:gen-class :name ru.petrsu.nest.yz.YZFactory
               :methods [;; JPA's element manager.
                         ^{:static true} 
                         [createJPAElementManager 
@@ -52,11 +53,21 @@
                          [java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]
 
-                        ;; Collection's element manager (version with collection and classes).
+                       ;; Collection's element manager (version with collection and classes).
                         ^{:static true} 
                         [createCollectionElementManager 
                          [java.util.Collection java.util.Collection]
-                         ru.petrsu.nest.yz.core.ElementManager]]))
+                         ru.petrsu.nest.yz.core.ElementManager]
+
+                        ;; Creates QueryYZ for working with collection.
+                        ^{:static true} 
+                        [createCollectionQueryYZ [java.util.Collection]
+                         ru.petrsu.nest.yz.QueryYZ]
+
+                        ;; Creates QueryYZ for working with collection.
+                        ^{:static true} 
+                        [createCollectionQueryYZ [java.util.Collection java.util.Collection]
+                         ru.petrsu.nest.yz.QueryYZ]]))
 
 
 (defn- contains-f?
@@ -178,3 +189,12 @@
    (c-em coll nil))
   ([^Collection coll, ^Collection classes]
    (c-em coll classes)))
+
+
+(defn -createCollectionQueryYZ
+  "Returns instance of the QueryYZ which works with collection."
+  ([^java.util.Collection coll]
+   (ru.petrsu.nest.yz.QueryYZ. (c-em coll nil)))
+  ([^java.util.Collection coll ^java.util.Collection classes]
+   (ru.petrsu.nest.yz.QueryYZ. (c-em coll classes))))
+

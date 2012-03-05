@@ -22,7 +22,6 @@
     :doc "Wrapper for using the YZ from Java code."}
   (:require
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
-  (:use ru.petrsu.nest.yz.yz-factory)
   (:import
     (javax.persistence EntityManager)
     (ru.petrsu.nest.yz.core ElementManager))
@@ -34,17 +33,7 @@
                         [getResult [String] java.util.Map]
                         [getStructuredResult [] java.util.List]
                         [getError [] String]
-                        [getColumnsName [] java.util.List]
-
-                        ^{:static true} 
-                        [createCollectionQueryYZ
-                         [java.util.Collection]
-                         ru.petrsu.nest.yz.QueryYZ]
-
-                        ^{:static true} 
-                        [createCollectionQueryYZ
-                         [java.util.Collection java.util.Collection]
-                         ru.petrsu.nest.yz.QueryYZ]]
+                        [getColumnsName [] java.util.List]]
               :state state
               :init init))
 
@@ -128,12 +117,3 @@
     (if (or (not= (count rows) 1) (not= (count (nth rows 0)) 1))
       (throw (Exception. "Result is not single."))
       (nth (nth rows 0) 0))))
-
-
-(defn -createCollectionQueryYZ
-  "Returns instance of the QueryYZ 
-  which works with collection."
-  ([^java.util.Collection coll]
-   (ru.petrsu.nest.yz.QueryYZ. (c-em coll nil)))
-  ([^java.util.Collection coll ^java.util.Collection classes]
-   (ru.petrsu.nest.yz.QueryYZ. (c-em coll classes))))
