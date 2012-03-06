@@ -170,9 +170,7 @@
   "Returns implementation of the ElementManager for collections."
   [^Collection coll, ^Collection classes]
   (let [cls (if (or (nil? classes) (empty? classes))
-              (if (empty? coll)
-                nil 
-                [(class (nth coll 0))])
+              (and (seq coll) [(class (nth coll 0))])
               classes)]
     (reify ElementManager
       (^Collection getElems [_ ^Class _] coll)
@@ -180,7 +178,8 @@
       
       ;; Value is got from bean of the object o.
       (^Object getPropertyValue [this ^Object o, ^String property]
-         ((keyword property) (bean o))))))
+         (let [b (if (map? o) o (bean o))]
+           ((keyword property) b))))))
 
 
 (defn ^EntityManager -createCollectionElementManager
