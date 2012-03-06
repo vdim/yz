@@ -49,12 +49,10 @@ Some notes about benchmark's system:
 2. Supported languages: YZ, HQL.
 3. Supported databases: H2, Derby, HSQLDB.
 4. Supported measurement: 
-    * time (difference between system time before execution query and after execution query), 
-    * memory (amount of memory after execution query and running gc due to [java.lang.management.MemoryMXBean/getHeapMemoryUsage/getUsed] 
-(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/MemoryUsage.html#getUsed()/)), 
-    * thread cpu time (due to [java.lang.management.ThreadMXBean/getCurrentThreadCpuTime][cpu]), 
-    * thread user time (due to [java.lang.management.ThreadMXBean/getCurrentThreadUserTime] 
-(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadUserTime()/)).
+    * time (difference between system time before execution query and after execution query)
+    * memory (amount of memory after execution query and running gc, due to [java.lang.management.MemoryMXBean/getHeapMemoryUsage/getUsed][memory]) 
+    * thread cpu time (due to [java.lang.management.ThreadMXBean/getCurrentThreadCpuTime][cpu])
+    * thread user time (due to [java.lang.management.ThreadMXBean/getCurrentThreadUserTime][user]).
 
 5. We compare queries from vector ru.petrsu.nest.yz.benchmark.yz/individual-queries-jpa 
 ([source] (https://github.com/vdim/yz/blob/master/test/src/ru/petrsu/nest/yz/benchmark/yz.clj)) and 
@@ -78,4 +76,6 @@ Example of a scenario may be something like this:
 So you should get file 1.txt with result of benchmark YZ and HQL simple selection with simple filtering query 
 for H2 database with 10000 and 20000 amount of elements.
 
-[cpu]: http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime() "cpu"
+[memory]: http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/MemoryUsage.html#getUsed()
+[cpu]: http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime() "Cpu method."
+[user]: http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadUserTime() "User method."
