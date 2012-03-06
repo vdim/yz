@@ -51,11 +51,11 @@ Some notes about benchmark's system:
 4. Supported measurement: 
     * time (difference between system time before execution query and after execution query), 
     * memory (amount of memory after execution query and running gc due to [java.lang.management.MemoryMXBean/getHeapMemoryUsage/getUsed] 
-("http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/MemoryUsage.html#getUsed()")), 
+(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/MemoryUsage.html#getUsed()/)), 
     * thread cpu time (due to [java.lang.management.ThreadMXBean/getCurrentThreadCpuTime]
-("http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime()")), 
+(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime()/)), 
     * thread user time (due to [java.lang.management.ThreadMXBean/getCurrentThreadUserTime] 
-("http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadUserTime()")).
+(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadUserTime()/)).
 
 5. We compare queries from vector ru.petrsu.nest.yz.benchmark.yz/individual-queries-jpa 
 ([source] (https://github.com/vdim/yz/blob/master/test/src/ru/petrsu/nest/yz/benchmark/yz.clj)) and 
@@ -74,7 +74,7 @@ Example of a scenario may be something like this:
 <pre><code>$ ./bench_indq.sh -l yz -t hdd -d h2 -n "10000 20000" -q 1</code></pre>
 
 4. Benchmark HQL language for simple selection with simple filtering (1 query (started with 0)):
-<pre><code>$ ./bench_indq.sh -l yz -t hdd -d h2 -n "10000 20000" -q 1</code></pre>
+<pre><code>$ ./bench_indq.sh -l hql -t hdd -d h2 -n "10000 20000" -q 1</code></pre>
 
 So you should get file 1.txt with result of benchmark YZ and HQL simple selection with simple filtering query 
 for H2 database with 10000 and 20000 amount of elements.
