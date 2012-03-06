@@ -50,13 +50,12 @@ Some notes about benchmark's system:
 3. Supported databases: H2, Derby, HSQLDB.
 4. Supported measurement: 
     * time (difference between system time before execution query and after execution query), 
-    * memory (amount of memory after execution query and running gc due to 
-[java.lang.management.MemoryMXBean/getHeapMemoryUsage/getUsed] 
-(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/MemoryUsage.html#getUsed())), 
+    * memory (amount of memory after execution query and running gc due to [java.lang.management.MemoryMXBean/getHeapMemoryUsage/getUsed] 
+("http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/MemoryUsage.html#getUsed()")), 
     * thread cpu time (due to [java.lang.management.ThreadMXBean/getCurrentThreadCpuTime]
-(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime())), 
+("http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime()")), 
     * thread user time (due to [java.lang.management.ThreadMXBean/getCurrentThreadUserTime] 
-(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadUserTime())).
+("http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadUserTime()")).
 
 5. We compare queries from vector ru.petrsu.nest.yz.benchmark.yz/individual-queries-jpa 
 ([source] (https://github.com/vdim/yz/blob/master/test/src/ru/petrsu/nest/yz/benchmark/yz.clj)) and 
