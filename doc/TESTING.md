@@ -19,13 +19,17 @@ $ cd yz/test
 <pre><code>$ lein test </code></pre>
 
 Some comments:
+
 1. We use model from the Nest project.
+
 2. The idea of tests is:
     * Creates specified model with fixed objects, its links and properties (usually separated model is used
 for each test's namespace). 
     * Runs specified queries.
     * Checks whether result of a query corresponds to a real.
+
 3. So changing test models may lead to incorrect tests.
+
 4. It is no concern of the ru.petrsu.nest.yz.test-parsing/qlist vector. 
 You may add to this vector any queries without any troubles.
 
@@ -35,6 +39,7 @@ See script [bench_indq.sh] (https://github.com/vdim/yz/blob/master/test/bench_in
 <pre><code>$ ./bench_indq.sh -h  </code></pre>
 
 Some notes about benchmark's system:
+
 1. Model is generated. See script cr_db.sh:
 <pre><code>$ ./cr_db.sh -h </code></pre>
 
@@ -52,7 +57,9 @@ vector ru.petrsu.nest.yz.benchmark.hql/individual-queries
 each other.
 
 Example of a scenario may be something like this:
+
 1. Execute first three steps from testing section.
+
 2. Generate H2 databases with 10000 and 20000 elements:
 <pre><code>$ ./cr_db.sh -d h2 -n "10000 20000" </code></pre>
 
