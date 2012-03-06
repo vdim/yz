@@ -73,10 +73,9 @@
 
 
 (defmacro thread-memory
-  "Returns vector where first element is value of difference
-  between used memory (in KBytes) before evaluation of 
-  expression and after it and second element is result of 
-  expr's evaluation."
+  "Returns vector where first element is used memory (in KBytes)
+  after evaluation expression and running gc and second 
+  element is result of expr's evaluation."
   [expr]
   `(let [ret# ~expr 
          _# (System/gc)
