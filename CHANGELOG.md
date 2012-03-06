@@ -1,5 +1,7 @@
 ## 0.0.1-alpha12 / ?.?.2012
 
+* Replaced ElementManagerFactory by YZFactory which includes methods for getting different ElementManagers and instance QueryYZs.
+* Added support queries through Java collection (CollectionElementManager).
 * Added support parameterized queries: floor#(number=$1)
 * Added support ALL modificator for collections into predicates: building#(∀floor.number=1)
 * Added support definition an exact type of class: ni^
