@@ -52,8 +52,7 @@ Some notes about benchmark's system:
     * time (difference between system time before execution query and after execution query), 
     * memory (amount of memory after execution query and running gc due to [java.lang.management.MemoryMXBean/getHeapMemoryUsage/getUsed] 
 (http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/MemoryUsage.html#getUsed()/)), 
-    * thread cpu time (due to [java.lang.management.ThreadMXBean/getCurrentThreadCpuTime]
-(http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime()/)), 
+    * thread cpu time (due to [java.lang.management.ThreadMXBean/getCurrentThreadCpuTime][cpu]), 
     * thread user time (due to [java.lang.management.ThreadMXBean/getCurrentThreadUserTime] 
 (http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadUserTime()/)).
 
@@ -78,3 +77,5 @@ Example of a scenario may be something like this:
 
 So you should get file 1.txt with result of benchmark YZ and HQL simple selection with simple filtering query 
 for H2 database with 10000 and 20000 amount of elements.
+
+[cpu]: http://docs.oracle.com/javase/1.5.0/docs/api/java/lang/management/ThreadMXBean.html#getCurrentThreadCpuTime() "cpu"
