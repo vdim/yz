@@ -21,7 +21,8 @@ $ cd yz/test
 
 Some comments:
 
-1. We use model from the Nest project.
+1. The SON model (authors are Kryshen Mikhail and Alexander Kolosov) from Nest project is used:
+<img src="https://github.com/vdim/yz/blob/master/doc/son.png" alt="Son model"/>
 
 2. The idea of tests is:
     * Creates specified model with fixed objects, its links and properties (usually separated model is used
