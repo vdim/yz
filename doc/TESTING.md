@@ -30,7 +30,8 @@ for each test's namespace).
 
 3. So changing test models may lead to incorrect tests.
 
-4. It is no concern of the ru.petrsu.nest.yz.test-parsing/qlist vector. 
+4. It is no concern of the ru.petrsu.nest.yz.test-parsing/qlist 
+([source] (https://github.com/vdim/yz/blob/master/test/src/ru/petrsu/nest/yz/test_parsing.clj)) vector. 
 You may add to this vector any queries without any troubles.
 
 # Benchmarking
@@ -40,7 +41,7 @@ See script [bench_indq.sh] (https://github.com/vdim/yz/blob/master/test/bench_in
 
 Some notes about benchmark's system:
 
-1. Model is generated. See script cr_db.sh:
+1. Model is generated. See script [cr_db.sh] (https://github.com/vdim/yz/blob/master/test/cr_db.sh):
 <pre><code>$ ./cr_db.sh -h </code></pre>
 
 2. Amount of elements into model is specified.
