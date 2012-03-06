@@ -1,5 +1,5 @@
 # About
-YZ[ˈiːzi] is simple (easy) string-based query language for an object model. 
+YZ[ˈiːzi] is simple (easy) string-based query language for a java object model. 
 
 #### What does YZ include?
 
@@ -60,4 +60,5 @@ License along with YZ.  If not, see [http://www.gnu.org/licenses/] (http://www.g
 ## Links
 * [Installation] (https://github.com/vdim/yz/blob/master/doc/INSTALLATION.md)
 * [Testing and benchmarking] (https://github.com/vdim/yz/blob/master/doc/TESTING.md)
+* [Usage] (https://github.com/vdim/yz/blob/master/doc/USAGE.md)
 
