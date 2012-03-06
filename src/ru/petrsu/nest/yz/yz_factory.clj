@@ -67,7 +67,12 @@
                         ;; Creates QueryYZ for working with collection.
                         ^{:static true} 
                         [createCollectionQueryYZ [java.util.Collection java.util.Collection]
-                         ru.petrsu.nest.yz.QueryYZ]]))
+                         ru.petrsu.nest.yz.QueryYZ]
+                        
+                        ;; Creates MOM from specified file.
+                        ^{:static true} 
+                        [createMomFromFile [String] clojure.lang.PersistentHashMap]
+                        ]))
 
 
 (defn- contains-f?
@@ -197,3 +202,8 @@
   ([^java.util.Collection coll ^java.util.Collection classes]
    (ru.petrsu.nest.yz.QueryYZ. (c-em coll classes))))
 
+
+(defn -createMomFromFile
+  "Creates MOM from specified name of file."
+  [^String f-name]
+  (hu/mom-from-file f-name))
