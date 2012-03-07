@@ -81,6 +81,7 @@ public class YZTest {
 	</code></pre>
 
 2. Add yz to dependencies (file project.clj):
+
 ```clojure
 (defproject yztest "1.0.0-SNAPSHOT"
     :description "Test application."
