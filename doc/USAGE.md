@@ -67,6 +67,7 @@ You can use YZ from Clojure something like this:
 ## HelloWorld tutotial
 
 1. Create new project (lein is used):
+	<pre><code>
 	vdim@laptop:~/$ lein new yztest
 
 	Created new project in: /home/vdim/yztest
@@ -74,16 +75,18 @@ You can use YZ from Clojure something like this:
 	vdim@laptop:~/yztest$ ls
 	project.clj  README  src  test
 	vdim@laptop:~/yztest$
+	</code></pre>
 
 2. Add yz to dependencies (file project.clj):
 
+	<pre><code>
 	(defproject yztest "1.0.0-SNAPSHOT"
 	    :description "Test application."
   	    :dependencies [[org.clojure/clojure "1.3.0"]
                 	   [ru.petrsu.nest/yz "0.0.1-alpha11"]])
 
 3. Download dependencies:
-
+	<pre><code>
 	vdim@laptop:~/yztest$ lein deps
 
 	Some long output...
@@ -91,9 +94,11 @@ You can use YZ from Clojure something like this:
 	vdim@laptop:~/yztest$ ls lib/
 	algo.monads-0.1.0.jar  clojure-1.3.0.jar  hibernate-jpa-2.0-api-1.0.1.Final.jar  tools.macro-0.1.0.jar  yz-0.0.1-alpha11.jar
 	vdim@laptop:~/yztest$
+	</code></pre>
 
 4. Check whether YZ works:
 
+	<pre><code>
 	vdim@laptop:~/yztest$ lein repl
 	REPL started; server listening on localhost:49333.
 	user=> (use 'ru.petrsu.nest.yz.core)
@@ -105,4 +110,5 @@ You can use YZ from Clojure something like this:
 	user=> (pquery "string" s-em)
 	#ru.petrsu.nest.yz.core.Result{:result [["first" [] "second" [] "" []]], :error nil, :columns ("String"), :rows (["first"] ["second"] [""])}
 	user=>
+	</code></pre>
 
