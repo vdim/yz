@@ -18,7 +18,7 @@ You can use YZ from Clojure something like this:
 	    (:rows (yzc/pquery "string#(empty=false)" s-em)))
 
 
-## Using from REPL of the YZ test project:
+## Using from REPL of the YZ test project
 
 	vdim@laptop:~/yz$ cd test
 	vdim@laptop:~/yz/test$ lein repl
@@ -64,7 +64,7 @@ You can use YZ from Clojure something like this:
 	}
 
 
-## HelloWorld tutotial.
+## HelloWorld tutotial
 
 1. Create new project (lein is used):
 	vdim@laptop:~/$ lein new yztest
@@ -76,12 +76,14 @@ You can use YZ from Clojure something like this:
 	vdim@laptop:~/yztest$
 
 2. Add yz to dependencies (file project.clj):
+
 	(defproject yztest "1.0.0-SNAPSHOT"
 	    :description "Test application."
   	    :dependencies [[org.clojure/clojure "1.3.0"]
                 	   [ru.petrsu.nest/yz "0.0.1-alpha11"]])
 
 3. Download dependencies:
+
 	vdim@laptop:~/yztest$ lein deps
 
 	Some long output...
@@ -91,6 +93,7 @@ You can use YZ from Clojure something like this:
 	vdim@laptop:~/yztest$
 
 4. Check whether YZ works:
+
 	vdim@laptop:~/yztest$ lein repl
 	REPL started; server listening on localhost:49333.
 	user=> (use 'ru.petrsu.nest.yz.core)
@@ -102,3 +105,4 @@ You can use YZ from Clojure something like this:
 	user=> (pquery "string" s-em)
 	#ru.petrsu.nest.yz.core.Result{:result [["first" [] "second" [] "" []]], :error nil, :columns ("String"), :rows (["first"] ["second"] [""])}
 	user=>
+
