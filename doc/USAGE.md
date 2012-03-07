@@ -81,14 +81,12 @@ public class YZTest {
 	</code></pre>
 
 2. Add yz to dependencies (file project.clj):
-
 ```clojure
 (defproject yztest "1.0.0-SNAPSHOT"
     :description "Test application."
     :dependencies [[org.clojure/clojure "1.3.0"]
                    [ru.petrsu.nest/yz "0.0.1-alpha11"]])
 ```
-
 3. Download dependencies:
 	<pre><code>
 	vdim@laptop:~/yztest$ lein deps
