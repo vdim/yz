@@ -4,18 +4,19 @@ Examples are built for queries for collection.
 ## Clojure code
 You can use YZ from Clojure something like this:
 
-	(ns some.ns
-	  (:require (ru.petrsu.nest.yz [core :as yzc] [yz-factory :as yzf])))
+```clojure
+(ns some.ns
+    (:require (ru.petrsu.nest.yz [core :as yzc] [yz-factory :as yzf])))
 
-	(def s-em 
-	    "Defines collection element manager with some
-	    list of strings."
-	    (yzf/c-em ["first" "second" ""] [String]))
+(def s-em 
+    "Defines collection element manager with list some of strings."
+    (yzf/c-em ["first" "second" ""] [String]))
 
-	(defn f
-	    "Returns list of non-empty strings."
-	    []
-	    (:rows (yzc/pquery "string#(empty=false)" s-em)))
+(defn f
+  "Returns list of non-empty strings."
+  []
+  (:rows (yzc/pquery "string#(empty=false)" s-em)))
+```
 
 
 ## Using from REPL of the YZ test project
