@@ -31,14 +31,6 @@ You can use YZ from Clojure something like this:
 	ru.petrsu.nest.yz.init=>
 	ru.petrsu.nest.yz.init=> (pquery "string" s-em)
 	#ru.petrsu.nest.yz.core.Result{:result [["first" [] "second" [] "" []]], :error nil, :columns ("String"), :rows (["first"] ["second"] [""])}
-	ru.petrsu.nest.yz.init=>
-	ru.petrsu.nest.yz.init=> (pquery "string#(empty=false)" s-em)
-	#ru.petrsu.nest.yz.core.Result{:result [["first" [] "second" []]], :error nil, :columns ("String"), :rows (["first"] ["second"])}
-	ru.petrsu.nest.yz.init=>
-	ru.petrsu.nest.yz.init=> (pquery "@(count `string')" s-em)
-	#ru.petrsu.nest.yz.core.Result{:result [[3 []]], :error nil, :columns ("Long"), :rows ([3])}
-	ru.petrsu.nest.yz.init=>
-
 
 ## Java code
 
@@ -69,7 +61,7 @@ public class YZTest {
 
 ## HelloWorld tutotial
 
-1. Create new project (lein is used):
+* Create new project (lein is used):
 	<pre><code>
 	vdim@laptop:~/$ lein new yztest
 
@@ -80,7 +72,7 @@ public class YZTest {
 	vdim@laptop:~/yztest$
 	</code></pre>
 
-2. Add yz to dependencies (file project.clj):
+* Add yz to dependencies (file project.clj):
 
 ```clojure
 (defproject yztest "1.0.0-SNAPSHOT"
@@ -88,7 +80,7 @@ public class YZTest {
     :dependencies [[org.clojure/clojure "1.3.0"]
                    [ru.petrsu.nest/yz "0.0.1-alpha11"]])
 ```
-3. Download dependencies:
+* Download dependencies:
 	<pre><code>
 	vdim@laptop:~/yztest$ lein deps
 
@@ -99,7 +91,7 @@ public class YZTest {
 	vdim@laptop:~/yztest$
 	</code></pre>
 
-4. Check whether YZ works:
+* Check whether YZ works:
 
 	<pre><code>
 	vdim@laptop:~/yztest$ lein repl
