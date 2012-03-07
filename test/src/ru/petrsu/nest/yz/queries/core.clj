@@ -57,7 +57,7 @@
     (reify ElementManager
       (^java.util.Collection getElems [_ ^Class claz] 
            (filter #(instance? claz %) elems))
-      (getClasses [_] (throw (UnsupportedOperationException. "Not supported.")))
+      (getMom [_] (throw (UnsupportedOperationException. "Not supported.")))
 
       ;; Value is got from bean of the object o.
       (^Object getPropertyValue [this ^Object o, ^String property]

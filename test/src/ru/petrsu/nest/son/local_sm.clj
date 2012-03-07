@@ -36,7 +36,8 @@
   (reify ElementManager
     (^java.util.Collection getElems [_ ^Class claz] 
        (ps/instances-of store claz))
-    (getClasses [_] ())
+    (getMom [_] 
+       (throw (UnsupportedOperationException. "Not supported yet.")))
     
     (^Object getPropertyValue [this ^Object o, ^String property]
        (if (= property "id")

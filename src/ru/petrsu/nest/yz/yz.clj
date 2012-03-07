@@ -55,7 +55,7 @@
          :mom (if (nil? @*mom*) 
                 (reset! *mom* 
                         (if (nil? f-mom)
-                          (hu/gen-mom (.getClasses em) {})
+                          (.getMom em)
                           (hu/mom-from-file f-mom)))
                 @*mom*)
          :res nil}))

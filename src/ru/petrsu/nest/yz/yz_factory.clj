@@ -39,7 +39,7 @@
     (ru.petrsu.nest.yz.core ElementManager ExtendedElementManager)
     (ru.petrsu.nest.yz QueryYZ)
     (java.util List Collection)
-    (clojure.lang PersistentArrayMap PersistentVector Keyword))
+    (clojure.lang APersistentMap PersistentVector Keyword PersistentArrayMap))
   (:gen-class :name ru.petrsu.nest.yz.YZFactory
               :methods [;; JPA's element manager.
                         ^{:static true} 
@@ -71,7 +71,7 @@
                         
                         ;; Creates MOM from specified file.
                         ^{:static true} 
-                        [createMomFromFile [String] clojure.lang.PersistentHashMap]
+                        [createMomFromFile [String] clojure.lang.APersistentMap]
                         ]))
 
 
@@ -138,9 +138,12 @@
   (^java.util.Collection getElems [this ^Class claz] 
      (.getElems this claz nil))
 
-  ;; Implementation getClasses's method. Gets all classes from JPA's metamodel.
-  (getClasses [_] (map #(.getJavaType %) 
-                       (.. em getEntityManagerFactory getMetamodel getEntities)))
+  ;; Implementation getMom's method. Gets all classes from JPA's metamodel and
+  ;; then gerenates MOM.
+  (getMom [_] (hu/gen-mom 
+                (map #(.getJavaType %) 
+                     (.. em getEntityManagerFactory getMetamodel getEntities))
+                nil))
  
   ;; Value is got from bean of the object o.
   (^Object getPropertyValue [this ^Object o, ^String property]
@@ -179,7 +182,7 @@
               classes)]
     (reify ElementManager
       (^Collection getElems [_ ^Class _] coll)
-      (^Collection getClasses [_] cls)
+      (^APersistentMap getMom [_] (hu/gen-mom cls nil))
       
       ;; Value is got from bean of the object o.
       (^Object getPropertyValue [this ^Object o, ^String property]

@@ -41,13 +41,12 @@
             2. Finds elements (device) which are connected with root elements (building) due to the MOM.
             3. Filters device due to restrictions.
          
-         getClasses returns collection of classes which are entities of the model.
-         This method is needed for generating the MOM (Map Of the Model).
+         getMom returns the MOM (Map Of the Model).
          
          getPropertyValue takes an object and name of a property and returns
          a value of this property."}
   (^java.util.Collection getElems [^Class claz])
-  (^java.util.Collection getClasses [])
+  (^clojure.lang.APersistentMap getMom [])
   (^Object getPropertyValue [^Object o, ^String property]))
 
 
@@ -510,14 +509,16 @@
     :result - a result of a query
     :columns - vector with column's names.
     :rows - rows of the result of a query."
-  [^String query ^PersistentArrayMap mom ^ElementManager em]
-  (if (empty? query)
-    (Result. [[]] nil [] ())
-    (let [parse-res (try
-                      (p/parse query mom)
-                      (catch Throwable e (.getMessage e)))
-          parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)]
-      (get-qr parse-res mom em))))
+  ([^String query ^ElementManager em]
+   (pquery query (.getMom em) em))
+  ([^String query ^PersistentArrayMap mom ^ElementManager em]
+   (if (empty? query)
+     (Result. [[]] nil [] ())
+     (let [parse-res (try
+                       (p/parse query mom)
+                       (catch Throwable e (.getMessage e)))
+           parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)]
+       (get-qr parse-res mom em)))))
 
 
 (defmacro defq
