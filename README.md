@@ -31,11 +31,11 @@ YZ[ˈiːzi] is simple (easy) string-based query language for a java object model
 
 * Definitions (schema, new classes, instances of classes, functions and so on).
 * Updating.
-* Grouping.
 
 #### Supported backends:
 
 * Java collections.
+* Java maps.
 * JPA.
 
 ## Restriction
