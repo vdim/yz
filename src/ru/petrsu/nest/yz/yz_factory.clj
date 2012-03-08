@@ -182,7 +182,7 @@
               classes)
         mom (hu/gen-mom cls nil)]
     (reify ElementManager
-      (^Collection getElems [_ _] coll)
+      (^Collection getElems [_ ^Class _] coll)
       (^APersistentMap getMom [_] mom)
       
       ;; Value is got from bean of the object o.
@@ -211,3 +211,24 @@
   "Creates MOM from specified name of file."
   [^String f-name]
   (hu/mom-from-file f-name))
+
+
+(defn find-related-colls
+  "For specified collection of some elements and class of 
+  this elements finds related collections which
+  elements have class from classes."
+  [^Collection coll main-cl ^Collection classes]
+  (let [classes (remove #(= main-cl %) classes)
+        em (c-em coll (conj classes main-cl))
+        cl-s (cond (string? main-cl) main-cl 
+                   (class? main-cl) (.getSimpleName main-cl)
+                   :else (throw (Exception. "Unexpected type of main-cl. It must be String or Class.")))
+        q (str cl-s " (%s)")]
+    (map #(let [rq (yz/pquery (format q (.getSimpleName %)) em)
+                error (:error rq)]
+            (if error
+              (throw (Exception. error))
+              (distinct (remove nil? (map (fn [row] 
+                                            (try (nth row 1) (catch Exception _ nil))) 
+                                          (:rows rq))))))
+         classes)))
