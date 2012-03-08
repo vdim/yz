@@ -179,10 +179,11 @@
   [^Collection coll, ^Collection classes]
   (let [cls (if (or (nil? classes) (empty? classes))
               (and (seq coll) [(class (nth coll 0))])
-              classes)]
+              classes)
+        mom (hu/gen-mom cls nil)]
     (reify ElementManager
-      (^Collection getElems [_ ^Class _] coll)
-      (^APersistentMap getMom [_] (hu/gen-mom cls nil))
+      (^Collection getElems [_ _] coll)
+      (^APersistentMap getMom [_] mom)
       
       ;; Value is got from bean of the object o.
       (^Object getPropertyValue [this ^Object o, ^String property]
