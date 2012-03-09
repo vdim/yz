@@ -232,13 +232,10 @@
   "For specified collection of some elements and class of 
   this elements finds related collections which
   elements have class from classes."
-  [^Collection coll main-cl ^Collection classes]
+  [^Collection coll ^Class main-cl ^Collection classes]
   (let [classes (remove #(= main-cl %) classes)
         em (c-em coll (conj classes main-cl))
-        cl-s (cond (string? main-cl) main-cl 
-                   (class? main-cl) (.getSimpleName main-cl)
-                   :else (throw (Exception. "Unexpected type of main-cl. It must be String or Class.")))
-        q (str cl-s " (%s)")]
+        q (str (.getSimpleName main-cl) " (%s)")]
     (reduce #(let [rq (yz/pquery (format q (.getSimpleName %2)) em)
                    error (:error rq)]
                (if error
@@ -248,7 +245,6 @@
                    (distinct (remove nil? (map (fn [row] 
                                                  (try (nth row 1) (catch Exception _ nil))) 
                                                (:rows rq)))))))
-
             {main-cl coll}
             classes)))
 
