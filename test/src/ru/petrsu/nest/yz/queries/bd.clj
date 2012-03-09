@@ -33,6 +33,8 @@
 
 (def r101_f1_b1 (doto (Room.) (.setNumber "101")))
 (def r102_f1_b1 (doto (Room.) (.setNumber "102")))
+(def r201_f2_b1 (doto (Room.) (.setNumber "201")))
+(def r202_f2_b1 (doto (Room.) (.setNumber "202")))
 
 (def f1_b1 (doto (Floor.) 
              (.setNumber (Integer. 1))
@@ -41,18 +43,19 @@
 
 (def f2_b1 (doto (Floor.) 
              (.setNumber (Integer. 2))
-             (.addRoom (doto (Room.) (.setNumber "201"))) 
-             (.addRoom (doto (Room.) (.setNumber "202")))))
+             (.addRoom r201_f2_b1) 
+             (.addRoom r202_f2_b1)))
 
 (def f3_b1 (doto (Floor.) 
              (.setNumber (Integer. 3))))
 
 
 (def r1001_f1_b2 (doto (Room.) (.setNumber "1001")))
+(def r1002_f1_b2 (doto (Room.) (.setNumber "1002")))
 (def f1_b2 (doto (Floor.) 
              (.setNumber (Integer. 1))
              (.addRoom r1001_f1_b2) 
-             (.addRoom (doto (Room.) (.setNumber "1002")))))
+             (.addRoom r1002_f1_b2)))
 
 (def b1 (doto (Building.) (.setName "MB") (.addFloor f1_b1) (.addFloor f2_b1) (.addFloor f3_b1)))
 (def b2 (doto (Building.) (.setName "TK") (.addFloor f1_b2)))
