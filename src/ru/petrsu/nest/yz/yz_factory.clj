@@ -47,15 +47,27 @@
                          [javax.persistence.EntityManager] 
                          ru.petrsu.nest.yz.core.ElementManager]
 
-                        ;; Collection's element manager (version with collection).
+                        ;; Single collection ElementManager.
                         ^{:static true} 
-                        [createCollectionElementManager 
+                        [createSCElementManager 
                          [java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]
 
-                       ;; Collection's element manager (version with collection and classes).
+                        ;; Single collection ElementManager.
                         ^{:static true} 
-                        [createCollectionElementManager 
+                        [createSCElementManager 
+                         [java.util.Collection java.util.Collection]
+                         ru.petrsu.nest.yz.core.ElementManager]
+                        
+                        ;; Multiple collection ElementManager.
+                        ^{:static true} 
+                        [createMCElementManager 
+                         [java.util.Map]
+                         ru.petrsu.nest.yz.core.ElementManager]
+                        
+                        ;; Multiple collection ElementManager.
+                        ^{:static true} 
+                        [createMCElementManager 
                          [java.util.Collection java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]
 
@@ -191,8 +203,11 @@
            ((keyword property) b))))))
 
 
-(defn ^EntityManager -createCollectionElementManager
-  "Collection's ElementManager."
+(defn ^EntityManager -createSCElementManager
+  "Single Collection ElementManager. User defines
+  single collection with some elements and list 
+  of model's classes so he can execute query
+  only with respect to elements from this collection."
   ([^Collection coll]
    (c-em coll nil))
   ([^Collection coll, ^Collection classes]
@@ -224,11 +239,57 @@
                    (class? main-cl) (.getSimpleName main-cl)
                    :else (throw (Exception. "Unexpected type of main-cl. It must be String or Class.")))
         q (str cl-s " (%s)")]
-    (map #(let [rq (yz/pquery (format q (.getSimpleName %)) em)
-                error (:error rq)]
-            (if error
-              (throw (Exception. error))
-              (distinct (remove nil? (map (fn [row] 
-                                            (try (nth row 1) (catch Exception _ nil))) 
-                                          (:rows rq))))))
-         classes)))
+    (reduce #(let [rq (yz/pquery (format q (.getSimpleName %2)) em)
+                   error (:error rq)]
+               (if error
+                 (throw (Exception. error))
+                 (assoc 
+                   %1 %2 
+                   (distinct (remove nil? (map (fn [row] 
+                                                 (try (nth row 1) (catch Exception _ nil))) 
+                                               (:rows rq)))))))
+
+            {main-cl coll}
+            classes)))
+
+
+(defn ^EntityManager mc-em
+  "Returns implementation of the 
+  ElementManager for multiple collections."
+  [coll-or-elems, ^Collection classes]
+  (let [classes (if (map? coll-or-elems) 
+                  (keys coll-or-elems)
+                  classes)
+        mom (hu/gen-mom classes nil)
+        ; Maps class to collection of elements with this class.
+        elems (cond (map? coll-or-elems) coll-or-elems
+                    (coll? coll-or-elems)
+                    (if (empty? coll-or-elems)
+                      (reduce #(assoc %1 %2 []) {} classes)
+                      (find-related-colls coll-or-elems (class (nth coll-or-elems 0)) classes))
+                    :else (throw (Exception. "Unexpected type of coll-or-elems. 
+                                             It must be map or collection.")))]
+    (reify ElementManager
+      (^Collection getElems [_ ^Class cl] (get elems cl))
+      (^APersistentMap getMom [_] mom)
+      
+      ;; If o is map then value of key "property" is returned 
+      ;; otherwise value is got from bean of the object o.
+      (^Object getPropertyValue [this ^Object o, ^String property]
+         (let [b (if (map? o) o (bean o))]
+           ((keyword property) b))))))
+
+
+(defn ^EntityManager -createMCElementManager
+  "Multiple collection ElementManager. 
+  First version: 
+    elems is map where key is class and value is collection of
+    elements with this class.
+  Second version: 
+    coll is collection of elements and classes is 
+    list of model's classes. elems (see desctiption above) 
+    is built automatically."
+  ([^java.util.Map elems]
+   (mc-em elems nil))
+  ([^Collection coll, ^Collection classes]
+   (mc-em coll classes)))
