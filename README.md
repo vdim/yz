@@ -57,8 +57,8 @@ Lesser General Public License for more details.
 You should have received a copy of the GNU Lesser General Public
 License along with YZ.  If not, see [http://www.gnu.org/licenses/] (http://www.gnu.org/licenses/).
 
-## Links
+## Documentation
 * [Installation] (https://github.com/vdim/yz/blob/master/doc/INSTALLATION.md)
-* [Testing and benchmarking] (https://github.com/vdim/yz/blob/master/doc/TESTING.md)
 * [Usage] (https://github.com/vdim/yz/blob/master/doc/USAGE.md)
+* [Testing and benchmarking] (https://github.com/vdim/yz/blob/master/doc/TESTING.md)
 
