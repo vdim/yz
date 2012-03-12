@@ -67,3 +67,16 @@
            (is (= (f "floor#(building = building#(name=\"SM\"))") [f1_b2]))
            (is (= (f "floor#(description = building)") []))
            (is (tc/eq-colls (f "floor#(room = room#(number~\"^2.*\"))") [f2_b1]))))
+
+(deftest cycling
+         ^{:doc "Tests cycling in queries something like this: 
+                room#(floor = floor#(name=\"SN(\"))"}
+         (let [f #(flatten (tc/rows-query (str "room#(floor = floor#(name=\"" %1 "\"))")))]
+           (is (= (f "(") []))
+           (is (= (f "()") []))
+           (is (= (f ")") []))
+           (is (= (f "SN(") []))
+           (is (= (f "SN()") []))
+           (is (= (f "SN)") []))
+           (is (= (f "SN(sadf)") []))
+           (is (= (f "SN(s(h())d))adf)") []))))

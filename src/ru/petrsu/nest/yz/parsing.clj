@@ -845,16 +845,19 @@
                    
                    (complex [rm (get-info :remainder)
                              newrm (effects 
-                                     (loop [rm- (next rm), ch (first rm), brs 0, newrm []]
+                                     (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
                                        (if (and (= brs 0) (= ch \)))
                                          newrm
                                          (recur (next rm-)
                                                 (first rm-)
-                                                (case ch
-                                                  \( (inc brs)
-                                                  \) (dec brs)
-                                                  brs)
-                                                (conj newrm ch)))))
+                                                (if st
+                                                  brs
+                                                  (case ch
+                                                    \( (inc brs)
+                                                    \) (dec brs)
+                                                    brs))
+                                                (conj newrm ch)
+                                                (if (= \" ch) (not st) st)))))
 
                              rq (effects (try 
                                            (let [rq (do-q newrm)
