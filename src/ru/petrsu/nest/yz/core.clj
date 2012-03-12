@@ -79,7 +79,7 @@
 (def a-mom (atom nil))
 
 
-(declare process-preds process-prop process-func get-objs)
+(declare process-preds process-prop process-func get-objs get-qp get-qr)
 (defn filter-by-preds
   "Gets sequence of objects and vector with predicates and
   returns new sequence of objects which are filtered by this predicates."
@@ -113,7 +113,11 @@
           [f]
           (reduce (fn [s p] 
                     (if (map? p) 
-                      (conj s #(process-preds %1 %2 p))
+                      (let [{:keys [all ids func value]} p
+                            value (cond (keyword? value) (get-qp value) 
+                                        (vector? value) (set (flatten (:result (get-qr value @a-mom @a-em))))
+                                        :else value)]
+                      (conj s #(process-preds %1 %2 all ids func value)))
                       (conj (pop (pop s)) 
                             (if (= p :and)
                               #(and ((peek s) %1 %2) ((peek (pop s)) %1 %2))
@@ -236,7 +240,7 @@
   (nth @p/query-params (dec (Integer/parseInt (name n)))))
 
 
-(declare process-nests, get-rows, run-query, get-qr)
+(declare process-nests, get-rows, run-query)
 (defn- process-func
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
@@ -304,12 +308,8 @@
 
 (defn process-preds
   "Processes restrictions."
-  [m-go, o, pred]
-  (let [{:keys [all ids func value]} pred
-        value (cond (keyword? value) (get-qp value) 
-                    (vector? value) (set (flatten (:result (get-qr value @a-mom @a-em))))
-                    :else value)
-        objs (m-go ids o)]
+  [m-go, o, all ids func value]
+  (let [objs (m-go ids o)]
     (and (seq objs)
          (let [;; If objects from objs are arrays then we must compare two arrays.
                func (let [cl (class (nth objs 0))]
@@ -325,8 +325,7 @@
                        ; If exception is caused then value is returned as nil.
                        (catch Exception e nil))
                ;; Define filter function.
-               f (if all every? some)
-               ]
+               f (if all every? some)]
            (cond (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
                  (set? value) (f #(contains? value %) objs)
                  :else (f #(func % value) objs))))))
