@@ -1527,11 +1527,17 @@
    "building[@(count de:`room')]"
    "building[@(count il:`room')]"
    "building[@(count ie:`room')]"
+
+   ;; Subqueries
+   "floor#(name = room.name)"
+   "floor#(name = room[name])"
+   "floor#(name = room.description)"
+   "floor#(room = room#(name=\"MB\"))"
    ])
 
 
 (def clist
-  "List with queries from qlist and qlis-new"
+  "List with queries from qlist and qlist-new"
   (concat qlist qlist-new))
 
 (def qlist-list
@@ -1584,6 +1590,12 @@
   (map #(str "son (" % ")") clist))
 
 
+(def clist-subqueries
+  ^{:doc "Defines list with queries with the 
+         following structure: occupancy#(name = query from clist)."}
+  (map #(str "occupancy#(name = " % ")") clist))
+
+
 (deftest parse-remainder
          ^{:doc "Checks remainder after parsing for queries in 'qlist' vector.
                 It must be nil for all queries, because qlist contains
@@ -1604,7 +1616,8 @@
            (is (nil? (results clist)))
            (is (nil? (results clist-next-query)))
            (is (nil? (results clist-next-query-clist)))
-           (is (nil? (results clist-nest-query)))))
+           (is (nil? (results clist-nest-query)))
+           (is (nil? (results clist-subqueries)))))
 
 
 
@@ -1640,5 +1653,5 @@
                          (some #(let [e (:error (pquery % mom- mem))]
                                   (if e [e %]))
                                l))]
-           (is (nil? (results clist)))))
-
+           (is (nil? (results clist)))
+           (is (nil? (results clist-subqueries)))))
