@@ -814,13 +814,18 @@
   "Defines value as parameter of query: floor#(number=$1)"
   (conc (lit \$) (rep+ digit)))
 
+
+(def value-as-subq
+  "Defines value as subquery: floor#(name = room.number)"
+  query)
+
 ;; The block "value" has the following BNF:
 ;;    value -> v value'
 ;;    value'-> or v value' | ε
 ;;    v -> v-f v'
 ;;    v'-> and v-f v' | ε
 ;;    v-f -> (value) | some-value
-(declare value)
+(declare value, do-q)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) 
                          (alt (change-pred number :value :number) 
@@ -836,7 +841,31 @@
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)
                    (change-pred value-as-param :value :parameter)
-                   (pfunc-as-param :value))))
+                   (pfunc-as-param :value)
+                   
+                   (complex [rm (get-info :remainder)
+                             newrm (effects 
+                                     (loop [rm- (next rm), ch (first rm), brs 0, newrm []]
+                                       (if (and (= brs 0) (= ch \)))
+                                         newrm
+                                         (recur (next rm-)
+                                                (first rm-)
+                                                (case ch
+                                                  \( (inc brs)
+                                                  \) (dec brs)
+                                                  brs)
+                                                (conj newrm ch)))))
+
+                             rq (effects (try 
+                                           (let [rq (do-q newrm)
+                                                 r (:remainder rq)]
+                                             (when (empty? r) rq))
+                                           (catch Exception e nil)))
+
+                             :when rq
+                             cp (change-pred (effects rq) :value :query)
+                             _ (set-info :remainder (drop (count newrm) rm))
+                             ] cp))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (add-op-to-preds :and))
                         v-prime) emptiness))
@@ -1021,14 +1050,22 @@
            (alt
              nest-query ; Nested query: room (floor)
              (conc delimiter query)))))) ; Next query: room, floor
-            
+
+
+(defn do-q
+  "Takes query and runs query rule with this query."
+  [q]
+  ((query (struct q-representation (seq q) 
+                  empty-res 0 0 [] nil [] 
+                  false empty-pred nil nil nil)) 1))
+
 
 (defn parse+
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
   (do (def mom mom)
     (reset! query-params [])
-    ((query (struct q-representation (seq q) empty-res 0 0 [] nil [] false empty-pred nil nil nil)) 1)))
+    (do-q q)))
 
 
 (defn parse
