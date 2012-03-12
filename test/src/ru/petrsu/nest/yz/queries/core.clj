@@ -225,3 +225,21 @@
     (= structure (transform-q rq))))
 
 
+(defn eq-colls
+  "Equals two collections."
+  [coll1 coll2]
+  (let [s-coll1 (set coll1)
+        s-coll2 (set coll2)]
+    (and
+      (empty? (remove #(contains? s-coll2 %) coll1))
+      (empty? (remove #(contains? s-coll1 %) coll2)))))
+
+
+(defn eq-maps
+  "Equals two maps where value is collection 
+  (collections are equaled due to eq-colls)."
+  [map1 map2]
+  (let [check-map #(reduce (fn [r [k v]] (and r (eq-colls v (get %1 k)))) true %2)]
+    (and
+      (check-map map1 map2)
+      (check-map map2 map1))))
