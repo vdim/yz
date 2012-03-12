@@ -1055,9 +1055,11 @@
 (defn do-q
   "Takes query and runs query rule with this query."
   [q]
-  ((query (struct q-representation (seq q) 
-                  empty-res 0 0 [] nil [] 
-                  false empty-pred nil nil nil)) 1))
+  (let [q (if (string? q) q (reduce str q))
+        q (cs/trim q)]
+    ((query (struct q-representation (seq q) 
+                    empty-res 0 0 [] nil [] 
+                    false empty-pred nil nil nil)) 1)))
 
 
 (defn parse+

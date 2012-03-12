@@ -1533,6 +1533,15 @@
    "floor#(name = room[name])"
    "floor#(name = room.description)"
    "floor#(room = room#(name=\"MB\"))"
+
+   ;; Whitespaces
+   "room "
+   "    room "
+   "    room  "
+   "room#(name = floor.name )"
+   "room#(name = floor.name    )"
+   "room#(name = floor.name    )  "
+   "room#(name =    floor.name    )  "
    ])
 
 
