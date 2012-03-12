@@ -306,7 +306,9 @@
   "Processes restrictions."
   [m-go, o, pred]
   (let [{:keys [all ids func value]} pred
-        value (if (keyword? value) (get-qp value) value)
+        value (cond (keyword? value) (get-qp value) 
+                    (vector? value) (set (flatten (:result (get-qr value @a-mom @a-em))))
+                    :else value)
         objs (m-go ids o)]
     (and (seq objs)
          (let [;; If objects from objs are arrays then we must compare two arrays.
@@ -323,9 +325,11 @@
                        ; If exception is caused then value is returned as nil.
                        (catch Exception e nil))
                ;; Define filter function.
-               f (if all every? some)]
-           (if (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
-             (f #(func % value) objs))))))
+               f (if all every? some)
+               ]
+           (cond (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
+                 (set? value) (f #(contains? value %) objs)
+                 :else (f #(func % value) objs))))))
 
 
 (defn- get-objs-by-path

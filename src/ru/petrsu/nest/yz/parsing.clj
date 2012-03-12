@@ -863,7 +863,7 @@
                                            (catch Exception e nil)))
 
                              :when rq
-                             cp (change-pred (effects rq) :value :query)
+                             cp (change-pred (effects rq) :value (:result rq))
                              _ (set-info :remainder (drop (count newrm) rm))
                              ] cp))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
