@@ -236,7 +236,7 @@
   (nth @p/query-params (dec (Integer/parseInt (name n)))))
 
 
-(declare process-nests, get-rows, run-query)
+(declare process-nests, get-rows, run-query, get-qr)
 (defn- process-func
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
