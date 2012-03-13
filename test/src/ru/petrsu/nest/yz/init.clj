@@ -26,6 +26,7 @@
             [ru.petrsu.nest.yz.queries.core :as qc])
   (:use ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
+        ru.petrsu.nest.yz.queries.uni-bd
         ru.petrsu.nest.yz.benchmark.benchmark
         ru.petrsu.nest.yz.parsing
         ru.petrsu.nest.yz.core
@@ -39,7 +40,8 @@
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 
                                IPv4Interface, UnknownLinkInterface,
-                               CompositeOU, SimpleOU, Occupancy)))
+                               CompositeOU, SimpleOU, Occupancy)
+           (university.model Course, Faculty, Student)))
 
 ;; MOM of the SON model from the Nest project (lsm version).
 (def i-mom (mom-from-file "nest.mom"))
@@ -73,3 +75,7 @@
    ru.petrsu.nest.son.Room 
    ru.petrsu.nest.son.Floor 
    ru.petrsu.nest.son.Building])
+
+;; Vector with all classes from University model.
+(def uni-classes
+  [Course, Faculty, Student])
