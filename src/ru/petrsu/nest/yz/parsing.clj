@@ -842,14 +842,21 @@
                    (change-pred (lit-conc-seq "nil") :value nil)
                    (change-pred value-as-param :value :parameter)
                    (pfunc-as-param :value)
-                   
+                  
+                   ;; Rule for subqueries into the right part of predicate.
+                   ;; String before ')' char is taken and parsed due to the do-q function.
                    (complex [rm (get-info :remainder)
+                             res (get-info :result)
+                             nl (get-info :nest-level)
+                             
+                             ; Define new remainder (before symbol ')')
                              newrm (effects 
                                      (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
                                        (if (and (= brs 0) (= ch \)))
                                          newrm
                                          (recur (next rm-)
                                                 (first rm-)
+                                                ; Don't touch pair parenthesis.
                                                 (if st
                                                   brs
                                                   (case ch
@@ -857,17 +864,30 @@
                                                     \) (dec brs)
                                                     brs))
                                                 (conj newrm ch)
+                                                ; Prevent cycling: room(name=floor[name]#(name="SV("))
                                                 (if (= \" ch) (not st) st)))))
+                             length (effects (count newrm))
+                             [any newrm] (effects (if (= \∀ (first newrm))
+                                                    [true (next newrm)]
+                                                    [false newrm]))
 
+                             ; Do parsing of our subquery. In case subquery depends on 
+                             ; main query we add path to main element.
                              rq (effects (try 
                                            (let [rq (do-q newrm)
                                                  r (:remainder rq)]
-                                             (when (empty? r) rq))
+                                             (when (empty? r) 
+                                               (if any 
+                                                 (:result rq)
+                                                 (vec (map #(nnassoc % :where 
+                                                                     (get-paths (:what %) (get-in-nest res nl :what))) 
+                                                           (:result rq))))))
                                            (catch Exception e nil)))
 
                              :when rq
-                             cp (change-pred (effects rq) :value (:result rq))
-                             _ (set-info :remainder (drop (count newrm) rm))
+                         
+                             cp (change-pred (effects rq) :value [any rq])
+                             _ (set-info :remainder (drop length rm))
                              ] cp))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (add-op-to-preds :and))

@@ -27,11 +27,12 @@
   (:import (ru.petrsu.nest.son 
              SON, Building, Room, Floor, Network)))
 
+(def r_101 (doto (Room.) (.setNumber "101")))
+(def r_102 (doto (Room.) (.setNumber "102")))
 (def f1_b1 (doto (Floor.) 
              (.setDescription "SM")
              (.setNumber (Integer. 1))
-             (.addRoom (doto (Room.) (.setNumber "101"))) 
-             (.addRoom (doto (Room.) (.setNumber "102")))))
+             (.addRoom r_101) (.addRoom r_102)))
 
 (def f2_b1 (doto (Floor.) 
              (.setName "f2_b1")
@@ -45,8 +46,12 @@
              (.addRoom (doto (Room.) (.setNumber "1001"))) 
              (.addRoom (doto (Room.) (.setNumber "1002")))))
 
-(def b1 (doto (Building.) (.setName "building") (.addFloor f1_b1) (.addFloor f2_b1)))
-(def b2 (doto (Building.) (.setName "SM") (.addFloor f1_b2)))
+(def b1 (doto (Building.) 
+          (.setName "building") (.setDescription "101")
+          (.addFloor f1_b1) (.addFloor f2_b1)))
+(def b2 (doto (Building.) 
+          (.setName "SM") (.setDescription "102")
+          (.addFloor f1_b2)))
 
 (def son (doto (SON.)
            (.addBuilding b1) 
@@ -62,15 +67,16 @@
 
 (deftest fdesc-equal-bname
          (let [f #(flatten (tc/rows-query %1))]
-           (is (= (f "floor#(description = building[name])") [f1_b1]))
-           (is (= (f "floor#(description = building.name)") [f1_b1]))
-           (is (= (f "floor#(building = building#(name=\"SM\"))") [f1_b2]))
-           (is (= (f "floor#(description = building)") []))
-           (is (tc/eq-colls (f "floor#(room = room#(number~\"^2.*\"))") [f2_b1]))))
+           (is (= (f "floor#(description = ∀building[name])") [f1_b1]))
+           (is (= (f "floor#(description = ∀building.name)") [f1_b1]))
+           (is (= (f "floor#(building = ∀building#(name=\"SM\"))") [f1_b2]))
+           (is (= (f "floor#(description = ∀building)") []))
+           (is (tc/eq-colls (f "floor#(room = ∀room#(number~\"^2.*\"))") [f2_b1]))))
+
 
 (deftest cycling
          ^{:doc "Tests cycling in queries something like this: 
-                room#(floor = floor#(name=\"SN(\"))"}
+                room#(floor = ∀floor#(name=\"SN(\"))"}
          (let [f #(flatten (tc/rows-query (str "room#(floor = floor#(name=\"" %1 "\"))")))]
            (is (= (f "(") []))
            (is (= (f "()") []))
@@ -80,3 +86,13 @@
            (is (= (f "SN)") []))
            (is (= (f "SN(sadf)") []))
            (is (= (f "SN(s(h())d))adf)") []))))
+
+
+(deftest independence-subquery
+         ^{:doc "Tests subqueries which doesn't depend on main query."}
+         (let [f #(flatten (tc/rows-query %1))]
+           (is (= (f "floor#(description = building[name])") []))
+           (is (tc/eq-colls (f "room#(number = ∀building.description)") [r_101 r_102]))
+           (is (tc/eq-colls (f "floor (room#(number = building.description))") [f1_b1 f2_b1 f1_b2 r_101]))
+           (is (= (f "room#(number = building.description)") [r_101]))))
+         

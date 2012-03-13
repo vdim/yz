@@ -79,7 +79,7 @@
 (def a-mom (atom nil))
 
 
-(declare process-preds process-prop process-func get-objs get-qp get-qr)
+(declare process-preds process-prop process-func get-objs get-qp get-qr process-nests)
 (defn filter-by-preds
   "Gets sequence of objects and vector with predicates and
   returns new sequence of objects which are filtered by this predicates."
@@ -114,10 +114,17 @@
           (reduce (fn [s p] 
                     (if (map? p) 
                       (let [{:keys [all ids func value]} p
-                            value (cond (keyword? value) (get-qp value) 
-                                        (vector? value) (set (flatten (:result (get-qr value @a-mom @a-em))))
-                                        :else value)]
-                      (conj s #(process-preds %1 %2 all ids func value)))
+                            [any value] (cond (keyword? value) [true (get-qp value)]
+                                        (vector? value) 
+                                        (let [[any rp] value] ; rp - result of parsing subquery.
+                                          (if any 
+                                            [true (set (flatten (:rows (get-qr rp @a-mom @a-em))))]
+                                            [false rp]))
+                                        :else [true value])]
+                        (conj s #(let [v (if any
+                                           value
+                                           (set (flatten (process-nests value %2))))]
+                                  (process-preds %1 %2 all ids func v))))
                       (conj (pop (pop s)) 
                             (if (= p :and)
                               #(and ((peek s) %1 %2) ((peek (pop s)) %1 %2))
@@ -240,7 +247,7 @@
   (nth @p/query-params (dec (Integer/parseInt (name n)))))
 
 
-(declare process-nests, get-rows, run-query)
+(declare get-rows, run-query)
 (defn- process-func
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
