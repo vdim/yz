@@ -867,9 +867,11 @@
                                                 ; Prevent cycling: room(name=floor[name]#(name="SV("))
                                                 (if (= \" ch) (not st) st)))))
                              length (effects (count newrm))
-                             [any newrm] (effects (if (= \∀ (first newrm))
-                                                    [true (next newrm)]
-                                                    [false newrm]))
+                             [any newrm] (effects (cond (= \∀ (first newrm))
+                                                        [true (next newrm)]
+                                                        (and (= \a (first newrm)) (= \: (first (next newrm))))
+                                                        [true (nnext newrm)]
+                                                        :else [false newrm]))
 
                              ; Do parsing of our subquery. In case subquery depends on 
                              ; main query we add path to main element.

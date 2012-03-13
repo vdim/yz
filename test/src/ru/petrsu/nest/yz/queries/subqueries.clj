@@ -95,4 +95,11 @@
            (is (tc/eq-colls (f "room#(number = ∀building.description)") [r_101 r_102]))
            (is (tc/eq-colls (f "floor (room#(number = building.description))") [f1_b1 f2_b1 f1_b2 r_101]))
            (is (= (f "room#(number = building.description)") [r_101]))))
-         
+        
+(deftest typed-any-modificator
+         (let [f #(flatten (tc/rows-query %1))]
+           (is (= (f "floor#(description = a:building[name])") [f1_b1]))
+           (is (= (f "floor#(description = a:building.name)") [f1_b1]))
+           (is (= (f "floor#(building = a:building#(name=\"SM\"))") [f1_b2]))
+           (is (= (f "floor#(description = a:building)") []))
+           (is (tc/eq-colls (f "floor#(room = a:room#(number~\"^2.*\"))") [f2_b1]))))
