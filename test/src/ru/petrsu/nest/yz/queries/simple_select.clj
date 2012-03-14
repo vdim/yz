@@ -76,6 +76,7 @@
          ^{:doc "Checks props"}
          (is (= (tc/r-query "floor[number name]") [['(nil nil) [] '(nil nil) [] '(nil nil) []]]))
          (is (= (tc/r-query "floor[name number]") [['(nil nil) [] '(nil nil) [] '(nil nil) []]]))
+         (is (tc/eq-colls (flatten (tc/rows-query "building[name]")) ["building1" "building2"]))
          (is (= (tc/r-query "room[number]") [['("1") []]])))
 
 
