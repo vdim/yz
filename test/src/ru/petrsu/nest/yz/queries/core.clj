@@ -25,6 +25,7 @@
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
             [net.kryshen.planter.store :as planter]
             [ru.petrsu.nest.yz.core :as c]
+            [ru.petrsu.nest.yz.yz-factory :as yzf]
             [ru.petrsu.nest.son.local-sm :as lsm])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
            (ru.petrsu.nest.son SonBeanUtils SON)
@@ -105,9 +106,33 @@
 (def type-em 
   "Defines type of the ElementManager:
     :localsonmanager - LocalSonManager (create-emlm function is used).
-    :memorymanager - MemoryElementManager (em-memory function is used)."
+    :memorymanager - MemoryElementManager (em-memory function is used). 
+    :multicollectionmanager - MultiCollectionElementManager (cm-em is used)."
   :memorymanager)
 
+(def classes
+  [ru.petrsu.nest.son.SON 
+   ru.petrsu.nest.son.Occupancy 
+   ru.petrsu.nest.son.NetworkElement 
+   ru.petrsu.nest.son.Device 
+   ru.petrsu.nest.son.LinkInterface 
+   ru.petrsu.nest.son.UnknownLinkInterface 
+   ru.petrsu.nest.son.EthernetInterface 
+   ru.petrsu.nest.son.VLANInterface 
+   ru.petrsu.nest.son.NetworkInterface 
+   ru.petrsu.nest.son.UnknownNetworkInterface 
+   ru.petrsu.nest.son.IPv4Interface 
+   ru.petrsu.nest.son.Network 
+   ru.petrsu.nest.son.UnknownNetwork 
+   ru.petrsu.nest.son.IPNetwork 
+   ru.petrsu.nest.son.OrganizationalElement 
+   ru.petrsu.nest.son.AbstractOU 
+   ru.petrsu.nest.son.SimpleOU 
+   ru.petrsu.nest.son.CompositeOU 
+   ru.petrsu.nest.son.SpatialElement 
+   ru.petrsu.nest.son.Room 
+   ru.petrsu.nest.son.Floor 
+   ru.petrsu.nest.son.Building])
 
 (defn setup-son
   "Creates database for the specified son due to specified 
@@ -116,12 +141,17 @@
    (setup-son son *file-mom*))
   ([son nf]
    (fn [f]
-     (binding [*mom* (hb/mom-from-file nf)
-               *em* (case type-em
-                      :localsonmanager (create-emlm son)
-                      :memorymanager (em-memory son (create-id-cache son))
-                      (throw (Exception. "ElementManager is not defined.")))]
-       (f)))))
+     (let [mom (hb/mom-from-file nf)]
+       (binding [*mom* mom
+                 *em* (case type-em
+                        :localsonmanager (create-emlm son)
+                        :memorymanager (em-memory son (create-id-cache son))
+                        :multicollectionmanager 
+                        (let [bs (seq (.getBuildings son))
+                              coll (or bs [son])] 
+                          (yzf/mc-em coll classes mom))
+                        (throw (Exception. "ElementManager is not defined.")))]
+         (f))))))
 
 
 ;;
