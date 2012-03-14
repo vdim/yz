@@ -187,20 +187,35 @@
 
 
 (defn ^EntityManager c-em
-  "Returns implementation of the ElementManager for collections."
-  [^Collection coll, ^Collection classes]
-  (let [cls (if (or (nil? classes) (empty? classes))
-              (and (seq coll) [(class (nth coll 0))])
-              classes)
-        mom (hu/gen-mom cls nil)]
-    (reify ElementManager
-      (^Collection getElems [_ ^Class _] coll)
-      (^APersistentMap getMom [_] mom)
+  "Returns implementation of the 
+  ElementManager for collections. Parameters:
+    - coll - collection with root elements.
+    - classes - list with classes.
+    - mom - name of file with MOM (if any, nil by default) 
+        or mom itself.
+        In case mom is nil then mom is generated due to 
+        the gen-mom function from the hb-utils namespace."
+  ([^Collection coll, ^Collection classes]
+   (c-em coll classes nil))
+  ([^Collection coll, ^Collection classes ^String mom]
+   (let [cls (if (or (nil? classes) (empty? classes))
+               (and (seq coll) [(class (nth coll 0))])
+               classes)
+         mom (cond 
+               ; getting mom from file.
+               (string? mom) (hu/mom-from-file mom)
+               ; mom itself.
+               (map? mom) mom
+               ; generating mom from list of classes.    
+               :else (hu/gen-mom cls nil))]
+     (reify ElementManager
+       (^Collection getElems [_ ^Class _] coll)
+       (^APersistentMap getMom [_] mom)
       
-      ;; Value is got from bean of the object o.
-      (^Object getPropertyValue [this ^Object o, ^String property]
-         (let [b (if (map? o) o (bean o))]
-           ((keyword property) b))))))
+       ;; Value is got from bean of the object o.
+       (^Object getPropertyValue [this ^Object o, ^String property]
+          (let [b (if (map? o) o (bean o))]
+            ((keyword property) b)))))))
 
 
 (defn ^EntityManager -createSCElementManager
@@ -232,14 +247,15 @@
   "For specified collection of some elements and class of 
   this elements finds related collections which
   elements have class from classes."
-  [^Collection coll ^Class main-cl ^Collection classes]
+  [^Collection coll ^Class main-cl ^Collection classes, mom]
   (let [classes (remove #(= main-cl %) classes)
-        em (c-em coll (conj classes main-cl))
+        em (c-em coll (conj classes main-cl) mom)
         q (str (.getSimpleName main-cl) " (%s)")]
     (reduce #(let [rq (yz/pquery (format q (.getSimpleName %2)) em)
                    error (:error rq)]
                (if error
-                 (throw (Exception. error))
+                 %1
+                 ;(throw (Exception. error))
                  (assoc 
                    %1 %2 
                    (distinct (remove nil? (map (fn [row] 
@@ -252,28 +268,34 @@
 (defn ^EntityManager mc-em
   "Returns implementation of the 
   ElementManager for multiple collections."
-  [coll-or-elems, ^Collection classes]
-  (let [classes (if (map? coll-or-elems) 
-                  (keys coll-or-elems)
-                  classes)
-        mom (hu/gen-mom classes nil)
-        ; Maps class to collection of elements with this class.
-        elems (cond (map? coll-or-elems) coll-or-elems
-                    (coll? coll-or-elems)
-                    (if (empty? coll-or-elems)
-                      (reduce #(assoc %1 %2 []) {} classes)
-                      (find-related-colls coll-or-elems (class (nth coll-or-elems 0)) classes))
-                    :else (throw (Exception. "Unexpected type of coll-or-elems. 
-                                             It must be map or collection.")))]
-    (reify ElementManager
-      (^Collection getElems [_ ^Class cl] (get elems cl))
-      (^APersistentMap getMom [_] mom)
+  ([coll-or-elems, ^Collection classes]
+   (mc-em coll-or-elems, classes, nil))
+  ([coll-or-elems, ^Collection classes mom]
+   (let [_ (println "coll-or-elems = " (class coll-or-elems))
+         classes (if (map? coll-or-elems) 
+                   (keys coll-or-elems)
+                   classes)
+         mom (cond (map? mom) mom
+                   (string? mom) (hu/mom-from-file mom)
+                   :else (hu/gen-mom classes nil))
+         ; Maps class to collection of elements with this class.
+         elems (cond (map? coll-or-elems) coll-or-elems
+                     (coll? coll-or-elems)
+                     (if (empty? coll-or-elems)
+                       (reduce #(assoc %1 %2 []) {} classes)
+                       (find-related-colls coll-or-elems (class (nth coll-or-elems 0)) classes mom))
+                     :else (throw (Exception. (str "Unexpected type of coll-or-elems: " 
+                                                   (class coll-or-elems) 
+                                                   ". It must be map or collection."))))]
+     (reify ElementManager
+       (^Collection getElems [_ ^Class cl] (get elems cl))
+       (^APersistentMap getMom [_] mom)
       
-      ;; If o is map then value of key "property" is returned 
-      ;; otherwise value is got from bean of the object o.
-      (^Object getPropertyValue [this ^Object o, ^String property]
-         (let [b (if (map? o) o (bean o))]
-           ((keyword property) b))))))
+       ;; If o is map then value of key "property" is returned 
+       ;; otherwise value is got from bean of the object o.
+       (^Object getPropertyValue [this ^Object o, ^String property]
+          (let [b (if (map? o) o (bean o))]
+            ((keyword property) b)))))))
 
 
 (defn ^EntityManager -createMCElementManager
