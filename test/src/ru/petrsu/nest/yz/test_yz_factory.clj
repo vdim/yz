@@ -31,16 +31,16 @@
 (deftest find-rc
          ^{:doc "Tests the find-related-colls function."}
          (let [floors [bd/f1_b1 bd/f2_b1 bd/f3_b1]]
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room]) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room] nil) 
                            {Floor floors, Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r201_f2_b1 bd/r202_f2_b1]}))
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building]) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building] nil) 
                            {Floor floors, 
                             Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r201_f2_b1 bd/r202_f2_b1]
                             Building [bd/b1]})))
          (let [floors [bd/f1_b1 bd/f1_b2]]
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room]) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room] nil) 
                            {Floor floors, Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r1001_f1_b2 bd/r1002_f1_b2]}))
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building]) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building] nil) 
                            {Floor floors, 
                             Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r1001_f1_b2 bd/r1002_f1_b2]
                             Building [bd/b1 bd/b2]}))))
