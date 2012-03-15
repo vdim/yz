@@ -2,26 +2,33 @@
 
 For testing separate project is used (it is within the test directory). So for running tests you should:
 
-1. Download source code from repository and cd to the test directory:
-<pre>
-<code>
-$ git clone http://github.com/vdim/yz
-$ cd yz/test
-</code>
-</pre>
+1. Download source code from github:
+<pre><code>vdim:~/$ git clone http://github.com/vdim/yz</code></pre>
 
-2. Download dependencies:
-<pre><code>$ lein deps</code></pre>
+2. Download dependencies for YZ project:
+<pre><code>vdim:~/yz$ lein deps</code></pre>
 
-3. Hack for generating classes of the Nest model:
-<pre><code>$ ant </code></pre>
+3. Compile java sources from YZ project and run its aot compilation:
+<pre><code>vdim:~/yz$ lein compile </code></pre>
 
-4. Run tests:
-<pre><code>$ lein test </code></pre>
+4. Cd to the test directory with test project:
+<pre><code>vdim:~/yz$ cd yz/test</code></pre>
+
+5. Download dependencies for test project:
+<pre><code>vdim:~/yz/test$ lein deps</code></pre>
+
+6. Hack for generating classes of the Nest model:
+<pre><code>vdim:~/yz/test$ ant </code></pre>
+
+7. Compile test project:
+<pre><code>vdim:~/yz/test$ lein compile </code></pre>
+
+8. Run tests:
+<pre><code>vdim:~/yz/test$ lein test </code></pre>
 
 Some comments:
 
-1. The SON model (authors are Kryshen Mikhail and Alexander Kolosov) from Nest project is used:
+1. The SON model (authors are Mikhail Kryshen and Alexander Kolosov) from Nest project is used:
 <img src="https://github.com/vdim/yz/raw/master/doc/son.png" alt="Son model"/>
 
 2. The idea of tests is:
@@ -43,7 +50,7 @@ See script [bench_indq.sh] (https://github.com/vdim/yz/blob/master/test/bench_in
 
 Some notes about benchmark's system:
 
-1. Model is generated. See script [cr_db.sh] (https://github.com/vdim/yz/blob/master/test/cr_db.sh):
+1. Model is generated. See script [cr_db.sh] (https://github.com/vdim/yz/blob/master/test/cr_db.sh) for more details:
 <pre><code>$ ./cr_db.sh -h </code></pre>
 
 2. Amount of elements into model is specified.
@@ -63,16 +70,16 @@ each other.
 
 Example of a scenario may be something like this:
 
-1. Execute first three steps from testing section.
+1. Execute first seven steps from testing section.
 
 2. Generate H2 databases with 10000 and 20000 elements:
-<pre><code>$ ./cr_db.sh -d h2 -n "10000 20000" </code></pre>
+<pre><code>vdim:~/yz/test$ ./cr_db.sh -d h2 -n "10000 20000" </code></pre>
 
 3. Benchmark YZ language for simple selection with simple filtering (1 query (started with 0)):
-<pre><code>$ ./bench_indq.sh -l yz -t hdd -d h2 -n "10000 20000" -q 1</code></pre>
+<pre><code>vdim:~/yz/test$ ./bench_indq.sh -l yz -t hdd -d h2 -n "10000 20000" -q 1</code></pre>
 
 4. Benchmark HQL language for simple selection with simple filtering (1 query (started with 0)):
-<pre><code>$ ./bench_indq.sh -l hql -t hdd -d h2 -n "10000 20000" -q 1</code></pre>
+<pre><code>vdim:~/yz/test$ ./bench_indq.sh -l hql -t hdd -d h2 -n "10000 20000" -q 1</code></pre>
 
 So you should get file 1.txt with result of benchmark YZ and HQL simple selection with simple filtering query 
 for H2 database with 10000 and 20000 amount of elements.
