@@ -1,5 +1,5 @@
 /*
- *  Copyright (C) 2011 Petrozavodsk State University
+ *  Copyright (C) 2011-2012 Petrozavodsk State University
  *
  *  This file is part of YZ.
  */
@@ -9,7 +9,7 @@ package ru.petrsu.nest.yz;
  *
  * @author Vyacheslav Dimitrov
  */
-public class SyntaxException extends Exception {
+public class SyntaxException extends YZException {
 
     public SyntaxException(Throwable cause) {
         super(cause);
