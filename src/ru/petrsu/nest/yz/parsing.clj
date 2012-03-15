@@ -875,17 +875,15 @@
 
                              ; Do parsing of our subquery. In case subquery depends on 
                              ; main query we add path to main element.
-                             rq (effects (try 
-                                           (let [rq (do-q newrm)
-                                                 r (:remainder rq)]
-                                             (when (empty? r) 
-                                               (if any 
-                                                 (:result rq)
-                                                 (vec (map #(nnassoc % :where 
-                                                                     (get-paths (:what %) (get-in-nest res nl :what))) 
-                                                           (:result rq))))))
-                                           (catch Exception e nil)))
-
+                             rq (effects (let [rq (try 
+                                                    (do-q newrm) 
+                                                    (catch Exception e nil))]
+                                           (when (and rq (empty? (:remainder rq)))
+                                             (if any 
+                                               (:result rq)
+                                               (vec (map #(nnassoc % :where 
+                                                                   (get-paths (:what %) (get-in-nest res nl :what))) 
+                                                         (:result rq)))))))
                              :when rq
                          
                              cp (change-pred (effects rq) :value [any rq])
