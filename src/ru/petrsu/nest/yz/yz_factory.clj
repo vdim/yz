@@ -271,8 +271,7 @@
   ([coll-or-elems, ^Collection classes]
    (mc-em coll-or-elems, classes, nil))
   ([coll-or-elems, ^Collection classes mom]
-   (let [_ (println "coll-or-elems = " (class coll-or-elems))
-         classes (if (map? coll-or-elems) 
+   (let [classes (if (map? coll-or-elems) 
                    (keys coll-or-elems)
                    classes)
          mom (cond (map? mom) mom
