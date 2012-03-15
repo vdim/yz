@@ -27,6 +27,7 @@
 (def marry (doto (Faculty.) (.setName "Marry") (.setOffice "101")))
 (def david (doto (Faculty.) (.setName "David") (.setOffice "101")))
 (def brian (doto (Faculty.) (.setName "Brian") (.setOffice "102")))
+(def bob-f (doto (Faculty.) (.setName "Bob") (.setOffice "200")))
 
 ;; Students
 (def alex (doto (Student.) (.setName "Alexander") (.setID "1")))
@@ -45,6 +46,11 @@
 (def rus (doto (Course.) (.setCode "200") (.setTitle "Russian") 
            (.setFaculty brian) (.addStudent john) (.addStudent bob)))
 
+;; Define collections
+(def students [alex nik john bob])
+(def faculty [marry david brian bob-f])
+(def courses [alg geo rus])
+
 ;; MultiCollectionManager
-(def uni-em (yzf/mc-em [alg geo rus] [Course Student Faculty]))
+(def uni-em (yzf/mc-em courses [Course Student Faculty]))
 
