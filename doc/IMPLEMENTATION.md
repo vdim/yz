@@ -6,7 +6,7 @@ Notes:
 * Query is parsed by parser 
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/parsing.clj)) 
 which is based on [fnparse] ( https://github.com/joshua-choi/fnparse) 
-library which is based on parser combinators which is based on monads.
+library which is based on parser combinators which is based on [monads] (http://intensivesystems.net/tutorials/monads_101.html).
 
 * Parser produces some inner data structure and passes it to query evaluator 
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj)).
