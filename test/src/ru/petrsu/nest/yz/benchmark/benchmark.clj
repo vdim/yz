@@ -110,9 +110,15 @@
   :time)
 
 
+(def ^:dynamic *idle-count* 
+  "Defines count of idle calling query. 0 by default"
+  0)
+
+
 (defn- do-times-q
   "Returns sequence of time (n times) of execution some function f."
   [f, n]
+  (dorun (repeatedly *idle-count* f)) ; idle calls of function f
   (repeatedly n #(let [[t r] (case *measurement*
                                :thread-time-cpu (bu/thread-time (f) :cpu)
                                :thread-time-user (bu/thread-time (f) :user)
@@ -474,10 +480,11 @@
       db-n - amount elements of DB.
       f-prefix - defines prefix for file in which result of benchmark is saved.
       measurement - type of measurement (time, thread-time-cpu, thread-time-user, memory).
+      idle-count - idle count of calling query before executing measurement.
 
   Note #1: result of benchmark is saved to the f-prefixnumber_query.txt file.
   Note #2: benchmark is run once."
-  [lang q-num db-type conn-s legend-label db-n f-prefix measurement]
+  [lang q-num db-type conn-s legend-label db-n f-prefix measurement idle-count]
   (let [jdbc? (.startsWith conn-s "jdbc")
         ram? (= "ram" db-type)
         yz? (= lang "yz")
@@ -515,7 +522,8 @@
     
     (map-indexed #(let [f (str f-prefix (if (= q-num -1) %1 q-num) ".txt")]
                     (with-open [wrtr (cio/writer f :append true)]
-                      (binding [*measurement* (keyword measurement)]
+                      (binding [*measurement* (keyword measurement)
+                                *idle-count* idle-count]
                         (.write wrtr (get-fs 0 0 (flatten (concat (if yz?
                                                                     (if (vector? %2)
                                                                       (next (bench-for-list n %2 mom em)) ; next excludes result of parsing.
