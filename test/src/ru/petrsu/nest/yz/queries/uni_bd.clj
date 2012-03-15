@@ -52,5 +52,6 @@
 (def courses [alg geo rus])
 
 ;; MultiCollectionManager
-(def uni-em (yzf/mc-em courses [Course Student Faculty]))
+(def uni-em (yzf/mc-em {Course courses, Faculty faculty, Student students}
+                       [Course Student Faculty]))
 
