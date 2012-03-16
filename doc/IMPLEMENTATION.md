@@ -3,6 +3,7 @@ High-level architecture of the YZ implementation for Java is represented on figu
 <img src="https://github.com/vdim/yz/raw/master/doc/hl-arch.png" alt="High-level architecture"/>
 
 Notes:
+
 * Query is parsed by parser 
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/parsing.clj)) 
 which is based on [fnparse] ( https://github.com/joshua-choi/fnparse) 
