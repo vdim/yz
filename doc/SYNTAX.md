@@ -19,10 +19,12 @@ For this you should:
 <pre><code>vdim:~/yz/test$ lein repl </code></pre>
 
 3. Change namespace (if any):
+
 	user=> (in-ns 'ru.petrsu.nest.yz.init)
 	#<Namespace ru.petrsu.nest.yz.init>
 
 4. Run query
+
 	ru.petrsu.nest.yz.init=> (pquery "room" mem)
 
 Note: mem is some instance of the ElementManager.
