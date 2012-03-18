@@ -398,20 +398,13 @@
     (sort-by #(% 1) (map (fn [q] [q (first (bench-quering n q mom bd))]) qlist))))
 
 
-(defn- do-times-hql
-  "Returns sequence of time (n times) of execution some function f."
-  [f, n]
-  (repeatedly n #(let [[t r] (bu/brtime (f))]
-                   t)))
-
-
 (defn bench-quering-hql
   "Beanchmark HQL quering. 
   Returns sequence: 
     (total time, average time, quntile(5%), quntile(50%), quntile(90%))."
   [n ^String query em]
   (let [f #(.. em (createQuery %1) getResultList)
-        times (do-times-hql (partial f query) n)
+        times (do-times-q (partial f query) n)
         s-times (apply + times)]
     (concat [s-times (/ s-times n)] (quantile times :probs vprobs))))
 
