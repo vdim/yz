@@ -57,6 +57,9 @@ measurement="time"
 # Default idle counts of calling query
 idle_count=0
 
+# Default bb library usage.
+library_bb=false
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Benchmark individual queries.
@@ -75,6 +78,7 @@ Options:
     -m, --measurement <measure> type of measurement (time, thread-time-cpu, thread-time-user, memory).
 			    time by default.
     -i, --idle <num>	    idle count of calling query. 0 by defaul.
+    -B, --library-bb	    define whether bb library must be used for benchmark. false by default.
     -h, --help		    display this help message and exit."
 
 # Handling options.
@@ -92,6 +96,7 @@ while true; do
 	-b|--label) label="-$2"; shift 2;; 
 	-m|--measurement) measurement="$2"; shift 2;;
 	-i|--idle) idle_count="$2"; shift 2;;
+	-B|--library-bb) library_bb="true"; shift 1;;
         -*) echo "unknown option $1" >&2 ; exit 1 ;;
 	*) break ;;
     esac
@@ -128,7 +133,8 @@ for i in `seq $c`; do
 	# Define current connection string.
 	conns=${!database}
 	
-	params="\"$lang\" $q_num \"$db_type\" \"$conns\" \"$lang-$db_type-$database$label\" $n \"$prefix\" \"$measurement\" $idle_count"
+	params="\"$lang\" $q_num \"$db_type\" \"$conns\" \"$lang-$db_type-$database$label\" \
+	       $n \"$prefix\" \"$measurement\" $idle_count $library_bb"
 
 	# Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
 	# For more details see doc string for the clojure.main/main function.
