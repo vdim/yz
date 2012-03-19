@@ -22,7 +22,9 @@
     :doc "Processes queries within some restrictions."}
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
-  (:require [ru.petrsu.nest.yz.queries.core :as tc])
+  (:require [ru.petrsu.nest.yz.queries.core :as tc] 
+            [ru.petrsu.nest.yz.yz-factory :as yzf] 
+            [ru.petrsu.nest.yz.core :as c])
   (:import (ru.petrsu.nest.son SON Building Room Floor)))
 
 
@@ -458,5 +460,21 @@
              (is (= ((nth rows 0) 0) f1_b1)))
            (let [rows (tc/rows-query "building (floor#(all:room.number~\"^1.*\"))")]
              (is (cr? rows 3))
-             (map #(or (= 0 (% 1)) (= 1 (% 1))) rows))
+             (is (map #(or (= 0 (% 1)) (= 1 (% 1))) rows)))
            ))
+
+
+(deftest preds-with-self
+         ^{:doc "Tests queries which contains 
+                self objects in predicates: integer#(& = 5)"}
+         (let [t-ints [34 2 20 5 8 12]
+               i-em (yzf/c-em t-ints [Integer])
+               f #(flatten (:rows (c/pquery %1 i-em)))]
+           (is (tc/eq-colls [2] (f "integer#(& = 2)")))
+           (is (tc/eq-colls [2 5] (f "integer#(& = (2 || 5))")))
+           (is (tc/eq-colls [2 5 20] (f "integer#(& = (2 || 5 || 20))")))
+           (is (tc/eq-colls [20] (f "integer#(& = (2 && 5 || 20))")))
+           (is (tc/eq-colls [] (f "integer#(& = (2 && (5 || 20)))")))
+           (is (tc/eq-colls [2] (f "integer#(& < 5)")))
+           (is (tc/eq-colls [34] (f "integer#(& > 20)")))))
+

@@ -1542,6 +1542,15 @@
    "room#(name = floor.name    )"
    "room#(name = floor.name    )  "
    "room#(name =    floor.name    )  "
+
+   ;; Self objects in predicates
+   "floor#(& = 1)"
+   "floor#(& = (1 || 2))"
+   "floor#(&.name = 1 && & = 1)"
+   "floor#(& = 1 && & = 1)"
+   "floor#(& = 2 || & = 1)"
+   "floor#(&.name = 1 || & = 1)"
+   "floor#(&.name = 1 || (& = 1 || & =2))"
    ])
 
 
