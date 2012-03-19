@@ -219,8 +219,10 @@
   (if (nil? o)
     nil
     (let [^String field-name (if (keyword? field-name) (name field-name) field-name) 
-          v (try (.getPropertyValue @a-em o field-name)
-              (catch Exception e (throw (Exception. (str "Not found property: " field-name)))))]
+          v (if (= "&" field-name) ; supported self objects into predicates.
+              o
+              (try (.getPropertyValue @a-em o field-name)
+                (catch Exception e (throw (Exception. (str "Not found property: " field-name))))))]
       (cond 
         ; If value is nil then function returns nil.
         (nil? v) nil
