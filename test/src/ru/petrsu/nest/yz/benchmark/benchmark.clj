@@ -132,8 +132,8 @@
                                :memory (bu/thread-memory (f))
                                :time (if *cr?*
                                        (let [b (cr/benchmark f)]
-                                         ; :mean returns vector where first element is mean in seconds
-                                         ; and nanosecond element is confidence interval. 
+                                         ; :mean returns vector where first element is mean in nanoseconds
+                                         ; and second element is confidence interval. 
                                          ; We must have milliseconds.
                                          [(* 1000000 ((:mean b) 0)) 
                                           (f)])
