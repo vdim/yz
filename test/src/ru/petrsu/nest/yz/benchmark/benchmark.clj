@@ -38,12 +38,12 @@
             [clojure.java.shell :as sh]
             [net.kryshen.planter.store :as store]
             [clojure.pprint :as cp]
-            [clojure.string :as cs])
+            [clojure.string :as cs]
+            [criterium.core :as cr])
   (:import (java.util Date)
            (ru.petrsu.nest.yz.core ElementManager) 
            (java.lang.management ManagementFactory)
-           (javax.persistence Persistence EntityManager)
-           (bb.util Benchmark)))
+           (javax.persistence Persistence EntityManager)))
 
 
 (def vprobs
@@ -116,9 +116,9 @@
   0)
 
 
-(def ^:dynamic *bb?*
-  "Defines whether benchmark is done through bb library.
-  false by default."
+(def ^:dynamic *cr?*
+  "Defines whether benchmark is done 
+  through criterium library. false by default."
   false)
 
 
@@ -130,10 +130,13 @@
                                :thread-time-cpu (bu/thread-time (f) :cpu)
                                :thread-time-user (bu/thread-time (f) :user)
                                :memory (bu/thread-memory (f))
-                               :time (if *bb?*
-                                       (let [b (Benchmark. f)]
-                                         [(* 1000 (.getMean b)) ; getMean returns seconds. Do microseconds.
-                                          (.getCallResult b)])
+                               :time (if *cr?*
+                                       (let [b (cr/benchmark f)]
+                                         ; :mean returns vector where first element is mean in seconds
+                                         ; and nanosecond element is confidence interval. 
+                                         ; We must have milliseconds.
+                                         [(* 1000000 ((:mean b) 0)) 
+                                          (f)])
                                        (bu/brtime (f)))
                                (throw (Exception. (str "Unknown type of measurement: " (name *measurement*)))))]
                    (if (nil? (:error r)) t (throw (Exception. (:error r)) )))))
@@ -143,7 +146,7 @@
   "Beanchmark parsing. Executes the parse function
   for specified query and mom 'n' times. Returns total time."
   [n ^String query mom]
-    (apply + (repeatedly n #(bu/btime (p/parse query mom)))))
+  (apply + (repeatedly n #(bu/btime (p/parse query mom)))))
 
 
 (defn bench-quering
@@ -487,11 +490,11 @@
       f-prefix - defines prefix for file in which result of benchmark is saved.
       measurement - type of measurement (time, thread-time-cpu, thread-time-user, memory).
       idle-count - idle count of calling query before executing measurement.
-      bb? - defines whether benchmarking must be used the bb library.
+      cr? - defines whether benchmarking must be used the cr library.
 
   Note #1: result of benchmark is saved to the f-prefixnumber_query.txt file.
   Note #2: benchmark is run once."
-  [lang q-num db-type conn-s legend-label db-n f-prefix measurement idle-count bb?]
+  [lang q-num db-type conn-s legend-label db-n f-prefix measurement idle-count cr?]
   (let [jdbc? (.startsWith conn-s "jdbc")
         ram? (= "ram" db-type)
         yz? (= lang "yz")
@@ -531,7 +534,7 @@
                     (with-open [wrtr (cio/writer f :append true)]
                       (binding [*measurement* (keyword measurement)
                                 *idle-count* idle-count
-                                *bb?* bb?]
+                                *cr?* cr?]
                         (.write wrtr (get-fs 0 0 (flatten (concat (if yz?
                                                                     (if (vector? %2)
                                                                       (next (bench-for-list n %2 mom em)) ; next excludes result of parsing.

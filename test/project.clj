@@ -8,7 +8,8 @@
                  [org.hsqldb/hsqldb "2.2.4"]
                  [org.clojure/algo.monads "0.1.0"] 
                  [incanter/incanter-charts "1.3.0-SNAPSHOT"]
-                 [incanter/incanter-core "1.3.0-SNAPSHOT"]]
+                 [incanter/incanter-core "1.3.0-SNAPSHOT"]
+                 [criterium "0.2.1-SNAPSHOT"]]
   :java-source-path "src/"
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false
