@@ -54,7 +54,7 @@ you should specify your predicate after name of class before symbol "#" in paren
 should specify property in left part of expression then you should specify binary operation and
 at last right part of expression
 
-    string#(empty = true)
+    string#(empty = false)
     => (["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 
 Of course it is more interesting the filtering self object, so YZ supports refering
