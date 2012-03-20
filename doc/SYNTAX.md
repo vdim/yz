@@ -66,9 +66,10 @@ so YZ supports refering to self object due to symbol "&":
 YZ supports:
 
 * equality (equals to = function of Clojure or .equals method of Java):
-
+<pre><code>
     string#(& = "Bob")
     => (["Bob"])
+</code></pre>
 
 * >, <, >=, <= (rightly for numbers):
 
@@ -78,20 +79,23 @@ YZ supports:
 ```
 
 * regex (rightly for strings):
-
+<pre><code>
     string#(& ~ "^.a.*")
     => (["Marry"] ["David"])
+</code></pre>
 
 * binary operation (&& and || and syntax sugar "and" and "or" correspondingly):
-
+<pre><code>
     string#(& = "Bob" || & = "Marry")
     => (["Bob"] ["Marry"]) 
+</code></pre>
 
 * RCP (Reduced Complicate Predicates) allows to reduce your predicates for
 same property:
-
+<pre><code>
     string#(& = ("Bob" || "Marry"))
     => (["Bob"] ["Marry"]) 
+</code></pre>
 
 You can override operation:
 
