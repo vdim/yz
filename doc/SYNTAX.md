@@ -52,18 +52,19 @@ For several properties you must enumerate it through whitespace:
 In order to filter your collection due to some condition through some property 
 you should specify your predicate after name of class before symbol "#" in parenthesis. You
 should specify property in left part of expression then you should specify binary operation and
-at last right part of expression
+at last right part of expression:
 
     string#(empty = false)
     => (["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 
-Of course it is more interesting the filtering self object, so YZ supports refering
-to self object due to symbol "&":
+Of course it is more interesting the filtering self object (for strings or integers at least), 
+so YZ supports refering to self object due to symbol "&":
 
     string#(& = "Bob")
     => (["Bob"])
 
 YZ supports:
+
 * equality (equals to = function of Clojure or .equals method of Java):
 
     string#(& = "Bob")
