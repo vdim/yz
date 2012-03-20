@@ -97,9 +97,10 @@ same property:
     => (["Bob"] ["Marry"]) 
 </code></pre>
 
-You can override operation:
-
+* You can override operation:
+<pre><code>
     string#(& = ("Bob" || ~"^.a.*"))
     => (["Bob"] ["Marry"] ["David"]) 
+</code></pre>
 
 
