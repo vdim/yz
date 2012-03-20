@@ -1,34 +1,48 @@
-# Example
-We believe that our explanation will be more efficient if we use some example model.
-We decide to use the same model which we use for testing:
-
-<img src="https://github.com/vdim/yz/raw/master/doc/son.png" alt="Son model"/>
-
-(This model is developed for the Nest project and its authors are Mikhail Kryshen and Alexander Kolosov.)
-
-Let's consider some snapshot of real data: 
-
-(This figure is produced via the Nest visualization module which is based on indyvon library.)
-
-## Using example
-You can use this example and experiment with further on queries from YZ's repository source code.
-For this you should: 
-
-1. Execute first seven steps from [testing] (https://github.com/vdim/yz/blob/master/doc/TESTING.md) document.
-
-2. Run REPL:
-<pre><code>vdim:~/yz/test$ lein repl </code></pre>
-
-3. Change namespace (if any):
-<pre><code>user=> (in-ns 'ru.petrsu.nest.yz.init)</code></pre>
-
-4. Run query
-<pre><code>ru.petrsu.nest.yz.init=> (pquery "room" mem)</code></pre>
-
-Note: mem is some instance of the ElementManager.
-
-
 # YZ
-At last let's begin to consider YZ.
+For demostration features of the YZ we will use some examples. First example is
+collection with string values. Let's define this collection something like this:
+
+```clojure
+(def names ["Bob" "Alice" "" "Marry" "Kris" "David" "Alexander"])
+```
+
+For testing and usage our examples you can use the collq function from the 
+yz-factory namespace something like this:
+
+```clojure
+(collq "yourquery" names)
+```
+
+You will hold the following notation: first will be query and second after "=>"- result of query:
+
+    some-query
+    => some-result
+
+Note: for more details about usage YZ see [here] (https://github.com/vdim/yz/blob/master/doc/USAGE.md).
+
 
 ## Selection
+For simple getting data from your model you can specify class of objects which you
+want to get. This query returns all strings from our collection names:
+    
+    string
+    => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
+
+In case you want to get some property of object you must specify it in square brackets:
+
+    string[empty]
+    => ([false] [false] [true] [false] [false] [false] [false])
+
+Notes that access to properties is depends on implementation of your ElementManager.
+For several properties you must enumerate it through whitespace: 
+
+    string[empty class]
+    => ([false java.lang.String] [false java.lang.String] 
+	[true java.lang.String] [false java.lang.String] 
+	[false java.lang.String] [false java.lang.String] [false java.lang.String])
+
+
+<--
+## More complex example
+Let's consider more complex example for demonstration another feaures of the YZ.
+Second example is some data model which is represented in figure: -->
