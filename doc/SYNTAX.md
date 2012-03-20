@@ -13,6 +13,7 @@ Let's consider some snapshot of real data:
 ## Using example
 You can use this example and experiment with further on queries from YZ's repository source code.
 For this you should: 
+
 1. Execute first seven steps from [testing] (https://github.com/vdim/yz/blob/master/doc/TESTING.md) document.
 
 2. Run REPL:
