@@ -160,13 +160,25 @@ sorting by ascending and by descenting correspondingly:
     ↓string
     => (["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"] [""])
 
-If you select properties and want to sort by it you should specify sorting for
+If you select property and want to sort by it you should specify sorting for
 properties:
     
     string[↑empty]
     => ([false] [false] [false] [false] [false] [false] [true])
     string[↓empty]
     => ([true] [false] [false] [false] [false] [false] [false])
+
+If you select several properties and specify sorting for each property then
+result will be sorted by first property firstly, second property secondly and so on:
+
+
+    string[↓empty ↓&]
+    => ([true ""] [false "Marry"] [false "Kris"] [false "David"] 
+        [false "Bob"] [false "Alice"] [false "Alexander"])
+    string[↓& ↓empty]
+    => (["Marry" false] ["Kris" false] ["David" false] ["Bob" false] 
+        ["Alice" false] ["Alexander" false] ["" true])
+
 
 If you want to sort by some property, but don't select it, you should specify
 sorting into braces before name of your class:
@@ -175,4 +187,24 @@ sorting into braces before name of your class:
     => (["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"] [""])
     {↓empty}string
     => ([""] ["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"])
+
+You can specify several properties for sorting:
+
+    {↓& ↓empty}string
+    => (["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"] [""])
+    {↑& ↓empty}string
+    => ([""] ["Alexander"] ["Alice"] ["Bob"] ["David"] ["Kris"] ["Marry"])
+    {↓empty ↑&}string
+    => ([""] ["Alexander"] ["Alice"] ["Bob"] ["David"] ["Kris"] ["Marry"])
+    {↓empty ↓&}string
+    => ([""] ["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"])    
+
+Also, there are printed version for "↓" and "↑" symbols: "d:" and "a:"
+correspondingly:
+
+    a:string
+    => ([""] ["Alexander"] ["Alice"] ["Bob"] ["David"] ["Kris"] ["Marry"])
+    d:string
+    => (["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"] [""])
+
 
