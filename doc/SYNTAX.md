@@ -31,7 +31,7 @@ and this query returns all strings from our collection names:
 
     => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 
-###Projection
+### Projection
 In case you want to get some property of object you must specify it in square brackets:
 
     string[empty]
@@ -46,6 +46,13 @@ For several properties you must enumerate it through whitespace:
         [true java.lang.String] [false java.lang.String] 
         [false java.lang.String] [false java.lang.String] 
         [false java.lang.String])
+
+In order to get self object in list with properties you can refer to self
+object due to symbol "&":
+
+    string[& empty]
+    => (["Bob" false] ["Alice" false] ["" true] ["Marry" false] 
+        ["Kris" false] ["David" false] ["Alexander" false]) 
 
 
 ### Filtering
@@ -65,18 +72,36 @@ so YZ supports refering to self object due to symbol "&":
 
 YZ supports:
 
-* equality (equals to = function of Clojure or .equals method of Java):
+* equality (=, equals to = function of Clojure or .equals method of Java):
 <pre><code>
     string#(& = "Bob")
     => (["Bob"])
 </code></pre>
 
+* identical (==, equals to identical? function of Clojure or == of Java):
+```clojure
+(collq "integer#(& = 1)" [1 2])
+=> ([1])
+(collq "integer#(& == 1)" [1 2])
+=> ([1])
+(collq "integer#(& = 1)" [(Integer. 1) (Integer. 2)])
+=> ([1])
+(collq "integer#(& == 1)" [(Integer. 1) (Integer. 2)])
+=> ()
+```
+
 * >, <, >=, <= (rightly for numbers):
 
 ```clojure
 (collq "integer#(& > 10)" [199 4 6 10 34])
-([34] (199))
+=> ([34] [199])
 ```
+
+* negation (!= and syntax sugar not=):
+<pre><code>
+    string#(& != "Bob")
+    => (["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
+</code></pre>
 
 * regex (rightly for strings):
 <pre><code>
@@ -84,23 +109,44 @@ YZ supports:
     => (["Marry"] ["David"])
 </code></pre>
 
-* binary operation (&& and || and syntax sugar "and" and "or" correspondingly):
+* logical operation (&& and || and syntax sugar "and" and "or" correspondingly):
 <pre><code>
     string#(& = "Bob" || & = "Marry")
     => (["Bob"] ["Marry"]) 
 </code></pre>
 
-* RCP (Reduced Complicate Predicates) allows to reduce your predicates for
-same property:
+* RCP (Reduced Complicate Predicates, this technique allows to reduce text of 
+your predicates which is adjusted to same property):
 <pre><code>
     string#(& = ("Bob" || "Marry"))
     => (["Bob"] ["Marry"]) 
 </code></pre>
 
-* You can override operation:
+* overriding binary operation in case RCP is used:
 <pre><code>
     string#(& = ("Bob" || ~"^.a.*"))
     => (["Bob"] ["Marry"] ["David"]) 
 </code></pre>
 
+
+The right side of predicate may contains:
+
+* Strings
+<pre><code>
+    string#(& = "Bob")
+    => (["Bob"])
+</code></pre>
+
+* Numbers (integer, real, negative):
+
+```clojure
+(collq "integer#(& = 1)" [1 2])
+=> ([1])
+(collq "integer#(& = -1)" [1 -1 2])
+=> ([-1])
+(collq "integer#(& = 1)" [1 2])
+=> ([1])
+(collq "long#(& = -1.1)" [-1 -2 -3 -1.1])
+=> ([-1.1])
+```
 
