@@ -310,3 +310,18 @@
    (mc-em elems nil))
   ([^Collection coll, ^Collection classes]
    (mc-em coll classes)))
+
+
+(defn collq
+  "Simple interface for quering, where user should define just
+  query and collection with objects. Parameters:
+    q - YZ's query
+    coll - collection with objects"
+  [^String q coll]
+  (let [f-cl (some #(class %) coll) ; specify class of first element
+        em (c-em coll [f-cl]) ; element manager
+        r (yz/pquery q em)]
+    (if (:error r) 
+      (throw (Exception. (:error r)))
+      (:rows r))))
+
