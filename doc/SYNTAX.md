@@ -22,8 +22,8 @@ Note: for more details about usage YZ see [here] (https://github.com/vdim/yz/blo
 
 
 ### Selection
-In order to get data from your model you can specify class of objects which you
-want to get. If your want all string you just write: 
+In order to get data from your model you can specify class name of objects which you
+want to get. If you want all strings you just query: 
     
     string
 
@@ -39,6 +39,8 @@ In case you want to get some property of object you must specify it in square br
 
 Note that access to properties depends on implementation of your ElementManager
 (in our case it is element manager for simple collections).
+For more details about current implementation of the YZ see [here] (https://github.com/vdim/yz/blob/master/doc/IMPLEMENTATION.md).
+
 For several properties you must enumerate it through whitespace: 
 
     string[empty class]
