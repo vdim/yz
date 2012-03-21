@@ -1,3 +1,9 @@
+## Supported backends
+At this moment implementation of YZ for java supports the following backends:
+
+* [Collections] (http://docs.oracle.com/javase/tutorial/collections/).
+* [JPA] (http://jcp.org/aboutJava/communityprocess/final/jsr317/index.html).
+
 ## High-level architecture
 High-level architecture of the YZ implementation for Java is represented on figure below:
 <img src="https://github.com/vdim/yz/raw/master/doc/hl-arch.png" alt="High-level architecture"/>

@@ -32,11 +32,6 @@ YZ[ˈiːzi] is simple (easy) string-based query language for a java object model
 * Definitions (schema, new classes, instances of classes, functions and so on).
 * Updating.
 
-#### Supported backends:
-
-* [Collections] (http://docs.oracle.com/javase/tutorial/collections/).
-* [JPA] (http://jcp.org/aboutJava/communityprocess/final/jsr317/index.html).
-
 ## Restriction
 Project is in alpha stage and it is just prototype, not for production use.
 
