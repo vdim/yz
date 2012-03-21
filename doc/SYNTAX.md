@@ -79,6 +79,7 @@ YZ supports:
 </code></pre>
 
 * identical (==, equals to identical? function of Clojure or == of Java):
+
 ```clojure
 (collq "integer#(& = 1)" [1 2])
 => ([1])
