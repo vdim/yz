@@ -150,3 +150,28 @@ The right side of predicate may contains:
 => ([-1.1])
 ```
 
+### Sorting
+In order to sort your result you should use symbols "↑" and "↓" for
+sorting by ascending and by descenting correspondingly:
+
+    ↑string
+    => ([""] ["Alexander"] ["Alice"] ["Bob"] ["David"] ["Kris"] ["Marry"])
+    ↓string
+    => (["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"] [""])
+
+If you select properties and want to sort by it you should specify sorting for
+properties:
+    
+    string[↑empty]
+    => ([false] [false] [false] [false] [false] [false] [true])
+    string[↓empty]
+    => ([true] [false] [false] [false] [false] [false] [false])
+
+If you want to sort by some property, but don't select it, you should specify
+sorting into braces before name of your class:
+
+    {↑empty}string
+    => (["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"] [""])
+    {↓empty}string
+    => ([""] ["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"])
+
