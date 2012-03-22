@@ -201,7 +201,7 @@
   ([f ch labels]
    (bar-chart-by-lang f ch labels [nil nil nil]))
   ([f ch labels [x y title]]
-   (let [r (get-res-from-ind-file f labels)
+   (let [r (remove empty? (get-res-from-ind-file f labels))
          lines (map (fn [l] {:time (l (ch bb/ind-chars)) 
                              :db (l (:amount-elems bb/ind-chars)) 
                              :lang (l (:legend-label bb/ind-chars))})
