@@ -208,7 +208,7 @@
                     r)
          lines (sort #(let [i (compare (:db %1) (:db %2))]
                         (if (= 0 i)
-                          (compare (name (:lang %1)) (name (:lang %2)))
+                          (compare (:time %1) (:time %2))
                           i)) 
                      lines)]
      (ic/with-data (ic/dataset [:time :db :lang] lines)
