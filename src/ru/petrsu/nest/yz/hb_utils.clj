@@ -66,7 +66,8 @@
   (let [pt (.getPropertyType pd)]
     (if (contains? classes pt)
       [pt (.getName pd)]
-      (cond (contains? (ancestors pt) java.util.Collection)
+      (cond (nil? pt) nil
+            (contains? (ancestors pt) java.util.Collection)
             (let [t (vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments))]
               (if (and (> (count t) 0) (contains? classes (t 0)))
                 [(t 0), (.getName pd)] ))
