@@ -38,6 +38,7 @@ for more details.
 
 ## MOM
 MOM may contain the following information:
+
 * classes of your model
 * paths between classes
 * brief names of classes
