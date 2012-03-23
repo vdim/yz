@@ -15,6 +15,8 @@ Notes:
 which is based on [fnparse] ( https://github.com/joshua-choi/fnparse) 
 library which is based on parser combinators which is based on [monads] (http://intensivesystems.net/tutorials/monads_101.html).
 
+* Parsing of query is based on Map of Object Model (MOM). See section MOM in this document below for more detail. 
+
 * Parser produces some inner data structure and passes it to query evaluator 
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj)).
 
@@ -33,3 +35,27 @@ for more details.
     * :error - if error is occured then value of this keyword contains string representation of the error. If not then value is nil.
     * :columns - list with default names of columns.
     * :rows - representation of a result query as set of rows (tuples).
+
+## MOM
+MOM may contain the following information:
+* classes of your model
+* paths between classes
+* brief names of classes
+* default properties
+* comparators (it may be useful in case you can not change your model, but you want to sort your selections and 
+this classes are not implement [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) 
+interface).
+
+You can see example of MOM for the SON model [here] (https://github.com/vdim/yz/blob/master/test/test-resource/nest.mom).
+
+### Creating MOM
+In order to create MOM automatically (at least skeleton) you can use the 
+[gen-mom] (https://github.com/vdim/yz/blob/master/gen_mom.sh) script.
+
+See
+
+    ./gen_mom.sh -h
+
+for more details.
+
+
