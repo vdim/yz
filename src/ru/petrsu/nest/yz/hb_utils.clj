@@ -48,7 +48,7 @@
             [clojure.set :as cs]
             [clojure.string :as cst]
             [clojure.java.io :as cio])
-  (:import (javax.persistence Transient EntityManagerFactory)))
+  (:import (javax.persistence Transient EntityManagerFactory Persistence)))
 
 
 (defn- get-classes
@@ -295,3 +295,25 @@
                    :else s)]
      (to-file mom f))))
 
+
+(defn gen-mom*
+  "Generates MOM due to specfied parameters:
+    out - name of file for MOM.
+    old-mom - name of file with old-mom (empty if not needed).
+    append - define whether new mom must be appended to old mom.
+    src - source of classes
+    classes - list with classes or name of file in case 
+      hibernate configuration is used."
+  [out old-mom ^Boolean append src classes]
+  (let [old-mom (if (and append (not (empty? old-mom))) (mom-from-file old-mom) {})
+        mom (case src 
+              :hibernate-cfg 
+              (gen-mom-from-cfg classes old-mom)
+              :persistense 
+              (gen-mom-from-metamodel 
+                (Persistence/createEntityManagerFactory classes) old-mom)
+              :list-classes 
+              (gen-mom (map #(Class/forName %) (remove empty? (cst/split classes #"\s"))) 
+                       old-mom)
+              (throw (Exception. (str "Unexpected type of sources: " src))))]
+    (mom-to-file mom out)))
