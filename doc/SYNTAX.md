@@ -201,7 +201,7 @@ You can specify several properties for sorting:
     {↓empty ↓&}string
     => ([""] ["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"])    
 
-Also, there are printed version for "↓" and "↑" symbols: "d:" and "a:"
+Also there are printed version for "↓" and "↑" symbols: "d:" and "a:"
 correspondingly:
 
     a:string
@@ -209,4 +209,20 @@ correspondingly:
     d:string
     => (["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"] [""])
 
+Note that sorting requires that your objects (or property) must implements Comparable interface.
 
+
+### Calling user function
+YZ allows to call user function:
+
+    @(count `string')
+    => ([7])
+
+Notes:
+
+* Languages and calling mechanism are defined by concrete implementation of the YZ.
+* Parameters:
+    * result of query
+    * strings
+    * numbers
+    * result of calling another function
