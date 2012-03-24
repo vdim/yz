@@ -182,7 +182,7 @@
               (if (or (empty? labels) (contains? labels (name (s (:legend-label bb/ind-chars)))))
                 (conj %1 s)
                 %1))
-           [] (line-seq (cio/reader f)))))
+           [] (remove empty? (line-seq (cio/reader f))))))
 
 
 (defn bar-chart-by-lang
