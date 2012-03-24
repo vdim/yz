@@ -21,7 +21,7 @@ YZ[ˈiːzi] is simple (easy) string-based query language for a java object model
 * Sorting:
 <pre><code>↓entity</code></pre>
 
-* Calling a user function:
+* Calling an user function:
 <pre><code>entity[prop1 @(f &)]</code></pre>
 
 * Recursive queries:
