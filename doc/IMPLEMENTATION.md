@@ -14,7 +14,7 @@ Notes:
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/parsing.clj)) 
 which is based on [fnparse] ( https://github.com/joshua-choi/fnparse) 
 library which is based on [parser combinators] (http://en.wikipedia.org/wiki/Parser_combinator)
-which is based on [monads] (http://intensivesystems.net/tutorials/monads_101.html).
+which is based on [monads] (http://www.intensivesystems.net/tutorials/monads_101.html).
 
 * Parsing of query is based on Map of Object Model (MOM). See section MOM in this document below for more details.
 
