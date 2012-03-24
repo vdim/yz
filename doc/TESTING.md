@@ -17,7 +17,7 @@ For testing separate project is used (it is within the test directory). So for r
 5. Download dependencies for test project:
 <pre><code>vdim:~/yz/test$ lein deps</code></pre>
 
-6. Hack for generating classes of the Nest model:
+6. Hack for generating some classes:
 <pre><code>vdim:~/yz/test$ ant </code></pre>
 
 7. Compile test project:
@@ -28,18 +28,15 @@ For testing separate project is used (it is within the test directory). So for r
 
 Some comments:
 
-1. The SON model (authors are Mikhail Kryshen and Alexander Kolosov) from Nest project is used:
-<img src="https://github.com/vdim/yz/raw/master/doc/son.png" alt="Son model"/>
-
-2. The idea of tests is:
-    * Creates specified model with fixed objects, its links and properties (usually separated model is used
+1. The idea of tests is:
+    * Creates some model with fixed objects, its links and properties (usually separated model is used
 for each test's namespace). 
     * Runs specified queries.
     * Checks whether result of a query corresponds to a real.
 
-3. So changing test models may lead to incorrect tests.
+2. So changing test models may lead to incorrect tests.
 
-4. It is no concern of the ru.petrsu.nest.yz.test-parsing/qlist 
+3. It is no concern of the ru.petrsu.nest.yz.test-parsing/qlist 
 ([source] (https://github.com/vdim/yz/blob/master/test/src/ru/petrsu/nest/yz/test_parsing.clj)) vector. 
 You may add to this vector any queries without any troubles.
 

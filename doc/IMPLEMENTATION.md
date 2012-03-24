@@ -49,7 +49,7 @@ interface).
 
 In point of view of the Clojure data structure MOM is map where keys are classes of 
 model and values are maps where again keys are classes of model and
-values are path from first class to second. You can see example of MOM for the SON model 
+values are path from first class to second. You can see example of MOM
 [here] (https://github.com/vdim/yz/blob/master/test/test-resource/nest.mom).
 
 ### Creating MOM
