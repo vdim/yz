@@ -13,9 +13,10 @@ Notes:
 * Query is parsed by parser 
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/parsing.clj)) 
 which is based on [fnparse] ( https://github.com/joshua-choi/fnparse) 
-library which is based on parser combinators which is based on [monads] (http://intensivesystems.net/tutorials/monads_101.html).
+library which is based on [parser combinators] (http://en.wikipedia.org/wiki/Parser_combinator)
+which is based on [monads] (http://intensivesystems.net/tutorials/monads_101.html).
 
-* Parsing of query is based on Map of Object Model (MOM). See section MOM in this document below for more detail. 
+* Parsing of query is based on Map of Object Model (MOM). See section MOM in this document below for more details.
 
 * Parser produces some inner data structure and passes it to query evaluator 
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj)).
@@ -24,7 +25,6 @@ library which is based on parser combinators which is based on [monads] (http://
 At this moment there is the following ElementManagers:
     * JPA ElementManager which uses the JPA API 2.0 for accessing to data. We test it by Hibernate.
     * Collection ElementManager which allows querying to usual Java collections.
-    * Store ElementManager - inner storage of the Nest project.
 
 In case you want to add your data storage you must implement ElementManager interface. See
 definition of it [here] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj) 
@@ -43,11 +43,14 @@ MOM may contain the following information:
 * paths between classes
 * brief names of classes
 * default properties
-* comparators (it may be useful in case you can not change your model, but you want to sort your selections and 
-this classes are not implement [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) 
+* comparators (it may be useful in case you can not change your model, but you want to sort your selection and 
+this class does not implement [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) 
 interface).
 
-You can see example of MOM for the SON model [here] (https://github.com/vdim/yz/blob/master/test/test-resource/nest.mom).
+In point of view of the Clojure data structure MOM is map where keys are classes of 
+model and values are maps where again keys are classes of model and
+values are path from first class to second. You can see example of MOM for the SON model 
+[here] (https://github.com/vdim/yz/blob/master/test/test-resource/nest.mom).
 
 ### Creating MOM
 In order to create MOM automatically (at least skeleton) you can use the 
