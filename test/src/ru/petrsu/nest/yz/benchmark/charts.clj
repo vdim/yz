@@ -239,12 +239,15 @@
    (let [[x y titles] (case mode 
                        :ru ["Количество элементов" "Время (мс)" title-queries-ru]
                        :en ["Amount Elements" "Time (msecs)" title-queries-en]
-                        (throw (Exception. (str "Unknown language: " (name mode)))))]
+                        (throw (Exception. (str "Unknown language: " (name mode)))))
+         l-font (java.awt.Font. "Arial" java.awt.Font/BOLD 18)]
      (map #(let [f (str path-i "/" prefix % ".txt")
-                 gf (str path-c "/" prefix % ".png")] 
+                 gf (str path-c "/" prefix % ".png")]
              (try
-               (ic/save (bar-chart-by-lang f :q50 labels [x y (titles %)]) 
-                        gf :width 1024 :height 768)
+               (let [chart (bar-chart-by-lang f :q50 labels [x y (titles %)])
+                     _ (.setItemFont (.getLegend chart) l-font)]
+               
+                 (ic/save chart gf :width 1024 :height 768))
                (catch java.io.FileNotFoundException e nil)))
           (range 0 (count yz/individual-queries))))))
 
