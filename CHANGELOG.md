@@ -1,6 +1,9 @@
-## 0.0.1-alpha12 / ?.?.2012
+## 0.0.1-alpha12 / 26.03.2012
 
-* Replaced ElementManagerFactory by YZFactory which includes methods for getting different ElementManagers and instance QueryYZs.
+* Added support self objects into left side of predicates: string#(& = "some str")
+* Added support subquries in the right part of predicates.
+* API: replaced ElementManager`s getClasses method by the getMom method.
+* API: replaced ElementManagerFactory by YZFactory which includes methods for getting different ElementManagers and instance QueryYZs.
 * Added support queries through Java collection (CollectionElementManager).
 * Added support parameterized queries: floor#(number=$1)
 * Added support ALL modificator for collections into predicates: building#(∀floor.number=1)

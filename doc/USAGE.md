@@ -78,7 +78,7 @@ public class YZTest {
 (defproject yztest "1.0.0-SNAPSHOT"
     :description "Test application."
     :dependencies [[org.clojure/clojure "1.3.0"]
-                   [ru.petrsu.nest/yz "0.0.1-alpha11"]])
+                   [ru.petrsu.nest/yz "0.0.1-alpha12"]])
 ```
 * Download dependencies:
 	<pre><code>
@@ -87,7 +87,7 @@ public class YZTest {
 	Some long output...
 
 	vdim@laptop:~/yztest$ ls lib/
-	algo.monads-0.1.0.jar  clojure-1.3.0.jar  hibernate-jpa-2.0-api-1.0.1.Final.jar  tools.macro-0.1.0.jar  yz-0.0.1-alpha11.jar
+	algo.monads-0.1.0.jar  clojure-1.3.0.jar  hibernate-jpa-2.0-api-1.0.1.Final.jar  tools.macro-0.1.0.jar  yz-0.0.1-alpha12.jar
 	vdim@laptop:~/yztest$
 	</code></pre>
 
