@@ -1,5 +1,5 @@
 (defproject ru.petrsu.nest/yz "0.0.1-alpha12"
-  :description "Implementation of the YZ language."
+  :description "YZ is simple (easy) string-based query language."
   :url "https://github.com/vdim/yz"
   :dependencies [[org.clojure/clojure "1.3.0"]
                  [org.hibernate.javax.persistence/hibernate-jpa-2.0-api "1.0.1.Final"]
