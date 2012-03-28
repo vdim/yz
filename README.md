@@ -1,5 +1,6 @@
 # About
-YZ[ˈiːzi] is simple (easy) string-based query language for a java object model. 
+YZ[ˈiːzi] is simple (easy) string-based query language for java object model. 
+It is designed for your advanced users.
 
 #### What does YZ include?
 
