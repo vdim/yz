@@ -203,11 +203,12 @@
   "Returns from storage objects which have ':what' class from nest."
   [nest]
   (let [^ElementManager em @a-em
-        {:keys [^Class what ^PersistentVector preds sort exactly]} nest]
+        {:keys [^Class what ^PersistentVector preds sort exactly unique]} nest]
     (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
       (sort-rq (.getElems em what preds) sort false)
       (let [elems (.getElems em what)
-            elems (if exactly (filter #(= (class %) what) elems) elems)]
+            elems (if exactly (filter #(= (class %) what) elems) elems)
+            elems (if unique (distinct elems) elems)]
         (sort-rq (filter-by-preds elems preds) sort false)))))
 
 
@@ -344,10 +345,13 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
-  (let [{:keys [preds where ^Class what sort exactly]} m
+  (let [{:keys [preds where ^Class what sort exactly unique]} m
         f (if exactly #(= (class %) what) #(instance? what %))
         path (apply min-key count where)] ; At this moment we use path with minimum edges.
-    (sort-rq (filter-by-preds (filter f (reduce #(get-objs %2 %1) sources path)) preds)
+    (sort-rq (filter-by-preds 
+               (filter f
+                       (let [objs (reduce #(get-objs %2 %1) sources path)]
+                         (if unique (distinct objs) objs))) preds)
              sort false)))
 
 
@@ -510,7 +514,8 @@
     (if (string? query-res)
       (Result. [] query-res [] ())
       ;(Result. query-res nil [] ()))))
-      (let [rows (distinct (get-rows query-res))]
+      ;(let [rows (distinct (get-rows query-res))]
+      (let [rows (get-rows query-res)]
         (Result. query-res nil (get-columns-lite rows) rows)))))
 
 
