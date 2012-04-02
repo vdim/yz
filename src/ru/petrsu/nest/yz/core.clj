@@ -388,9 +388,9 @@
   (loop [objs- objs, then- then, props- props, tsort tsort]
     (if (or (nil? then-) (every? nil? objs-))
       (let [pp (map (fn [o] [o, (process-props o props-)]) objs-)]
-        (if (and (not-empty pp) (= ((first pp) 0) ((first pp) 1)))
-          pp
-          (sort-rq pp tsort true)))
+        (if props-
+          (sort-rq pp tsort true)
+          pp))
       (recur (get-objs-by-path objs- then-)
              (:then then-) 
              (:props then-)
