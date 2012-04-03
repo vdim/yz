@@ -1,6 +1,6 @@
 # About
-YZ[ˈiːzi] is simple (easy) string-based query language for java object model. 
-It is designed for your advanced users.
+YZ[ˈiːzi] is simple (easy) string-based object query language. 
+It is designed for your advanced users. At the moment there is implementation for Java.
 
 #### What does YZ include?
 
@@ -28,9 +28,13 @@ It is designed for your advanced users.
 * Recursive queries:
 <pre><code>entity[*parent]</code></pre>
 
+* Removing duplicates:
+<pre><code>¹entity</code></pre>
+
 #### What not?
 
 * Definitions (schema, new classes, instances of classes, functions and so on).
+* Creating.
 * Updating.
 
 ## Restriction
