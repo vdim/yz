@@ -112,7 +112,7 @@ YZ supports:
     => (["Marry"] ["David"])
 </code></pre>
 
-* logical operation (&& and || and syntax sugar "and" and "or" correspondingly):
+* logical operation (&& and || and syntax sugar "and" and "or" respectively):
 <pre><code>
     string#(& = "Bob" || & = "Marry")
     => (["Bob"] ["Marry"]) 
@@ -155,7 +155,7 @@ The right side of predicate may contains:
 
 ### Sorting
 In order to sort your result you should use symbols "↑" and "↓" for
-sorting by ascending and by descenting correspondingly:
+sorting by ascending and by descenting respectively:
 
     ↑string
     => ([""] ["Alexander"] ["Alice"] ["Bob"] ["David"] ["Kris"] ["Marry"])

@@ -9,7 +9,7 @@ You can use YZ from Clojure something like this:
   (:require (ru.petrsu.nest.yz [core :as yzc] [yz-factory :as yzf])))
 
 (def s-em 
-  "Defines collection element manager with list some of strings."
+  "Defines collection element manager with list of some strings."
   (yzf/c-em ["first" "second" ""] [String]))
 
 (defn f
