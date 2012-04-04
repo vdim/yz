@@ -1,13 +1,15 @@
 # YZ
 For demostration features of the YZ we will use some examples. First example is
-collection with string values. Let's define this collection something like this:
+collection with string values. Let's define this collection something like this 
+(we use [Clojure] (http://clojure.org/) language):
 
 ```clojure
 (def names ["Bob" "Alice" "" "Marry" "Kris" "David" "Alexander"])
 ```
 
 In order to test and usage our examples you can use the collq function from the 
-yz-factory namespace something like this:
+[yz-factory namespace] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/yz_factory.clj) 
+something like this:
 
 ```clojure
 (collq "yourquery" names)
@@ -18,21 +20,22 @@ We will hold the following notation: first will be query and second - result of 
     some-query
     => some-result
 
-Note: for more details about usage YZ see [here] (https://github.com/vdim/yz/blob/master/doc/USAGE.md).
+Note: for more details about usage existing implementation of the YZ 
+see [here] (https://github.com/vdim/yz/blob/master/doc/USAGE.md).
 
 
 ### Selection
-In order to get data from your model you can specify class name of objects which you
+In order to get data from your model you can specify name of class of objects which you
 want to get. If you want all strings you just query: 
     
     string
 
-and this query returns all strings from our collection names:
+and this query returns all strings from collection names:
 
     => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 
 ### Projection
-In case you want to get some property of object you must specify it in square brackets:
+In case you want to get some property of objects you must specify it in square brackets:
 
     string[empty]
     => ([false] [false] [true] [false] [false] [false] [false])
@@ -41,7 +44,7 @@ Note that access to properties depends on implementation of your ElementManager
 (in our case it is element manager for simple collections).
 For more details about current implementation of the YZ see [here] (https://github.com/vdim/yz/blob/master/doc/IMPLEMENTATION.md).
 
-For several properties you must enumerate it through whitespace: 
+For several properties you must enumerate it through whitespace(s): 
 
     string[empty class]
     => ([false java.lang.String] [false java.lang.String] 
@@ -66,13 +69,14 @@ at last right part of expression:
     string#(empty = false)
     => (["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 
-Of course it is more interesting the filtering self object (for strings or integers at least), 
-so YZ supports refering to self object due to symbol "&":
+If there is possibility for definition self object directly in text 
+(it is rightly for string or numbers at list),
+you can refer to self object due to symbol "&" in left side of predicate:
 
     string#(& = "Bob")
     => (["Bob"])
 
-YZ supports:
+YZ supports the following operations:
 
 * equality (=, equals to = function of Clojure or .equals method of Java):
 <pre><code>
@@ -80,12 +84,12 @@ YZ supports:
     => (["Bob"])
 </code></pre>
 
-* identical (==, equals to identical? function of Clojure or == of Java):
+* identical (==, equals to identical? function of Clojure or == operation of Java):
 
 ```clojure
-(collq "integer#(& = 1)" [1 2])
+(collq "long#(& = 1)" [1 2])
 => ([1])
-(collq "integer#(& == 1)" [1 2])
+(collq "long#(& == 1)" [1 2])
 => ([1])
 (collq "integer#(& = 1)" [(Integer. 1) (Integer. 2)])
 => ([1])
@@ -127,7 +131,7 @@ your predicates which is adjusted to same property):
 
 * overriding binary operation in case RCP is used:
 <pre><code>
-    string#(& = ("Bob" || ~"^.a.*"))
+    string#(& = ("Bob" || "Mike" || ~"^.a.*"))
     => (["Bob"] ["Marry"] ["David"]) 
 </code></pre>
 
@@ -143,15 +147,27 @@ The right side of predicate may contains:
 * Numbers (integer, real, negative):
 
 ```clojure
-(collq "integer#(& = 1)" [1 2])
+(collq "long#(& = 1)" [1 2])
 => ([1])
-(collq "integer#(& = -1)" [1 -1 2])
+(collq "long#(& = -1)" [1 -1 2])
 => ([-1])
-(collq "integer#(& = 1)" [1 2])
+(collq "long#(& = 1)" [1 2])
 => ([1])
 (collq "long#(& = -1.1)" [-1 -2 -3 -1.1])
 => ([-1.1])
 ```
+
+* Keywords (nil, true, false):
+
+<pre><code>
+    string#(empty = false)
+    => (["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"])
+    string#(empty = true)
+    => ([""])
+    string#(empty = nil)
+    => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
+</code></pre>
+
 
 ### Sorting
 In order to sort your result you should use symbols "↑" and "↓" for
@@ -226,3 +242,6 @@ Notes:
     * strings
     * numbers
     * result of calling another function
+
+
+### 
