@@ -856,7 +856,7 @@
             res (get-info :result)
             nl (get-info :nest-level)
             
-            ; Define new remainder (before symbol ')')
+            ; Define new remainder (before symbol ')' or || or && or "or" or "and").
             newrm (effects 
                     (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
                       ; Subquery is ended where complex condition (|| or &&) is or
@@ -864,7 +864,11 @@
                       (if (and (not st) (= brs 0)
                                (or (= ch \))
                                    (and (= ch \|) (= (first rm-) \|))
-                                   (and (= ch \&) (= (first rm-) \&))))
+                                   (and (= ch \&) (= (first rm-) \&))
+                                   (and (= ch \space) (= (first rm-) \o) 
+                                        (= (second rm-) \r) (= (nth rm- 2) \space))
+                                   (and (= ch \space) (= (first rm-) \a) 
+                                        (= (second rm-) \n) (= (nth rm- 2) \d) (= (nth rm- 3) \space))))
                         newrm
                         (recur (next rm-)
                                (first rm-)
@@ -930,10 +934,7 @@
                                 (sur-by-ws 
                                   (alt (lit \=) (lit \~) (lit-conc-seq "!=") (lit-conc-seq "==")))
                                 :func))
-                         (change-pred string :value :string)
-                         ;(alt (change-pred string :value :string)
-                         ;     value-as-subq)
-                         )
+                         (change-pred string :value :string))
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)

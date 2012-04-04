@@ -110,10 +110,21 @@
 
 (deftest subquery-and-complexconds
          (let [f #(flatten (tc/rows-query %1))]
+           ; Use || or &&
            (is (= (f "building#(description = room.number || name=\"SomeName\")") [b1]))
            (is (= (f "building#(description = room.number && name=\"SomeName\")") []))
            (is (= (f "building#(description = (room.number || \"SomeDesc\"))") [b1]))
            (is (= (f "building#(description = (room.number && \"SomeDesc\"))") []))
            (is (tc/eq-colls (f "building#(description = (room.number || \"102\"))") [b1 b2]))
            (is (tc/eq-colls (f "building#(description != (\"102\" && ∀room.number))") []))
-           (is (tc/eq-colls (f "building#(description != (\"102\" && =room.number))") [b1]))))
+           (is (tc/eq-colls (f "building#(description != (\"102\" && =room.number))") [b1]))
+           
+           ; Use "and" or "or"
+           (is (= (f "building#(description = room.number or name=\"SomeName\")") [b1]))
+           (is (= (f "building#(description = room.number and name=\"SomeName\")") []))
+           (is (= (f "building#(description = (room.number or \"SomeDesc\"))") [b1]))
+           (is (= (f "building#(description = (room.number and \"SomeDesc\"))") []))
+           (is (tc/eq-colls (f "building#(description = (room.number or \"102\"))") [b1 b2]))
+           (is (tc/eq-colls (f "building#(description != (\"102\" and ∀room.number))") []))
+           (is (tc/eq-colls (f "building#(description != (\"102\" and =room.number))") [b1]))
+           ))
