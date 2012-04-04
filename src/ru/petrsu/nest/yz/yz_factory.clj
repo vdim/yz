@@ -47,36 +47,43 @@
                          [javax.persistence.EntityManager] 
                          ru.petrsu.nest.yz.core.ElementManager]
 
-                        ;; Single collection ElementManager.
+                        ;; Single collection ElementManager. 
+                        ;; Collection is specified.
                         ^{:static true} 
                         [createSCElementManager 
                          [java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]
 
-                        ;; Single collection ElementManager.
+                        ;; Single collection ElementManager. 
+                        ;; Collection and list of classes are specified.
                         ^{:static true} 
                         [createSCElementManager 
                          [java.util.Collection java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]
                         
                         ;; Multiple collection ElementManager.
+                        ;; Map is specifed where key is class and
+                        ;; value is collection of objects.
                         ^{:static true} 
                         [createMCElementManager 
                          [java.util.Map]
                          ru.petrsu.nest.yz.core.ElementManager]
                         
                         ;; Multiple collection ElementManager.
+                        ;; Collection and list of classes are specified.
                         ^{:static true} 
                         [createMCElementManager 
                          [java.util.Collection java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]
 
                         ;; Creates QueryYZ for working with collection.
+                        ;; Collection is specified.
                         ^{:static true} 
                         [createCollectionQueryYZ [java.util.Collection]
                          ru.petrsu.nest.yz.QueryYZ]
 
                         ;; Creates QueryYZ for working with collection.
+                        ;; Collection and list of classes are specified.
                         ^{:static true} 
                         [createCollectionQueryYZ [java.util.Collection java.util.Collection]
                          ru.petrsu.nest.yz.QueryYZ]
@@ -315,10 +322,10 @@
 (defn collq
   "Simple interface for quering, where user should define just
   query and collection with objects. Parameters:
-    q - YZ's query
-    coll - collection with objects
+    q - YZ's query.
+    coll - collection with objects.
     rtype - type of result (:rows or :result - flat and hierarchical 
-            representation of the result respectively) 
+            representation of the result respectively).
             :rows is used by default."
   ([^String q coll]
    (collq q coll :rows))
