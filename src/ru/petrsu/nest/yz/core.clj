@@ -114,17 +114,22 @@
           (reduce (fn [s p] 
                     (if (map? p) 
                       (let [{:keys [all ids func value]} p
-                            [any value] (cond (keyword? value) [true (get-qp value)]
-                                        (vector? value) 
-                                        (let [[any rp] value] ; rp - result of parsing subquery.
-                                          (if any 
-                                            [true (set (flatten (:rows (get-qr rp @a-mom @a-em))))]
-                                            [false rp]))
-                                        :else [true value])]
-                        (conj s #(let [v (if any
+                            [allA not-any value] 
+                            (cond (keyword? value) [true false (get-qp value)]
+                                  (vector? value) 
+                                  (let [[allA not-any rp] value] ; rp - result of parsing subquery.
+                                    (if allA
+                                      [true 
+                                       not-any
+                                       ; This set doesn't depend on object.
+                                       (set (flatten (:rows (get-qr rp @a-mom @a-em))))]
+                                      [false not-any rp]))
+                                  :else [true false value])]
+                        (conj s #(let [v (if allA
                                            value
+                                           ; This set depends on object.
                                            (set (flatten (process-nests value %2))))]
-                                  (process-preds %1 %2 all ids func v))))
+                                  (process-preds %1 %2 all ids func v not-any))))
                       (conj (pop (pop s)) 
                             (if (= p :and)
                               #(and ((peek s) %1 %2) ((peek (pop s)) %1 %2))
@@ -318,7 +323,7 @@
 
 (defn process-preds
   "Processes restrictions."
-  [m-go, o, all ids func value]
+  [m-go, o, all ids func value not-any]
   (let [objs (m-go ids o)]
     (and (seq objs)
          (let [;; If objects from objs are arrays then we must compare two arrays.
@@ -337,7 +342,8 @@
                ;; Define filter function.
                f (if all every? some)]
            (cond (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
-                 (set? value) (f #(contains? value %) objs)
+                 (set? value) (f #(let [lf (if not-any every? some)]
+                                   (lf (fn [o] (func o %)) value)) objs)
                  :else (f #(func % value) objs))))))
 
 

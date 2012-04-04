@@ -67,16 +67,16 @@
 
 (deftest fdesc-equal-bname
          (let [f #(flatten (tc/rows-query %1))]
-           (is (= (f "floor#(description = ∀building[name])") [f1_b1]))
-           (is (= (f "floor#(description = ∀building.name)") [f1_b1]))
-           (is (= (f "floor#(building = ∀building#(name=\"SM\"))") [f1_b2]))
-           (is (= (f "floor#(description = ∀building)") []))
-           (is (tc/eq-colls (f "floor#(room = ∀room#(number~\"^2.*\"))") [f2_b1]))))
+           (is (= (f "floor#(description = Ŷbuilding[name])") [f1_b1]))
+           (is (= (f "floor#(description = Ŷbuilding.name)") [f1_b1]))
+           (is (= (f "floor#(building = Ŷbuilding#(name=\"SM\"))") [f1_b2]))
+           (is (= (f "floor#(description = Ŷbuilding)") []))
+           (is (tc/eq-colls (f "floor#(room = Ŷroom#(number~\"^2.*\"))") [f2_b1]))))
 
 
 (deftest cycling
          ^{:doc "Tests cycling in queries something like this: 
-                room#(floor = ∀floor#(name=\"SN(\"))"}
+                room#(floor = Ŷfloor#(name=\"SN(\"))"}
          (let [f #(flatten (tc/rows-query (str "room#(floor = floor#(name=\"" %1 "\"))")))]
            (is (= (f "(") []))
            (is (= (f "()") []))
@@ -92,20 +92,20 @@
          ^{:doc "Tests subqueries which doesn't depend on main query."}
          (let [f #(flatten (tc/rows-query %1))]
            (is (= (f "floor#(description = building[name])") []))
-           (is (tc/eq-colls (f "room#(number = ∀building.description)") [r_101 r_102]))
+           (is (tc/eq-colls (f "room#(number = Ŷbuilding.description)") [r_101 r_102]))
            (is (tc/eq-colls (f "floor (room#(number = building.description))") [f1_b1 f2_b1 f1_b2 r_101]))
            (is (= (f "room#(number = building.description)") [r_101]))
            (is (= (f "building#(description = room.number)") [b1]))
-           (is (= (f "building#(description != room.number)") [b2]))))
+           (is (= (f "building#(description != ∀room.number)") [b2]))))
 
 
 (deftest typed-any-modificator
          (let [f #(flatten (tc/rows-query %1))]
-           (is (= (f "floor#(description = a:building[name])") [f1_b1]))
-           (is (= (f "floor#(description = a:building.name)") [f1_b1]))
-           (is (= (f "floor#(building = a:building#(name=\"SM\"))") [f1_b2]))
-           (is (= (f "floor#(description = a:building)") []))
-           (is (tc/eq-colls (f "floor#(room = a:room#(number~\"^2.*\"))") [f2_b1]))))
+           (is (= (f "floor#(description = A:building[name])") [f1_b1]))
+           (is (= (f "floor#(description = A:building.name)") [f1_b1]))
+           (is (= (f "floor#(building = A:building#(name=\"SM\"))") [f1_b2]))
+           (is (= (f "floor#(description = A:building)") []))
+           (is (tc/eq-colls (f "floor#(room = A:room#(number~\"^2.*\"))") [f2_b1]))))
 
 
 (deftest subquery-and-complexconds
@@ -115,5 +115,5 @@
            (is (= (f "building#(description = (room.number || \"SomeDesc\"))") [b1]))
            (is (= (f "building#(description = (room.number && \"SomeDesc\"))") []))
            (is (tc/eq-colls (f "building#(description = (room.number || \"102\"))") [b1 b2]))
-           (is (tc/eq-colls (f "building#(description != (\"102\" && room.number))") []))
+           (is (tc/eq-colls (f "building#(description != (\"102\" && ∀room.number))") []))
            (is (tc/eq-colls (f "building#(description != (\"102\" && =room.number))") [b1]))))

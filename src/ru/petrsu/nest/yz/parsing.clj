@@ -861,7 +861,7 @@
                     (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
                       ; Subquery is ended where complex condition (|| or &&) is or
                       ; end of condition (symbol ) ) is.
-                      (if (and (= brs 0) 
+                      (if (and (not st) (= brs 0)
                                (or (= ch \))
                                    (and (= ch \|) (= (first rm-) \|))
                                    (and (= ch \&) (= (first rm-) \&))))
@@ -880,11 +880,20 @@
                                (if (= \" ch) (not st) st)))))
 
             length (effects (count newrm))
-            [any newrm] (effects (cond (= \∀ (first newrm))
-                                       [true (next newrm)]
-                                       (and (= \a (first newrm)) (= \: (first (next newrm))))
-                                       [true (nnext newrm)]
-                                       :else [false newrm]))
+            ; In case allA is true then subquery is independent
+            ; In case not-any is true then every? function is used, otherwise some function is used.
+            [allA not-any newrm] (effects (let [st (reduce str (take 6 newrm)) ; newrm starts with some 6 characters.
+                                                f (fn [v] (some #(if (.startsWith st %) %) v))
+                                                [r n] (some (fn [[fr n]] (if fr [fr n]))
+                                                            [[(f ["Ŷ∀" "∀Ŷ" "A:Ŷ" "A:all:" "all:A:" "ŶA:" "all:∀" "∀all:"]) 0]
+                                                             [(f ["Ŷ" "A:"]) 1]
+                                                             [(f ["∀" "all:"]) 2]])
+                                                r (if r (nthrest newrm (count r)) newrm)]
+                                            (case n 
+                                              0 [true true r] 
+                                              1 [true false r]
+                                              2 [false true r]
+                                              [false false r])))
 
             ; Do parsing of our subquery. In case subquery depends on 
             ; main query we add path to main element.
@@ -892,14 +901,14 @@
                                    (do-q newrm) 
                                    (catch Exception e nil))]
                           (when (and rq (empty? (:remainder rq)))
-                            (if any 
+                            (if allA
                               (:result rq)
                               (vec (map #(nnassoc % :where 
                                                   (get-paths (:what %) (get-in-nest res nl :what))) 
                                         (:result rq)))))))
             :when rq
                          
-            cp (change-pred (effects rq) :value [any rq])
+            cp (change-pred (effects rq) :value [allA not-any rq])
             _ (set-info :remainder (drop length rm))] 
            cp))
 
@@ -920,8 +929,11 @@
                    (conc (opt (change-pred 
                                 (sur-by-ws 
                                   (alt (lit \=) (lit \~) (lit-conc-seq "!=") (lit-conc-seq "==")))
-                                :func)) 
-                         (change-pred string :value :string))
+                                :func))
+                         (change-pred string :value :string)
+                         ;(alt (change-pred string :value :string)
+                         ;     value-as-subq)
+                         )
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
                    (change-pred (lit-conc-seq "nil") :value nil)
@@ -929,9 +941,9 @@
                    (pfunc-as-param :value)
                   
                    ;; Rule for subqueries into the right part of predicate.
-                   ;; String before ')' char is taken and parsed due to the do-q function.
-                   value-as-subq
-                   )))
+                   ;; String before ')' or && or || char is taken and parsed due to the do-q function.
+                   (conc (opt (change-pred sign :func))
+                         value-as-subq))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (add-op-to-preds :and))
                         v-prime) emptiness))
