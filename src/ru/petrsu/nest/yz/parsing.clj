@@ -849,9 +849,60 @@
   (conc (lit \$) (rep+ digit)))
 
 
+(declare do-q)
 (def value-as-subq
   "Defines value as subquery: floor#(name = room.number)"
-  query)
+  (complex [rm (get-info :remainder)
+            res (get-info :result)
+            nl (get-info :nest-level)
+            
+            ; Define new remainder (before symbol ')')
+            newrm (effects 
+                    (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
+                      ; Subquery is ended where complex condition (|| or &&) is or
+                      ; end of condition (symbol ) ) is.
+                      (if (and (= brs 0) 
+                               (or (= ch \))
+                                   (and (= ch \|) (= (first rm-) \|))
+                                   (and (= ch \&) (= (first rm-) \&))))
+                        newrm
+                        (recur (next rm-)
+                               (first rm-)
+                               ; Don't touch pair parenthesis.
+                               (if st
+                                 brs
+                                 (case ch
+                                   \( (inc brs)
+                                   \) (dec brs)
+                                   brs))
+                               (conj newrm ch)
+                               ; Prevent cycling: room(name=floor[name]#(name="SV("))
+                               (if (= \" ch) (not st) st)))))
+
+            length (effects (count newrm))
+            [any newrm] (effects (cond (= \∀ (first newrm))
+                                       [true (next newrm)]
+                                       (and (= \a (first newrm)) (= \: (first (next newrm))))
+                                       [true (nnext newrm)]
+                                       :else [false newrm]))
+
+            ; Do parsing of our subquery. In case subquery depends on 
+            ; main query we add path to main element.
+            rq (effects (let [rq (try 
+                                   (do-q newrm) 
+                                   (catch Exception e nil))]
+                          (when (and rq (empty? (:remainder rq)))
+                            (if any 
+                              (:result rq)
+                              (vec (map #(nnassoc % :where 
+                                                  (get-paths (:what %) (get-in-nest res nl :what))) 
+                                        (:result rq)))))))
+            :when rq
+                         
+            cp (change-pred (effects rq) :value [any rq])
+            _ (set-info :remainder (drop length rm))] 
+           cp))
+
 
 ;; The block "value" has the following BNF:
 ;;    value -> v value'
@@ -859,7 +910,7 @@
 ;;    v -> v-f v'
 ;;    v'-> and v-f v' | ε
 ;;    v-f -> (value) | some-value
-(declare value, do-q)
+(declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) 
                          (alt (change-pred number :value :number) 
@@ -879,50 +930,8 @@
                   
                    ;; Rule for subqueries into the right part of predicate.
                    ;; String before ')' char is taken and parsed due to the do-q function.
-                   (complex [rm (get-info :remainder)
-                             res (get-info :result)
-                             nl (get-info :nest-level)
-                             
-                             ; Define new remainder (before symbol ')')
-                             newrm (effects 
-                                     (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
-                                       (if (and (= brs 0) (= ch \)))
-                                         newrm
-                                         (recur (next rm-)
-                                                (first rm-)
-                                                ; Don't touch pair parenthesis.
-                                                (if st
-                                                  brs
-                                                  (case ch
-                                                    \( (inc brs)
-                                                    \) (dec brs)
-                                                    brs))
-                                                (conj newrm ch)
-                                                ; Prevent cycling: room(name=floor[name]#(name="SV("))
-                                                (if (= \" ch) (not st) st)))))
-                             length (effects (count newrm))
-                             [any newrm] (effects (cond (= \∀ (first newrm))
-                                                        [true (next newrm)]
-                                                        (and (= \a (first newrm)) (= \: (first (next newrm))))
-                                                        [true (nnext newrm)]
-                                                        :else [false newrm]))
-
-                             ; Do parsing of our subquery. In case subquery depends on 
-                             ; main query we add path to main element.
-                             rq (effects (let [rq (try 
-                                                    (do-q newrm) 
-                                                    (catch Exception e nil))]
-                                           (when (and rq (empty? (:remainder rq)))
-                                             (if any 
-                                               (:result rq)
-                                               (vec (map #(nnassoc % :where 
-                                                                   (get-paths (:what %) (get-in-nest res nl :what))) 
-                                                         (:result rq)))))))
-                             :when rq
-                         
-                             cp (change-pred (effects rq) :value [any rq])
-                             _ (set-info :remainder (drop length rm))
-                             ] cp))))
+                   value-as-subq
+                   )))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (add-op-to-preds :and))
                         v-prime) emptiness))

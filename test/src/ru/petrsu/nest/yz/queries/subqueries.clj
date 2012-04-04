@@ -25,7 +25,7 @@
         clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
   (:import (ru.petrsu.nest.son 
-             SON, Building, Room, Floor, Network)))
+             SON, Building, Room, Floor)))
 
 (def r_101 (doto (Room.) (.setNumber "101")))
 (def r_102 (doto (Room.) (.setNumber "102")))
@@ -94,8 +94,11 @@
            (is (= (f "floor#(description = building[name])") []))
            (is (tc/eq-colls (f "room#(number = ∀building.description)") [r_101 r_102]))
            (is (tc/eq-colls (f "floor (room#(number = building.description))") [f1_b1 f2_b1 f1_b2 r_101]))
-           (is (= (f "room#(number = building.description)") [r_101]))))
-        
+           (is (= (f "room#(number = building.description)") [r_101]))
+           (is (= (f "building#(description = room.number)") [b1]))
+           (is (= (f "building#(description != room.number)") [b2]))))
+
+
 (deftest typed-any-modificator
          (let [f #(flatten (tc/rows-query %1))]
            (is (= (f "floor#(description = a:building[name])") [f1_b1]))
@@ -103,3 +106,14 @@
            (is (= (f "floor#(building = a:building#(name=\"SM\"))") [f1_b2]))
            (is (= (f "floor#(description = a:building)") []))
            (is (tc/eq-colls (f "floor#(room = a:room#(number~\"^2.*\"))") [f2_b1]))))
+
+
+(deftest subquery-and-complexconds
+         (let [f #(flatten (tc/rows-query %1))]
+           (is (= (f "building#(description = room.number || name=\"SomeName\")") [b1]))
+           (is (= (f "building#(description = room.number && name=\"SomeName\")") []))
+           (is (= (f "building#(description = (room.number || \"SomeDesc\"))") [b1]))
+           (is (= (f "building#(description = (room.number && \"SomeDesc\"))") []))
+           (is (tc/eq-colls (f "building#(description = (room.number || \"102\"))") [b1 b2]))
+           (is (tc/eq-colls (f "building#(description != (\"102\" && room.number))") []))
+           (is (tc/eq-colls (f "building#(description != (\"102\" && =room.number))") [b1]))))
