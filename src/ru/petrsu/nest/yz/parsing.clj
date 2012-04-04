@@ -889,7 +889,8 @@
             [allA not-any newrm] (effects (let [st (reduce str (take 6 newrm)) ; newrm starts with some 6 characters.
                                                 f (fn [v] (some #(if (.startsWith st %) %) v))
                                                 [r n] (some (fn [[fr n]] (if fr [fr n]))
-                                                            [[(f ["Ŷ∀" "∀Ŷ" "A:Ŷ" "A:all:" "all:A:" "ŶA:" "all:∀" "∀all:"]) 0]
+                                                            [[(f ["Ŷ∀" "∀Ŷ" "A:all:" "all:A:" 
+                                                                  "all:Ŷ" "Ŷall:" "A:∀" "∀A:"]) 0]
                                                              [(f ["Ŷ" "A:"]) 1]
                                                              [(f ["∀" "all:"]) 2]])
                                                 r (if r (nthrest newrm (count r)) newrm)]
