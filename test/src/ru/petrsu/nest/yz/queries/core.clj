@@ -260,9 +260,12 @@
   [coll1 coll2]
   (let [s-coll1 (set coll1)
         s-coll2 (set coll2)]
-    (and
-      (empty? (remove #(contains? s-coll2 %) coll1))
-      (empty? (remove #(contains? s-coll1 %) coll2)))))
+    (if (or (not= (count coll1) (count coll2))
+            (not= (count s-coll1) (count s-coll2)))
+      false
+      (and
+        (empty? (remove #(contains? s-coll2 %) coll1))
+        (empty? (remove #(contains? s-coll1 %) coll2))))))
 
 
 (defn eq-maps
