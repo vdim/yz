@@ -861,27 +861,33 @@
                     (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
                       ; Subquery is ended where complex condition (|| or &&) is or
                       ; end of condition (symbol ) ) is.
-                      (if (and (not st) (= brs 0)
-                               (or (= ch \))
-                                   (and (= ch \|) (= (first rm-) \|))
-                                   (and (= ch \&) (= (first rm-) \&))
-                                   (and (= ch \space) (= (first rm-) \o) 
-                                        (= (second rm-) \r) (= (nth rm- 2) \space))
-                                   (and (= ch \space) (= (first rm-) \a) 
-                                        (= (second rm-) \n) (= (nth rm- 2) \d) (= (nth rm- 3) \space))))
-                        newrm
-                        (recur (next rm-)
-                               (first rm-)
-                               ; Don't touch pair parenthesis.
-                               (if st
-                                 brs
-                                 (case ch
-                                   \( (inc brs)
-                                   \) (dec brs)
-                                   brs))
-                               (conj newrm ch)
-                               ; Prevent cycling: room(name=floor[name]#(name="SV("))
-                               (if (= \" ch) (not st) st)))))
+                      (cond (and (not st) (= brs 0)
+                                 (or (= ch \))
+                                     (and (= ch \|) (= (first rm-) \|))
+                                     (and (= ch \&) (= (first rm-) \&))
+                                     (and (= ch \space) (= (first rm-) \o) 
+                                          (= (second rm-) \r) (= (nth rm- 2) \space))
+                                     (and (= ch \space) (= (first rm-) \a) 
+                                          (= (second rm-) \n) (= (nth rm- 2) \d) (= (nth rm- 3) \space))))
+                            newrm 
+                           
+                            ; Newrm was ended, but ")", "or" or "and" was not.
+                            (= ch nil)
+                            (throw (SyntaxException. "Can't parse subquery. Possible count of brackets is not even."))
+
+                            :else
+                            (recur (next rm-)
+                                   (first rm-)
+                                   ; Don't touch pair parenthesis.
+                                   (if st
+                                     brs
+                                     (case ch
+                                       \( (inc brs)
+                                       \) (dec brs)
+                                       brs))
+                                   (conj newrm ch)
+                                   ; Prevent cycling: room(name=floor[name]#(name="SV("))
+                                   (if (= \" ch) (not st) st)))))
 
             length (effects (count newrm))
             ; In case allA is true then subquery is independent
