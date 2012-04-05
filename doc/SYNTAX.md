@@ -287,3 +287,95 @@ a hierarchical result may be interesting:
      #<Course German>
      [[#<Faculty Brian> []]]]],
 
+In case you define the following query
+
+    course (faculty (student))
+
+you get all courses, its faculty and for each faculty his/her students:
+
+   [[#<Course Algebra>
+     [[#<Faculty Marry>
+       [[#<Student John> [] #<Student Alexander> [] #<Student Nik> []]]]]
+     #<Course Geometry>
+     [[#<Faculty David> [[#<Student John> [] #<Student Nik> []]]]]
+     #<Course Russian>
+     [[#<Faculty Brian>
+       [[#<Student John>
+         []
+         #<Student Bob>
+         []
+         #<Student John>
+         []
+         #<Student Bob>
+         []]]]]
+     #<Course German>
+     [[#<Faculty Brian>
+       [[#<Student John>
+         []
+         #<Student Bob>
+         []
+         #<Student John>
+         []
+         #<Student Bob>
+         []]]]]]]
+
+   ([#<Course Algebra> #<Faculty Marry> #<Student John>]
+    [#<Course Algebra> #<Faculty Marry> #<Student Alexander>]
+    [#<Course Algebra> #<Faculty Marry> #<Student Nik>]
+    [#<Course Geometry> #<Faculty David> #<Student John>]
+    [#<Course Geometry> #<Faculty David> #<Student Nik>]
+    [#<Course Russian> #<Faculty Brian> #<Student John>]
+    [#<Course Russian> #<Faculty Brian> #<Student Bob>]
+    [#<Course Russian> #<Faculty Brian> #<Student John>]
+    [#<Course Russian> #<Faculty Brian> #<Student Bob>]
+    [#<Course German> #<Faculty Brian> #<Student John>]
+    [#<Course German> #<Faculty Brian> #<Student Bob>]
+    [#<Course German> #<Faculty Brian> #<Student John>]
+    [#<Course German> #<Faculty Brian> #<Student Bob>])
+
+
+In case you want to get all courses and its faculty and students, you can define the
+following query:
+
+    course (faculty, student)
+   [[#<Course Algebra>
+     [[#<Faculty Marry> []]
+      [#<Student John> [] #<Student Alexander> [] #<Student Nik> []]]
+     #<Course Geometry>
+     [[#<Faculty David> []] [#<Student John> [] #<Student Nik> []]]
+     #<Course Russian>
+     [[#<Faculty Brian> []] [#<Student John> [] #<Student Bob> []]]
+     #<Course German>
+     [[#<Faculty Brian> []] [#<Student John> [] #<Student Bob> []]]]]
+
+   ([#<Course Algebra> #<Faculty Marry>]
+    [#<Course Algebra> #<Student John>]
+    [#<Course Algebra> #<Student Alexander>]
+    [#<Course Algebra> #<Student Nik>]
+    [#<Course Geometry> #<Faculty David>]
+    [#<Course Geometry> #<Student John>]
+    [#<Course Geometry> #<Student Nik>]
+    [#<Course Russian> #<Faculty Brian>]
+    [#<Course Russian> #<Student John>]
+    [#<Course Russian> #<Student Bob>]
+    [#<Course German> #<Faculty Brian>]
+    [#<Course German> #<Student John>]
+    [#<Course German> #<Student Bob>])
+
+You can sort, filter, project for any entity:
+    
+    course (faculty#(name="Brian"))
+
+In this case you get all courses and its faculties which have name "Brian":
+
+   ([#<Course Algebra>]
+    [#<Course Geometry>]
+    [#<Course Russian> #<Faculty Brian>]
+    [#<Course German> #<Faculty Brian>])
+
+In case you want to get courses which is taught with Brian, you can try:
+
+    course#(faculty.name="Brian")
+    => ([#<Course Russian>] [#<Course German>])}
+
+
