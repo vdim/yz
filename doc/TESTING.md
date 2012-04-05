@@ -5,25 +5,28 @@ For testing separate project is used (it is within the test directory). So for r
 1. Download source code from github:
 <pre><code>vdim:~/$ git clone http://github.com/vdim/yz</code></pre>
 
-2. Download dependencies for YZ project:
+2. Cd to the yz directory:
+<pre><code>vdim:~/$ cd yz</code></pre>
+
+3. Download dependencies for YZ project:
 <pre><code>vdim:~/yz$ lein deps</code></pre>
 
-3. Compile java sources from YZ project and run its aot compilation:
+4. Compile java sources from YZ project and run its aot compilation:
 <pre><code>vdim:~/yz$ lein compile </code></pre>
 
-4. Cd to the test directory with test project:
-<pre><code>vdim:~/yz$ cd yz/test</code></pre>
+5. Cd to the test directory with test project:
+<pre><code>vdim:~/yz$ cd test</code></pre>
 
-5. Download dependencies for test project:
+6. Download dependencies for test project:
 <pre><code>vdim:~/yz/test$ lein deps</code></pre>
 
-6. Hack for generating some classes:
+7. Hack for generating some classes:
 <pre><code>vdim:~/yz/test$ ant </code></pre>
 
-7. Compile test project:
+8. Compile test project:
 <pre><code>vdim:~/yz/test$ lein compile </code></pre>
 
-8. Run tests:
+9. Run tests:
 <pre><code>vdim:~/yz/test$ lein test </code></pre>
 
 Some comments:
@@ -67,7 +70,7 @@ each other.
 
 Example of a scenario may be something like this:
 
-1. Execute first seven steps from testing section.
+1. Execute first eight steps from testing section.
 
 2. Generate H2 databases with 10000 and 20000 elements:
 <pre><code>vdim:~/yz/test$ ./cr_db.sh -d h2 -n "10000 20000" </code></pre>
