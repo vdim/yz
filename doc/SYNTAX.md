@@ -22,7 +22,8 @@ We will hold the following notation: first will be query and second - result of 
     => some-result
 
 Note: for more details about usage existing implementation of the YZ 
-see [here] (https://github.com/vdim/yz/blob/master/doc/USAGE.md).
+see [here] (https://github.com/vdim/yz/blob/master/doc/USAGE.md) or follow to 
+[this] (https://github.com/vdim/yz/blob/master/doc/TESTINGCOLLQ.md) instruction.
 
 
 ### Selection
