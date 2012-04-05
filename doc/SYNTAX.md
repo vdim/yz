@@ -6,9 +6,9 @@
 	<li><a href="#selection">Selection</a></li>
 	<li><a href="#projection">Projection</a></li>
 	<li><a href="#filtering">Filtering</a></li>
-	<li><a href="#sorting"></a>Sorting</li>
-	<li><a href="#calling_function"></a></li>
-	<li><a href="#removing_dupls"></a></li>
+	<li><a href="#sorting">Sorting</a></li>
+	<li><a href="#calling_function">Calling user function</a></li>
+	<li><a href="#removing_dupls">Removing duplicates</a></li>
     </ul>
     <li><a href="#complex_model">More complex model</a></li>
     <ul>
