@@ -150,8 +150,8 @@
 
 
 (deftest sort-prop
-         (is (= (tc/rows-query "floor[↑number]") [[1] [2] [3] [4]]))
-         (is (= (tc/rows-query "floor[↓number]") [[4] [3] [2] [1]]))
+         (is (= (tc/rows-query "floor[↑number]") [[1] [1] [2] [3] [4]]))
+         (is (= (tc/rows-query "floor[↓number]") [[4] [3] [2] [1] [1]]))
          (binding [tc/*mom* (assoc tc/*mom* Building
                                    (assoc (get tc/*mom* Building) 
                                           :sort {:self {:keyfn #(.getName %)}}))]
