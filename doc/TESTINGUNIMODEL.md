@@ -41,6 +41,7 @@
 
 12. At last try query:
 
+```clojure
     ru.petrsu.nest.yz.init=> (pprint (pquery "course (faculty)" uni-em))
     {:result
      [[#<Course Algebra>
@@ -60,4 +61,4 @@
       [#<Course German> #<Faculty Brian>])}
     nil
     ru.petrsu.nest.yz.init=>
-
+```
