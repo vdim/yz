@@ -438,3 +438,38 @@ you want check collection by "all" option, you can use modificator ∀. Examples
     student#(name != ∀faculty.name)
     => ([#<Student Alexander>] [#<Student Nik>] [#<Student John>] [#<Student Bob>])
 
+
+## Table with typed and not typed symbols
+
+<table>
+    <tr>
+        <td>Not typed</td>
+        <td>Typed</td>
+	<td>Note</td>
+    </tr>
+    <tr>
+        <td>↑</td>
+        <td>a:</td>
+	<td>Sort by ascending.</td>
+    </tr>
+    <tr>
+        <td>↓</td>
+        <td>d:</td>
+	<td>Sort by descending.</td>
+    </tr>
+    <tr>
+        <td>∀</td>
+        <td>all:</td>
+	<td>Check all elements from collection.</td>
+    </tr>
+    <tr>
+        <td>Ŷ</td>
+        <td>A:</td>
+	<td>Select all elements (not only linked with current object).</td>
+    </tr>
+    <tr>
+        <td>¹</td>
+        <td>u:</td>
+	<td>Remove duplicates.</td>
+    </tr>
+</table>
