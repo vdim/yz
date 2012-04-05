@@ -1516,7 +1516,7 @@
    "building[@(clojure.core/nil? `room')]"
    "building[@(nil? `room')]"
 
-   ;; New function's modificators (It tests in qlist, but this is just in case.)
+   ;; New function's modificators.
    "@(count `room')"
    "@(count dl:`room')"
    "@(count de:`room')"
@@ -1533,6 +1533,21 @@
    "floor#(name = room[name])"
    "floor#(name = room.description)"
    "floor#(room = room#(name=\"MB\"))"
+   "floor#(name=room.name)"
+   "floor#(name = room.name || description=\"SM\")"
+   "floor#(name = room.name && description=\"SM\")"
+   "floor#(name=room.name || description=\"SM\")"
+   "floor#(name=room.name && description=\"SM\")"
+   "floor#(name = room.name||description=\"SM\")"
+   "floor#(name = room.name&&description=\"SM\")"
+   "floor#(name = room.name or description=\"SM\")"
+   "floor#(name = room.name and description=\"SM\")"
+   "floor#(description=\"SM\" || name = room.name)"
+   "floor#(description=\"SM\" && name = room.name)"
+   "floor#(name = room.name || description=\"SM\" || name = building.name)"
+   "floor#(name = room.name && description=\"SM\" && name = building.name)"
+   "floor#(name = room.name || name = building.name)"
+   "floor#(name = room.name && name = building.name)"
 
    ;; Whitespaces
    "room "
@@ -1643,6 +1658,24 @@
    "{d:number}¹room"
    "¹{a:number d:name}room"
    "{d:number a:name}¹room"
+
+   ;; Subqueries and modificators.
+   "floor#(name = Ŷ∀room.name)"
+   "floor#(name = Ŷ∀room[name])"
+   "floor#(name = Ŷ∀room.description)"
+   "floor#(room = Ŷ∀room#(name=\"MB\"))"
+   "floor#(name = ∀Ŷroom.name)"
+   "floor#(name = ∀Ŷroom[name])"
+   "floor#(name = ∀Ŷroom.description)"
+   "floor#(room = ∀Ŷroom#(name=\"MB\"))"
+   "floor#(name = ∀room.name)"
+   "floor#(name = ∀room[name])"
+   "floor#(name = ∀room.description)"
+   "floor#(room = ∀room#(name=\"MB\"))"
+   "floor#(name = Ŷroom.name)"
+   "floor#(name = Ŷroom[name])"
+   "floor#(name = Ŷroom.description)"
+   "floor#(room = Ŷroom#(name=\"MB\"))"
    ])
 
 
@@ -1702,8 +1735,11 @@
 
 (def clist-subqueries
   ^{:doc "Defines list with queries with the 
-         following structure: occupancy#(name = query from clist)."}
-  (map #(str "occupancy#(name = " % ")") clist))
+         following structure: occupancy#(name = query from clist).
+         Also modificators (Ŷ and ∀) are used."}
+  (concat (map #(str "occupancy#(name = " % ")") clist) 
+          (map #(str "occupancy#(name = Ŷ" % ")") clist)
+          (map #(str "occupancy#(name = ∀Ŷ" % ")") clist)))
 
 
 (deftest parse-remainder
@@ -1738,7 +1774,8 @@
            (is (thrown? NullPointerException (f "(building)")))
            (is (thrown? NullPointerException (f ", building")))
            (is (thrown? SyntaxException (f "building, ")))
-           (is (thrown? SyntaxException (f "building#(floor.∀room.number=1)")))))
+           (is (thrown? SyntaxException (f "building#(floor.∀room.number=1)")))
+           (is (thrown? RuntimeException (f "building#(name = room#(number=1)")))))
 
 (comment
 (deftest t-parse-remainder

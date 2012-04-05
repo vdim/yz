@@ -22,6 +22,7 @@
     :doc "Test queries with subquery in the right part of
          condition. Something like this: floor#(name = room.name)"}
   (:use ru.petrsu.nest.yz.core 
+        ru.petrsu.nest.yz.parsing
         clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
   (:import (ru.petrsu.nest.son 
@@ -99,11 +100,16 @@
          (let [f #(flatten (tc/rows-query %1))]
            (is (= (f "floor#(description = building[name])") []))
            (is (tc/eq-colls (f "room#(number = Ŷbuilding.description)") [r_101 r_102]))
+           (is (tc/eq-colls (f "room#(number = Ŷbuilding[description]#(description=\"102\"))") [r_102]))
+           (is (tc/eq-colls (f "room#(number = Ŷbuilding[description]#(description=\"101\"))") [r_101]))
            (is (tc/eq-colls (f "floor (room#(number = building.description))") [f1_b1 f2_b1 f1_b2 r_101]))
            (is (= (f "room#(number = building.description)") [r_101]))
            (is (= (f "building#(description = room.number)") [b1]))
            (is (= (f "building#(description != ∀room.number)") [b2]))
-           (is (= (f "building#(description!=∀room.number)") [b2]))))
+           (is (= (f "building#(description!=∀room.number)") [b2]))
+           (is (tc/eq-colls (f "building#(description = room.number || name = Ŷson.name)") [b1, b2]))
+           (is (tc/eq-colls (f "building#(description = (room.number || Ŷson.name))") [b1]))
+           (is (tc/eq-colls (f "building#(description = (room.number && Ŷson.name))") []))))
 
 
 (deftest typed-all-modificator
