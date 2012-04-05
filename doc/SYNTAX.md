@@ -262,7 +262,7 @@ In order to use this university model and next queries you can follow
 
 
 ### Joining
-So let's start. In order to select linked objects you should use brackets. For example, if you want to
+In order to select linked objects you should use brackets. For example, if you want to
 get all courses and its faculty you should query:
 
     course (faculty)
@@ -275,7 +275,7 @@ This query returns the following result:
      [#<Course German> #<Faculty Brian>])}
  
 Note that so far we work with flat collection and get result as flat rows. But now
-you can get a hierarchical result:
+a hierarchical result may be interesting:
 
     [[#<Course Algebra>
      [[#<Faculty Marry> []]]

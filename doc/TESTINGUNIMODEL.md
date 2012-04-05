@@ -40,25 +40,24 @@
 </code></pre>
 
 12. At last try query:
-<pre><code>
-ru.petrsu.nest.yz.init=> (pprint (pquery "course (faculty)" uni-em))
-{:result
- [[#<Course Algebra>
-   [[#<Faculty Marry> []]]
-   #<Course Geometry>
-   [[#<Faculty David> []]]
-   #<Course Russian>
-   [[#<Faculty Brian> []]]
-   #<Course German>
-   [[#<Faculty Brian> []]]]],
- :error nil,
- :columns ("Course" "Faculty"),
- :rows
- ([#<Course Algebra> #<Faculty Marry>]
-  [#<Course Geometry> #<Faculty David>]
-  [#<Course Russian> #<Faculty Brian>]
-  [#<Course German> #<Faculty Brian>])}
-nil
-ru.petrsu.nest.yz.init=>
-</code></pre>
+
+    ru.petrsu.nest.yz.init=> (pprint (pquery "course (faculty)" uni-em))
+    {:result
+     [[#<Course Algebra>
+       [[#<Faculty Marry> []]]
+       #<Course Geometry>
+       [[#<Faculty David> []]]
+       #<Course Russian>
+       [[#<Faculty Brian> []]]
+       #<Course German>
+       [[#<Faculty Brian> []]]]],
+     :error nil,
+     :columns ("Course" "Faculty"),
+     :rows
+     ([#<Course Algebra> #<Faculty Marry>]
+      [#<Course Geometry> #<Faculty David>]
+      [#<Course Russian> #<Faculty Brian>]
+      [#<Course German> #<Faculty Brian>])}
+    nil
+    ru.petrsu.nest.yz.init=>
 
