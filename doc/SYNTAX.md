@@ -168,6 +168,7 @@ The right side of predicate may contains:
     => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 </code></pre>
 
+* Subquery
 
 ### Sorting
 In order to sort your result you should use symbols "↑" and "↓" for
@@ -244,4 +245,41 @@ Notes:
     * result of calling another function
 
 
-### 
+### Joining
+So far we test simple flat collection. Let's consider more complex model 
+(we choose classic example about university):
+<img src="https://github.com/vdim/yz/raw/master/doc/uni_model.png" alt="UML class diagram for university model"/>
+
+We implement it (see source code [here](https://github.com/vdim/yz/blob/master/test/src/university/)) 
+and create some [example] (https://github.com/vdim/yz/blob/master/test/src/ru/petrsu/nest/yz/queries/uni_bd.clj)
+which is represented on figure below in UML object diagram notation:
+<img src="https://github.com/vdim/yz/raw/master/doc/uni_model_object.png" 
+alt="Example of university model in UML object diagram notation"/>
+
+In order to use this university model and next queries you can follow 
+[this] (https://github.com/vdim/yz/blob/master/doc/TESTING.md) instruction.
+
+So let's start. In order to select linked objects you should use brackets. For example, if you want to
+get all courses and its faculty you should query:
+
+    course (faculty)
+
+This query returns the following result:
+
+    ([#<Course Algebra> #<Faculty Marry>]
+     [#<Course Geometry> #<Faculty David>]
+     [#<Course Russian> #<Faculty Brian>]
+     [#<Course German> #<Faculty Brian>])}
+ 
+Note that so far we work with flat collection and get result as flat rows. But now
+you can get a hierarchical result:
+
+  [[#<Course Algebra>
+   [[#<Faculty Marry> []]]
+   #<Course Geometry>
+   [[#<Faculty David> []]]
+   #<Course Russian>
+   [[#<Faculty Brian> []]]
+   #<Course German>
+   [[#<Faculty Brian> []]]]],
+
