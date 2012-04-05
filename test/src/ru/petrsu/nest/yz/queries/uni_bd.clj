@@ -46,10 +46,24 @@
 (def rus (doto (Course.) (.setCode "200") (.setTitle "Russian") 
            (.setFaculty brian) (.addStudent john) (.addStudent bob)))
 
+(def ger (doto (Course.) (.setCode "201") (.setTitle "German") 
+           (.setFaculty brian) (.addStudent john) (.addStudent bob)))
+
+;; Add courses to students
+(doto alex (.addCourse alg)) 
+(doto nik (.addCourse alg) (.addCourse geo)) 
+(doto john (.addCourse alg) (.addCourse geo) (.addCourse rus) (.addCourse ger)) 
+(doto bob (.addCourse rus) (.addCourse ger)) 
+
+;; Add courses to faculties
+(doto marry (.addCourse alg)) 
+(doto david (.addCourse geo)) 
+(doto brian (.addCourse rus) (.addCourse ger)) 
+
 ;; Define collections
 (def students [alex nik john bob])
 (def faculty [marry david brian bob-f])
-(def courses [alg geo rus])
+(def courses [alg geo rus ger])
 
 ;; MultiCollectionManager
 (def uni-em (yzf/mc-em {Course courses, Faculty faculty, Student students}
