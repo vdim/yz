@@ -25,12 +25,14 @@ You can use YZ from Clojure something like this:
 	vdim@laptop:~/yz/test$ lein repl
 	user=> (in-ns 'ru.petrsu.nest.yz.init)
 	#<Namespace ru.petrsu.nest.yz.init>
-	ru.petrsu.nest.yz.init=>
 	ru.petrsu.nest.yz.init=> (def s-em (c-em ["first" "second" ""] [String]))
 	#'ru.petrsu.nest.yz.init/s-em
-	ru.petrsu.nest.yz.init=>
-	ru.petrsu.nest.yz.init=> (pquery "string" s-em)
-	#ru.petrsu.nest.yz.core.Result{:result [["first" [] "second" [] "" []]], :error nil, :columns ("String"), :rows (["first"] ["second"] [""])}
+	ru.petrsu.nest.yz.init=> (pprint (pquery "string" s-em))
+	{:result [["first" [] "second" [] "" []]],
+	 :error nil,
+	 :columns ("String"),
+	 :rows (["first"] ["second"] [""])}
+	nil
 
 ## Java code
 
