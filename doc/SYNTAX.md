@@ -1,5 +1,26 @@
 # YZ
-## Simple collection
+
+<ul>
+    <li><a href="#simple_collection">Simple collection</a></li>
+    <ul>
+	<li><a href="#selection">Selection</a></li>
+	<li><a href="#projection">Projection</a></li>
+	<li><a href="#filtering">Filtering</a></li>
+	<li><a href="#sorting"></a>Sorting</li>
+	<li><a href="#calling_function"></a></li>
+	<li><a href="#removing_dupls"></a></li>
+    </ul>
+    <li><a href="#complex_model">More complex model</a></li>
+    <ul>
+	<li><a href="#joining"></a></li>
+	<li><a href="#union"></a></li>
+	<li><a href="#subquery"></a></li>
+    </ul>
+    <li><a href="#table_typed_notyped">Table with typed and not typed symbols</a></li>
+</ul>
+
+<a name="simple_collection"></a>
+## Simple collection 
 For demostration features of the YZ we will use some examples. First example is
 collection with string values. Let's define this collection something like this 
 (we use [Clojure] (http://clojure.org/) language):
@@ -25,8 +46,8 @@ Note: for more details about usage existing implementation of the YZ
 see [here] (https://github.com/vdim/yz/blob/master/doc/USAGE.md) or follow to 
 [this] (https://github.com/vdim/yz/blob/master/doc/TESTINGCOLLQ.md) instruction.
 
-
-### Selection
+<a name="selection"></a>
+### Selection 
 In order to get data from your model you can specify name of class of objects which you
 want to get. If you want all strings you just query: 
     
@@ -36,6 +57,7 @@ and this query returns all strings from collection names:
 
     => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 
+<a name="projection"></a>
 ### Projection
 In case you want to get some property of objects you must specify it in square brackets:
 
@@ -62,6 +84,7 @@ object due to symbol "&":
         ["Kris" false] ["David" false] ["Alexander" false]) 
 
 
+<a name="filtering"></a>
 ### Filtering
 In order to filter your collection due to some condition through some property 
 you should specify your predicate after name of class before symbol "#" in parenthesis. You
@@ -170,6 +193,7 @@ The right side of predicate may contains:
     => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 </code></pre>
 
+<a name="sorting"></a>
 ### Sorting
 In order to sort your result you should use symbols "↑" and "↓" for
 sorting by ascending and by descenting respectively:
@@ -229,6 +253,7 @@ correspondingly:
 Note that sorting requires that your objects (or property) must implements Comparable interface.
 
 
+<a name="calling_function"></a>
 ### Calling user function
 YZ allows to call user function:
 
@@ -245,6 +270,7 @@ Notes:
     * result of calling another function
 
 
+<a name="removing_dupls"></a>
 ### Removing duplicates:
 Use symbol ¹ or u: for removing duplicates from result of query:
 
@@ -257,6 +283,7 @@ Use symbol ¹ or u: for removing duplicates from result of query:
 => ([1 2])
 ```
 
+<a name="complex_model"></a>
 ## More complex model
 So far we test simple flat collection. Let's consider more complex model 
 (we choose classic example about university):
@@ -272,6 +299,7 @@ In order to use this university model and next queries you can follow
 [this] (https://github.com/vdim/yz/blob/master/doc/TESTINGUNIMODEL.md) instruction.
 
 
+<a name="joining"></a>
 ### Joining
 In order to select linked objects you should use brackets. For example, if you want to
 get all courses and its faculty you should query:
@@ -390,6 +418,7 @@ In case you want to get courses which is taught with Brian, you can try:
     => ([#<Course Russian>] [#<Course German>])
 
 
+<a name="union"></a>
 ### Union
 In case you want to get results of several queries in single query, you
 can use "," for union results
@@ -414,6 +443,7 @@ can use "," for union results
     @(count `course'), @(count `faculty'), @(count `student')
     => ([4] [4] [4])
 
+<a name="subquery"></a>
 ### Subquery in right side of predicates
 You can use YZ query in the right side of predicate of another YZ query.
 For example you want to get students which have same name of his/her faculties:
@@ -439,6 +469,7 @@ you want check collection by "all" option, you can use modificator ∀. Examples
     => ([#<Student Alexander>] [#<Student Nik>] [#<Student John>] [#<Student Bob>])
 
 
+<a name="table_typed_notyped"></a>
 ## Table with typed and not typed symbols
 
 <table>
