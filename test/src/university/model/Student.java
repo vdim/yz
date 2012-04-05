@@ -19,4 +19,14 @@ public class Student {
     public void setName(String name) {
 	this.name = name;
     }
+    
+    @Override
+    public String toString() {
+        String name = getName();
+       
+        if (name == null || name.length() == 0)
+            return "";
+        
+        return name;
+    }
 }

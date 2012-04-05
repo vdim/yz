@@ -40,4 +40,14 @@ public class Course {
     public void setTitle(String title) {
 	this.title = title;
     }
+    
+    @Override
+    public String toString() {
+        String title = getTitle();
+       
+        if (title == null || title.length() == 0)
+            return "";
+        
+        return title;
+    }
 }
