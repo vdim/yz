@@ -170,8 +170,6 @@ The right side of predicate may contains:
     => (["Bob"] ["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 </code></pre>
 
-* Subquery
-
 ### Sorting
 In order to sort your result you should use symbols "↑" and "↓" for
 sorting by ascending and by descenting respectively:
@@ -247,6 +245,18 @@ Notes:
     * result of calling another function
 
 
+### Removing duplicates:
+Use symbol ¹ or u: for removing duplicates from result of query:
+
+```clojure
+(collq "long" [1 2 1])
+=> ([1 2 1])
+(collq "¹long" [1 2 1])
+=> ([1 2])
+(collq "u:long" [1 2 1])
+=> ([1 2])
+```
+
 ## More complex model
 So far we test simple flat collection. Let's consider more complex model 
 (we choose classic example about university):
@@ -270,22 +280,22 @@ get all courses and its faculty you should query:
 
 This query returns the following result:
 
-    ([#<Course Algebra> #<Faculty Marry>]
-     [#<Course Geometry> #<Faculty David>]
-     [#<Course Russian> #<Faculty Brian>]
-     [#<Course German> #<Faculty Brian>])}
+    => ([#<Course Algebra> #<Faculty Marry>]
+        [#<Course Geometry> #<Faculty David>]
+        [#<Course Russian> #<Faculty Brian>]
+        [#<Course German> #<Faculty Brian>])}
  
 Note that so far we work with flat collection and get result as flat rows. But now
 a hierarchical result may be interesting:
 
-    [[#<Course Algebra>
-     [[#<Faculty Marry> []]]
-     #<Course Geometry>
-     [[#<Faculty David> []]]
-     #<Course Russian>
-     [[#<Faculty Brian> []]]
-     #<Course German>
-     [[#<Faculty Brian> []]]]],
+    => [[#<Course Algebra>
+        [[#<Faculty Marry> []]]
+        #<Course Geometry>
+        [[#<Faculty David> []]]
+        #<Course Russian>
+        [[#<Faculty Brian> []]]
+        #<Course German>
+        [[#<Faculty Brian> []]]]],
 
 In case you define the following query
 
@@ -338,44 +348,93 @@ In case you want to get all courses and its faculty and students, you can define
 following query:
 
     course (faculty, student)
-    [[#<Course Algebra>
-      [[#<Faculty Marry> []]
-       [#<Student John> [] #<Student Alexander> [] #<Student Nik> []]]
-      #<Course Geometry>
-      [[#<Faculty David> []] [#<Student John> [] #<Student Nik> []]]
-      #<Course Russian>
-      [[#<Faculty Brian> []] [#<Student John> [] #<Student Bob> []]]
-      #<Course German>
-      [[#<Faculty Brian> []] [#<Student John> [] #<Student Bob> []]]]]
+    => [[#<Course Algebra>
+         [[#<Faculty Marry> []]
+          [#<Student John> [] #<Student Alexander> [] #<Student Nik> []]]
+         #<Course Geometry>
+         [[#<Faculty David> []] [#<Student John> [] #<Student Nik> []]]
+         #<Course Russian>
+         [[#<Faculty Brian> []] [#<Student John> [] #<Student Bob> []]]
+         #<Course German>
+         [[#<Faculty Brian> []] [#<Student John> [] #<Student Bob> []]]]]
 
-    ([#<Course Algebra> #<Faculty Marry>]
-     [#<Course Algebra> #<Student John>]
-     [#<Course Algebra> #<Student Alexander>]
-     [#<Course Algebra> #<Student Nik>]
-     [#<Course Geometry> #<Faculty David>]
-     [#<Course Geometry> #<Student John>]
-     [#<Course Geometry> #<Student Nik>]
-     [#<Course Russian> #<Faculty Brian>]
-     [#<Course Russian> #<Student John>]
-     [#<Course Russian> #<Student Bob>]
-     [#<Course German> #<Faculty Brian>]
-     [#<Course German> #<Student John>]
-     [#<Course German> #<Student Bob>])
+    => ([#<Course Algebra> #<Faculty Marry>]
+        [#<Course Algebra> #<Student John>]
+        [#<Course Algebra> #<Student Alexander>]
+        [#<Course Algebra> #<Student Nik>]
+        [#<Course Geometry> #<Faculty David>]
+        [#<Course Geometry> #<Student John>]
+        [#<Course Geometry> #<Student Nik>]
+        [#<Course Russian> #<Faculty Brian>]
+        [#<Course Russian> #<Student John>]
+        [#<Course Russian> #<Student Bob>]
+        [#<Course German> #<Faculty Brian>]
+        [#<Course German> #<Student John>]
+        [#<Course German> #<Student Bob>])
 
-You can sort, filter, project for any entity:
+You can apply for each entity in query action which was describe above 
+(sorting, filtering, projection, removing duplicates):
     
     course (faculty#(name="Brian"))
 
-In this case you get all courses and its faculties which have name "Brian":
+The above query returns all courses and its faculties which have name "Brian":
 
-    ([#<Course Algebra>]
-     [#<Course Geometry>]
-     [#<Course Russian> #<Faculty Brian>]
-     [#<Course German> #<Faculty Brian>])
+    => ([#<Course Algebra>]
+        [#<Course Geometry>]
+        [#<Course Russian> #<Faculty Brian>]
+        [#<Course German> #<Faculty Brian>])
 
 In case you want to get courses which is taught with Brian, you can try:
 
     course#(faculty.name="Brian")
-    => ([#<Course Russian>] [#<Course German>])}
+    => ([#<Course Russian>] [#<Course German>])
 
+
+### Union
+In case you want to get results of several queries in single query, you
+can use "," for union results
+
+    course, faculty
+    => ([#<Course Algebra>]
+        [#<Course Geometry>]
+        [#<Course Russian>]
+        [#<Course German>]
+        [#<Faculty Marry>]
+        [#<Faculty David>]
+        [#<Faculty Brian>]
+        [#<Faculty Bob>])
+
+    course, @(count `course')
+    => ([#<Course Algebra>]
+        [#<Course Geometry>]
+        [#<Course Russian>]
+        [#<Course German>]
+        [4])
+
+    @(count `course'), @(count `faculty'), @(count `student')
+    => ([4] [4] [4])
+
+### Subquery in right side of predicates
+You can use YZ query in the right side of predicate of another YZ query.
+For example you want to get students which have same name of his/her faculties:
+
+    student#(name=faculty.name)
+    => ()
+
+Result is empty, because there is not such student. But if you want find 
+students which have same name from all university faculties, you can try:
+
+    student#(name=Ŷfaculty.name)
+    => ([#<Student Bob>])
+
+Modificator Ŷ denotes all existing faculties (not only linked with current student). As you can note,
+subquery returns collection and two previous queries check collection by "at least one" option. In case
+you want check collection by "all" option, you can use modificator ∀. Examples:
+
+    student#(name != Ŷfaculty.name)
+    => ([#<Student Alexander>] [#<Student Nik>] [#<Student John>] [#<Student Bob>])
+    student#(name != Ŷ∀faculty.name)
+    => ([#<Student Alexander>] [#<Student Nik>] [#<Student John>])
+    student#(name != ∀faculty.name)
+    => ([#<Student Alexander>] [#<Student Nik>] [#<Student John>] [#<Student Bob>])
 
