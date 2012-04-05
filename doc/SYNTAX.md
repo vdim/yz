@@ -1,23 +1,17 @@
 # YZ
 
-<ul>
-    <li><a href="#simple_collection">Simple collection</a></li>
-    <ul>
-	<li><a href="#selection">Selection</a></li>
-	<li><a href="#projection">Projection</a></li>
-	<li><a href="#filtering">Filtering</a></li>
-	<li><a href="#sorting">Sorting</a></li>
-	<li><a href="#calling_function">Calling user function</a></li>
-	<li><a href="#removing_dupls">Removing duplicates</a></li>
-    </ul>
-    <li><a href="#complex_model">More complex model</a></li>
-    <ul>
-	<li><a href="#joining"></a></li>
-	<li><a href="#union"></a></li>
-	<li><a href="#subquery"></a></li>
-    </ul>
-    <li><a href="#table_typed_notyped">Table with typed and not typed symbols</a></li>
-</ul>
+* <a href="#simple_collection">Simple collection</a>
+    * <a href="#selection">Selection</a>
+    * <a href="#projection">Projection</a>
+    * <a href="#filtering">Filtering</a>
+    * <a href="#sorting">Sorting</a>
+    * <a href="#calling_function">Calling user function</a>
+    * <a href="#removing_dupls">Removing duplicates</a>
+* <a href="#complex_model">More complex model</a>
+    * <a href="#joining">Joining</a>
+    * <a href="#union">Union</a>
+    * <a href="#subquery">Subquery in right side of predicates</a>
+* <a href="#table_typed_notyped">Table with typed and not typed symbols</a></li>
 
 <a name="simple_collection"></a>
 ## Simple collection 
