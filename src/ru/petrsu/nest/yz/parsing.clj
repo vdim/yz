@@ -804,12 +804,12 @@
   Sorting may be defined before id. Example: {a:number}room
   Each id may contains block from properties or predicates."
   (conc sort-or-unique
-        id
+        (invisi-conc id (set-info :unique nil)) ; if id is recognized then we set unique to nil.
         props-and-where
         (rep* (conc (invisi-conc (lit \.) 
                                  (update-info :then-level inc)) 
-                    sort-or-unique
-                    id 
+                    sort-or-unique 
+                    (invisi-conc id (set-info :unique nil)) ; If id is recognized then we set unique to nil.
                     props-and-where))))
 
 (def sign
