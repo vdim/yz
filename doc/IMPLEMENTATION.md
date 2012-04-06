@@ -1,9 +1,9 @@
 This document contains information about implementation of the YZ in [Clojure] (http://clojure.org/).
 
-* <a href="hl_arch">High-level architecture</a>
-* <a href="mom">MOM</a>
-* <a href="details">Some another technical details</a>
-* <a href="backends">Supported backends</a>
+* <a href="#hl_arch">High-level architecture</a>
+* <a href="#mom">MOM</a>
+* <a href="#details">Some another technical details</a>
+* <a href="#backends">Supported backends</a>
 
 <a name="hl_arch"></a>
 ## High-level architecture
