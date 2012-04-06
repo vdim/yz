@@ -103,7 +103,7 @@ YZ supports the following operations:
     => (["Bob"])
 </code></pre>
 
-* identical (==, equals to identical? function of Clojure or == operation of Java):
+* identical ("=="):
 
 ```clojure
 (collq "long#(& = 1)" [1 2])
@@ -243,8 +243,6 @@ correspondingly:
     => ([""] ["Alexander"] ["Alice"] ["Bob"] ["David"] ["Kris"] ["Marry"])
     d:string
     => (["Marry"] ["Kris"] ["David"] ["Bob"] ["Alice"] ["Alexander"] [""])
-
-Note that sorting requires that your objects (or property) must implements Comparable interface.
 
 
 <a name="calling_function"></a>

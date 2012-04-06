@@ -1,6 +1,6 @@
 # About
 YZ[ˈiːzi] is simple (easy) string-based object query language. 
-It is designed for your advanced users. At the moment there is implementation for Java.
+It is designed for your advanced users. At the moment there is implementation for Clojure/Java.
 
 #### What does YZ include?
 

@@ -1,11 +1,11 @@
 ## Supported backends
-At this moment implementation of YZ for java supports the following backends:
+At this moment implementation of YZ for Clojure/Java supports the following backends:
 
 * [Collections] (http://docs.oracle.com/javase/tutorial/collections/).
 * [JPA] (http://jcp.org/aboutJava/communityprocess/final/jsr317/index.html).
 
 ## High-level architecture
-High-level architecture of the YZ implementation for Java is represented on figure below:
+High-level architecture of the YZ implementation for Clojure/Java is represented on figure below:
 <img src="https://github.com/vdim/yz/raw/master/doc/hl-arch.png" alt="High-level architecture"/>
 
 Notes:
@@ -36,6 +36,7 @@ for more details.
     * :columns - list with default names of columns.
     * :rows - representation of a result query as set of rows (tuples).
 
+
 ## MOM
 MOM may contain the following information:
 
@@ -62,4 +63,14 @@ See
 
 for more details.
 
+
+## Some technical details
+
+* In case there are several paths between two classes then first shortest is used.
+* Sorting requires that your objects (or property) must implements 
+[Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) interface.
+* For implementation "removing duplicates" feature 
+[distinct] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/distinct) function of Clojure are used.
+* Operator == is implemented due to 
+[identical?] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/distinct) function of Clojure.
 
