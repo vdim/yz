@@ -16,29 +16,18 @@
 <a name="simple_collection"></a>
 ## Simple collection 
 For demostration features of the YZ we will use some examples. First example is
-collection with string values. Let's define this collection something like this 
-(we use [Clojure] (http://clojure.org/) language):
+collection with string values. Let's define this collection something like this:
 
-```clojure
-(def names ["Bob" "Alice" "" "Marry" "Kris" "David" "Alexander"])
-```
+    ["Bob" "Alice" "" "Marry" "Kris" "David" "Alexander"]
 
-In order to test and usage our examples you can use the collq function from the 
-[yz-factory namespace] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/yz_factory.clj) 
-something like this:
-
-```clojure
-(collq "yourquery" names)
-```
+In order to test and usage our examples you can use existing implementation of the YZ for
+Clojure/Java object model. Follow to [this] (https://github.com/vdim/yz/blob/master/doc/TESTINGCOLLQ.md) 
+instruction for using queries for simple collection.
 
 We will hold the following notation: first will be query and second - result of query after "=>":
 
     some-query
     => some-result
-
-Note: for more details about usage existing implementation of the YZ 
-see [here] (https://github.com/vdim/yz/blob/master/doc/USAGE.md) or follow to 
-[this] (https://github.com/vdim/yz/blob/master/doc/TESTINGCOLLQ.md) instruction.
 
 <a name="selection"></a>
 ### Selection 
