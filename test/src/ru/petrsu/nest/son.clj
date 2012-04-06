@@ -60,6 +60,9 @@
       (if (or (nil? display-name) (empty? display-name))
         (.typeName e)
         (str (.typeName e) \space display-name))))
+  Comparable
+  (compareTo [_]
+    0)
   SonBean
   (getId [e]
     (str (bean-id e)))
