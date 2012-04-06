@@ -1,5 +1,11 @@
 This document contains information about implementation of the YZ in [Clojure] (http://clojure.org/).
 
+* <a href="hl_arch">High-level architecture</a>
+* <a href="mom">MOM</a>
+* <a href="details">Some another technical details</a>
+* <a href="backends">Supported backends</a>
+
+<a name="hl_arch"></a>
 ## High-level architecture
 High-level architecture of the YZ implementation for Clojure/Java is represented on figure below:
 <img src="https://github.com/vdim/yz/raw/master/doc/hl-arch.png" alt="High-level architecture"/>
@@ -26,6 +32,7 @@ which is based on [monads] (http://www.intensivesystems.net/tutorials/monads_101
     * :rows - representation of a result query as set of rows (tuples).
 
 
+<a name="mom"></a>
 ## MOM
 MOM may contain the following information:
 
@@ -53,6 +60,7 @@ See
 for more details.
 
 
+<a name="details"></a>
 ## Some another technical details
 
 * In case there are several paths between two classes then first shortest is used.
@@ -64,6 +72,7 @@ for more details.
 [identical?] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/identical?) function of Clojure.
 
 
+<a name="backends"></a>
 ## Supported backends
 At this moment implementation of the YZ supports the following backends:
 
@@ -71,6 +80,7 @@ At this moment implementation of the YZ supports the following backends:
 * [JPA] (http://jcp.org/aboutJava/communityprocess/final/jsr317/index.html).
 
 So there are the following ElementManagers respectively:
+
 * Collection ElementManager which allows querying to usual Java collections.
 * JPA ElementManager which uses the JPA API 2.0 for accessing to data. We test it by Hibernate.
 
