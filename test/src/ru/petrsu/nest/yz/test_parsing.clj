@@ -23,7 +23,6 @@
   (:use ru.petrsu.nest.yz.parsing 
         ru.petrsu.nest.yz.core
         ru.petrsu.nest.yz.hb-utils 
-        ru.petrsu.nest.yz.yz-factory 
         clojure.test 
         ru.petrsu.nest.yz.queries.bd)
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf])
@@ -1678,6 +1677,24 @@
    "floor#(name = Ŷroom[name])"
    "floor#(name = Ŷroom.description)"
    "floor#(room = Ŷroom#(name=\"MB\"))"
+
+   ;; Limits
+   "1:floor"
+   "-1:floor"
+   "1-5:floor"
+   "-1-5:floor"
+   "floor (1:room)"
+   "floor (-1:room)"
+   "floor (1-5:room)"
+   "floor (-1-5:room)"
+   "2:floor (1:room)"
+   "1-2:floor (-1:room)"
+   "-3:floor (1-5:room)"
+   "-4-6:floor (1-5:room)"
+   "2:floor (room)"
+   "1-2:floor (room)"
+   "-3:floor (room)"
+   "-4-6:floor (room)"
    ])
 
 

@@ -64,7 +64,10 @@
            :cur-sort ; Current indicator of sorting.
            :pp ; Define process property.
            :all ; Defines whether ∀ modificator is set.
-           :unique
+           :unique ; Defines whether duplicate must be removed.
+           :hb-range ; Higher bound of range 
+           :lb-range ; Lower bound of range
+           :tail ; Defines whether range must be get from tail of collection.
            )
 
 
@@ -421,7 +424,7 @@
 
 (defn- found-prop
   "This function is called when likely some property is found"
-  [res id nl tl is-recur tsort _]
+  [res id nl tl is-recur tsort _ _ _ _]
   (let [tl- (dec tl)
         id (cond (= id "&") :#self-object#
                  (= id "&.") :#default-property#
@@ -508,20 +511,22 @@
 
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
-  [res ^String id nl tl is-recur tsort unique]
+  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
         ^Class cl (find-class id)
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
-      (found-prop res id nl tl is-recur tsort unique)
+      (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail)
       (let [f #(assoc-in-nest res nl :then %)
+            ; Define limit
+            limit (if (or (not= hb-range 0) (not= lb-range 0)) [hb-range lb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some then map.
             assoc-lth #(nnassoc %1 :what cl :where (get-paths cl %2) 
-                                :sort vsort :exactly ex :unique unique)
+                                :sort vsort :exactly ex :unique unique :limit limit)
             ; What for getting where.
             what (get-in-nest-or-then res nl tl- :what)]
         (if (> tl 0)
@@ -542,7 +547,8 @@
            :where (get-paths cl, what)
            :sort vsort
            :exactly ex
-           :unique unique))))))
+           :unique unique 
+           :limit limit))))))
 
 
 (defn- add-op-to-preds
@@ -621,9 +627,13 @@
   "Sequence of digits."
   (lit-alt-seq "1234567890"))
 
+(def integer
+  "Integer number."
+  (rep+ digit))
+
 (def number
   "Defines number."
-  (conc (opt (alt (lit \+) (lit \-))) (rep+ digit) (opt (conc (lit \.) (rep+ digit)))))
+  (conc (opt (alt (lit \+) (lit \-))) integer (opt (conc (lit \.) integer))))
 
 (def whitespaces
   "List of whitespaces"
@@ -660,6 +670,39 @@
     (complex [r (alt (lit \¹) (lit-conc-seq "u:"))]
            r) 
     (set-info :unique true)))
+
+
+(def higher-bound
+  "Recognizes higher bound of range (first number of range):
+    2-10:room
+  If number is single then higher bound is set."
+  (complex [i integer 
+            _ (set-info :hb-range (Integer/parseInt (reduce str "" i)))]
+           i))
+
+
+(def lower-bound
+  "Recognizes lower bound of range (second number of range):
+    2-10:room
+  If number is single then higher bound is set."
+  (complex [i integer 
+            _ (set-info :lb-range (Integer/parseInt (reduce str "" i)))]
+           i))
+
+
+(def tail
+  "Defines whether range must be started from tail."
+  (invisi-conc (lit \-) (set-info :tail true)) )
+
+
+(def limit
+  "Defines rule for limiting result of query: 3-4:building."
+  (complex [r (conc (alt (conc tail higher-bound (lit \-) lower-bound) ; range from n to m objects starting with last element
+                         (conc higher-bound (lit \-) lower-bound) ; range from n to m objects starting with first element
+                         (conc tail higher-bound) ; n last objects
+                         higher-bound) ; n first objects
+                    (lit \:))]
+           r))
 
 
 (defn- set-sort
@@ -738,7 +781,8 @@
              (:then-level state)
              (:is-recur state)
              (:cur-sort state)
-             (:unique state)))])
+             (:unique state) 
+             (:hb-range state) (:lb-range state) (:tail state)))])
 
 
 (defn- process-id
@@ -789,30 +833,52 @@
   (alt (conc (opt props) (opt block-where) (opt props))))
 
 
-(def sort-or-unique
+(def sort-or-unique-or-limit
   "Rule for definition of sorting with unique 
   in various combinations:
     sort unique
     unique sort
     unique
     sort"
-  (alt (conc (alt propsort idsort) unique)
+  (alt (conc (alt propsort idsort) unique limit) 
+       (conc (alt propsort idsort) limit unique)
+       (conc limit (alt propsort idsort) unique)
+       (conc limit unique (alt propsort idsort))
+       (conc unique limit (alt propsort idsort))
+       (conc unique (alt propsort idsort) limit)
+       (conc (alt propsort idsort) unique)
        (conc unique (alt propsort idsort))
+       (conc (alt propsort idsort) limit)
+       (conc limit (alt propsort idsort))
+       (conc unique limit)
+       (conc limit unique)
        unique
+       limit
        (alt propsort idsort+emptiness)))
+
+
+(def id-and-restore
+  "Defines rule which recognizes id and then restores
+  the following values of keys of q-representation structure:
+    :unique, :hb-bound, :lb-bound, :tail."
+  (invisi-conc id (set-info :unique nil) 
+               (set-info :hb-range 0)
+               (set-info :lb-range 0)
+               (set-info :tail false)))
 
 
 (def bid
   "Defines sequence from ids. Example: room.floor.number
   Sorting may be defined before id. Example: {a:number}room
   Each id may contains block from properties or predicates."
-  (conc sort-or-unique
-        (invisi-conc id (set-info :unique nil)) ; if id is recognized then we set unique to nil.
+  (conc sort-or-unique-or-limit
+        id-and-restore
+        ;(invisi-conc id (set-info :unique nil)) ; if id is recognized then we set unique to nil.
         props-and-where
         (rep* (conc (invisi-conc (lit \.) 
                                  (update-info :then-level inc)) 
-                    sort-or-unique 
-                    (invisi-conc id (set-info :unique nil)) ; If id is recognized then we set unique to nil.
+                    sort-or-unique-or-limit
+                    id-and-restore
                     props-and-where))))
 
 (def sign
@@ -891,7 +957,7 @@
                                    (conj newrm ch)
                                    ; Prevent cycling: room(name=floor[name]#(name="SV("))
                                    (if (= \" ch) (not st) st)))))
-
+            
             length (effects (count newrm))
             ; In case allA is true then subquery is independent
             ; In case not-any is true then every? function is used, otherwise some function is used.
@@ -1149,7 +1215,7 @@
         q (cs/trim q)]
     ((query (struct q-representation (seq q) 
                     empty-res 0 0 [] nil [] 
-                    false empty-pred nil nil nil nil)) 1)))
+                    false empty-pred nil nil nil nil 0 0 false)) 1)))
 
 
 (defn parse+

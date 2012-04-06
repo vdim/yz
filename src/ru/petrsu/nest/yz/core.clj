@@ -210,12 +210,16 @@
   "Returns from storage objects which have ':what' class from nest."
   [nest]
   (let [^ElementManager em @a-em
-        {:keys [^Class what ^PersistentVector preds sort exactly unique]} nest]
+        {:keys [^Class what ^PersistentVector preds sort exactly unique limit]} nest]
     (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
       (sort-rq (.getElems em what preds) sort false)
       (let [elems (.getElems em what)
             elems (if exactly (filter #(= (class %) what) elems) elems)
-            elems (if unique (distinct elems) elems)]
+            elems (if unique (distinct elems) elems)
+            elems (if limit (let [[h l tail] limit
+                                  els (if tail (reverse elems) elems)] 
+                              (nthrest (take (inc l) els) h))
+                    elems)]
         (sort-rq (filter-by-preds elems preds) sort false)))))
 
 
