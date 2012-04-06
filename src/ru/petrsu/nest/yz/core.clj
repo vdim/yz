@@ -25,20 +25,22 @@
          The parsing of queries does due to the fnparse library.
          See code for parsing queries in the parsing.clj file.
          
-         You must have some implementation of the ElementManager interface (see below) and
-         pass it to the pquery function."}
+         In order to use YZ you must have some implementation 
+         of the ElementManager interface (see below) and pass it to the pquery function."}
   (:require [ru.petrsu.nest.yz.parsing :as p])
   (:import (clojure.lang PersistentArrayMap PersistentVector)))
 
 
 (definterface ElementManager
   ^{:doc "This interface is needed for abstraction of any persistence storage. 
+
          You must implement getElems which takes specified class ('claz')
          and returns collection of objects which have this class.
          The YZ implements the next algorithm 
          (let's consider query: \"building (device#(forwarding=true))\"):
-            1. Gets root elements (building) due to the implementation of this interface.
-            2. Finds elements (device) which are connected with root elements (building) due to the MOM.
+            1. Gets root elements (building) due to the implementation of this getElems.
+            2. Finds elements (device) which are linked with root 
+               elements (building) due to path from the MOM.
             3. Filters device due to restrictions.
          
          getMom returns the MOM (Map Of the Model).
