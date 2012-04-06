@@ -1,8 +1,4 @@
-## Supported backends
-At this moment implementation of YZ for Clojure/Java supports the following backends:
-
-* [Collections] (http://docs.oracle.com/javase/tutorial/collections/).
-* [JPA] (http://jcp.org/aboutJava/communityprocess/final/jsr317/index.html).
+This document contains information about implementation of the YZ in [Clojure] (http://clojure.org/).
 
 ## High-level architecture
 High-level architecture of the YZ implementation for Clojure/Java is represented on figure below:
@@ -22,13 +18,6 @@ which is based on [monads] (http://www.intensivesystems.net/tutorials/monads_101
 ([sourse] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj)).
 
 * Query evaluator uses some implementation of the ElementManager for accessing to data. 
-At this moment there is the following ElementManagers:
-    * JPA ElementManager which uses the JPA API 2.0 for accessing to data. We test it by Hibernate.
-    * Collection ElementManager which allows querying to usual Java collections.
-
-In case you want to add your data storage you must implement ElementManager interface. See
-definition of it [here] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj) 
-for more details.
 
 * Query evaluator returns map where 
     * :result - hierarchical structure of result query.
@@ -50,7 +39,7 @@ interface).
 
 In point of view of the Clojure data structure MOM is map where keys are classes of 
 model and values are maps where again keys are classes of model and
-values are path from first class to second. You can see example of MOM
+values are list with paths from first class to second. You can see example of MOM
 [here] (https://github.com/vdim/yz/blob/master/test/test-resource/nest.mom).
 
 ### Creating MOM
@@ -64,13 +53,27 @@ See
 for more details.
 
 
-## Some technical details
+## Some another technical details
 
 * In case there are several paths between two classes then first shortest is used.
-* Sorting requires that your objects (or property) must implements 
+* Sorting requires that your objects (or property) must implement
 [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) interface.
 * For implementation "removing duplicates" feature 
 [distinct] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/distinct) function of Clojure are used.
 * Operator == is implemented due to 
-[identical?] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/distinct) function of Clojure.
+[identical?] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/identical?) function of Clojure.
 
+
+## Supported backends
+At this moment implementation of the YZ supports the following backends:
+
+* [Collections] (http://docs.oracle.com/javase/tutorial/collections/).
+* [JPA] (http://jcp.org/aboutJava/communityprocess/final/jsr317/index.html).
+
+So there are the following ElementManagers respectively:
+* Collection ElementManager which allows querying to usual Java collections.
+* JPA ElementManager which uses the JPA API 2.0 for accessing to data. We test it by Hibernate.
+
+In case you want to add your data storage you must implement ElementManager interface. See
+definition of it [here] (https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj) 
+for more details.
