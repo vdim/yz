@@ -80,7 +80,7 @@ object due to symbol "&":
 
 <a name="filtering"></a>
 ### Filtering
-In order to filter your collection due to some condition through some property 
+In order to filter your collection due to some condition(s) through some property 
 you should specify your predicate after name of class before symbol "#" in parenthesis. You
 should specify property in left part of expression then you should specify binary operation and
 at last right part of expression:
@@ -89,7 +89,7 @@ at last right part of expression:
     => (["Bob"] ["Alice"] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 
 If there is possibility for definition self object directly in text 
-(it is rightly for string or numbers at list),
+(it is rightly for string or numbers at least),
 you can refer to self object due to symbol "&" in left side of predicate:
 
     string#(& = "Bob")
@@ -119,11 +119,11 @@ YZ supports the following operations:
 * >, <, >=, <= (rightly for numbers):
 
 ```clojure
-(collq "integer#(& > 10)" [199 4 6 10 34])
+(collq "long#(& > 10)" [199 4 6 10 34])
 => ([34] [199])
 ```
 
-* negation (!= and syntax sugar not=):
+* negation ("!=" and syntax sugar "not="):
 <pre><code>
     string#(& != "Bob")
     => (["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
@@ -266,7 +266,7 @@ Notes:
 
 <a name="removing_dupls"></a>
 ### Removing duplicates:
-Use symbol ¹ or u: for removing duplicates from result of query:
+Use symbol "¹" or "u:" for removing duplicates from result of query:
 
 ```clojure
 (collq "long" [1 2 1])
@@ -289,7 +289,7 @@ which is represented on figure below in UML object diagram notation:
 <img src="https://github.com/vdim/yz/raw/master/doc/uni_model_object.png" 
 alt="Example of university model in UML object diagram notation"/>
 
-In order to use this university model and next queries you can follow 
+In order to use this university model and next queries you can follow to 
 [this] (https://github.com/vdim/yz/blob/master/doc/TESTINGUNIMODEL.md) instruction.
 
 
