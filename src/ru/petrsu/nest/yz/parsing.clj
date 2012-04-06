@@ -409,10 +409,13 @@
           f #(let [v (get-in (get mom cl) [:sort prop %])]
                (if (string? v)
                  (create-f v)
-                 v))]
-      [tsort 
-       (f :comp)
-       (f :keyfn)])
+                 v))
+          c (f :comp) ; comparator
+          keyfn (f :keyfn)]
+      ; Check whether cl may be comparable.
+      (if (and (nil? c) (nil? keyfn) (not (contains? (ancestors cl) Comparable)))
+        (throw (ClassCastException. (str (.getName cl) " cannot be cast to java.lang.Comparable")))
+        [tsort c keyfn]))
     [nil nil nil]))
 
 
