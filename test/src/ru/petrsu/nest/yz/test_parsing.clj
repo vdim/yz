@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -23,8 +23,10 @@
   (:use ru.petrsu.nest.yz.parsing 
         ru.petrsu.nest.yz.core
         ru.petrsu.nest.yz.hb-utils 
+        ru.petrsu.nest.yz.yz-factory 
         clojure.test 
         ru.petrsu.nest.yz.queries.bd)
+  (:require [ru.petrsu.nest.yz.yz-factory :as yzf])
   (:import (ru.petrsu.nest.son Building Room Floor)
            (ru.petrsu.nest.yz SyntaxException NotDefinedDP)))
 
@@ -1766,6 +1768,7 @@
            (is (nil? (results clist-subqueries)))))
 
 
+(deftype SType [property])
 
 (deftest neg-parse-tests
          ^{:doc "Contains tests which are thrown exceptions."}
@@ -1775,7 +1778,9 @@
            (is (thrown? NullPointerException (f ", building")))
            (is (thrown? SyntaxException (f "building, ")))
            (is (thrown? SyntaxException (f "building#(floor.∀room.number=1)")))
-           (is (thrown? RuntimeException (f "building#(name = room#(number=1)")))))
+           (is (thrown? RuntimeException (f "building#(name = room#(number=1)")))
+           (let [em (yzf/c-em [(->SType "P1")] [SType])]
+             (is (thrown? ClassCastException (parse "a:stype" (.getMom em)))))))
 
 (comment
 (deftest t-parse-remainder
