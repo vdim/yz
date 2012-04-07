@@ -206,21 +206,36 @@
           (s tsort tcomp keyfn rq))))))
 
 
+(defn- limiting
+  "Filters collection of elements (elems) due to vector of
+  limit: [lower-bound, higher-bound, tail]. 
+  tail defines whether we must get last elements."
+  [elems limit]
+  (if limit (let [[l h tail] limit
+                  f (if tail take-last take)] 
+              (nthrest (f (inc h) elems) l))
+    elems))
+
+
 (defn- select-elems
-  "Returns from storage objects which have ':what' class from nest."
+  "Returns from storage objects which have 
+  ':what' class from the nest map."
   [nest]
   (let [^ElementManager em @a-em
         {:keys [^Class what ^PersistentVector preds sort exactly unique limit]} nest]
     (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
       (sort-rq (.getElems em what preds) sort false)
-      (let [elems (.getElems em what)
+      (let [; Get elements
+            elems (.getElems em what)
+            ; Filter by exactly option.
             elems (if exactly (filter #(= (class %) what) elems) elems)
-            elems (if unique (distinct elems) elems)
-            elems (if limit (let [[h l tail] limit
-                                  els (if tail (reverse elems) elems)] 
-                              (nthrest (take (inc l) els) h))
-                    elems)]
-        (sort-rq (filter-by-preds elems preds) sort false)))))
+            ; Filter by unique option.
+            elems (if unique (distinct elems) elems) 
+            ; Filter by list of predicates and then sort.
+            elems (sort-rq (filter-by-preds elems preds) sort false)
+            ; Filter by limit option.
+            elems (limiting elems limit)]
+        elems))))
 
 
 (defn- get-fv
@@ -357,14 +372,15 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
-  (let [{:keys [preds where ^Class what sort exactly unique]} m
+  (let [{:keys [preds where ^Class what sort exactly unique limit]} m
         f (if exactly #(= (class %) what) #(instance? what %))
-        path (apply min-key count where)] ; At this moment we use path with minimum edges.
-    (sort-rq (filter-by-preds 
-               (filter f
-                       (let [objs (reduce #(get-objs %2 %1) sources path)]
-                         (if unique (distinct objs) objs))) preds)
-             sort false)))
+        path (apply min-key count where) ; At this moment we use path with minimum edges.
+        elems (sort-rq (filter-by-preds 
+                         (filter f
+                                 (let [objs (reduce #(get-objs %2 %1) sources path)]
+                                   (if unique (distinct objs) objs))) preds)
+                       sort false)]
+    (limiting elems limit)))
 
 
 (defn- process-prop
@@ -526,7 +542,6 @@
     (if (string? query-res)
       (Result. [] query-res [] ())
       ;(Result. query-res nil [] ()))))
-      ;(let [rows (distinct (get-rows query-res))]
       (let [rows (get-rows query-res)]
         (Result. query-res nil (get-columns-lite rows) rows)))))
 

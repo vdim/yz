@@ -671,21 +671,13 @@
     (set-info :unique true)))
 
 
-(def higher-bound
-  "Recognizes higher bound of range (first number of range):
-    2-10:room
-  If number is single then higher bound is set."
-  (complex [i integer 
-            _ (set-info :hb-range (Integer/parseInt (reduce str "" i)))]
-           i))
-
-
-(def lower-bound
+(defn bound
   "Recognizes lower bound of range (second number of range):
     2-10:room
   If number is single then higher bound is set."
+  [low-or-high-bound]
   (complex [i integer 
-            _ (set-info :lb-range (Integer/parseInt (reduce str "" i)))]
+            _ (set-info low-or-high-bound (Integer/parseInt (reduce str "" i)))]
            i))
 
 
@@ -696,10 +688,10 @@
 
 (def limit
   "Defines rule for limiting result of query: 3-4:building."
-  (complex [r (conc (alt (conc tail lower-bound (lit \-) higher-bound) ; range from n to m objects starting with last element
-                         (conc lower-bound (lit \-) higher-bound) ; range from n to m objects starting with first element
-                         (conc tail higher-bound) ; n last objects
-                         higher-bound) ; n first objects
+  (complex [r (conc (alt (conc tail (bound :lb-range) (lit \-) (bound :hb-range)) ; range from n to m objects starting with last element
+                         (conc (bound :lb-range) (lit \-) (bound :hb-range)) ; range from n to m objects starting with first element
+                         (conc tail (bound :hb-range)) ; n last objects
+                         (bound :hb-range)) ; n first objects
                     (lit \:))]
            r))
 
@@ -997,7 +989,8 @@
 (declare value)
 (def v-f (alt (conc (lit \() value (lit \))) 
               (alt (conc (opt (change-pred sign :func)) 
-                         (alt (change-pred number :value :number) 
+                         (alt (conc (not-followed-by limit)
+                                    (change-pred number :value :number))
                               (change-pred value-as-param :value :parameter)))
 
                    ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
