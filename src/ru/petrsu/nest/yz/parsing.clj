@@ -520,7 +520,7 @@
       (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail)
       (let [f #(assoc-in-nest res nl :then %)
             ; Define limit
-            limit (if (or (not= hb-range 0) (not= lb-range 0)) [hb-range lb-range tail] nil)
+            limit (if (or (not= hb-range 0) (not= lb-range 0)) [lb-range hb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
@@ -667,8 +667,7 @@
 (def unique
   "Defines rule for removal duplicates."
   (invisi-conc
-    (complex [r (alt (lit \¹) (lit-conc-seq "u:"))]
-           r) 
+    (alt (lit \¹) (lit-conc-seq "u:"))
     (set-info :unique true)))
 
 
@@ -697,8 +696,8 @@
 
 (def limit
   "Defines rule for limiting result of query: 3-4:building."
-  (complex [r (conc (alt (conc tail higher-bound (lit \-) lower-bound) ; range from n to m objects starting with last element
-                         (conc higher-bound (lit \-) lower-bound) ; range from n to m objects starting with first element
+  (complex [r (conc (alt (conc tail lower-bound (lit \-) higher-bound) ; range from n to m objects starting with last element
+                         (conc lower-bound (lit \-) higher-bound) ; range from n to m objects starting with first element
                          (conc tail higher-bound) ; n last objects
                          higher-bound) ; n first objects
                     (lit \:))]
@@ -821,7 +820,6 @@
         (sur-by-ws (invisi-conc (lit \)) (update-info :nest-level dec)))))
 
 
-
 (declare block-where, props)
 (def props-and-where
   "Defines block from properties or predicates.
@@ -834,12 +832,8 @@
 
 
 (def sort-or-unique-or-limit
-  "Rule for definition of sorting with unique 
-  in various combinations:
-    sort unique
-    unique sort
-    unique
-    sort"
+  "Rule for definition of sorting, unique and limiting
+  in various combinations."
   (alt (conc (alt propsort idsort) unique limit) 
        (conc (alt propsort idsort) limit unique)
        (conc limit (alt propsort idsort) unique)
@@ -867,19 +861,20 @@
                (set-info :tail false)))
 
 
+(def prefix-id-suffix
+  "Defines the following rule: 
+    sort-or-unique-or-limit id-and-restore props-and-where"
+  (conc sort-or-unique-or-limit id-and-restore props-and-where))
+
+
 (def bid
   "Defines sequence from ids. Example: room.floor.number
   Sorting may be defined before id. Example: {a:number}room
   Each id may contains block from properties or predicates."
-  (conc sort-or-unique-or-limit
-        id-and-restore
-        ;(invisi-conc id (set-info :unique nil)) ; if id is recognized then we set unique to nil.
-        props-and-where
-        (rep* (conc (invisi-conc (lit \.) 
-                                 (update-info :then-level inc)) 
-                    sort-or-unique-or-limit
-                    id-and-restore
-                    props-and-where))))
+  (conc prefix-id-suffix
+        (rep* (conc (invisi-conc (lit \.) (update-info :then-level inc))
+                    prefix-id-suffix))))
+
 
 (def sign
   "Defines sing of where's expression."
