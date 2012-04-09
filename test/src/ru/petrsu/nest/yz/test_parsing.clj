@@ -965,6 +965,59 @@
            ))
 
 
+(deftest limiting
+         ^{:doc "Tests parsing queries with limiting."}
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :limit %2}])]
+           (is (f "1:building" [nil 1 false]))
+           (is (f "0-1:building" [0 1 false]))
+           (is (f "-1:building" [nil 1 true]))
+           (is (f "2-3:building" [2 3 false]))
+           (is (f "-2-3:building" [2 3 true])))
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :nest [{:what Floor :where [["floors"]] :limit %2}]}])]
+           (is (f "building (1:floor)" [nil 1 false]))
+           (is (f "building (-1:floor)" [nil 1 true]))
+           (is (f "building (0-1:floor)" [0 1 false]))
+           (is (f "building (2-3:floor)" [2 3 false]))
+           (is (f "building (-2-3:floor)" [2 3 true])))
+         (let [f #(= (parse %1 mom-)
+                     [{:what Building
+                       :limit %2
+                       :nest [{:what Floor :where [["floors"]] :limit %3}]}])]
+           (is (f "1:building (1:floor)" [nil 1 false] [nil 1 false]))
+           (is (f "-1:building (1:floor)" [nil 1 true] [nil 1 false]))
+           (is (f "1-2:building (1:floor)" [1 2 false] [nil 1 false]))
+           (is (f "1:building (-1:floor)" [nil 1 false] [nil 1 true]))
+           (is (f "1-2:building (2-3:floor)" [1 2 false] [2 3 false]))
+           (is (f "-1-2:building (-2-3:floor)" [1 2 true] [2 3 true]))))
+
+
+(deftest limit-sorting-unique
+  "Defines queries with limiting, sorting and unique options."
+  (let [v (for [s [["a:" [:asc nil nil]] ["d:" [:desc nil nil]] 
+                   ["↑" [:asc nil nil]] ["↓" [:desc nil nil]] ["" nil]] ; modificators of sorting
+                u [["u:" true] ["¹" true] ["" nil]] ; modificators of removing duplicates
+                l [["1:" [nil 1 false]] ["1-2:" [1 2 false]] ["-1-2:" [1 2 true]] 
+                   ["-1:" [nil 1 true]] ["" nil]]] ; examples of limiting
+            [s u l]) 
+        mom- (sort-to-nil mom-)
+        f #(= (parse %1 mom-) [%2])
+        q-res (map (fn [[[s_str s_struct] 
+                         [u_str u_struct] 
+                         [l_str l_struct]]] 
+                     (let [m {:what Floor}
+                           m (reduce (fn [m [v k]] (if v (assoc m k v) m)) 
+                                     m 
+                                     [[s_struct :sort]
+                                      [u_struct :unique] 
+                                      [l_struct :limit]])]
+                       (f (str s_str u_str l_str "floor") m))) v)]
+    (is (every? true? q-res))))
+
+
 (deftest funcs-mods
          ^{:doc "Tests function's modificators."}
          (let [f #(= (parse %1 mom-) [{:func #'clojure.core/count :params [[%2 [{:what Building}]]]}])]
@@ -1695,12 +1748,39 @@
    "1-2:floor (room)"
    "-3:floor (room)"
    "-4-6:floor (room)"
+   "2:floor.1:room"
+   "1-2:floor.-1:room"
+   "-3:floor.1-5:room"
+   "-4-6:floor.1-5:room"
+   "2:floor.room"
+   "1-2:floor.room"
+   "-3:floor.room"
+   "-4-6:floor.room"
+   "floor.1:room"
+   "floor.-1:room"
+   "floor.1-5:room"
+   "floor.-1-5:room"
    ])
 
 
+(def list-limit-sorting-unique
+  "Defines queries with limiting, sorting and unique options."
+  (let [v (for [s ["a:" "d:" "↑" "↓" ""] ; modificators of sorting
+                u ["u:" "¹" ""] ; modificators of removing duplicates
+                l ["1:" "1-2:" "-1-2:" "-1:" ""]] ; examples of limiting
+            (reduce str "" [s u l]))
+        floors (map #(str % "floor") v)
+        buildings (map #(str % "building") v)
+        union (map #(str % ", " %) floors)
+        joining (map #(str %1 " (" %2 ")") floors (reverse buildings))
+        linking (map #(str %1 "." %2) floors (reverse buildings))]
+    (concat floors union joining linking)))
+
+
 (def clist
-  "List with queries from qlist and qlist-new"
+  "List with queries from qlist, qlist-new and list-limit-sorting-unique."
   (concat qlist qlist-new))
+
 
 (def qlist-list
   ^{:doc "Defines list with query-function with parameter (as :list) from qlist"}
@@ -1782,7 +1862,8 @@
            (is (nil? (results clist-next-query)))
            (is (nil? (results clist-next-query-clist)))
            (is (nil? (results clist-nest-query)))
-           (is (nil? (results clist-subqueries)))))
+           (is (nil? (results clist-subqueries)))
+           (is (nil? (results list-limit-sorting-unique)))))
 
 
 (deftype SType [property])
@@ -1812,7 +1893,6 @@
            (f qlist-pred)
            (f qlist-list)))
 )
-
 (deftest pquery-qlist
          ^{:doc "Calling pquery for each query from qlist."}
          (let [mom- (assoc mom- Room
@@ -1823,4 +1903,6 @@
                                   (if e [e %]))
                                l))]
            (is (nil? (results clist)))
-           (is (nil? (results clist-subqueries)))))
+           (is (nil? (results clist-subqueries)))
+           (is (nil? (results list-limit-sorting-unique)))))
+
