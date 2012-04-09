@@ -520,7 +520,7 @@
       (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail)
       (let [f #(assoc-in-nest res nl :then %)
             ; Define limit
-            limit (if (or (not= hb-range 0) (not= lb-range 0)) [lb-range hb-range tail] nil)
+            limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
@@ -848,8 +848,8 @@
   the following values of keys of q-representation structure:
     :unique, :hb-bound, :lb-bound, :tail."
   (invisi-conc id (set-info :unique nil) 
-               (set-info :hb-range 0)
-               (set-info :lb-range 0)
+               (set-info :hb-range nil)
+               (set-info :lb-range nil)
                (set-info :tail false)))
 
 
@@ -1203,7 +1203,7 @@
         q (cs/trim q)]
     ((query (struct q-representation (seq q) 
                     empty-res 0 0 [] nil [] 
-                    false empty-pred nil nil nil nil 0 0 false)) 1)))
+                    false empty-pred nil nil nil nil nil nil false)) 1)))
 
 
 (defn parse+
