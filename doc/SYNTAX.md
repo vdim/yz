@@ -9,6 +9,7 @@
     * <a href="#removing_dupls">Removing duplicates</a>
 * <a href="#complex_model">More complex model</a>
     * <a href="#joining">Joining</a>
+    * <a href="#joining_not_result">Joining without including to result</a>
     * <a href="#union">Union</a>
     * <a href="#subquery">Subquery in right side of predicates</a>
 * <a href="#table_typed_notyped">Table with typed and not typed symbols</a></li>
@@ -268,6 +269,7 @@ Use symbol "¹" or "u:" for removing duplicates from result of query:
 ## More complex model
 So far we test simple flat collection. Let's consider more complex model 
 (we choose classic example about university):
+<br />
 <img src="https://github.com/vdim/yz/raw/master/doc/uni_model.png" alt="UML class diagram for university model"/>
 
 We implement it (see source code [here](https://github.com/vdim/yz/blob/master/test/src/university/model)) 
@@ -282,7 +284,7 @@ In order to use this university model and next queries you can follow to
 
 <a name="joining"></a>
 ### Joining
-In order to select linked objects you should use brackets. For example, if you want to
+In order to select linked objects you should use round brackets. For example, if you want to
 get all courses and its faculty you should query:
 
     course (faculty)
@@ -382,11 +384,12 @@ following query:
         [#<Course German> #<Student Bob>])
 
 You can apply for each entity in query action which was describe above 
-(sorting, filtering, projection, removing duplicates):
+(sorting, filtering, projection, removing duplicates). Note that this operations are
+applied to current subset of objects, not for all. For example query
     
     course (faculty#(name="Brian"))
 
-The above query returns all courses and its faculties which have name "Brian":
+returns <b>all</b> courses and its faculties in case he/she has name "Brian":
 
     => ([#<Course Algebra>]
         [#<Course Geometry>]
