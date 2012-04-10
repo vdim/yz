@@ -103,7 +103,7 @@
           m-go (memoize (fn [ids o]
                           (cond (vector? ids) 
                               (reduce (fn [r {:keys [id cl]}]
-                                        (let [objs- (reduce #(get-objs %2 %1 nil) r id)]
+                                        (let [objs- (reduce #(get-objs %2 %1) r id)]
                                           (if (nil? cl)
                                             objs-
                                             (filter (partial instance? cl) objs-))))
@@ -332,16 +332,14 @@
 
 (defn- get-objs
   "Returns sequence of objects which belong to 'objs' 
-  by specified 'field-name'. limit defines vector with
-  information for limiting."
-  [^String field-name, objs, limit]
-  (flatten (map #(let [fv (get-fv % field-name)
-                       ; DON'T REMOVE THIS IF.
-                       ; At least sets are not flattened.
-                       fv (if (instance? java.util.Collection fv)
-                            (seq fv)
-                            fv)] 
-                   (limiting fv limit))
+  by specified 'field-name'."
+  [^String field-name, objs]
+  (flatten (map #(let [fv (get-fv % field-name)]
+                   ; DON'T REMOVE THIS IF.
+                   ; At least sets are not flattened.
+                   (if (instance? java.util.Collection fv)
+                     (seq fv)
+                     fv))
                 objs)))
 
 
@@ -388,10 +386,10 @@
         path (apply min-key count where) ; At this moment we use path with minimum edges.
         elems (sort-rq (filter-by-preds 
                          (filter f
-                                 (let [objs (reduce #(get-objs %2 %1 limit) sources path)]
+                                 (let [objs (reduce #(get-objs %2 %1) sources path)]
                                    (if unique (distinct objs) objs))) preds)
                        sort false)]
-    elems))
+    (limiting elems limit)))
 
 
 (defn- process-prop

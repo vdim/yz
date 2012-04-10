@@ -963,7 +963,7 @@
                                               [false false r])))
 
             ; Do parsing of our subquery. In case subquery depends on 
-            ; main query we add path to main element.
+            ; main query we must add path to main element.
             rq (effects (let [rq (try 
                                    (do-q newrm) 
                                    (catch Exception e nil))]

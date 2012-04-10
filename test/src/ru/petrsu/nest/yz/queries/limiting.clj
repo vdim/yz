@@ -46,7 +46,7 @@
 (def r101_f1_b2 (doto (Room.) (.setNumber "101")))
 (def r1001_f1_b2 (doto (Room.) (.setNumber "1001")))
 (def f1_b2 (doto (Floor.) 
-             (.setNumber (Integer. 1))
+             (.setNumber (Integer. 0))
              (.addRoom r101_f1_b2) 
              (.addRoom r1001_f1_b2)))
 
@@ -125,16 +125,17 @@
                (is (tc/eq-colls (f "2:a:building (0:floor)") []))
                (is (tc/eq-colls (f "2:a:building (0-5:floor)") []))
              
-               (is (tc/eq-colls (f "building (0-0:floor)") [b2 f1_b2 b1 f1_b1]))
-               (is (tc/eq-colls (f "building (1:floor)") [b2 b1 f2_b1]))
-               (is (tc/eq-colls (f "building (0-1:floor)") [b2 f1_b2 b1 f1_b1 b1 f2_b1]))
+               (is (tc/eq-colls (f "building (0-0:d:floor)") [b2 f1_b2 b1 f1_b1]))
+               (is (tc/eq-colls (f "building (1:d:floor)") [b2 b1 f2_b1]))
+               (let [_ (println (tc/r-query "building (d:floor)"))]
+                 (is (tc/eq-colls (f "building (0-1:floor)") [b2 f1_b2 b1 f1_b1 b1 f2_b1])))
                (is (tc/eq-colls (f "0-1:building (0-1:floor)") [b2 f1_b2 b1 f1_b1 b1 f2_b1]))
              
                (is (tc/eq-colls (f "building.floor") [f1_b2 f1_b1 f2_b1]))
                (is (tc/eq-colls (f "building.0:floor") [f1_b2 f1_b1 f2_b1]))
-               (is (tc/eq-colls (f "building.0-1:floor") [f1_b2 f1_b1 f2_b1]))
-               (is (tc/eq-colls (f "building.1:d:floor") [f2_b1]))
-               (is (tc/eq-colls (f "building.0-0:floor") [f1_b2 f1_b1]))
+               (is (tc/eq-colls (f "building.0-1:d:floor") [f1_b2 f1_b1]))
+               (is (tc/eq-colls (f "building.2:d:floor") [f2_b1]))
+               (is (tc/eq-colls (f "building.-0-0:d:floor") [f2_b1]))
                (is (tc/eq-colls (f "0-0:a:building.0-0:d:floor") [f1_b2]))
                (is (tc/eq-colls (f "0-0:a:building.1-10:d:floor") []))
                (is (tc/eq-colls (f "0-0:d:building.0-0:d:floor") [f1_b1]))
