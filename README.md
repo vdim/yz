@@ -1,4 +1,11 @@
 # About
+
+> "... it seems likely that the verbosity of a query language might obscure 
+> important information or its syntax may emphasize unimportant query features 
+> rather than important ones."
+> -- from "Database Queries in Java" thesis by Christopher Ming-Yee Iu
+
+
 YZ[ˈiːzi] is simple (easy) string-based object query language. 
 It is designed for your advanced users. At the moment there is implementation for Clojure/Java.
 
