@@ -31,6 +31,9 @@ It is designed for your advanced users. At the moment there is implementation fo
 * Removing duplicates:
 <pre><code>¹entity</code></pre>
 
+* Limits:
+<pre><code>1-10:entity</code></pre>
+
 #### What not?
 
 * Definitions (schema, new classes, instances of classes, functions and so on).
