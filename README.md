@@ -3,7 +3,7 @@
 > "... it seems likely that the verbosity of a query language might obscure 
 > important information or its syntax may emphasize unimportant query features 
 > rather than important ones."
-> -- from "Database Queries in Java" thesis by Christopher Ming-Yee Iu
+> -- from ["Database Queries in Java"] (http://infoscience.epfl.ch/record/153803) thesis by Christopher Ming-Yee Iu, page 61.
 
 
 YZ[ˈiːzi] is simple (easy) string-based object query language. 
