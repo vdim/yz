@@ -31,6 +31,7 @@
         ru.petrsu.nest.yz.parsing
         ru.petrsu.nest.yz.core
         ru.petrsu.nest.yz.yz-factory
+        ru.petrsu.nest.yz.utils
         ru.petrsu.nest.son.local-sm
         
         clojure.repl clojure.pprint clojure.java.io

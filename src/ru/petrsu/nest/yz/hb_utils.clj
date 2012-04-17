@@ -43,7 +43,7 @@
          user (at least we use hibernate in nest) 
          can use hibernate as framework between its 
          object model and database."}
-  (:use clojure.pprint)
+  (:use clojure.pprint ru.petrsu.nest.yz.utils)
   (:require [clojure.xml :as cx] 
             [clojure.set :as cs]
             [clojure.string :as cst]
@@ -149,14 +149,6 @@
     ()
     (map name (keys (bean (.newInstance cl))))))
 
-
-(defn get-short-name
-  "Return a short name for the specified class. 
-  The short is a set of upper letters from the simple name of the class."
-  [cl]
-  (.toLowerCase (reduce str ""
-                        (for [a (.getSimpleName cl) 
-                              :when (< (int a) (int \a))] a))))
 
 (defn init-map-for-cl
   "Inits map for specified class. Adds following keys and values:
