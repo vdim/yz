@@ -255,9 +255,9 @@
     nil
     (let [^String field-name (if (keyword? field-name) (name field-name) field-name) 
           v (if (= "&" field-name) ; supported self objects into predicates.
-              o
+              o 
               (try (.getPropertyValue @a-em o field-name)
-                (catch Exception e (throw (Exception. (str "Not found property: " field-name))))))]
+                (catch Exception e nil)))]
       (cond 
         ; If value is nil then function returns nil.
         (nil? v) nil
@@ -276,6 +276,7 @@
 
         ; Returns value.
         :else v))))
+
 
 (defn- get-qp
   "Returns value from p/query-params for 
