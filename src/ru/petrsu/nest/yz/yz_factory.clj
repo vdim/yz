@@ -203,20 +203,24 @@
         In case mom is nil then mom is generated due to 
         the gen-mom function from the hb-utils namespace."
   ([^Collection coll, ^Collection classes]
-   (c-em coll classes nil))
-  ([^Collection coll, ^Collection classes ^String mom]
-   (let [cls (if (or (nil? classes) (empty? classes))
-               (and (seq coll) [(class (nth coll 0))])
-               classes)
-         mom (cond 
+   (c-em coll classes :generate))
+  ([^Collection coll, ^Collection classes mom]
+   (let [mom (cond 
                ; getting mom from file.
                (string? mom) (hu/mom-from-file mom)
-               ; mom itself.
-               (map? mom) mom
                ; generating mom from list of classes.    
-               :else (hu/gen-mom cls nil))]
+               (= mom :generate) 
+               (let [cls (if (or (nil? classes) (empty? classes))
+                           (and (seq coll) [(class (nth coll 0))])
+                           classes)]
+                 (hu/gen-mom cls nil))
+               ;If mom is itself or nil.
+               :else mom)]
      (reify ElementManager
-       (^Collection getElems [_ ^Class _] coll)
+       (^Collection getElems [_ ^Class cl] 
+          (if (= cl Object) 
+            coll
+            (filter #(instance? cl %) coll)))
        (^APersistentMap getMom [_] mom)
       
        ;; Value is got from bean of the object o.
@@ -324,16 +328,32 @@
   query and collection with objects. Parameters:
     q - YZ's query.
     coll - collection with objects.
-    rtype - type of result (:rows or :result - flat and hierarchical 
-            representation of the result respectively).
-            :rows is used by default."
-  ([^String q coll]
-   (collq q coll :rows))
-  ([^String q coll, rtype]
-   (let [f-cl (some #(class %) coll) ; specify class of first element
-         em (c-em coll [f-cl]) ; element manager
-         r (yz/pquery q em)]
-     (if (:error r) 
-       (throw (Exception. (:error r)))
-       (rtype r)))))
+    args are arguments where
+      :clazz key must be specified class of collection. 
+        If clazz is not supplied then MOM will be nil.
+      :rtype key is type of result (:rows or :result - flat or hierarchical 
+        representation of the result respectively). :rows is used by default.
 
+  Examples:
+    (collq \"string\" [1 2 \"1\" 3])
+    (collq \"string\" [1 2 \"1\" 3] :rtype :result)
+    (collq \"string\" [1 2 \"1\" 3] :rtype :result :clazz String)
+    (collq \"string\" [1 2 \"1\" 3] :clazz String)"
+  [^String q coll & args]
+  (let [parts (partition 2 args)
+        {:keys [rtype clazz]} (zipmap (map first parts) (map second parts))
+        rtype (if (nil? rtype) :rows rtype) ; type of result. :rows by default.
+        [cls mom] (if clazz [[clazz] :generate] [nil nil]) ; if clazz is nil then mom will be nil.
+        em (c-em coll cls mom) ; define element manager
+        r (yz/pquery q em)]
+    (if (:error r) 
+      (throw (Exception. (:error r)))
+      (rtype r))))
+
+
+(comment
+  (collq "string" [1 2 "1" 3])
+  (collq "string" [1 2 "1" 3] :rtype :result)
+  (collq "string" [1 2 "1" 3] :rtype :result :clazz String)
+  (collq "string" [1 2 "1" 3] :clazz String)
+)

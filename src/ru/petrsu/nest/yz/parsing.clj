@@ -29,7 +29,8 @@
 (ns ru.petrsu.nest.yz.parsing
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
-  (:use name.choi.joshua.fnparse)
+  (:use name.choi.joshua.fnparse
+        ru.petrsu.nest.yz.utils)
   (:require [clojure.string :as cs])
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)
            (ru.petrsu.nest.yz SyntaxException NotFoundPathException 
@@ -205,7 +206,8 @@
 (defn- get-paths
   "Returns list of paths beetwen cl-target and cl-source."
   [^Class cl-target, ^Class cl-source]
-  (if (or (nil? cl-target) (nil? cl-source))
+  (if (or (nil? cl-target) (nil? cl-source)
+          (= :not-specified cl-target) (= :not-specified cl-source))
     nil
     (loop [cl- cl-target]
       (let [paths (get (get mom cl-source) cl-)]
@@ -215,7 +217,8 @@
                                  (if (not (empty? ps)) ps)) 
                               (ancestors cl-target))]
               (if (empty? paths)
-                (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target ".")))
+                (if mom
+                  (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
                 paths))
             (recur (:superclass (get mom cl-))))
           paths)))))
@@ -394,8 +397,15 @@
     - in 'sn' key of each map of mom.
     - as abbreviation class's name."
   [^String id]
-  (let [l-id (cs/lower-case (str id))]
-    (some #(get-in mom [% l-id]) [:sns :names :snames])))
+  (if (nil? mom)
+    ;; Try to find id in classes which are imported to known namespaces.
+    (some #(some (fn [[k v]] (if (or (= id (.toLowerCase (.toString k)))
+                                     (= id (get-short-name v)))
+                               v)) 
+                 (ns-imports %)) 
+          (all-ns))
+    (let [l-id (cs/lower-case (str id))]
+      (some #(get-in mom [% l-id]) [:sns :names :snames]))))
 
 
 (defn- get-sort
