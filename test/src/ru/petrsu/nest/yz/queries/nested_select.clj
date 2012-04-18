@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -23,13 +23,15 @@
          object1 (object2 (object3))."}
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
-  (:require [ru.petrsu.nest.yz.queries.core :as tc]
+  (:require [ru.petrsu.nest.yz.queries.core :as tc] 
             [ru.petrsu.nest.util.utils :as f]
             [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (ru.petrsu.nest.son 
              SON, Building, Room, Floor, Network,
              Device, IPNetwork, EthernetInterface, NetworkInterface,
-             LinkInterface, IPv4Interface, UnknownLinkInterface)))
+             LinkInterface, IPv4Interface, UnknownLinkInterface)
+           (ru.petrsu.nest.yz NotFoundElementException)))
+
 
 ;; Define model
 
@@ -143,3 +145,16 @@
            (is (f Network "device (network)"))))
 
 
+(deftest neg-parse-nest-queries
+         ^{:doc "Contains tests which are thrown exceptions."}
+         (is (thrown? RuntimeException (tc/qparse "somelem")))
+         (is (thrown? RuntimeException (tc/qparse "building (somelem)")))
+         (is (thrown? RuntimeException (tc/qparse "building (room, somelem)")))
+         (is (thrown? RuntimeException (tc/qparse "building (somelem, room)")))
+         (is (thrown? RuntimeException (tc/qparse "building (room, floor, somelem)")))
+         (is (thrown? RuntimeException (tc/qparse "building (room, floor, device, somelem)")))
+         (is (thrown? RuntimeException (tc/qparse "building (room (somelem))")))
+         (is (thrown? RuntimeException (tc/qparse "building (room (floor (somelem)))")))
+         (is (thrown? RuntimeException (tc/qparse "building (somelem)")))
+         (is (thrown? RuntimeException (tc/qparse "building, somelem")))
+         (is (thrown? RuntimeException (tc/qparse "somelem, building"))))
