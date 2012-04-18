@@ -418,19 +418,21 @@
   for specified class (cl) and its property (prop)."
   [tsort, cl, prop]
   (if tsort
-    (let [prop (cond (= prop :#default-property#) (:dp (get mom cl))
-                     (= prop :#self-object#) :self
-                     :else prop)
-          f #(let [v (get-in (get mom cl) [:sort prop %])]
-               (if (string? v)
-                 (create-f v)
-                 v))
-          c (f :comp) ; comparator
-          keyfn (f :keyfn)]
-      ; Check whether cl may be comparable.
-      (if (and (nil? c) (nil? keyfn) (not (contains? (ancestors cl) Comparable)))
-        (throw (ClassCastException. (str (.getName cl) " cannot be cast to java.lang.Comparable")))
-        [tsort c keyfn]))
+    (if mom
+      (let [prop (cond (= prop :#default-property#) (:dp (get mom cl))
+                       (= prop :#self-object#) :self
+                       :else prop)
+            f #(let [v (get-in (get mom cl) [:sort prop %])]
+                 (if (string? v)
+                   (create-f v)
+                   v))
+            c (f :comp) ; comparator
+            keyfn (f :keyfn)]
+        ; Check whether cl may be comparable.
+        (if (and (nil? c) (nil? keyfn) (not (contains? (ancestors cl) Comparable)))
+          (throw (ClassCastException. (str (.getName cl) " cannot be cast to java.lang.Comparable")))
+          [tsort c keyfn]))
+        [tsort nil nil])
     [nil nil nil]))
 
 
@@ -443,8 +445,8 @@
                  (map? id) id
                  :else (keyword (str id))) 
         what (get-in-nest-or-then res nl tl- :what)]
-    (if (nil? what)
-      (throw (NotFoundElementException. (str "Not found element: " (name id))))
+    ;(if (nil? what)
+    ;  (throw (NotFoundElementException. (str "Not found element: " (name id))))
       (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
             props (get-in-nest-or-then res (inc nl) tl- :props)
             sorts (cond
@@ -484,7 +486,7 @@
               res nl :then
               (update-in last-then (v :props)
                          #(lvec (conj % [id is-recur])))))
-          (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur]))))))))
+          (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur])))))))
 
 
 (defn- transform-sort
@@ -525,7 +527,7 @@
   "This function is called when id is found in query. Returns new result."
   [res ^String id nl tl is-recur tsort unique hb-range lb-range tail]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
-        ^Class cl (find-class id)
+        ^Class cl (if (and (nil? mom) (> tl 0)) nil (find-class id))
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)

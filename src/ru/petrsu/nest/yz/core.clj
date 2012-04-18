@@ -382,7 +382,7 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
-  (let [{:keys [preds where ^Class what sort exactly unique limit]} m
+  (let [{:keys [props preds where ^Class what sort exactly unique limit]} m
         f (if exactly #(= (class %) what) #(instance? what %))
         path (apply min-key count where) ; At this moment we use path with minimum edges.
         elems (sort-rq (filter-by-preds 
@@ -416,7 +416,14 @@
   [obj, props]
   (if (empty? props)
     obj
-    (map #(process-prop % obj) props)))
+    (map #(let [new-objs (process-prop % obj)]
+            (if (sequential? new-objs)
+              ; If value of property is sequence (or array) then we
+              ; return sequence. It may be usefull for queries
+              ; something like this building.floors.rooms.occupancy
+              (seq new-objs)
+              new-objs))
+         props)))
 
 
 (defn- process-then
@@ -429,7 +436,9 @@
         (if props-
           (sort-rq pp tsort true)
           pp))
-      (recur (get-objs-by-path objs- then-)
+      (recur (if (and (nil? (:where then-)) props-)
+               (flatten (map #(process-props % props-) objs-))
+               (get-objs-by-path objs- then-))
              (:then then-) 
              (:props then-)
              (:sort then-)))))
