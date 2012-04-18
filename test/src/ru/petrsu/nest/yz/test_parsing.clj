@@ -1853,17 +1853,18 @@
          ;   actual: (not (nil? "room[name number floor].floor,"))
          ;
          ; It is all I need.
-         (let [results (fn [l] 
+         (let [results (fn [l mom] 
                          (some #(let [r (try 
-                                          (:remainder (parse+ % mom-))
+                                          (:remainder (parse+ % mom))
                                           (catch Exception e (do (.printStackTrace e) %)))]
                                   (if r %)) l))]
-           (is (nil? (results clist)))
-           (is (nil? (results clist-next-query)))
-           (is (nil? (results clist-next-query-clist)))
-           (is (nil? (results clist-nest-query)))
-           (is (nil? (results clist-subqueries)))
-           (is (nil? (results list-limit-sorting-unique)))))
+           (is (nil? (results clist mom-)))
+           (is (nil? (results clist nil)))
+           (is (nil? (results clist-next-query mom-)))
+           (is (nil? (results clist-next-query-clist mom-)))
+           (is (nil? (results clist-nest-query mom-)))
+           (is (nil? (results clist-subqueries mom-)))
+           (is (nil? (results list-limit-sorting-unique mom-)))))
 
 
 (deftype SType [property])

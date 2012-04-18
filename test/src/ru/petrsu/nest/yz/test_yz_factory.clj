@@ -51,3 +51,35 @@
                             Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r1001_f1_b2 bd/r1002_f1_b2]
                             Building [bd/b1 bd/b2]}))))
 
+
+(deftest collq-f
+         ^{:doc "Tests the collq function"}
+         (let [f #(qc/eq-colls (apply yzf/collq "long" [1 2 3] %1) %2)]
+           (is (f () [[1] [2] [3]]))
+           (is (f [:rtype :rows] [[1] [2] [3]]))
+           (is (f [:rtype :result] [[1 [] 2 [] 3 []]]))
+           (is (f [:rtype :rows :clazz Long] [[1] [2] [3]]))
+           (is (f [:rtype :result :clazz Long] [[1 [] 2 [] 3 []]]))
+           (is (f [:clazz Long :rtype :rows] [[1] [2] [3]]))
+           (is (f [:clazz Long :rtype :result] [[1 [] 2 [] 3 []]])))
+           
+         (is (thrown? Exception (yzf/collq "long" [1] :clazz String)))
+         (is (thrown? Exception (yzf/collq "long" ["af"] :clazz String)))
+         (is (thrown? Exception (yzf/collq "string" [1] :clazz Long)))
+         (is (thrown? Exception (yzf/collq "string" ["af"] :clazz Long)))
+         
+         (is (= (yzf/collq "long" ["af"] :rtype :result) [[]]))
+         (is (= (yzf/collq "string" [1 2 3] :rtype :result) [[]]))
+         (is (= (yzf/collq "long" ["af"]) ()))
+         (is (= (yzf/collq "string" [1 2 3]) ()))
+         (is (= (yzf/collq "long" ["af"] :rtype :rows) ()))
+         (is (= (yzf/collq "string" [1 2 3] :rtype :rows) ()))
+
+         (is (= (yzf/collq "long" ["af" 1 "sd"]) [[1]]))
+         (is (= (yzf/collq "string" [1 2 "af" 3]) [["af"]]))
+         (is (= (yzf/collq "long" ["af" 1 "sd"] :clazz Long) [[1]]))
+         (is (= (yzf/collq "string" [1 2 "af" 3] :clazz String) [["af"]]))
+         (is (= (yzf/collq "long" ["af" 1 "sd"] :rtype :rows :clazz Long) [[1]]))
+         (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :rows :clazz String) [["af"]]))
+         (is (= (yzf/collq "long" ["af" 1 "sd"] :rtype :result :clazz Long) [[1 []]]))
+         (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :result :clazz String) [["af" []]])))
