@@ -478,3 +478,18 @@
            (is (tc/eq-colls [2] (f "long#(& < 5)")))
            (is (tc/eq-colls [34] (f "long#(& > 20)")))))
 
+
+(deftest preds-with-==
+         ^{:doc "Tests queries which contains 
+                the == binary operation in predicates: long#(& == 5)"}
+         (let [p-longs [2 3] ; primitive longs
+               c-longs [(Long. 2) (Long. 3)] ; complex longs
+               c-ints [(Integer. 2) (Integer. 3)] ; complex ints
+               f #(tc/eq-colls %1 (yzf/collq %2 %3))]
+           (is (f [[2]] "long#(& == 2)" p-longs))
+           (is (f [[2]] "long#(& = 2)" p-longs))
+           (is (f [] "long#(& == 2)" c-longs))
+           (is (f [[2]] "long#(& = 2)" c-longs))
+           
+           (is (f [] "integer#(& == 2)" c-ints))
+           (is (f [[2]] "integer#(& = 2)" c-ints))))
