@@ -23,24 +23,30 @@
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf]
             [ru.petrsu.nest.yz.core :as c] 
             [ru.petrsu.nest.yz.queries.core :as qc]
+            [ru.petrsu.nest.yz.hb-utils :as hu]
             [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (ru.petrsu.nest.son SON Building Room Floor))
   (:use clojure.test))
 
 
+(def mom- 
+  ^{:doc "Defines the map of the object model (used Nest's model)"}
+  (hu/mom-from-file "nest.mom"))
+
+
 (deftest find-rc
          ^{:doc "Tests the find-related-colls function."}
          (let [floors [bd/f1_b1 bd/f2_b1 bd/f3_b1]]
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room] nil) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room] mom-) 
                            {Floor floors, Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r201_f2_b1 bd/r202_f2_b1]}))
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building] nil) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building] mom-) 
                            {Floor floors, 
                             Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r201_f2_b1 bd/r202_f2_b1]
                             Building [bd/b1]})))
          (let [floors [bd/f1_b1 bd/f1_b2]]
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room] nil) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room] mom-) 
                            {Floor floors, Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r1001_f1_b2 bd/r1002_f1_b2]}))
-           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building] nil) 
+           (is (qc/eq-maps (yzf/find-related-colls floors Floor [Floor Room Building] mom-) 
                            {Floor floors, 
                             Room [bd/r101_f1_b1 bd/r102_f1_b1 bd/r1001_f1_b2 bd/r1002_f1_b2]
                             Building [bd/b1 bd/b2]}))))

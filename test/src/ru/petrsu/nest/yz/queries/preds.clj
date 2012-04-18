@@ -466,15 +466,15 @@
 
 (deftest preds-with-self
          ^{:doc "Tests queries which contains 
-                self objects in predicates: integer#(& = 5)"}
+                self objects in predicates: long#(& = 5)"}
          (let [t-ints [34 2 20 5 8 12]
-               i-em (yzf/c-em t-ints [Integer])
-               f #(flatten (:rows (c/pquery %1 i-em)))]
-           (is (tc/eq-colls [2] (f "integer#(& = 2)")))
-           (is (tc/eq-colls [2 5] (f "integer#(& = (2 || 5))")))
-           (is (tc/eq-colls [2 5 20] (f "integer#(& = (2 || 5 || 20))")))
-           (is (tc/eq-colls [20] (f "integer#(& = (2 && 5 || 20))")))
-           (is (tc/eq-colls [] (f "integer#(& = (2 && (5 || 20)))")))
-           (is (tc/eq-colls [2] (f "integer#(& < 5)")))
-           (is (tc/eq-colls [34] (f "integer#(& > 20)")))))
+               l-em (yzf/c-em t-ints [Long])
+               f #(flatten (:rows (c/pquery %1 l-em)))]
+           (is (tc/eq-colls [2] (f "long#(& = 2)")))
+           (is (tc/eq-colls [2 5] (f "long#(& = (2 || 5))")))
+           (is (tc/eq-colls [2 5 20] (f "long#(& = (2 || 5 || 20))")))
+           (is (tc/eq-colls [20] (f "long#(& = (2 && 5 || 20))")))
+           (is (tc/eq-colls [] (f "long#(& = (2 && (5 || 20)))")))
+           (is (tc/eq-colls [2] (f "long#(& < 5)")))
+           (is (tc/eq-colls [34] (f "long#(& > 20)")))))
 
