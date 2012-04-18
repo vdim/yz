@@ -26,7 +26,12 @@
         clojure.test 
         ru.petrsu.nest.yz.queries.bd)
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf])
-  (:import (ru.petrsu.nest.son Building Room Floor)
+  (:import (ru.petrsu.nest.son 
+             Building Room Floor 
+
+             ; Importing of this classes are needed for parsing 
+             ; queries with this classes in case MOM is nil.
+             NetworkInterface Occupancy)
            (ru.petrsu.nest.yz SyntaxException NotDefinedDP)))
 
 (def mom- 
