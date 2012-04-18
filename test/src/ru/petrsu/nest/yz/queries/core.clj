@@ -25,6 +25,7 @@
   (:require [ru.petrsu.nest.yz.hb-utils :as hb]
             [net.kryshen.planter.store :as planter]
             [ru.petrsu.nest.yz.core :as c]
+            [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.yz-factory :as yzf]
             [ru.petrsu.nest.son.local-sm :as lsm])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
@@ -237,6 +238,12 @@
   "Returns :rows of core/pquery."
   [query]
   (do-q query :rows))
+
+
+(defn qparse
+  "Parses specified query using *mom*."
+  [query]
+  (p/parse query *mom*))
 
 
 (defn qstruct?
