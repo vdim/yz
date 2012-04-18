@@ -382,7 +382,7 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
-  (let [{:keys [props preds where ^Class what sort exactly unique limit]} m
+  (let [{:keys [preds where ^Class what sort exactly unique limit]} m
         f (if exactly #(= (class %) what) #(instance? what %))
         path (apply min-key count where) ; At this moment we use path with minimum edges.
         elems (sort-rq (filter-by-preds 

@@ -445,48 +445,47 @@
                  (map? id) id
                  :else (keyword (str id))) 
         what (get-in-nest-or-then res nl tl- :what)]
-    ;(if (nil? what)
-    ;  (throw (NotFoundElementException. (str "Not found element: " (name id))))
-      (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
-            props (get-in-nest-or-then res (inc nl) tl- :props)
-            sorts (cond
+    (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
+          props (get-in-nest-or-then res (inc nl) tl- :props)
+          sorts (cond
 
-                    ; Not nothing, so sorts is nil.
-                    (and (not tsort) (not sorts)) nil
+                  
+                  ; Not nothing, so sorts is nil.
+                  (and (not tsort) (not sorts)) nil
                     
-                    ; If sort is map (from query {a:name, d:description}room), then another sorting is ignore.
-                    ;(every? list? sorts) sorts 
-                    (or (and sorts (every? list? sorts)) (map? sorts)) sorts 
+                  ; If sort is map (from query {a:name, d:description}room), then another sorting is ignore.
+                  ;(every? list? sorts) sorts 
+                  (or (and sorts (every? list? sorts)) (map? sorts)) sorts 
 
-                    ; Because of sorting type is not nil first time (sorts is nil), then we must
-                    ; create structure of value's :sort key: vector [nil nil nil] for
-                    ; class which is selected plus vector [nil nil nil] for each 
-                    ; property which has already added plus vector for current type of 
-                    ; sorting (get-sort function).
-                    (not sorts)
-                    (conj (vec (repeat (count props) [nil nil nil])) [nil nil nil] (get-sort tsort, what, id))
+                  ; Because of sorting type is not nil first time (sorts is nil), then we must
+                  ; create structure of value's :sort key: vector [nil nil nil] for
+                  ; class which is selected plus vector [nil nil nil] for each 
+                  ; property which has already added plus vector for current type of 
+                  ; sorting (get-sort function).
+                  (not sorts)
+                  (conj (vec (repeat (count props) [nil nil nil])) [nil nil nil] (get-sort tsort, what, id))
 
-                    ; If sorts is not nil, then we must add some vector for current type of sorting
-                    ; (get-sort function).
-                    :else (if (vector? (sorts 0)) 
-                            (conj sorts (get-sort tsort, what, id))
-                            (conj [sorts] (get-sort tsort, what, id))))
-            f #(assoc-in-nest res nl %1 %2 :sort sorts)
+                  ; If sorts is not nil, then we must add some vector for current type of sorting
+                  ; (get-sort function).
+                  :else (if (vector? (sorts 0)) 
+                          (conj sorts (get-sort tsort, what, id))
+                          (conj [sorts] (get-sort tsort, what, id))))
+          f #(assoc-in-nest res nl %1 %2 :sort sorts)
             
-            ; This function is need for improving performance because first element of :props is
-            ; not vector but next is. Result of benchmark in case parameter is vector:
-            ; (time (dotimes [_ 1e7] (lvec [1 2 3]))): "Elapsed time: 327.200079 msecs"
-            ; (time (dotimes [_ 1e7] (vec [1 2 3]))): "Elapsed time: 7122.513999 msecs"
-            lvec #(if (vector? %) % (vec %))]
-        (if (> tl- 0)
-          (let [v #(conj (vec (repeat (dec tl-) :then)) %)
-                last-then (get-in-nest res nl :then)
-                last-then (nnassoc-in last-then (v :sort) sorts)]
-            (assoc-in-nest 
-              res nl :then
-              (update-in last-then (v :props)
-                         #(lvec (conj % [id is-recur])))))
-          (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur])))))))
+          ; This function is need for improving performance because first element of :props is
+          ; not vector but next is. Result of benchmark in case parameter is vector:
+          ; (time (dotimes [_ 1e7] (lvec [1 2 3]))): "Elapsed time: 327.200079 msecs"
+          ; (time (dotimes [_ 1e7] (vec [1 2 3]))): "Elapsed time: 7122.513999 msecs"
+          lvec #(if (vector? %) % (vec %))]
+      (if (> tl- 0)
+        (let [v #(conj (vec (repeat (dec tl-) :then)) %)
+              last-then (get-in-nest res nl :then)
+              last-then (nnassoc-in last-then (v :sort) sorts)]
+          (assoc-in-nest 
+            res nl :then
+            (update-in last-then (v :props)
+                       #(lvec (conj % [id is-recur])))))
+        (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur])))))))
 
 
 (defn- transform-sort
