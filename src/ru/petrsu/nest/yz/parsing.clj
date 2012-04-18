@@ -448,7 +448,6 @@
     (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
           props (get-in-nest-or-then res (inc nl) tl- :props)
           sorts (cond
-
                   
                   ; Not nothing, so sorts is nil.
                   (and (not tsort) (not sorts)) nil
@@ -530,7 +529,11 @@
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
-      (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail)
+      (if (> tl 0)
+        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail)
+        ; If then-level is 0 (so we can conclude that it is not property) 
+        ; and class wasn't found then we must throw exception.
+        (throw (NotFoundElementException. (str "Not found element: " id))))
       (let [f #(assoc-in-nest res nl :then %)
             ; Define limit
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
