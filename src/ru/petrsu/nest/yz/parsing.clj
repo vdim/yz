@@ -294,7 +294,9 @@
       (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
         (if-let [dp (:dp (get mom cl-))]
           [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
-          (throw (NotDefinedDP. (str "Default property is not defined for " cl-))))
+          (if mom
+            (throw (NotDefinedDP. (str "Default property is not defined for " cl-)))
+            [ids- pp]))
         [ids- pp])
       (let [id (first sp-res)
             ^Class cl-target (find-class id)]
