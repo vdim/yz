@@ -26,72 +26,103 @@
   (:import
    (net.kryshen.dvec Vecs Ranges)))
 
+; Describe class as vertex.
+(defrecord Clazz 
+  [bounds label clazz])
 
 (def diameter 
   "Defines deameter of circle."
   60)
 
 
+(defn- check-type
+  "Defines whether type of pd (PropertyDescription) is contained in list of classes."
+  [pd classes]
+  (let [pt (.getPropertyType pd)]
+    (if (contains? classes pt)
+      [pt (.getName pd)]
+      (cond (nil? pt) nil
+            (contains? (ancestors pt) java.util.Collection)
+            (let [t (vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments))]
+              (if (and (> (count t) 0) (contains? classes (t 0)))
+                [(t 0), (.getName pd)] ))
+            (.isArray pt)
+            (let [t (.getComponentType pt)]
+              (if (and (not (nil? t)) (contains? classes t))
+                [t, (.getName pd)]))))))
+
+
+(defn get-related
+  "Returns related classes for specified Class's instance.
+  ('classes' must be set for correct working 'contains?' function."
+  [cl classes]
+  (remove nil?
+    (map #(check-type % classes)
+         (seq (.. java.beans.Introspector
+                (getBeanInfo cl)
+                (getPropertyDescriptors))))))
+
+
 (def class-view
   "Implements VertexView interface for representing class as vertex."
   (reify VertexView
     (vertex-bounds 
-      [_ r]
-      r)
+      [_ clazz]
+      (:bounds clazz))
     (vertex-weight 
       [_ _]
       1.0)
     (vertex-anchor 
       [view context other]
-      (:location context))
+      (:center context))
     (constraint-vertex 
       [_ _ location]
       location)
     (render-vertex! 
-      [_ _]
+      [_ clazz]
+      (.drawString *graphics* (:label clazz) 30 30)
       (.drawOval *graphics* 0 0 diameter diameter))))
 
 
-(defn- random-circles
-  ([]
-   (random-circles *max-range*))
-  ([r]
-     (let [half-r (/ r 2)
-           ;; Non-uniform: more density for smaller values.
-           rand #(Math/pow Math/E (rand (Math/log %)))
-           x0 (rand half-r)
-           y0 (rand half-r)
-           lower (Vecs/vec x0 y0)
-           ; 1 is error of next truncation.
-           upper (Vecs/vec (+ x0 diameter 1) (+ y0 diameter 1))]
-       (Ranges/range lower upper))))
+(defn- class-vertex
+  "Creates Clazz instance for specified class."
+  [clazz]
+  (let [x0 0
+        y0 0
+        lower (Vecs/vec x0 y0)
+        ; 1 is for eliminating possible error of futher truncation.
+        upper (Vecs/vec (+ x0 diameter 1) (+ y0 diameter 1))]
+    (->Clazz (Ranges/range lower upper) 
+             (subs (.getSimpleName clazz) 0 3)
+             clazz)))
 
 
 (defn- class-graph
-  "Generates connected random graph.
-   G(n,p) plus an open path over all vertices."
-  [n p]
-  (let [vs (vec (repeatedly n random-circles))]
-    (reduce (fn [g i]
+  "Generates graph from vector of classes."
+  [classes]
+  (let [vs (map class-vertex classes)
+        index (reduce (fn [m [k v]] (assoc m v k)) {} (map-indexed vector vs))
+        vs (map #(assoc % :adjacent (keep (fn [[cl property]] (some (fn [cl-v] (if (= (:clazz cl-v) cl) cl-v)) vs))
+                                         (get-related (:clazz %) (set classes)))) vs)]
+    (reduce (fn [g clazz]
               (add-context g
-                           (vs i)
-                           (cons (vs (dec i))
-                                 (keep #(if (< (rand) p) (vs %))
-                                       (range (dec i))))
+                           clazz
+                           (:adjacent clazz)
                            class-view))
-            (add-context nil (vs 0) nil class-view)
-            (range 1 n))))
+            (->Layout [] index nil 0.0 0.0 0 0.0 true)
+            vs)))
 
 
 (defn layout-and-show-cg
   ""
-  []
+  [classes]
   (show-graph
-    (update-layout (class-graph 10 1/10))))
+    (last (take-while (complement completed?)
+                      (iterate update-layout
+                               (class-graph classes))))))
 
 (defn viz
   "Visualizes class graph"
-  []
+  [classes]
   (show-frame)
-  (layout-and-show-cg))
-
+  (layout-and-show-cg classes))
