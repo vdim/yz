@@ -26,13 +26,31 @@
   (:import
    (net.kryshen.dvec Vecs Ranges)))
 
-; Describe class as vertex.
+; Describe class as vertex:
+;   - label - short name of class. Needs for drawing inside of circle.
+;   - clazz - java.lang.Class instance of class.
 (defrecord Clazz 
-  [bounds label clazz])
+  [label clazz])
+
 
 (def diameter 
   "Defines deameter of circle."
   60)
+
+
+(def radius
+  "Defines radius of circle."
+  (int (/ diameter 2)))
+
+
+(def clazz-bounds
+  "Defines bounds of circle"
+  (let [x0 0
+        y0 0
+        lower (Vecs/vec x0 y0)
+        ; 1 is for eliminating possible error of futher truncation.
+        upper (Vecs/vec (+ x0 diameter 1) (+ y0 diameter 1))]
+    (Ranges/range lower upper)))
 
 
 (defn- check-type
@@ -67,8 +85,8 @@
   "Implements VertexView interface for representing class as vertex."
   (reify VertexView
     (vertex-bounds 
-      [_ clazz]
-      (:bounds clazz))
+      [_ _]
+      clazz-bounds)
     (vertex-weight 
       [_ _]
       1.0)
@@ -80,21 +98,15 @@
       location)
     (render-vertex! 
       [_ clazz]
-      (.drawString *graphics* (:label clazz) 30 30)
+      (.drawString *graphics* (:label clazz) radius radius)
       (.drawOval *graphics* 0 0 diameter diameter))))
 
 
 (defn- class-vertex
   "Creates Clazz instance for specified class."
   [clazz]
-  (let [x0 0
-        y0 0
-        lower (Vecs/vec x0 y0)
-        ; 1 is for eliminating possible error of futher truncation.
-        upper (Vecs/vec (+ x0 diameter 1) (+ y0 diameter 1))]
-    (->Clazz (Ranges/range lower upper) 
-             (subs (.getSimpleName clazz) 0 3)
-             clazz)))
+  (->Clazz (subs (.getSimpleName clazz) 0 3)
+           clazz))
 
 
 (defn- class-graph
