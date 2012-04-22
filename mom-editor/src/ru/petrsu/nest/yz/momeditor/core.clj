@@ -21,10 +21,9 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "MOM's editor core."}
   (:use
-   (net.kryshen.indygraph partition spring-layout render inspector)
-   (net.kryshen.indyvon core layers component))
-  (:import
-   (net.kryshen.dvec Vecs Ranges)))
+    (net.kryshen.indygraph partition spring-layout render inspector)
+    (net.kryshen.indyvon core layers component))
+  (:import (net.kryshen.dvec Vecs Ranges)))
 
 ; Describe class as vertex:
 ;   - label - short name of class. Needs for drawing inside of circle.
@@ -117,10 +116,11 @@
         vs (map #(assoc % :adjacent (keep (fn [[cl property]] (some (fn [cl-v] (if (= (:clazz cl-v) cl) cl-v)) vs))
                                          (get-related (:clazz %) (set classes)))) vs)]
     (reduce (fn [g clazz]
-              (add-context g
-                           clazz
-                           (:adjacent clazz)
-                           class-view))
+              (add-context-to-cg 
+                g
+                clazz
+                (:adjacent clazz)
+                class-view))
             (->Layout [] index nil 0.0 0.0 0 0.0 true)
             vs)))
 
