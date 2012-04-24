@@ -22,7 +22,7 @@
     :doc "MOM's editor core."}
   (:use
     (net.kryshen.indygraph partition spring-layout render inspector)
-    (net.kryshen.indyvon core layers component))
+    (net.kryshen.indyvon core))
   (:import (net.kryshen.dvec Vecs Ranges)))
 
 ; Describe class as vertex:
@@ -126,12 +126,19 @@
 
 
 (defn layout-and-show-cg
-  ""
+  "Creates class graph from specified 
+  list of classes and shows it."
   [classes]
-  (show-graph
-    (last (take-while (complement completed?)
-                      (iterate update-layout
-                               (class-graph classes))))))
+  (let [cg (class-graph classes)
+        ; Sets initial location
+        cg (reduce #(assoc %1 :contexts
+                           (replace {%2 (assoc %2 :location (initial-location %1 %2))}
+                                    (:contexts %1))) 
+                   cg (:contexts cg))]
+    (show-graph
+      (last (take-while (complement completed?)
+                        (iterate update-layout cg))))))
+
 
 (defn viz
   "Visualizes class graph"
