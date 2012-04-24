@@ -1,5 +1,7 @@
 MOM's editor.
 
+At this moment MOM's editor is useless due to not commited third party code.
+
 ## Copyright
 
 Copyright 2012 Vyacheslav Dimitrov, [Petrozavodsk State University] (http://petrsu.ru/Structure/structure_e.html).
