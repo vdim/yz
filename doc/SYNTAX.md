@@ -30,6 +30,17 @@ We will hold the following notation: first will be query and second - result of 
     some-query
     => some-result
 
+In some cases it may be convenient to demonstrate feature of the YZ using other collection 
+(for example collection with numbers) rather specified above collection with string. 
+So the collq function from the current implementation of the YZ is used. 
+The collq function takes two parameters (query and collection) and returns
+result of query. Example:
+
+```clojure
+(collq "some-query" some-collection)
+=> some-result
+```
+
 <a name="selection"></a>
 ### Selection 
 In order to get data from your model you can specify name of class of objects which you
