@@ -402,6 +402,54 @@ In case you want to get courses which is taught with Brian, you can try:
     => ([#<Course Russian>] [#<Course German>])
 
 
+<a name="joining_not_result"></a>
+### Joining without including to result
+Round brackets allow user to join an entity to an another entity and include objects of both
+entities to result. In case you want to join entities, but not include one of it
+you can use "." symbol. For example, query:
+    
+    course.student
+    =>  ([#<Student Alexander>]
+	 [#<Student Nik>]
+	 [#<Student John>]
+	 [#<Student Nik>]
+	 [#<Student John>]
+	 [#<Student Bob>]
+	 [#<Student John>]
+	 [#<Student Bob>]
+	 [#<Student John>])
+
+Some notes:
+
+* This feature may be usefull for definition path between entities which is not
+used by default. Let's imagine abstract object model something like represented
+on figure below:
+<img src="https://github.com/vdim/yz/raw/master/doc/abstract-om.png" 
+alt="Some abstract object model" title="Some abstract object model"/>
+
+We want to select objects of the Entity1 and its objects of the Entity2 throught Entity3 and Entity4 (green path),
+but query
+    
+    entity1 (entity2)
+
+may return results due to wrong red path (in fact it depends on implementation of the YZ, but let's suppose that
+our imlementation of the YZ returns first shortest path). In order to solve this problem you can query
+
+    entity1 (entity3.entity2)
+
+which returns result due to right green path (first, YZ try to find path between classes Entity1 and Entity3 and
+then between classes Entity3 and Entity2).
+
+* "student" in above query is not property, but it is entity for which YZ tries to find path. 
+If searching fails then YZ tries to recognize property and extract its value:
+    
+    course.students
+    => ([#<HashSet [Alexander, Nik, John]>]
+	[#<HashSet [Nik, John]>]
+	[#<HashSet [Bob, John]>]
+	[#<HashSet [Bob, John]>])
+
+
 <a name="union"></a>
 ### Union
 In case you want to get results of several queries in single query, you
