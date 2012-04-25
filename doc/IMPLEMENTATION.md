@@ -25,7 +25,7 @@ which is based on [monads] (http://www.intensivesystems.net/tutorials/monads_101
 
 * Query evaluator uses some implementation of the ElementManager for accessing to data. 
 
-* Query evaluator returns map where 
+* The pquery function from [core.clj](https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj) returns map where 
     * :result - hierarchical structure of result query.
     * :error - if error is occured then value of this keyword contains string representation of the error. If not then value is nil.
     * :columns - list with default names of columns.
@@ -36,10 +36,10 @@ which is based on [monads] (http://www.intensivesystems.net/tutorials/monads_101
 ## MOM
 MOM may contain the following information:
 
-* classes of your model
-* paths between classes
-* brief names of classes
-* default properties
+* classes of your model;
+* paths between classes;
+* brief names of classes;
+* default properties;
 * comparators (it may be useful in case you can not change your model, but you want to sort your selection and 
 this class does not implement [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) 
 interface).
@@ -58,6 +58,10 @@ See
     ./gen_mom.sh -h
 
 for more details.
+
+At this moment you should correct given map manually. There is 
+[project] (https://github.com/vdim/yz/blob/master/mom-editor) which goal is
+creating editor for MOM, but now it is useless.
 
 
 <a name="details"></a>
