@@ -69,6 +69,7 @@ License along with YZ.  If not, see [http://www.gnu.org/licenses/] (http://www.g
 ## Documentation
 * [Specification (grammatics, semantics, pragmatics)] (https://github.com/vdim/yz/blob/master/doc/SYNTAX.md)
 * [Implementation (for Java/Clojure)] (https://github.com/vdim/yz/blob/master/doc/IMPLEMENTATION.md)
+* [Our Environment] (https://github.com/vdim/yz/blob/master/doc/ENVIRONMENT.md)
 * [Installation] (https://github.com/vdim/yz/blob/master/doc/INSTALLATION.md)
 * [Usage] (https://github.com/vdim/yz/blob/master/doc/USAGE.md)
 * [Testing and benchmarking] (https://github.com/vdim/yz/blob/master/doc/TESTING.md)
