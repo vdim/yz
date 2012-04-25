@@ -442,14 +442,14 @@ which returns result due to right green path (first, YZ try to find path between
 then between classes Entity3 and Entity2).
 
 * "student" in above query is not property, but it is entity for which YZ tries to find path. 
+
 If searching fails then YZ tries to recognize property and extract its value:
-<pre><code>
+
     course.students
     => ([#<HashSet [Alexander, Nik, John]>]
         [#<HashSet [Nik, John]>]
         [#<HashSet [Bob, John]>]
         [#<HashSet [Bob, John]>])
-</code></pre>
 
 <a name="union"></a>
 ### Union
