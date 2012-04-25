@@ -394,7 +394,7 @@ returns <b>all</b> courses and its faculties in case he/she has name "Brian":
     => ([#<Course Algebra>]
         [#<Course Geometry>]
         [#<Course Russian> #<Faculty Brian>]
-        [#<Course German> #<Faculty Brian>])
+	[#<Course German> #<Faculty Brian>])
 
 In case you want to get courses which is taught with Brian, you can try:
 
@@ -410,20 +410,21 @@ you can use "." symbol. For example, query:
     
     course.student
     =>  ([#<Student Alexander>]
-	 [#<Student Nik>]
-	 [#<Student John>]
-	 [#<Student Nik>]
-	 [#<Student John>]
-	 [#<Student Bob>]
-	 [#<Student John>]
-	 [#<Student Bob>]
-	 [#<Student John>])
+         [#<Student Nik>]
+         [#<Student John>]
+         [#<Student Nik>]
+         [#<Student John>]
+         [#<Student Bob>]
+         [#<Student John>]
+         [#<Student Bob>]
+         [#<Student John>])
 
 Some notes:
 
 * This feature may be usefull for definition path between entities which is not
 used by default. Let's imagine abstract object model something like represented
 on figure below:
+
 <img src="https://github.com/vdim/yz/raw/master/doc/abstract-om.png" 
 alt="Some abstract object model" title="Some abstract object model"/>
 
@@ -445,9 +446,9 @@ If searching fails then YZ tries to recognize property and extract its value:
     
     course.students
     => ([#<HashSet [Alexander, Nik, John]>]
-	[#<HashSet [Nik, John]>]
-	[#<HashSet [Bob, John]>]
-	[#<HashSet [Bob, John]>])
+        [#<HashSet [Nik, John]>]
+        [#<HashSet [Bob, John]>]
+        [#<HashSet [Bob, John]>])
 
 
 <a name="union"></a>
