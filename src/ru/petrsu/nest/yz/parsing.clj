@@ -35,7 +35,7 @@
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)
            (ru.petrsu.nest.yz SyntaxException NotFoundPathException 
                               NotFoundElementException NotFoundFunctionException
-                              NotDefinedDP)))
+                              NotDefinedDPException)))
 
 
 (defn- ^String sdrop
@@ -295,7 +295,7 @@
         (if-let [dp (:dp (get mom cl-))]
           [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
           (if mom
-            (throw (NotDefinedDP. (str "Default property is not defined for " cl-)))
+            (throw (NotDefinedDPException. (str "Default property is not defined for " cl-)))
             [ids- pp]))
         [ids- pp])
       (let [id (first sp-res)

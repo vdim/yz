@@ -32,7 +32,7 @@
              ; Importing of this classes are needed for parsing 
              ; queries with this classes in case MOM is nil.
              NetworkInterface Occupancy)
-           (ru.petrsu.nest.yz SyntaxException NotDefinedDP)))
+           (ru.petrsu.nest.yz SyntaxException)))
 
 (def mom- 
   ^{:doc "Defines the map of the object model (used Nest's model)"}

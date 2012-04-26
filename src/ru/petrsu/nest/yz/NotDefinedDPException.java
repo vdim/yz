@@ -9,21 +9,21 @@ package ru.petrsu.nest.yz;
  *
  * @author Vyacheslav Dimitrov
  */
-public class NotDefinedDP extends YZException {
+public class NotDefinedDPException extends YZException {
 
-    public NotDefinedDP(Throwable cause) {
+    public NotDefinedDPException(Throwable cause) {
         super(cause);
     }
 
-    public NotDefinedDP(String message, Throwable cause) {
+    public NotDefinedDPException(String message, Throwable cause) {
         super(message, cause);
     }
 
-    public NotDefinedDP(String message) {
+    public NotDefinedDPException(String message) {
         super(message);
     }
 
-    public NotDefinedDP() {
+    public NotDefinedDPException() {
         super();
     }
 
