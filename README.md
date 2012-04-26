@@ -46,7 +46,7 @@ At the moment there is implementation for Clojure/Java in Clojure.
 
 #### What not?
 
-* Definitions (schema, new classes, instances of classes, functions and so on).
+* Definition.
 * Creating.
 * Updating.
 
