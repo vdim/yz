@@ -37,17 +37,16 @@ which is based on [monads] (http://www.intensivesystems.net/tutorials/monads_101
 ## MOM
 MOM may contain the following information:
 
-* classes of your model;
+* classes of model;
 * paths between classes;
 * brief names of classes;
-* default properties;
+* information about default properties;
 * comparators (it may be useful in case you can not change your model, but you want to sort your selection and 
 this class does not implement [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) 
-interface).
+interface). Note that comparator from MOM has more high priority than implementation of the Comparable interface.
 
 In point of view of the Clojure data structure MOM is map where keys are classes of 
-model and values are maps where again keys are classes of model and
-values are list with paths from first class to second. You can see example of MOM
+model and values are maps with information. You can see example of MOM
 [here] (https://github.com/vdim/yz/blob/master/test/test-resource/nest.mom).
 
 ### Creating MOM
