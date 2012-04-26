@@ -281,13 +281,15 @@ Use symbol "¹" or "u:" for removing duplicates from result of query:
 So far we test simple flat collection. Let's consider more complex model 
 (we choose classic example about university):
 <br />
-<img src="https://github.com/vdim/yz/raw/master/doc/uni_model.png" alt="UML class diagram for university model"/>
+<img src="https://github.com/vdim/yz/raw/master/doc/uni_model.png" 
+alt="UML class diagram for university model" title="UML class diagram for university model"/>
 
 We implement it (see source code [here](https://github.com/vdim/yz/blob/master/test/src/university/model)) 
 and create some [example] (https://github.com/vdim/yz/blob/master/test/src/ru/petrsu/nest/yz/queries/uni_bd.clj)
 which is represented on figure below in UML object diagram notation:
 <img src="https://github.com/vdim/yz/raw/master/doc/uni_model_object.png" 
-alt="Example of university model in UML object diagram notation"/>
+alt="Example of university model in UML object diagram notation"
+title="Example of university model in UML object diagram notation"/>
 
 In order to use this university model and next queries you can follow to 
 [this] (https://github.com/vdim/yz/blob/master/doc/TESTINGUNIMODEL.md) instruction.

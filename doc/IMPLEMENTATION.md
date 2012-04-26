@@ -8,7 +8,8 @@ This document contains information about implementation of the YZ in [Clojure] (
 <a name="hl_arch"></a>
 ## High-level architecture
 High-level architecture of the YZ implementation for Clojure/Java is represented on figure below:
-<img src="https://github.com/vdim/yz/raw/master/doc/hl-arch.png" alt="High-level architecture"/>
+<img src="https://github.com/vdim/yz/raw/master/doc/hl-arch.png" 
+alt="High-level architecture" title="High-level architecture"/>
 
 Notes:
 
