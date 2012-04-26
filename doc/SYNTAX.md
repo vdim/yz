@@ -11,6 +11,7 @@
     * <a href="#joining">Joining</a>
     * <a href="#joining_not_result">Joining without including to result</a>
     * <a href="#union">Union</a>
+    * <a href="#default_property">Default property</a>
     * <a href="#subquery">Subquery in right side of predicates</a>
 * <a href="#table_typed_notyped">Table with typed and not typed symbols</a></li>
 
@@ -464,6 +465,7 @@ If searching fails then YZ tries to recognize property and extract its value:
         [#<HashSet [Bob, John]>]
         [#<HashSet [Bob, John]>])
 
+
 <a name="union"></a>
 ### Union
 In case you want to get results of several queries in single query, you
@@ -488,6 +490,23 @@ can use "," for union results
 
     @(count `course'), @(count `faculty'), @(count `student')
     => ([4] [4] [4])
+
+
+<a name="default_property"></a>
+### Default property
+Object may have property which is distinctive feature for this object or this property is often used. 
+For example, for class Course such property may be property "title". So the YZ supports for such
+properties syntax sugar in where and projection clauses: 
+
+    course#(.="Russian")
+    => ([#<Course Russian>])
+
+    course[&.]
+    => (["Algebra"] ["Geometry"] ["Russian"] ["German"])
+
+
+In case default property is not specified then the YZ throws exception.
+
 
 <a name="subquery"></a>
 ### Subquery in right side of predicates

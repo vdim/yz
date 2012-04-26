@@ -18,7 +18,7 @@ At the moment there is implementation for Clojure/Java in Clojure.
 <pre><code>entity[prop1 prop2]</code></pre>
 
 * Filtering:
-<pre><code>entity#(prop1="sv")</code></pre>
+<pre><code>entity#(prop="sv")</code></pre>
 
 * Joining:
 <pre><code>entity1 (entity2)</code></pre>
@@ -40,6 +40,9 @@ At the moment there is implementation for Clojure/Java in Clojure.
 
 * Limits:
 <pre><code>1-10:entity</code></pre>
+
+* Default property:
+<pre><code>entity#(.="sv")</code></pre>
 
 #### What not?
 
