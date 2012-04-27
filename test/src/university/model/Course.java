@@ -1,10 +1,14 @@
 package university.model;
 
 import java.util.HashSet;
+import ru.petrsu.nest.yz.DefaultProperty;
 
 public class Course {
     private String code;
+    
+    @DefaultProperty
     private String title;
+
     private Faculty teacher;
     private HashSet<Student> roster = new HashSet<Student>();
 
