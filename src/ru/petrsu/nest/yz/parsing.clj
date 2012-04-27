@@ -288,14 +288,14 @@
       {:id (nth paths 0) :cl cl-target})))
 
 
-(defn- get-dp
+(defn get-dp
   "Returns default property for specified class.
   If default property is not specified then
   nil is returned.
 
   Firstly function checks MOM, then for each property 
   function checks DefaultProperty annotation."
-  [^Class cl-]
+  [^Class cl- mom]
   (or (:dp (get mom cl-)) 
       (keyword 
         (some (fn [^Field field] 
@@ -312,7 +312,7 @@
   (loop [cl- cl, ids- ids, sp-res (cs/split res #"\.") pp nil]
     (if (empty? sp-res)
       (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
-        (if-let [dp (get-dp cl-)]
+        (if-let [dp (get-dp cl- mom)]
           [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
           (if mom
             (throw (NotDefinedDPException. (str "Default property is not defined for " cl-)))
@@ -449,7 +449,7 @@
             c (f :comp) ; comparator
             keyfn (f :keyfn)]
         ; Check whether cl may be comparable.
-        (if (and (nil? c) (nil? keyfn) (not (contains? (ancestors cl) Comparable)))
+        (if (and (= prop :self) (nil? c) (nil? keyfn) (not (contains? (ancestors cl) Comparable)))
           (throw (ClassCastException. (str (.getName cl) " cannot be cast to java.lang.Comparable")))
           [tsort c keyfn]))
         [tsort nil nil])
@@ -462,7 +462,7 @@
   (let [tl- (dec tl)
         what (get-in-nest-or-then res nl tl- :what)
         id (cond (= id "&") :#self-object#
-                 (= id "&.") (get-dp what)
+                 (= id "&.") (get-dp what mom)
                  (map? id) id
                  :else (keyword (str id)))]
     (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)

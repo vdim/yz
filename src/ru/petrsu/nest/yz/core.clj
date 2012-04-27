@@ -317,7 +317,7 @@
                            (= "&" %) obj 
 
                            ; param is value of the default property.
-                           (= "&." %) (get-fv obj (:dp (get @a-mom (class obj))))
+                           (= "&." %) (get-fv obj (p/get-dp (class obj) @a-mom ))
 
                            ; param is value of some property of the object.
                            (and (string? %) (.startsWith % "&.")) (get-fv obj (.substring % 2))
@@ -402,7 +402,7 @@
             (first fr)
             fr))
         (= prop :#self-object#) obj
-        (= prop :#default-property#) (get-fv obj (:dp (get @a-mom (class obj))))
+        (= prop :#default-property#) (get-fv obj (p/get-dp (class obj) @a-mom))
         is-recur (loop [res [] obj- (get-fv obj prop)]
                    (if (nil? obj-)
                      res
