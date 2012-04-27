@@ -1,6 +1,14 @@
+## 0.0.1-alpha13 / 27.04.2012
+
+* Added throwing exception during parsing in case object is not comparable, but sorting is defined.
+* Renamed class NotDefinedDP to NotDefinedDPException.
+* New philosophy of the collq function.
+* Added support limits: 2-10:string
+* Added support removing duplicates: ¹string
+
 ## 0.0.1-alpha12 / 26.03.2012
 
-* Added support self objects into left side of predicates: string#(& = "some str")
+* Added support refering to self objects into left side of predicates: string#(& = "some str")
 * Added support subquries in the right part of predicates.
 * API: replaced ElementManager`s getClasses method by the getMom method.
 * API: replaced ElementManagerFactory by YZFactory which includes methods for getting different ElementManagers and instance QueryYZs.
