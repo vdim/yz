@@ -35,7 +35,9 @@
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)
            (ru.petrsu.nest.yz SyntaxException NotFoundPathException 
                               NotFoundElementException NotFoundFunctionException
-                              NotDefinedDPException)))
+                              NotDefinedDPException DefaultProperty)
+           (java.lang.reflect Field)
+           (java.lang.annotation Annotation)))
 
 
 (defn- ^String sdrop
@@ -286,13 +288,31 @@
       {:id (nth paths 0) :cl cl-target})))
 
 
+(defn- get-dp
+  "Returns default property for specified class.
+  If default property is not specified then
+  nil is returned.
+
+  Firstly function checks MOM, then for each property 
+  function checks DefaultProperty annotation."
+  [^Class cl-]
+  (or (:dp (get mom cl-)) 
+      (keyword 
+        (some (fn [^Field field] 
+                (if (some (fn [^Annotation ann] 
+                            (= DefaultProperty (.annotationType ann)))
+                          (.getDeclaredAnnotations field))
+                  (.getName field)))
+              (.getDeclaredFields cl-)))))
+
+
 (defn- get-ids 
   "Returns new value of the :ids key of the pred structure."
   [ids ^String res ^Class cl]
   (loop [cl- cl, ids- ids, sp-res (cs/split res #"\.") pp nil]
     (if (empty? sp-res)
       (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
-        (if-let [dp (:dp (get mom cl-))]
+        (if-let [dp (get-dp cl-)]
           [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
           (if mom
             (throw (NotDefinedDPException. (str "Default property is not defined for " cl-)))
@@ -440,11 +460,11 @@
   "This function is called when likely some property is found"
   [res id nl tl is-recur tsort _ _ _ _]
   (let [tl- (dec tl)
+        what (get-in-nest-or-then res nl tl- :what)
         id (cond (= id "&") :#self-object#
-                 (= id "&.") :#default-property#
+                 (= id "&.") (get-dp what)
                  (map? id) id
-                 :else (keyword (str id))) 
-        what (get-in-nest-or-then res nl tl- :what)]
+                 :else (keyword (str id)))]
     (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
           props (get-in-nest-or-then res (inc nl) tl- :props)
           sorts (cond
