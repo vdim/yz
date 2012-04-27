@@ -5,7 +5,7 @@
   <artifactId>yz</artifactId>
   <version>0.0.1-alpha13</version>
   <name>yz</name>
-  <description>Implementation of the YZ language.</description>
+  <description>YZ[ˈiːzi] is simple (easy), laconic, string-based, object query language.</description>
   <url>https://github.com/vdim/yz</url>
   <build>
     <sourceDirectory>src</sourceDirectory>
