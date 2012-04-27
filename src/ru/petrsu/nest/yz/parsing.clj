@@ -296,14 +296,15 @@
   Firstly function checks MOM, then for each property 
   function checks DefaultProperty annotation."
   [^Class cl- mom]
-  (or (:dp (get mom cl-)) 
-      (keyword 
-        (some (fn [^Field field] 
-                (if (some (fn [^Annotation ann] 
-                            (= DefaultProperty (.annotationType ann)))
-                          (.getDeclaredAnnotations field))
-                  (.getName field)))
-              (.getDeclaredFields cl-)))))
+  (if cl-
+    (or (:dp (get mom cl-)) 
+        (keyword 
+          (some (fn [^Field field] 
+                  (if (some (fn [^Annotation ann] 
+                              (= DefaultProperty (.annotationType ann)))
+                            (.getDeclaredAnnotations field))
+                    (.getName field)))
+                (.getDeclaredFields cl-))))))
 
 
 (defn- get-ids 
@@ -439,7 +440,7 @@
   [tsort, cl, prop]
   (if tsort
     (if mom
-      (let [prop (cond (= prop :#default-property#) (:dp (get mom cl))
+      (let [prop (cond (= prop :#default-property#) (get-dp cl mom)
                        (= prop :#self-object#) :self
                        :else prop)
             f #(let [v (get-in (get mom cl) [:sort prop %])]
@@ -519,7 +520,7 @@
       #(let [[k v] %2
              p (cond 
                  ; Sorting is done by default property: {a:&.}building
-                 (= :#default-property# k) (:dp (get mom cl)) 
+                 (= :#default-property# k) (get-dp cl mom) 
                  
                  ; Sorting is done by result of a function: {a:@(count `room')}building
                  (map? k) 
