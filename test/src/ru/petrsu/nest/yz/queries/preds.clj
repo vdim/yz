@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -43,7 +43,7 @@
 
 (def f3_b1 (doto (Floor.) 
              (.setNumber (Integer. 3))
-             (.addRoom (doto (Room.) (.setNumber "301"))) 
+           (.addRoom (doto (Room.) (.setNumber "301"))) 
              (.addRoom (doto (Room.) (.setNumber "302")))))
 
 (def f4_b1 (doto (Floor.) 
@@ -493,3 +493,34 @@
            
            (is (f [] "integer#(& == 2)" c-ints))
            (is (f [[2]] "integer#(& = 2)" c-ints))))
+
+
+(deftest negative-preds
+         ^{:doc "Tests predicates which contains signs with negative symbol (!)."}
+         (let [f #(flatten (tc/rows-query %1))]
+           (is (tc/eq-colls [f1_b1 f1_b2] (f "floor#(number !> 1)")))
+           (is (tc/eq-colls [] (f "floor#(number !>= 1)")))
+           (is (tc/eq-colls [f4_b1] (f "floor#(number !< 4)")))
+           (is (tc/eq-colls [f3_b1 f4_b1] (f "floor#(number !< 3)")))
+           (is (tc/eq-colls [f4_b1] (f "floor#(number !<= 3)")))
+           (is (tc/eq-colls [b1 b2 b3] (f "building#(name ~ \"b.*\")")))
+           (is (tc/eq-colls [] (f "building#(name !~ \"b.*\")")))
+           (is (tc/eq-colls [b2 b3] (f "building#(name !~ \".*1.*\")")))
+           (is (tc/eq-colls [b1] (f "building#(name ~ \".*1.*\")"))))
+         (let [p-longs [2 3] ; primitive longs
+               L2 (Long. 2)
+               L3 (Long. 3)
+               c-longs [L2 L3] ; complex longs
+               I2 (Integer. 2)
+               I3 (Integer. 3)
+               c-ints [I2 I3] ; complex ints
+               f #(tc/eq-colls %1 (yzf/collq %2 %3))]
+           (is (f [[3]] "long#(& !== 2)" p-longs))
+           (is (f [[3]] "long#(& != 2)" p-longs))
+           (is (f [[L2] [L3]] "long#(& !== 2)" c-longs))
+           (is (f [[L2] [L3]] "long#(& !== 4)" c-longs))
+           (is (f [[3]] "long#(& != 2)" c-longs))
+           
+           (is (f [[I2] [I3]] "integer#(& !== 2)" c-ints))
+           (is (f [[I2] [I3]] "integer#(& !== 4)" c-ints))
+           (is (f [[3]] "integer#(& != 2)" c-ints))))

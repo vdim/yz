@@ -31,7 +31,7 @@
 
              ; Importing of this classes are needed for parsing 
              ; queries with this classes in case MOM is nil.
-             NetworkInterface Occupancy)
+             Device Network NetworkInterface Occupancy)
            (ru.petrsu.nest.yz SyntaxException)))
 
 (def mom- 
@@ -1765,6 +1765,17 @@
    "floor.-1:room"
    "floor.1-5:room"
    "floor.-1-5:room"
+
+   ;; Negative predicates
+   "floor#(number != 0)"
+   "floor#(number !== 0)"
+   "floor#(number !> 0)"
+   "floor#(number !< 0)"
+   "floor#(number !>= 0)"
+   "floor#(number !<= 0)"
+   "floor#(number !<= (0 || 1))"
+   "floor#(number != (0 && 1))"
+   "building#(name !~ \"MB\")"
    ])
 
 
