@@ -125,16 +125,16 @@ YZ supports the following operations:
 => ([34] [199])
 ```
 
-* negation ("!=" and syntax sugar "not="):
-<pre><code>
-    string#(& != "Bob")
-    => (["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
-</code></pre>
-
 * regex (rightly for strings):
 <pre><code>
     string#(& ~ "^.a.*")
     => (["Marry"] ["David"])
+</code></pre>
+
+* negation (in order to get opposite result for a sign you should specify the symbol "!" before this sign):
+<pre><code>
+    string#(& != "Bob")
+    => (["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
 </code></pre>
 
 * logical operation (&& and || and syntax sugar "and" and "or" respectively):
@@ -143,8 +143,13 @@ YZ supports the following operations:
     => (["Bob"] ["Marry"]) 
 </code></pre>
 
+```clojure
+(collq "long#(& !> 10)" [199 4 6 10 34])
+=> ([4] [6] [10])
+```
+
 * RCP (Reduced Complicate Predicates, this technique allows to reduce text of 
-your predicates which is adjusted to same property):
+your predicates which are adjusted to same property):
 <pre><code>
     string#(& = ("Bob" || "Marry"))
     => (["Bob"] ["Marry"]) 
