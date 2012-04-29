@@ -1033,11 +1033,7 @@
                               (change-pred value-as-param :value :parameter)))
 
                    ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
-                   (conc (opt (change-pred 
-                                (sur-by-ws 
-                                  (conc (opt (lit \!))
-                                        (alt (lit \=) (lit \~) (lit-conc-seq "=="))))
-                                :func))
+                   (conc (opt (change-pred sign :func))
                          (change-pred string :value :string))
                    (change-pred (lit-conc-seq "true") :value true)
                    (change-pred (lit-conc-seq "false") :value false)
