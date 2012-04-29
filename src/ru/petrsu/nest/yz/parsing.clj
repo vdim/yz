@@ -392,18 +392,22 @@
 
                                    ;; Resolve function.
                                    (= k :func) 
-                                   (let [tres (cs/trim res-)]
-                                     (case tres
-                                       ;; Because of clojure does not function "!=", we replaced it by funciton "not="
-                                       "!=" #'clojure.core/not=
-
-                                       ;; Function for regular expressions.
-                                       "~" #'clojure.core/re-find 
-
-                                       ;; Identical function.
-                                       "==" #'clojure.core/identical?
+                                   (let [tres (cs/trim res-)
+                                         [tres not?] (if (= (first tres) \!)
+                                                       [(subs tres 1) true]
+                                                       [tres false])
+                                         f (case tres
+                                             ;; Function for regular expressions.
+                                             "~" #'clojure.core/re-find 
+                                       
+                                             ;; Identical function.
+                                             "==" #'clojure.core/identical?
                                      
-                                       (resolve (symbol res-))))
+                                             (resolve (symbol tres)))]
+                                     (if not? (if (= f #'clojure.core/re-find)
+                                                [#'clojure.core/re-find]
+                                                (fn [v1 v2] (not (f v1 v2))))
+                                       f))
 
                                    ;; Strings, numbers are not needed in any processing.
                                    :else res-))))
@@ -907,15 +911,13 @@
 
 (def sign
   "Defines sing of where's expression."
-  (sur-by-ws (alt (lit-conc-seq ">=")
-                  (lit-conc-seq "<=")
-                  (lit-conc-seq "not=")
-                  (lit-conc-seq "!=")
-                  (lit-conc-seq "==")
-                  (lit \=) 
-                  (lit \~) 
-                  (lit \<)
-                  (lit \>))))
+  (sur-by-ws 
+    (conc (opt (lit \!)) 
+          (alt (lit-conc-seq ">=")
+               (lit-conc-seq "<=")
+               (lit-conc-seq "not=")
+               (lit-conc-seq "==")
+               (lit \=) (lit \~) (lit \<) (lit \>)))))
 
 
 (def pred-id 
@@ -1033,7 +1035,8 @@
                    ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
                    (conc (opt (change-pred 
                                 (sur-by-ws 
-                                  (alt (lit \=) (lit \~) (lit-conc-seq "!=") (lit-conc-seq "==")))
+                                  (conc (opt (lit \!))
+                                        (alt (lit \=) (lit \~) (lit-conc-seq "=="))))
                                 :func))
                          (change-pred string :value :string))
                    (change-pred (lit-conc-seq "true") :value true)

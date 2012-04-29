@@ -360,16 +360,25 @@
          (let [;; If objects from objs are arrays then we must compare two arrays.
                func (let [cl (class (nth objs 0))]
                       (if (and cl (.isArray cl)) eq-arrays? func))
+
                ;; Check function for a regular expression
-               func (if (= func #'clojure.core/re-find) 
+               ;; Special case is needed because of Pattern
+               ;; instance must be created from string.
+               func (if (or (= func #'clojure.core/re-find) (= func [#'clojure.core/re-find]))
                       (fn [o value] 
                         (if (or (nil? value) (nil? o)) ; Prevent NullPointerException.
                           nil
-                          (re-find (re-pattern value) o)))
+                          ; Vector defines !~ binary sign.
+                          (if (vector? func)
+                            (not (re-find (re-pattern value) o))
+                            (re-find (re-pattern value) o))))
                       func)
+
+               ;; Wrap calling function to try-catch block.
                func #(try (func %1 %2)
                        ; If exception is caused then value is returned as nil.
                        (catch Exception e nil))
+
                ;; Define filter function.
                f (if all every? some)]
            (cond (map? value) (f #(func (% 0) (% 1)) (for [obj objs, v (process-func value o)] [obj v]))
