@@ -14,6 +14,9 @@ PRECISION=131072 # 128 KByte
 # Classpath
 CP=`lein classpath`
 
+# Initial value of last success memory. If value is 0 then success is not reached.
+last_success_mem=0
+
 # Default heap memory
 code="(.. java.lang.management.ManagementFactory getMemoryMXBean getHeapMemoryUsage getMax)"
 default_heap_mem=`java -cp $CP clojure.main -e "$code"`
@@ -34,12 +37,11 @@ for n in $n_dbs; do # cycle by count elements in database
     # Defines memory's value which will be added/subtracted to/from current value of heap memory. 
     diff_mem=$heap_mem
     
-    echo "settings = " $lang $db $q $n 
-
     while true; do
 	# DON'T REARRANGE NEXT TWO LINES (because of the command test uses the $? variable).
 	diff_mem=`bc <<< "$diff_mem / 2"`
 	./bench_indq.sh -j "-Xmx$heap_mem" -l $lang -t hdd -d $db -q $q -n $n >& /dev/null
+
 	if test $? -ne 0; then
 	    heap_mem=`bc <<< "$heap_mem + $diff_mem"`
 	else
