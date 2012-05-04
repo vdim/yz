@@ -104,7 +104,7 @@ for db_type in $db_types; do # cycle by type of database
 	fi;
     done
 
-    echo $lang $db $q $n $last_success_mem >> $output
+    echo $lang $db $q $db_type $n $last_success_mem >> $output
 done # cycle by type of database
 done # cycle by count elements in database
 done # cycle by databases
