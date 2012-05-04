@@ -24,6 +24,9 @@ dbs="h2"
 n_dbs="1000 5000 10000 15000"
 qs=`seq 0 6`
 
+# Output file
+output="a.out"
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Benchmark amount of memory which is usage during for queries.
@@ -33,8 +36,11 @@ Options:
     -t, --dbtypes <\"t1 ...\">    list of types of database. \"ram hdd\" by default.
     -d, --databases <\"d1 ...\">  list of databases (h2, derby, hsqldb, lsm). h2 by default.
     -q, --query-nums <\"n1 ...\"> list of numbers of query.  \"0 1 2 3 4 5 6\" by default.
-    -n, --elems-database <\"el1 ...\"> list with amount elements into databases
-    -h, --help		       display this help message and exit."
+    -n, --elems-database <\"el1 ...\"> list with amount elements into databases.
+    -m, --default-heap-mem <num>  default value of the size of heap memory in bytes.
+    -p, --precision <num>	  defines value of precision in bytes (128KByte by default).
+    -o, --output		  name of an output file (a.out by default).
+    -h, --help		          display this help message and exit."
 
 # Handling options.
 while true; do
@@ -45,6 +51,9 @@ while true; do
         -q|--query-nums) qs=$2; shift 2;;
         -h|--help) echo "$usage"; exit 0 ;; 
 	-n|--elems-database) n_dbs=$2; shift 2;;
+	-m|--default-heap-mem) default_heap_mem=$2; shift 2;;
+	-p|--precision) PRECISION=$2; shift 2;;
+	-o|--output) output=$2; shift 2;;
         -*) echo "unknown option $1" >&2 ; exit 1 ;;
 	*) break ;;
     esac
@@ -95,7 +104,7 @@ for db_type in $db_types; do # cycle by type of database
 	fi;
     done
 
-    echo $lang $db $q $n $last_success_mem >> mem_test.txt
+    echo $lang $db $q $n $last_success_mem >> $output
 done # cycle by type of database
 done # cycle by count elements in database
 done # cycle by databases
