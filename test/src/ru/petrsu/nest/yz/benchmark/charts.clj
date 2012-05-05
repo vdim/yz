@@ -23,7 +23,8 @@
   (:use incanter.stats
         incanter.charts 
         ru.petrsu.nest.yz.queries.nest-queries)
-  (:require [clojure.java.io :as cio]
+  (:require [clojure.java.io :as cio] 
+            [clojure.string :as cs]
             [ru.petrsu.nest.yz.benchmark.benchmark :as bb]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [ru.petrsu.nest.yz.benchmark.hql :as hql]
@@ -292,3 +293,23 @@
    #{"yz-ram-h2" "hql-ram-h2" "yz-ram-mem"}])
 
 
+(defn chart-by-memory
+  "Creates JFreeChart object which is represented
+  result of benchmark memory usage. Parameters:
+    f - name of file with result of benchmark.
+    i - number of query."
+  [f i]
+  (let [lines (cs/split-lines (slurp f))
+        data (reduce #(if (empty? %2)
+                        %1
+                        (let [words (cs/split %2 #"\s") 
+                              [lang db q db-type n-db size] words
+                              size (double (/ (read-string size) 1024 1024))]
+                          (if (= (read-string q) i)
+                            (conj %1 {:mem size :n-db n-db :lang lang})
+                            %1)))
+                     [] lines)]
+    (ic/with-data (ic/dataset [:mem :n-db :lang] data)
+                  (bar-chart :n-db :mem :group-by :lang 
+                             :legend true :x-label "Count elements"
+                             :y-label "Memory (M)" :title "Heap Memory Usage"))))
