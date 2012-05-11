@@ -295,12 +295,14 @@
 
 (defn chart-by-memory
   "Creates JFreeChart object which is represented
-  result of benchmark memory usage. Parameters:
+  result of benchmark memory usage. Axis of X is count of elements in DB,
+  Axis of Y is amount of memory (MBytes), grouping is done by label 
+  (label is (str \"lang\"-\"db\"-\"db-type\")).
+  Parameters:
     file-or-files - name of file with result of benchmark or vector with
                     name of files with result of benchmark.
     i - number of query.
-    patterns - list of patterns which is used for filtering labels 
-              (label is (str \"lang\"-\"db\"-\"db-type\")). empty by default."
+    patterns - list of patterns which is used for filtering labels (empty by default)."
   ([file-or-files i]
    (chart-by-memory file-or-files i ()))
   ([file-or-files i patterns]
@@ -319,8 +321,7 @@
                       [] lines)
          data (if (empty? patterns)
                 data
-                (filter #(some (fn [reg] (re-find (re-pattern reg) (:label %))) patterns) data))
-         ]
+                (filter #(some (fn [reg] (re-find (re-pattern reg) (:label %))) patterns) data))]
      (ic/with-data (ic/dataset [:mem :n-db :label] data)
                    (bar-chart :n-db :mem :group-by :label
                               :legend true :x-label "Count elements"
