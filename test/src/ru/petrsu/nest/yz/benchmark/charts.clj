@@ -253,6 +253,15 @@
           (range 0 (count yz/individual-queries))))))
 
 
+(defn- localize
+  "Localize titles of diagram."
+  [mode ru en]
+  (case mode 
+    :ru ru 
+    :en en 
+    (throw (Exception. (str "Unknown language: " (name mode))))))
+
+
 (defn chart-by-vquery
   "Creates bar chart for capacity of querie's text.
   Parameters:
@@ -261,10 +270,10 @@
   ([f]
    (chart-by-vquery f :ru))
   ([f mode]
-   (let [[y, x, title] (case mode 
-                         :ru ["Количество символов" "Списки" "Объем текста запросов"]
-                         :en ["Count of characters" "Lists" "Volume of query's text"]
-                         (throw (Exception. (str "Unknown language: " (name mode)))))
+   (let [[y, x, title] (localize 
+                         mode 
+                         ["Количество символов" "Списки" "Объем текста запросов"] 
+                         ["Count of characters" "Lists" "Volume of query's text"])
          m (fn [l s v] {:lang l :scenario s :volume (reduce + (map count v))})
          data [(m "yz" "address-info" address-info-queries-jpa) 
                (m "hql" "address-info" address-info-queries-hql) 
@@ -302,13 +311,18 @@
     file-or-files - name of file with result of benchmark or vector with
                     name of files with result of benchmark.
     i - number of query.
-    patterns - list of patterns which is used for filtering labels (empty by default)."
+    patterns - list of patterns which is used for filtering labels (empty by default).
+    mode - language of diagram's titles (:ru or :en (:en by default))."
   ([file-or-files i]
-   (chart-by-memory file-or-files i ()))
+   (chart-by-memory file-or-files i () :en))
   ([file-or-files i patterns]
+   (chart-by-memory file-or-files i patterns :en))
+  ([file-or-files i patterns mode]
    (let [fs file-or-files
          get-lines #(cs/split-lines (slurp %))
-         lines (if (sequential? fs) (flatten (map #(get-lines %) fs)) (get-lines fs))
+         lines (if (sequential? fs) 
+                 (flatten (map #(get-lines %) fs)) 
+                 (get-lines fs))
          data (reduce #(if (empty? %2)
                          %1
                          (let [words (cs/split %2 #"\s") 
@@ -321,8 +335,12 @@
                       [] lines)
          data (if (empty? patterns)
                 data
-                (filter #(some (fn [reg] (re-find (re-pattern reg) (:label %))) patterns) data))]
+                (filter #(some (fn [reg] (re-find (re-pattern reg) (:label %))) patterns) data))
+         [x y title] (localize 
+                       mode 
+                       ["Количество элементов" "Память (МБ)" "Потреблени памяти"] 
+                       ["Count elements" "Memory (M)" "Heap Memory Usage"])]
      (ic/with-data (ic/dataset [:mem :n-db :label] data)
                    (bar-chart :n-db :mem :group-by :label
-                              :legend true :x-label "Count elements"
-                              :y-label "Memory (M)" :title "Heap Memory Usage")))))
+                              :legend true :x-label x
+                              :y-label y :title title)))))
