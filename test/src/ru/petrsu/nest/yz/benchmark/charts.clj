@@ -296,20 +296,26 @@
 (defn chart-by-memory
   "Creates JFreeChart object which is represented
   result of benchmark memory usage. Parameters:
-    f - name of file with result of benchmark.
+    file-or-files - name of file with result of benchmark or vector with
+        name of files with result of benchmark.
     i - number of query."
-  [f i]
-  (let [lines (cs/split-lines (slurp f))
-        data (reduce #(if (empty? %2)
-                        %1
-                        (let [words (cs/split %2 #"\s") 
-                              [lang db q db-type n-db size] words
-                              size (double (/ (read-string size) 1024 1024))]
-                          (if (= (read-string q) i)
-                            (conj %1 {:mem size :n-db n-db :lang lang})
-                            %1)))
-                     [] lines)]
-    (ic/with-data (ic/dataset [:mem :n-db :lang] data)
-                  (bar-chart :n-db :mem :group-by :lang 
-                             :legend true :x-label "Count elements"
-                             :y-label "Memory (M)" :title "Heap Memory Usage"))))
+  ([file-or-files i]
+   (chart-by-memory file-or-files i nil))
+  ([file-or-files i patterns]
+   (let [fs file-or-files
+         get-lines #(cs/split-lines (slurp %))
+         lines (if (sequential? fs) (flatten (map #(get-lines %) fs)) (get-lines fs))
+         data (reduce #(if (empty? %2)
+                         %1
+                         (let [words (cs/split %2 #"\s") 
+                               [lang db q db-type n-db size] words
+                               ; Size is measured in Bytes, so we get MBytes.
+                               size (double (/ (read-string size) 1024 1024))]
+                           (if (= (read-string q) i)
+                             (conj %1 {:mem size :n-db n-db :label (str lang "-" db "-" db-type)})
+                             %1)))
+                      [] lines)]
+     (ic/with-data (ic/dataset [:mem :n-db :label] data)
+                   (bar-chart :n-db :mem :group-by :label
+                              :legend true :x-label "Count elements"
+                              :y-label "Memory (M)" :title "Heap Memory Usage")))))
