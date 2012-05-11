@@ -297,10 +297,12 @@
   "Creates JFreeChart object which is represented
   result of benchmark memory usage. Parameters:
     file-or-files - name of file with result of benchmark or vector with
-        name of files with result of benchmark.
-    i - number of query."
+                    name of files with result of benchmark.
+    i - number of query.
+    patterns - list of patterns which is used for filtering labels 
+              (label is (str \"lang\"-\"db\"-\"db-type\")). empty by default."
   ([file-or-files i]
-   (chart-by-memory file-or-files i nil))
+   (chart-by-memory file-or-files i ()))
   ([file-or-files i patterns]
    (let [fs file-or-files
          get-lines #(cs/split-lines (slurp %))
@@ -314,7 +316,11 @@
                            (if (= (read-string q) i)
                              (conj %1 {:mem size :n-db n-db :label (str lang "-" db "-" db-type)})
                              %1)))
-                      [] lines)]
+                      [] lines)
+         data (if (empty? patterns)
+                data
+                (filter #(some (fn [reg] (re-find (re-pattern reg) (:label %))) patterns) data))
+         ]
      (ic/with-data (ic/dataset [:mem :n-db :label] data)
                    (bar-chart :n-db :mem :group-by :label
                               :legend true :x-label "Count elements"
