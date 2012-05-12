@@ -338,7 +338,7 @@
                 (filter #(some (fn [reg] (re-find (re-pattern reg) (:label %))) patterns) data))
          [x y title] (localize 
                        mode 
-                       ["Количество элементов" "Память (МБ)" "Потреблени памяти"] 
+                       ["Количество элементов" "Память (МБ)" "Потребление памяти"] 
                        ["Count elements" "Memory (M)" "Heap Memory Usage"])]
      (ic/with-data (ic/dataset [:mem :n-db :label] data)
                    (bar-chart :n-db :mem :group-by :label
