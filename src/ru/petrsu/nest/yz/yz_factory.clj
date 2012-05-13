@@ -324,18 +324,19 @@
 
 
 (defn collq
-  "Simple interface for quering, where user should define just
+  "Simple interface for quering. User should define just
   query and collection with objects. Parameters:
     q - YZ's query.
     coll - collection with objects.
-    args are arguments where
-      :clazz key must be specified class of collection. 
+    args - arguments where
+      :clazz key must be specify class of collection. 
         If clazz is not supplied then MOM will be nil.
       :rtype key is type of result (:rows or :result - flat or hierarchical 
         representation of the result respectively). :rows is used by default.
 
   Examples:
     (collq \"string\" [1 2 \"1\" 3])
+    (collq \"long\" [1 2 \"1\" 3])
     (collq \"string\" [1 2 \"1\" 3] :rtype :result)
     (collq \"string\" [1 2 \"1\" 3] :rtype :result :clazz String)
     (collq \"string\" [1 2 \"1\" 3] :clazz String)"
@@ -353,6 +354,7 @@
 
 (comment
   (collq "string" [1 2 "1" 3])
+  (collq "long" [1 2 "1" 3])
   (collq "string" [1 2 "1" 3] :rtype :result)
   (collq "string" [1 2 "1" 3] :rtype :result :clazz String)
   (collq "string" [1 2 "1" 3] :clazz String)
