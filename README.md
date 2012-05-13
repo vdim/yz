@@ -76,4 +76,5 @@ License along with YZ.  If not, see [http://www.gnu.org/licenses/] (http://www.g
 * [Installation] (https://github.com/vdim/yz/blob/master/doc/INSTALLATION.md)
 * [Usage] (https://github.com/vdim/yz/blob/master/doc/USAGE.md)
 * [Testing and benchmarking] (https://github.com/vdim/yz/blob/master/doc/TESTING.md)
+* [Bibliography] (https://github.com/vdim/yz/blob/master/doc/BIBLIOGRAPHY.md)
 
