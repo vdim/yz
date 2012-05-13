@@ -23,3 +23,27 @@
   (:use ru.petrsu.nest.yz.momeditor.core
         clojure.repl clojure.pprint clojure.java.io))
 
+(def son-classes
+  [ru.petrsu.nest.son.jpa.SonElement 
+   ru.petrsu.nest.son.jpa.SON 
+   ru.petrsu.nest.son.jpa.Occupancy 
+   ru.petrsu.nest.son.jpa.Device 
+   ru.petrsu.nest.son.jpa.LinkInterface 
+   ru.petrsu.nest.son.jpa.EthernetInterface 
+   ru.petrsu.nest.son.jpa.VLANInterface 
+   ru.petrsu.nest.son.jpa.NetworkInterface 
+   ru.petrsu.nest.son.jpa.IPv4Interface 
+   ru.petrsu.nest.son.jpa.Network 
+   ru.petrsu.nest.son.jpa.IPNetwork 
+   ru.petrsu.nest.son.jpa.AbstractOU 
+   ru.petrsu.nest.son.jpa.SimpleOU 
+   ru.petrsu.nest.son.jpa.CompositeOU 
+   ru.petrsu.nest.son.jpa.Room 
+   ru.petrsu.nest.son.jpa.Floor 
+   ru.petrsu.nest.son.jpa.Building])
+
+
+(def uni-model
+  [university.model.Faculty
+   university.model.Course
+   university.model.Student])

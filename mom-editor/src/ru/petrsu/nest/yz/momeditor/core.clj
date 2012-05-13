@@ -23,7 +23,7 @@
   (:use
     (net.kryshen.indygraph partition spring-layout render inspector)
     (net.kryshen.indyvon core))
-  (:import (net.kryshen.dvec Vecs Ranges)))
+  (:import (java.awt Color) (net.kryshen.dvec Vecs Ranges)))
 
 ; Describe class as vertex:
 ;   - label - short name of class. Needs for drawing inside of circle.
@@ -98,7 +98,10 @@
     (render-vertex! 
       [_ clazz]
       (.drawString *graphics* (:label clazz) radius radius)
-      (.drawOval *graphics* 0 0 diameter diameter))))
+      (if (:color clazz)
+        (with-color (:color clazz)
+          (.drawOval (doto *graphics* (.setColor Color/BLUE)) 0 0 diameter diameter))
+        (.drawOval *graphics* 0 0 diameter diameter)))))
 
 
 (defn- class-vertex
