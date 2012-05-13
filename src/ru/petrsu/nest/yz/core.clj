@@ -71,10 +71,12 @@
             :result - hierarchical structure of result query.
             :error - if error is occured then value of this keyword contains 
                      string representation of the error. If not then value is nil.
+            :thrwable - if error is occured then value of this keyword is
+                     Throwable object.
             :columns - list with default names of columns.
             :rows - representation of a result query as set of rows
                     (similarly as table from relation database terminology.)"}
-  [result error columns rows])
+  [result error thrwable columns rows])
 
 
 (def ^{:tag ElementManager} a-em (atom nil))
@@ -555,23 +557,30 @@
   ^{:doc "The memoized version of the parse function from the parsing.clj"}
   mparse (memoize p/parse))
 
+
+(defn- get-message
+  "Returns message of error due to specified Throwable object."
+  [^Throwable e]
+  (let [msg (.getMessage e)
+        msg (if (nil? msg) (.toString e) msg)]
+    msg))
+
+
 (defn get-qr
   "Takes result of parsing and returns result of quering."
   [parse-res ^PersistentArrayMap mom ^ElementManager em]
   (reset! a-em em) 
   (reset! a-mom mom)
-  (let [query-res (if (string? parse-res)
+  (let [query-res (if (instance? Throwable parse-res)
                     parse-res
                     (try
                       (run-query parse-res)
-                      (catch Throwable e (let [msg (.getMessage e)
-                                               msg (if (nil? msg) (.toString e) msg)]
-                                            msg))))]
-    (if (string? query-res)
-      (Result. [] query-res [] ())
-      ;(Result. query-res nil [] ()))))
+                      (catch Throwable e e)))]
+    (if (instance? Throwable query-res)
+      (Result. [] (get-message query-res) query-res [] ())
+      ;(Result. query-res nil nil [] ()))))
       (let [rows (get-rows query-res)]
-        (Result. query-res nil (get-columns-lite rows) rows)))))
+        (Result. query-res nil nil (get-columns-lite rows) rows)))))
 
 
 (defn pquery
@@ -585,11 +594,11 @@
    (pquery query (.getMom em) em))
   ([^String query ^PersistentArrayMap mom ^ElementManager em]
    (if (empty? query)
-     (Result. [[]] nil [] ())
+     (Result. [[]] nil nil [] ())
      (let [parse-res (try
                        (p/parse query mom)
-                       (catch Throwable e (.getMessage e)))
-           parse-res (if (nil? parse-res) "Result of parsing is nil." parse-res)]
+                       (catch Throwable e e))
+           parse-res (if (nil? parse-res) (Throwable. "Result of parsing is nil.") parse-res)]
        (get-qr parse-res mom em)))))
 
 
