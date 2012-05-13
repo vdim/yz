@@ -344,3 +344,17 @@
                    (bar-chart :n-db :mem :group-by :label
                               :legend true :x-label x
                               :y-label y :title title)))))
+
+
+(defn save-charts-by-memory
+  "Saves memory charts for all queries (0-6)
+  in current directory with names 0.png 1.png 
+  and so on. Parameters:
+    fs - list of files.
+    patterns - list of patterns for label."
+  [fs, patterns]
+  (map #(ic/save (doto (chart-by-memory fs % patterns :ru) 
+                   (.setTitle (title-queries-ru %))) 
+                 (str % ".png"))
+       (range 0 7)))
+
