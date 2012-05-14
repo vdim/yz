@@ -23,6 +23,7 @@
     :doc "Code for starting repl."}
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo]
+            [ru.petrsu.nest.yz.queries.bd-jpa :as bjpa]
             [ru.petrsu.nest.yz.queries.core :as qc])
   (:use ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
@@ -49,6 +50,9 @@
 
 ;; MOM of the SON model from the Nest project (jpa version).
 (def jpa-mom (mom-from-file "nest_jpa.mom"))
+
+;; Create JPA element manager from the bjpa/jpa-em EntityManager.
+(def jpa-em (-createJPAElementManager bjpa/jpa-em))
 
 ;; Vector with all classes from SON model 
 ;; (Sometimes It is needed for testing functions from the hb-utils namespace.)
