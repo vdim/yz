@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -215,14 +215,33 @@
     {} mom))
 
 
+(defn children
+  "For specified list of classes returns map: class -> children."
+  [classes]
+  (let [s-classes (set classes)]
+    (reduce
+      (fn [m cl]
+        (let [super-cls (loop [cl- cl s-cls []] 
+                          (if-let [cl- (:superclass (bean cl-))]
+                            (recur cl- (conj s-cls cl-))
+                            s-cls)) 
+              super-cls+ints (filter #(contains? s-classes %) (set (concat super-cls (:interfaces (bean cl)))))]
+          (reduce (fn [m clazz] (update-in m [clazz] #(conj (if (nil? %) #{} %) cl))) 
+                  m 
+                  super-cls+ints)))
+      {}
+      s-classes)))
+
+
 (defn gen-mom
   "Generates mom from list of classes."
   [classes, mom-old]
   (let [mom (dissoc-nil (gen-basic-mom classes, mom-old))
         sns (get-sns mom, (:sns mom-old))
         snames (get-names mom :simpleName (:snames mom-old))
-        names (get-names mom :name (:names mom-old))]
-    (assoc mom :sns sns :names names :snames snames)))
+        names (get-names mom :name (:names mom-old))
+        children (children classes)]
+    (assoc mom :sns sns :names names :snames snames :children children)))
 
 (defn gen-mom-from-cfg
   "Generates MOM from hibernate configuration xml file 
