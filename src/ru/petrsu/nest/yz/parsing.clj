@@ -483,7 +483,7 @@
   "This function is called when likely some property is found"
   [res id nl tl is-recur tsort _ _ _ _]
   (let [tl- (dec tl)
-        what (get-in-nest-or-then res nl tl- :what)
+        what (get-in-nest-or-then res (inc nl) tl- :what)
         id (cond (= id "&") :#self-object#
                  (= id "&.") (get-dp what mom)
                  (map? id) id
