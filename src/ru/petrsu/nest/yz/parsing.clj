@@ -295,16 +295,36 @@
 
   Firstly function checks MOM, then for each property 
   function checks DefaultProperty annotation."
-  [^Class cl- mom]
-  (if cl-
-    (or (:dp (get mom cl-)) 
-        (keyword 
-          (some (fn [^Field field] 
-                  (if (some (fn [^Annotation ann] 
-                              (= DefaultProperty (.annotationType ann)))
-                            (.getDeclaredAnnotations field))
-                    (.getName field)))
-                (.getDeclaredFields cl-))))))
+  [^Class cl mom]
+  (let [; returns defautl property for specified class (argument is class)
+        g-dp #(or ; Search default property into MOM.
+                  (:dp (get mom %)) 
+                  ; Search default property into field's annotations.
+                  (keyword 
+                    (some (fn [^Field field] 
+                            (if (some (fn [^Annotation ann] 
+                                        (= DefaultProperty (.annotationType ann)))
+                                      (.getDeclaredAnnotations field))
+                              (.getName field)))
+                          (.getDeclaredFields %))))]
+    (if cl
+      (or ; Check default property for supplied class.
+          (g-dp cl)
+          ; If cl has not default property, then we check superclass(-es).
+          (loop [cl- (:superclass (bean cl))]
+            (if (nil? cl-)
+              nil
+              (let [dp (g-dp cl-)]
+                (or dp
+                  (recur (:superclass (bean cl-)))))))
+          ; if superclasses have not default property, then check whether
+          ; class has children in case it hasn't then function returns nil
+          ; and excecption is thrown.
+          (if mom 
+            (if (get-in mom [:children cl])
+              :#default-property#
+              (throw (NotDefinedDPException. (str "Default property is not defined for " cl))))
+            :#default-property#)))))
 
 
 (defn- get-ids 
@@ -315,9 +335,9 @@
       (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
         (if-let [dp (get-dp cl- mom)]
           [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
-          (if mom
-            (throw (NotDefinedDPException. (str "Default property is not defined for " cl-)))
-            [ids- pp]))
+          ;(if mom
+          ;  (throw (NotDefinedDPException. (str "Default property is not defined for " cl-)))
+            [ids- pp])
         [ids- pp])
       (let [id (first sp-res)
             ^Class cl-target (find-class id)]
