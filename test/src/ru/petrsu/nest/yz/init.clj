@@ -84,3 +84,31 @@
 ;; Vector with all classes from University model.
 (def uni-classes
   [Course, Faculty, Student])
+
+;; Vector with all classes from SON model (jpa version).
+(def jpa-classes
+  [ru.petrsu.nest.son.jpa.Room 
+   ru.petrsu.nest.son.jpa.Floor 
+   ru.petrsu.nest.son.jpa.Building
+
+   ru.petrsu.nest.son.jpa.Occupancy 
+
+   ru.petrsu.nest.son.jpa.AbstractOU 
+   ru.petrsu.nest.son.jpa.SimpleOU 
+   ru.petrsu.nest.son.jpa.CompositeOU 
+
+   ru.petrsu.nest.son.jpa.Device 
+   ru.petrsu.nest.son.jpa.NetworkInterface 
+   ru.petrsu.nest.son.jpa.IPv4Interface 
+   ru.petrsu.nest.son.jpa.LinkInterface 
+   ru.petrsu.nest.son.jpa.VLANInterface 
+   ru.petrsu.nest.son.jpa.EthernetInterface 
+   ru.petrsu.nest.son.jpa.Network 
+   ru.petrsu.nest.son.jpa.IPNetwork 
+   
+   ru.petrsu.nest.son.jpa.SonElement 
+   ru.petrsu.nest.son.jpa.SON 
+   
+   ru.petrsu.nest.son.jpa.AbstractSonModificationOccurence 
+   ru.petrsu.nest.son.jpa.SonPropertyModificationOccurence 
+   ru.petrsu.nest.son.jpa.SonReferenceModificationOccurence])
