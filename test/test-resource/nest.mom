@@ -236,8 +236,24 @@
  {:superclass java.lang.Object,
   :dp :name,
   :sn "cou",
+  ru.petrsu.nest.son.Device [["OUs" "occupancies" "devices"]],
+  ru.petrsu.nest.son.LinkInterface
+  [["OUs" "occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.Network
+  [["OUs" 
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.NetworkInterface
+  [["OUs" "occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
   ru.petrsu.nest.son.AbstractOU [["OUs"]],
-  ru.petrsu.nest.son.CompositeOU [["parent"]]},
+  ru.petrsu.nest.son.CompositeOU [["parent"]],
+  ru.petrsu.nest.son.Occupancy [["OUs" "occupancies"]]
+  ru.petrsu.nest.son.Room [["OUs" "occupancies" "room"]]
+  ru.petrsu.nest.son.Floor [["OUs" "occupancies" "room" "floor"]]
+  ru.petrsu.nest.son.Building [["OUs" "occupancies" "room" "floor" "building"]]},
  ru.petrsu.nest.son.Device
  {ru.petrsu.nest.son.Occupancy [["occupancy"]],
   :superclass java.lang.Object,
