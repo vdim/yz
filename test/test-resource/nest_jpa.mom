@@ -435,4 +435,37 @@
  ru.petrsu.nest.son.jpa.AbstractOU
  {:superclass ru.petrsu.nest.son.jpa.SonElement,
   :sn "aou",
-  ru.petrsu.nest.son.jpa.CompositeOU [["parent"]]}}
+  ru.petrsu.nest.son.jpa.CompositeOU [["parent"]]}
+:children
+{ru.petrsu.nest.son.jpa.Network #{ru.petrsu.nest.son.jpa.IPNetwork}
+  
+ ru.petrsu.nest.son.jpa.NetworkInterface #{ru.petrsu.nest.son.jpa.IPv4Interface}
+
+ ru.petrsu.nest.son.jpa.LinkInterface
+ #{ru.petrsu.nest.son.jpa.EthernetInterface
+   ru.petrsu.nest.son.jpa.VLANInterface},
+ 
+ ru.petrsu.nest.son.jpa.AbstractSonModificationOccurence
+ #{ru.petrsu.nest.son.jpa.SonPropertyModificationOccurence
+   ru.petrsu.nest.son.jpa.SonReferenceModificationOccurence},
+ 
+ ru.petrsu.nest.son.jpa.SonElement
+ #{ru.petrsu.nest.son.jpa.Room 
+   ru.petrsu.nest.son.jpa.Floor 
+   ru.petrsu.nest.son.jpa.Building
+   ru.petrsu.nest.son.jpa.Occupancy 
+   ru.petrsu.nest.son.jpa.AbstractOU 
+   ru.petrsu.nest.son.jpa.SimpleOU 
+   ru.petrsu.nest.son.jpa.CompositeOU 
+   ru.petrsu.nest.son.jpa.Device 
+   ru.petrsu.nest.son.jpa.NetworkInterface 
+   ru.petrsu.nest.son.jpa.IPv4Interface 
+   ru.petrsu.nest.son.jpa.LinkInterface 
+   ru.petrsu.nest.son.jpa.VLANInterface 
+   ru.petrsu.nest.son.jpa.EthernetInterface 
+   ru.petrsu.nest.son.jpa.Network 
+   ru.petrsu.nest.son.jpa.IPNetwork 
+   ru.petrsu.nest.son.jpa.SON},
+
+ ru.petrsu.nest.son.jpa.AbstractOU
+ #{ru.petrsu.nest.son.jpa.CompositeOU ru.petrsu.nest.son.jpa.SimpleOU}}}
