@@ -259,7 +259,7 @@
           v (if (= "&" field-name) ; supported self objects into predicates.
               o 
               (try (.getPropertyValue @a-em o field-name)
-                (catch Exception e nil)))]
+                (catch Exception e :not-found)))]
       (cond 
         ; If value is nil then function returns nil.
         (nil? v) nil
