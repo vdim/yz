@@ -115,6 +115,8 @@
            (is (f Network "device (network)"))))
 
 
+
+
 (deftest neg-parse-nest-queries
          ^{:doc "Contains tests which are thrown exceptions."}
          (is (thrown? RuntimeException (tc/qparse "somelem")))
@@ -133,4 +135,5 @@
 (deftest dp-in-nest
          ^{:doc "Checks selecting default property and self object."}
          (let [f #(distinct (flatten (tc/rows-query %)))]
-           (is (tc/eq-colls (f "building (floor[&])") [bd/b1 bd/b2 bd/f1_b1 bd/f2_b1 bd/f3_b1 bd/f1_b2]))))
+           (is (tc/eq-colls (f "building (floor[&])") [bd/b1 bd/b2 bd/f1_b1 bd/f2_b1 bd/f3_b1 bd/f1_b2]))
+           (is (tc/eq-colls (f "building (floor[&.])") [bd/b1 bd/b2 1 2 3]))))
