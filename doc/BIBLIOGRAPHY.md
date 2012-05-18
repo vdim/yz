@@ -4,7 +4,7 @@
 
 2. E. Bertino, M. Negri, G. Pelagatti, L. Sbattella: Object-Oriented Query Languages: The Notion and the Issues; IEEE TKDE 4, 1992, 223-237
 
-3.Bussche, J. V. D. An extension of path expressions to simplify navigation in object-oriented queries / J. V. D. Bussche, G. Vossen // In Proc. of Intl. Conf. on Deductive and Object-Oriented Databases (DOOD). — Springer, 1993. — Pp. 267–282. [[citeseerx] (http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.26.5384)]
+3. Bussche, J. V. D. An extension of path expressions to simplify navigation in object-oriented queries / J. V. D. Bussche, G. Vossen // In Proc. of Intl. Conf. on Deductive and Object-Oriented Databases (DOOD). — Springer, 1993. — Pp. 267–282. [[citeseerx] (http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.26.5384)]
 
 4. Lieberherr, K. Navigating through object graphs using local meta-information: Tech. rep. / K. Lieberherr, M. W: 2001. [[citeseerx] (http://citeseerx.ist.psu.edu/viewdoc/summary?doi=10.1.1.137.1475)]
 
