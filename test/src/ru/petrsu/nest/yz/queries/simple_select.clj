@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -28,12 +28,12 @@
 ;; Define model
 
 (def f1_b2 (doto (Floor.) (.addRoom (doto (Room.) (.setNumber "1")))))
+(def f1_b1 (Floor.))
+(def f2_b1 (Floor.))
+(def b1 (doto (Building.) (.setName "building1") (.addFloor f1_b1) (.addFloor f2_b1)))
+(def b2 (doto (Building.) (.setName "building2") (.addFloor f1_b2)))
 
-(def son (doto (SON.)
-           (.addBuilding (doto (Building.) (.setName "building1") 
-                           (.addFloor (Floor.)) (.addFloor (Floor.)))) 
-           (.addBuilding (doto (Building.) (.setName "building2") 
-                           (.addFloor f1_b2)))))
+(def son (doto (SON.) (.addBuilding b1) (.addBuilding b2)))
 
 
 ;; Define entity manager.

@@ -32,35 +32,9 @@
              LinkInterface, IPv4Interface, UnknownLinkInterface)
            (ru.petrsu.nest.yz NotFoundElementException)))
 
-
-;; Define model
-
-(def f1_b1 (doto (Floor.) 
-             (.setNumber (Integer. 1))
-             (.addRoom (doto (Room.) (.setNumber "101"))) 
-             (.addRoom (doto (Room.) (.setNumber "102")))))
-
-(def f2_b1 (doto (Floor.) 
-             (.setNumber (Integer. 2))
-             (.addRoom (doto (Room.) (.setNumber "201"))) 
-             (.addRoom (doto (Room.) (.setNumber "202")))))
-
-(def f1_b2 (doto (Floor.) 
-             (.setNumber (Integer. 1))
-             (.addRoom (doto (Room.) (.setNumber "1001"))) 
-             (.addRoom (doto (Room.) (.setNumber "1002")))))
-
-(def b1 (doto (Building.) (.setName "building") (.addFloor f1_b1) (.addFloor f2_b1)))
-(def b2 (doto (Building.) (.setName "building") (.addFloor f1_b2)))
-
-(def son (doto (SON.)
-           (.addBuilding b1) 
-           (.addBuilding b2)
-           (.setRootDevice bd/rootDevice)))
-
 ;; Define entity manager.
 
-(use-fixtures :once (tc/setup-son son))
+(use-fixtures :once (tc/setup-son bd/son))
 
 
 ;; Define tests
@@ -87,18 +61,14 @@
 
 (deftest select-bn-and-f
          ^{:doc "Selects all Building's name and its Floor objects."}
-         (let [q (tc/r-query "building.name (floor)")]
-           (is (= ((q 0) 0) '("building")))
-           (is (or (= (count (((q 0) 1) 0)) 4) (= (count (((q 0) 1) 0)) 2)))
-           (is (or (= (count (((q 0) 3) 0)) 4) (= (count (((q 0) 3) 0)) 2)))
-           (is (= (class ((((q 0) 1) 0) 0)) Floor))
-           (is (= (class ((((q 0) 3) 0) 0)) Floor))
-           (is (= ((q 0) 2) '("building")))))
+         (let [q (flatten (tc/rows-query "building.name (floor)"))
+               ]
+           (is (tc/eq-colls q ["MB" "MB" "MB" "TK" bd/f1_b1 bd/f2_b1 bd/f3_b1 bd/f1_b2]))))
 
-(deftest select-b-f-r
-         ^{:doc "Selects all Building, its Floor and its Room objects."}
-         (is (tc/qstruct? "building (floor (room))"
-                          [[Building [[Floor [[Room []]]]]]])))
+;(deftest select-b-f-r
+;         ^{:doc "Selects all Building, its Floor and its Room objects."}
+;         (is (tc/qstruct? "building (floor (room))"
+;                          [[Building [[Floor [[Room []]]]]]])))
 
 (deftest select-b-r-f
          ^{:doc "Selects all Building, its Room and its Floor objects."}
@@ -158,3 +128,9 @@
          (is (thrown? RuntimeException (tc/qparse "building (somelem)")))
          (is (thrown? RuntimeException (tc/qparse "building, somelem")))
          (is (thrown? RuntimeException (tc/qparse "somelem, building"))))
+
+
+(deftest dp-in-nest
+         ^{:doc "Checks selecting default property and self object."}
+         (let [f #(distinct (flatten (tc/rows-query %)))]
+           (is (tc/eq-colls (f "building (floor[&])") [bd/b1 bd/b2 bd/f1_b1 bd/f2_b1 bd/f3_b1 bd/f1_b2]))))
