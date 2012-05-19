@@ -21,7 +21,9 @@
 (ns ru.petrsu.nest.yz.utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Namespace for common functions."}
-  (:import java.lang.Object))
+  (:import (ru.petrsu.nest.yz DefaultProperty)
+           (java.lang.annotation Annotation)
+           (java.lang.reflect Field)))
 
 
 (defn get-short-name
@@ -31,3 +33,15 @@
   (.toLowerCase (reduce str ""
                         (for [a (.getSimpleName cl) 
                               :when (< (int a) (int \a))] a))))
+
+
+(defn dp
+  "Returns name of field (of specified class cl) which 
+  is marked by the DefaultProperty annotation."
+  [^Class cl] 
+  (some (fn [^Field field] 
+          (if (some (fn [^Annotation ann] 
+                      (= DefaultProperty (.annotationType ann)))
+                    (.getDeclaredAnnotations field))
+            (.getName field)))
+        (.getDeclaredFields cl)))

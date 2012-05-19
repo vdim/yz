@@ -29,15 +29,13 @@
 (ns ru.petrsu.nest.yz.parsing
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for the parsing of queries (due to the fnparse library)."}
-  (:use name.choi.joshua.fnparse
-        ru.petrsu.nest.yz.utils)
-  (:require [clojure.string :as cs])
+  (:use name.choi.joshua.fnparse)
+  (:require [clojure.string :as cs]
+            [ru.petrsu.nest.yz.utils :as u])
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)
            (ru.petrsu.nest.yz SyntaxException NotFoundPathException 
                               NotFoundElementException NotFoundFunctionException
-                              NotDefinedDPException DefaultProperty)
-           (java.lang.reflect Field)
-           (java.lang.annotation Annotation)))
+                              NotDefinedDPException)))
 
 
 (defn- ^String sdrop
@@ -300,13 +298,7 @@
         g-dp #(or ; Search default property into MOM.
                   (:dp (get mom %)) 
                   ; Search default property into field's annotations.
-                  (keyword 
-                    (some (fn [^Field field] 
-                            (if (some (fn [^Annotation ann] 
-                                        (= DefaultProperty (.annotationType ann)))
-                                      (.getDeclaredAnnotations field))
-                              (.getName field)))
-                          (.getDeclaredFields %))))]
+                  (keyword (u/dp %)))]
     (if cl
       (or ; Check default property for supplied class.
           (g-dp cl)
@@ -445,7 +437,7 @@
   (if (nil? mom)
     ;; Try to find id in classes which are imported to known namespaces.
     (some #(some (fn [[k v]] (if (or (= id (.toLowerCase (.toString k)))
-                                     (= id (get-short-name v)))
+                                     (= id (u/get-short-name v)))
                                v)) 
                  (ns-imports %)) 
           (all-ns))
