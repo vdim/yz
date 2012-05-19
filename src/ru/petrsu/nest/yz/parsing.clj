@@ -493,7 +493,7 @@
                  (= id "&") :#self-object#
                  ; default property
                  (= id "&.") (get-dp what mom)
-                 ; ?
+                 ; id is function, e.g.: building[@(count `floor')]
                  (map? id) id
                  ; property itself
                  :else (keyword (str id)))
