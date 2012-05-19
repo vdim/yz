@@ -43,11 +43,12 @@
          user (at least we use hibernate in nest) 
          can use hibernate as framework between its 
          object model and database."}
-  (:use clojure.pprint ru.petrsu.nest.yz.utils)
+  (:use clojure.pprint)
   (:require [clojure.xml :as cx] 
             [clojure.set :as cs]
             [clojure.string :as cst]
-            [clojure.java.io :as cio])
+            [clojure.java.io :as cio] 
+            [ru.petrsu.nest.yz.utils :as u])
   (:import (javax.persistence Transient EntityManagerFactory Persistence)))
 
 
@@ -158,8 +159,8 @@
     - :p-properties ()
     - :superclass (super class)"
   [cl, map-cl-old]
-  {:sn (get-short-name cl)
-   :dp (:dp map-cl-old)
+  {:sn (u/get-short-name cl)
+   :dp (or (:dp map-cl-old) (u/dp cl))
    :sort (:sort map-cl-old)
    :p-properties (:p-properties map-cl-old)
    :superclass (:superclass (bean cl))})
@@ -280,7 +281,7 @@
   "Takes a name of the file (resource file) and restores a mom from one."
   [f]
   (let [fl (ClassLoader/getSystemResourceAsStream f)
-        fl (if (nil? fl) (cio/file f) fl)]
+        fl (or fl (cio/file f))]
     (load-reader (cio/reader fl))))
 
 
