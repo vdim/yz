@@ -313,8 +313,8 @@
                 (or dp
                   (recur (:superclass (bean cl-)))))))
           ; if superclasses have not default property, then check whether
-          ; class has children in case it hasn't then function returns nil
-          ; and excecption is thrown.
+          ; class has children. If it hasn't then exception is thrown
+          ; (in case MOM is defined) or the key :#default-property# is returned.
           (if mom 
             (if (get-in mom [:children cl])
               :#default-property#
@@ -474,11 +474,24 @@
     [nil nil nil]))
 
 
+(defn check-prop
+  "Returns true."
+  [^Class cl ^String prop]
+  (letfn [(prop? [clazz] (some #(= prop (.getName %)) (seq (.. java.beans.Introspector 
+                                                             (getBeanInfo clazz) 
+                                                             (getPropertyDescriptors)))))]
+    (or (nil? mom)
+        (prop? cl)
+        (some #(prop? %) (get-in mom [:children cl]))
+        (throw (Exception. (str "It seems " cl " doesn't have property " prop))))))
+
+
 (defn- found-prop
   "This function is called when likely some property is found"
   [res id nl tl is-recur tsort _ _ _ _]
   (let [tl- (dec tl)
         what (get-in-nest-or-then res (inc nl) tl- :what)
+        _ (check-prop what id) ; Check whether class "what" has property "id".
         id (cond (= id "&") :#self-object#
                  (= id "&.") (get-dp what mom)
                  (map? id) id
