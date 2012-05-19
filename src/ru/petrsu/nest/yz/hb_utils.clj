@@ -285,25 +285,30 @@
 
 
 (defn mom-to-file
-  "Writes mom to file. If emf-or-hbcfg-or-mom is 
-  EntityManagerFactory, String (name of hibernate config file) 
-  or list of classes then first mom is generated and then wrote to file.
-  If 'append' is supplied (true) then information is appended to existing file."
+  "Writes mom to file. Arguments:
+    emf-or-hbcfg-or-mom - EntityManagerFactory or String (name of hibernate config file) 
+                          or list of classes or MOM. In case it is not MOM
+                          first MOM is generated and then wrote to file.
+    f - a name of target file.
+    appent - If 'append' is supplied (true) then information is appended to existing file
+             (false by default)."
   ([emf-or-hbcfg-or-mom f]
    (mom-to-file emf-or-hbcfg-or-mom f false))
   ([emf-or-hbcfg-or-mom f ^Boolean append]
-   (let [mom-old (if append (mom-from-file f) {})
+   (let [mom-old (if (true? append) (mom-from-file f) {})
          s emf-or-hbcfg-or-mom
          mom (cond
-                  ; JPA's EntityManagerFactory TODO: replace by ru.petrsu.nest.yz.core.ElementManager
-                  (instance? EntityManagerFactory s) (gen-mom-from-metamodel s, mom-old)
-
-                   ; hibernate.cfg.xml
-                   (instance? String s) (gen-mom-from-cfg s, mom-old)
-
-                   ; List with classes
-                   (sequential? s) (gen-mom s, mom-old)
-                   :else s)]
+               ; JPA's EntityManagerFactory TODO: replace by ru.petrsu.nest.yz.core.ElementManager
+               (instance? EntityManagerFactory s) (gen-mom-from-metamodel s, mom-old)
+                   
+               ; hibernate.cfg.xml
+               (instance? String s) (gen-mom-from-cfg s, mom-old)
+                   
+               ; List with classes
+               (sequential? s) (gen-mom s, mom-old)
+               
+               ; MOM itself.
+               :else s)]
      (to-file mom f))))
 
 
