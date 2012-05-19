@@ -39,12 +39,13 @@
   "Returns name of field (of specified class cl) which 
   is marked by the DefaultProperty annotation."
   [^Class cl] 
-  (some (fn [^Field field] 
-          (if (some (fn [^Annotation ann] 
-                      (= DefaultProperty (.annotationType ann)))
-                    (.getDeclaredAnnotations field))
-            (.getName field)))
-        (.getDeclaredFields cl))) 
+  (keyword
+    (some (fn [^Field field] 
+            (if (some (fn [^Annotation ann] 
+                        (= DefaultProperty (.annotationType ann)))
+                      (.getDeclaredAnnotations field))
+              (.getName field)))
+          (.getDeclaredFields cl))))
 
 
 (defn descriptors

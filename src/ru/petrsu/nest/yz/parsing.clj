@@ -301,7 +301,7 @@
         g-dp #(or ; Search default property into MOM.
                   (:dp (get mom %)) 
                   ; Search default property into field's annotations.
-                  (keyword (u/dp %)))]
+                  (u/dp %))]
     (if cl
       (or ; Check default property for supplied class.
           (g-dp cl)
