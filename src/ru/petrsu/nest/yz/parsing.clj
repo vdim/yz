@@ -479,8 +479,8 @@
   have property 'prop' in case MOM is defined. If searching 
   is failed then exeption is thrown."
   [^Class cl ^String prop]
-  (letfn [(prop? [clazz] (some #(= prop (.getName %)) (u/descriptors clazz)))]
-    (or (nil? mom)
+  (letfn [(prop? [clazz] (some #(= prop (keyword (.getName %))) (u/descriptors clazz)))]
+    (or (nil? mom) (= prop :#self-object#) (= prop :#default-property#) (map? prop)
         (prop? cl)
         (some #(prop? %) (get-in mom [:children cl]))
         (throw (Exception. (str "It seems " cl " doesn't have property " prop))))))
@@ -491,11 +491,17 @@
   [res id nl tl is-recur tsort _ _ _ _]
   (let [tl- (dec tl)
         what (get-in-nest-or-then res (inc nl) tl- :what)
-        _ (check-prop what id) ; Check whether class "what" has property "id".
-        id (cond (= id "&") :#self-object#
+        id (cond ; self object
+                 (= id "&") :#self-object#
+                 ; default property
                  (= id "&.") (get-dp what mom)
+                 ; ?
                  (map? id) id
-                 :else (keyword (str id)))]
+                 ; property itself
+                 :else (keyword (str id)))
+        ; Check whether class "what" has property "id". 
+        ; If searching failed then exception is thrown.
+        _ (check-prop what id)] 
     (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
           props (get-in-nest-or-then res (inc nl) tl- :props)
           sorts (cond
