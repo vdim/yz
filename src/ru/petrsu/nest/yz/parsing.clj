@@ -474,8 +474,10 @@
     [nil nil nil]))
 
 
-(defn check-prop
-  "Returns true."
+(defn- check-prop
+  "Checks whether class 'cl' or one of children of class 'cl' 
+  have property 'prop' in case MOM is defined. If searching 
+  is failed then exeption is thrown."
   [^Class cl ^String prop]
   (letfn [(prop? [clazz] (some #(= prop (.getName %)) (seq (.. java.beans.Introspector 
                                                              (getBeanInfo clazz) 
