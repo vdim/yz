@@ -288,11 +288,14 @@
 
 (defn get-dp
   "Returns default property for specified class.
-  If default property is not specified then
-  nil is returned.
+  Places of searching are
+    1. the MOM.
+    2. DefaultProperty annotation of fields of class (cl argument).
 
-  Firstly function checks MOM, then for each property 
-  function checks DefaultProperty annotation."
+  If default property is not specified and MOM is not nil, then
+  NotDefinedDPException is thrown. In case MOM is nil then the 
+  key :#default-property# is returned (dp will be searched during
+  evaluating query for class of specific object)."
   [^Class cl mom]
   (let [; returns defautl property for specified class (argument is class)
         g-dp #(or ; Search default property into MOM.
