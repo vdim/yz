@@ -44,4 +44,12 @@
                       (= DefaultProperty (.annotationType ann)))
                     (.getDeclaredAnnotations field))
             (.getName field)))
-        (.getDeclaredFields cl)))
+        (.getDeclaredFields cl))) 
+
+
+(defn descriptors
+  "Returns list of PropertyDescriptors for specified class."
+  [^Class clazz]
+  (seq (.. java.beans.Introspector 
+         (getBeanInfo clazz) 
+         (getPropertyDescriptors))))

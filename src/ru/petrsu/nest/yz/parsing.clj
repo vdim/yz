@@ -479,9 +479,7 @@
   have property 'prop' in case MOM is defined. If searching 
   is failed then exeption is thrown."
   [^Class cl ^String prop]
-  (letfn [(prop? [clazz] (some #(= prop (.getName %)) (seq (.. java.beans.Introspector 
-                                                             (getBeanInfo clazz) 
-                                                             (getPropertyDescriptors)))))]
+  (letfn [(prop? [clazz] (some #(= prop (.getName %)) (u/descriptors clazz)))]
     (or (nil? mom)
         (prop? cl)
         (some #(prop? %) (get-in mom [:children cl]))

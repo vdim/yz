@@ -82,11 +82,7 @@
   "Returns related classes for specified Class's instance.
   ('classes' must be set for correct working 'contains?' function."
   [cl classes]
-  (remove nil?
-    (map #(check-type % classes)
-         (seq (.. java.beans.Introspector
-                (getBeanInfo cl)
-                (getPropertyDescriptors))))))
+  (remove nil? (map #(check-type % classes) (u/descriptors cl))))
 
 
 (defn- adds-related
