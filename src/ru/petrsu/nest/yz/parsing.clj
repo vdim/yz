@@ -307,11 +307,9 @@
           (g-dp cl)
           ; If cl has not default property, then we check superclass(-es).
           (loop [cl- (:superclass (bean cl))]
-            (if (nil? cl-)
-              nil
-              (let [dp (g-dp cl-)]
-                (or dp
-                  (recur (:superclass (bean cl-)))))))
+            (if cl-
+              (or (g-dp cl-)
+                  (recur (:superclass (bean cl-))))))
           ; if superclasses have not default property, then check whether
           ; class has children. If it hasn't then exception is thrown
           ; (in case MOM is defined) or the key :#default-property# is returned.
