@@ -54,3 +54,19 @@
   (seq (.. java.beans.Introspector 
          (getBeanInfo clazz) 
          (getPropertyDescriptors))))
+
+
+(defn yz-compare
+  "YZ's version of the compare function.
+  Arguments: 
+    f - comparing function (>, <, >=, <=).
+    arg1, arg2 - arguments for comparing."
+  [f arg1 arg2]
+  (let [r (compare arg1 arg2)]
+    (or 
+      ; equal to
+      (and (or (= f >=) (= f <=)) (zero? r))
+      ; greather than
+      (and (or (= f >=) (= f >)) (pos? r))
+      ; less than 
+      (and (or (= f <=) (= f <)) (neg? r)))))
