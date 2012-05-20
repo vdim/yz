@@ -63,10 +63,10 @@
     arg1, arg2 - arguments for comparing."
   [f arg1 arg2]
   (let [r (compare arg1 arg2)]
-    (or 
+    (cond
       ; equal to
-      (and (or (= f >=) (= f <=)) (zero? r))
+      (zero? r) (or (= f >=) (= f <=))
       ; greather than
-      (and (or (= f >=) (= f >)) (pos? r))
+      (pos? r) (or (= f >=) (= f >))
       ; less than 
-      (and (or (= f <=) (= f <)) (neg? r)))))
+      :else (or (= f <=) (= f <)))))
