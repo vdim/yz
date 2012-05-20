@@ -528,8 +528,7 @@
 
 (deftest negative-preds
          ^{:doc "Tests >, <, <=, >= functions for not numbers."}
-         (let [f #(tc/eq-colls (flatten (tc/rows-query %1)) %2)
-               _ (println (flatten (tc/rows-query "room#(number<\"102\")")))]
+         (let [f #(tc/eq-colls (flatten (tc/rows-query %1)) %2)]
            (is (f "room#(number>\"501\")" []))
            (is (f "room[number]#(number>\"4000\")" ["401" "402"]))
            (is (f "room[number]#(number!<\"4000\")" ["401" "402"]))
