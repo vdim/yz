@@ -30,7 +30,10 @@
 (defn- query-uni-db
   "Executes specified query for university database."
   [query]
-  (:rows (pquery query uni-em)))
+  (let [r (pquery query uni-em)]
+    (if (:error r)
+      (throw (:thrwable r))
+      (:rows r))))
 
 
 (deftest preds
