@@ -49,7 +49,7 @@
 
 ;; The map of the object model some area
 ;; We factor out it from q-representation because of it is not changed.
-(declare mom)
+(def ^:dynamic *mom*)
 
 ; The parsing state data structure. 
 (defstruct q-representation 
@@ -210,17 +210,17 @@
           (= :not-specified cl-target) (= :not-specified cl-source))
     nil
     (loop [cl- cl-target]
-      (let [paths (get (get mom cl-source) cl-)]
+      (let [paths (get (get *mom* cl-source) cl-)]
         (if (empty? paths)
           (if (nil? cl-)
-            (let [paths (some #(let [ps (get (get mom cl-source) %)]
+            (let [paths (some #(let [ps (get (get *mom* cl-source) %)]
                                  (if (not (empty? ps)) ps)) 
                               (ancestors cl-target))]
               (if (empty? paths)
-                (if mom
+                (if *mom*
                   (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
                 paths))
-            (recur (:superclass (get mom cl-))))
+            (recur (:superclass (get *mom* cl-))))
           paths)))))
 
 
@@ -258,9 +258,9 @@
   is failed then exeption is thrown."
   [^Class cl ^String prop]
   (letfn [(prop? [clazz] (some #(= prop (.getName %)) (u/descriptors clazz)))]
-    (or (nil? mom) (= prop "&") (= prop "&.") (map? prop)
+    (or (nil? *mom*) (= prop "&") (= prop "&.") (map? prop)
         (prop? cl)
-        (some #(prop? %) (get-in mom [:children cl]))
+        (some #(prop? %) (get-in *mom* [:children cl]))
         (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
 
 
@@ -313,10 +313,10 @@
   NotDefinedDPException is thrown. In case MOM is nil then the 
   key :#default-property# is returned (dp will be searched during
   evaluating query for class of specific object)."
-  [^Class cl mom]
+  [^Class cl *mom*]
   (let [; returns defautl property for specified class (argument is class)
         g-dp #(or ; Search default property into MOM.
-                  (:dp (get mom %)) 
+                  (:dp (get *mom* %)) 
                   ; Search default property into field's annotations.
                   (u/dp %))]
     (if cl
@@ -330,8 +330,8 @@
           ; if superclasses have not default property, then check whether
           ; class has children. If it hasn't then exception is thrown
           ; (in case MOM is defined) or the key :#default-property# is returned.
-          (if mom 
-            (if (get-in mom [:children cl])
+          (if *mom* 
+            (if (get-in *mom* [:children cl])
               :#default-property#
               (throw (NotDefinedDPException. (str "Default property is not defined for " cl))))
             :#default-property#)))))
@@ -343,8 +343,8 @@
   (loop [cl- cl, ids- ids, sp-res (cs/split res #"\.") pp nil]
     (if (empty? sp-res)
       (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
-        (if-let [dp (get-dp cl- mom)]
-          [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get mom cl-)))]
+        (if-let [dp (get-dp cl- *mom*)]
+          [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get *mom* cl-)))]
           [ids- pp])
         [ids- pp])
       (let [id (first sp-res)
@@ -352,7 +352,7 @@
         (recur cl-target
                (vec (flatten (conj ids- (get-path id cl- cl-target))))
                (rest sp-res)
-               ((keyword id) (:p-properties (get mom cl-))))))))
+               ((keyword id) (:p-properties (get *mom* cl-))))))))
 
 
 (defn- change-pred
@@ -453,14 +453,14 @@
 
 
 (defn- ^Class find-class
-  "Returns class which is correspended 'id' (search is did in 'mom'). 
+  "Returns class which is correspended 'id' (search is did in '*mom*'). 
   Search is did in the following positions:
     - as full name of class (package+name)
     - as name of class 
-    - in 'sn' key of each map of mom.
+    - in 'sn' key of each map of *mom*.
     - as abbreviation class's name."
   [^String id]
-  (if (nil? mom)
+  (if (nil? *mom*)
     ;; Try to find id in classes which are imported to known namespaces.
     (some #(some (fn [[k v]] (if (or (= id (.toLowerCase (.toString k)))
                                      (= id (u/get-short-name v)))
@@ -468,7 +468,7 @@
                  (ns-imports %)) 
           (all-ns))
     (let [l-id (cs/lower-case (str id))]
-      (some #(get-in mom [% l-id]) [:sns :names :snames]))))
+      (some #(get-in *mom* [% l-id]) [:sns :names :snames]))))
 
 
 (defn- get-sort
@@ -479,11 +479,11 @@
   for specified class (cl) and its property (prop)."
   [tsort, cl, prop]
   (if tsort
-    (if mom
-      (let [prop (cond (= prop :#default-property#) (get-dp cl mom)
+    (if *mom*
+      (let [prop (cond (= prop :#default-property#) (get-dp cl *mom*)
                        (= prop :#self-object#) :self
                        :else prop)
-            f #(let [v (get-in (get mom cl) [:sort prop %])]
+            f #(let [v (get-in (get *mom* cl) [:sort prop %])]
                  (if (string? v)
                    (create-f v)
                    v))
@@ -510,7 +510,7 @@
         id (cond ; self object
                  (= id "&") :#self-object#
                  ; default property
-                 (= id "&.") (get-dp what mom)
+                 (= id "&.") (get-dp what *mom*)
                  ; id is function, e.g.: building[@(count `floor')]
                  (map? id) id
                  ; property itself
@@ -569,7 +569,7 @@
       #(let [[k v] %2
              p (cond 
                  ; Sorting is done by default property: {a:&.}building
-                 (= :#default-property# k) (get-dp cl mom) 
+                 (= :#default-property# k) (get-dp cl *mom*) 
                  
                  ; Sorting is done by result of a function: {a:@(count `room')}building
                  (map? k) 
@@ -595,7 +595,7 @@
   "This function is called when id is found in query. Returns new result."
   [res ^String id nl tl is-recur tsort unique hb-range lb-range tail]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
-        ^Class cl (if (and (nil? mom) (> tl 0)) nil (find-class id))
+        ^Class cl (if (and (nil? *mom*) (> tl 0)) nil (find-class id))
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
@@ -1200,7 +1200,7 @@
                          nl (get-info :nest-level)
                          tl (get-info :then-level)
                          res (get-info :result)
-                         q (effects (:result (parse+ ret mom)))
+                         q (effects (:result (parse+ ret *mom*)))
                          q (effects (vec (map #(nnassoc % 
                                                         :where 
                                                         (get-paths (:what %) (get-in-nest res nl :what))) q)))
@@ -1290,17 +1290,17 @@
 (defn parse+
   "Like parse, but returns all structure of result."
   [^String q, ^PersistentArrayMap mom]
-  (do (def mom mom)
-    (reset! query-params [])
+  (reset! query-params [])
+  (binding [*mom* mom]
     (do-q q)))
 
 
 (defn parse
   "Parses specified query ('q') in YZ language. 
-  Parsing is based on specified ('mom') map of an object model.
+  Parsing is based on specified ('*mom*') map of an object model.
   Returns an inner representation of the query."
-  [q, mom]
-  (let [r (parse+ q, mom)]
+  [q, *mom*]
+  (let [r (parse+ q, *mom*)]
     (if (nil? (:remainder r))
       (:result r)
       (throw (SyntaxException. (str "Syntax error near: " (reduce str "" (:remainder r))))))))
