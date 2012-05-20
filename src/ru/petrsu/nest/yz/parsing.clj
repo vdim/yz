@@ -35,7 +35,7 @@
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)
            (ru.petrsu.nest.yz SyntaxException NotFoundPathException 
                               NotFoundElementException NotFoundFunctionException
-                              NotDefinedDPException)))
+                              NotDefinedDPException NotFoundPropertyException)))
 
 
 (defn- ^String sdrop
@@ -481,7 +481,7 @@
     (or (nil? mom) (= prop :#self-object#) (= prop :#default-property#) (map? prop)
         (prop? cl)
         (some #(prop? %) (get-in mom [:children cl]))
-        (throw (Exception. (str "It seems " cl " doesn't have property " prop))))))
+        (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
 
 
 (defn- found-prop
