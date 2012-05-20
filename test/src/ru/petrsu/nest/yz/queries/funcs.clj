@@ -154,7 +154,7 @@
 (defn to-upper
   "Function for testing support calling function
   with parameter as property of self object.
-  Returns name of specified SonElement."
+  Converts supplied string to upper case."
   [^String s]
   (.toUpperCase s))
 
