@@ -524,3 +524,23 @@
            (is (f [[I2] [I3]] "integer#(& !== 2)" c-ints))
            (is (f [[I2] [I3]] "integer#(& !== 4)" c-ints))
            (is (f [[3]] "integer#(& != 2)" c-ints))))
+
+
+(deftest negative-preds
+         ^{:doc "Tests >, <, <=, >= functions for not numbers."}
+         (let [f #(tc/eq-colls (flatten (tc/rows-query %1)) %2)
+               _ (println (flatten (tc/rows-query "room#(number<\"102\")")))]
+           (is (f "room#(number>\"501\")" []))
+           (is (f "room[number]#(number>\"4000\")" ["401" "402"]))
+           (is (f "room[number]#(number!<\"4000\")" ["401" "402"]))
+           (is (f "room[number]#(number>\"401\")" ["402"]))
+           (is (f "room[number]#(number!<=\"401\")" ["402"]))
+           (is (f "room[number]#(number>=\"401\")" ["401" "402"]))
+           (is (f "room[number]#(number!<\"401\")" ["401" "402"]))
+
+           (is (f "room[number]#(number<\"001\")" []))
+           (is (f "room[number]#(number!>=\"001\")" []))
+           (is (f "room[number]#(number<\"102\")" ["101" "101" "101" "1001" "1002"]))
+           (is (f "room[number]#(number!>=\"102\")" ["101" "101" "101" "1001" "1002"]))
+           (is (f "room[number]#(number<=\"101\")" ["101" "101" "101" "1001" "1002"]))
+           (is (f "room[number]#(number!>\"101\")" ["101" "101" "101" "1001" "1002"]))))
