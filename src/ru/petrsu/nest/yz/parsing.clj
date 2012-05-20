@@ -252,6 +252,18 @@
             ret)))
 
 
+(defn- check-prop
+  "Checks whether class 'cl' or one of children of class 'cl' 
+  have property 'prop' in case MOM is defined. If searching 
+  is failed then exeption is thrown."
+  [^Class cl ^String prop]
+  (letfn [(prop? [clazz] (some #(= prop (.getName %)) (u/descriptors clazz)))]
+    (or (nil? mom) (= prop "&") (= prop "&.") (map? prop)
+        (prop? cl)
+        (some #(prop? %) (get-in mom [:children cl]))
+        (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
+
+
 (declare find-class)
 (defn- get-path
   "Returns map where 
@@ -282,7 +294,12 @@
       ;; cl-target is some interface and there is path between 
       ;; cl-source and some implementation of this interface.
       ;; This behaviour is processed into core.clj.
-      [{:id [id] :cl cl-target}]
+      ;; [20.05.12] But now MOM contains information about
+      ;; children of class, so if MOM is defined we can check
+      ;; whether class or one of its children has the property.
+      (do 
+        (if cl-source (check-prop cl-source id))
+        [{:id [id] :cl cl-target}])
       {:id (nth paths 0) :cl cl-target})))
 
 
@@ -480,23 +497,16 @@
     [nil nil nil]))
 
 
-(defn- check-prop
-  "Checks whether class 'cl' or one of children of class 'cl' 
-  have property 'prop' in case MOM is defined. If searching 
-  is failed then exeption is thrown."
-  [^Class cl ^String prop]
-  (letfn [(prop? [clazz] (some #(= prop (keyword (.getName %))) (u/descriptors clazz)))]
-    (or (nil? mom) (= prop :#self-object#) (= prop :#default-property#) (map? prop)
-        (prop? cl)
-        (some #(prop? %) (get-in mom [:children cl]))
-        (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
-
-
 (defn- found-prop
   "This function is called when likely some property is found"
   [res id nl tl is-recur tsort _ _ _ _]
   (let [tl- (dec tl)
-        what (get-in-nest-or-then res (inc nl) tl- :what)
+        what (get-in-nest-or-then res (inc nl) tl- :what) 
+        
+        ; Check whether class "what" has property "id". 
+        ; If searching failed then exception is thrown.
+        _ (check-prop what id)
+
         id (cond ; self object
                  (= id "&") :#self-object#
                  ; default property
@@ -504,10 +514,7 @@
                  ; id is function, e.g.: building[@(count `floor')]
                  (map? id) id
                  ; property itself
-                 :else (keyword (str id)))
-        ; Check whether class "what" has property "id". 
-        ; If searching failed then exception is thrown.
-        _ (check-prop what id)] 
+                 :else (keyword (str id)))] 
     (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
           props (get-in-nest-or-then res (inc nl) tl- :props)
           sorts (cond
