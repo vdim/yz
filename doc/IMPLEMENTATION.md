@@ -71,6 +71,8 @@ creating editor for MOM, but now it is useless.
 This question requires deep researching.
 * Sorting requires that your objects (or property) must implement
 [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) interface. 
+* Comparison for "where" clause works correctly for objects which implement
+[Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) interface. 
 You can define comparator in the MOM (see above section) as well.
 * For implementation "removing duplicates" feature 
 [distinct] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/distinct) function of Clojure are used.

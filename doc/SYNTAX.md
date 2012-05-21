@@ -105,7 +105,7 @@ YZ supports the following operations:
     => (["Bob"])
 </code></pre>
 
-* identical ("=="):
+* identity ("=="):
 
 ```clojure
 (collq "long#(& = 1)" [1 2])
@@ -118,12 +118,13 @@ YZ supports the following operations:
 => ()
 ```
 
-* >, <, >=, <= (rightly for numbers):
-
-```clojure
-(collq "long#(& > 10)" [199 4 6 10 34])
-=> ([34] [199])
-```
+* comparison (>, <, >=, <=):
+<pre><code>
+    string#(& > "Bob")
+    => (["Marry"] ["Kris"] ["David"])
+    string#(& >= "Bob")
+    => (["Bob"] ["Marry"] ["Kris"] ["David"])
+</code></pre>
 
 * regex (rightly for strings):
 <pre><code>
@@ -135,6 +136,8 @@ YZ supports the following operations:
 <pre><code>
     string#(& != "Bob")
     => (["Alice"] [""] ["Marry"] ["Kris"] ["David"] ["Alexander"])
+    string#(& !> "Carol")
+    => (["Bob"] ["Alice"] [""] ["Alexander"])
 </code></pre>
 
 * logical operation (&& and || and syntax sugar "and" and "or" respectively):
@@ -143,10 +146,6 @@ YZ supports the following operations:
     => (["Bob"] ["Marry"]) 
 </code></pre>
 
-```clojure
-(collq "long#(& !> 10)" [199 4 6 10 34])
-=> ([4] [6] [10])
-```
 
 * RCP (Reduced Complicate Predicates, this technique allows to reduce text of 
 your predicates which are adjusted to same property):
