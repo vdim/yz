@@ -206,12 +206,11 @@
         (recur (dec n) (str res (v (.nextInt r cv))))))))
 
 
-(defn gen-element
-  "Generates element of the Nest model."
-  [claz classes]
+(defn instance
+  "Creates instance of specified class 'cl' (class must be 
+  from SON model) and then fills properties by random values."
+  [cl]
   (let [r (Random.)
-        [cl k] (classes (.nextInt r (count classes)))
-        cl (if (nil? claz) cl claz)
         se (doto (.newInstance cl)
              (.setName (str (.getSimpleName cl) "_" (names (.nextInt r (count names)))))
              (.setDescription (descs (.nextInt r (count descs)))))
@@ -228,6 +227,20 @@
         se (if (instance? EthernetInterface se) 
              (doto se (.setMACAddress (f/mac2b (gen-mac r))))
              se)]
+    se))
+
+
+(defn gen-element
+  "Selects element from vector classes due to a random number, 
+  creates instance of the class and fills its properties due to the instance 
+  function, and returns vector where first element is instance 
+  fo class and second element is its keyword. Example: 
+    (bu/gen-element bu/classes)
+    [#<Device Device Device_TK> :device]"
+  [classes]
+  (let [r (Random.)
+        [cl k] (classes (.nextInt r (count classes)))
+        se (instance cl)]
     [se k]))
 
 
@@ -235,22 +248,22 @@
   "Takes number of elements in BD, generates BD 
   and returns SON."
   [n]
-  (let [sm (init-model {:building ((gen-element Building classes) 0)
-                        :floor ((gen-element Floor classes) 0)
-                        :room ((gen-element Room classes) 0)
-                        :occupancy ((gen-element Occupancy classes) 0)
-                        :sou ((gen-element SimpleOU classes) 0)
-                        :cou ((gen-element CompositeOU classes) 0)
-                        :device ((gen-element Device classes) 0)
-                        :network ((gen-element UnknownNetwork classes) 0)
-                        :ni ((gen-element UnknownNetworkInterface classes) 0)
-                        :ei ((gen-element EthernetInterface classes) 0)
-                        :li ((gen-element UnknownLinkInterface classes) 0)
-                        :ipn ((gen-element IPNetwork classes) 0)
-                        :ipv4 ((gen-element IPv4Interface classes) 0)
-                        :vlan ((gen-element VLANInterface classes) 0)
+  (let [sm (init-model {:building (instance Building)
+                        :floor (instance Floor)
+                        :room (instance Room)
+                        :occupancy (instance Occupancy)
+                        :sou (instance SimpleOU)
+                        :cou (instance CompositeOU)
+                        :device (instance Device)
+                        :network (instance UnknownNetwork)
+                        :ni (instance UnknownNetworkInterface)
+                        :ei (instance EthernetInterface)
+                        :li (instance UnknownLinkInterface)
+                        :ipn (instance IPNetwork)
+                        :ipv4 (instance IPv4Interface)
+                        :vlan (instance VLANInterface)
                         :son (SON.)})
         a-sm (atom sm)
-        _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element nil classes))))]
+        _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element classes))))]
     (:son @a-sm)))
 

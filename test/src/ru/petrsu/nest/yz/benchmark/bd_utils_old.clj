@@ -110,23 +110,24 @@
 (defn gen-bd
   "Takes number of elements in DB and generates DB. Returns SON."
   [n]
-  (let [sm (bu/init-model {:building ((bu/gen-element Building classes) 0)
-                        :floor ((bu/gen-element Floor classes) 0)
-                        :room ((bu/gen-element Room classes) 0)
-                        :occupancy ((bu/gen-element Occupancy classes) 0)
-                        :sou ((bu/gen-element SimpleOU classes) 0)
-                        :cou ((bu/gen-element CompositeOU classes) 0)
-                        :device ((bu/gen-element Device classes) 0)
-                        :network ((bu/gen-element Network classes) 0)
-                        :ni ((bu/gen-element NetworkInterface classes) 0)
-                        :ei ((bu/gen-element EthernetInterface classes) 0)
-                        :li ((bu/gen-element LinkInterface classes) 0)
-                        :ipn ((bu/gen-element IPNetwork classes) 0)
-                        :ipv4 ((bu/gen-element IPv4Interface classes) 0)
-                        :vlan ((bu/gen-element VLANInterface classes) 0)
-                        :son (SON.)}) 
+  (let [sm (bu/init-model 
+             {:building (bu/instance Building)
+              :floor (bu/instance Floor)
+              :room (bu/instance Room)
+              :occupancy (bu/instance Occupancy)
+              :sou (bu/instance SimpleOU)
+              :cou (bu/instance CompositeOU)
+              :device (bu/instance Device)
+              :network (bu/instance Network)
+              :ni (bu/instance NetworkInterface)
+              :ei (bu/instance EthernetInterface)
+              :li (bu/instance LinkInterface)
+              :ipn (bu/instance IPNetwork)
+              :ipv4 (bu/instance IPv4Interface)
+              :vlan (bu/instance VLANInterface)
+              :son (SON.)}) 
         a-sm (atom sm)
-        _ (dorun (repeatedly n #(swap! a-sm change-model (bu/gen-element nil classes))))]
+        _ (dorun (repeatedly n #(swap! a-sm change-model (bu/gen-element classes))))]
     (:son @a-sm)))
 
 
