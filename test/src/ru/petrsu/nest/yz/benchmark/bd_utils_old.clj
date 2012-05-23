@@ -108,27 +108,24 @@
 
 
 (defn gen-bd
-  "Takes number of elements in DB and generates DB. Returns SON."
+  "Takes number of elements in BD, creates an initial state for
+  the JPA SON model and passes its to the gen-bd- function."
   [n]
-  (let [sm (bu/init-model 
-             {:building (bu/instance Building)
-              :floor (bu/instance Floor)
-              :room (bu/instance Room)
-              :occupancy (bu/instance Occupancy)
-              :sou (bu/instance SimpleOU)
-              :cou (bu/instance CompositeOU)
-              :device (bu/instance Device)
-              :network (bu/instance Network)
-              :ni (bu/instance NetworkInterface)
-              :ei (bu/instance EthernetInterface)
-              :li (bu/instance LinkInterface)
-              :ipn (bu/instance IPNetwork)
-              :ipv4 (bu/instance IPv4Interface)
-              :vlan (bu/instance VLANInterface)
-              :son (SON.)}) 
-        a-sm (atom sm)
-        _ (dorun (repeatedly n #(swap! a-sm change-model (bu/gen-element classes))))]
-    (:son @a-sm)))
+  (bu/gen-bd- n {:building (bu/instance Building)
+                 :floor (bu/instance Floor)
+                 :room (bu/instance Room)
+                 :occupancy (bu/instance Occupancy)
+                 :sou (bu/instance SimpleOU)
+                 :cou (bu/instance CompositeOU)
+                 :device (bu/instance Device)
+                 :network (bu/instance Network)
+                 :ni (bu/instance NetworkInterface)
+                 :ei (bu/instance EthernetInterface)
+                 :li (bu/instance LinkInterface)
+                 :ipn (bu/instance IPNetwork)
+                 :ipv4 (bu/instance IPv4Interface)
+                 :vlan (bu/instance VLANInterface)
+                 :son (SON.)}))
 
 
 (defn create-bd

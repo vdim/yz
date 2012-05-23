@@ -244,26 +244,33 @@
     [se k]))
 
 
-(defn gen-bd
-  "Takes number of elements in BD, generates BD 
-  and returns SON."
-  [n]
-  (let [sm (init-model {:building (instance Building)
-                        :floor (instance Floor)
-                        :room (instance Room)
-                        :occupancy (instance Occupancy)
-                        :sou (instance SimpleOU)
-                        :cou (instance CompositeOU)
-                        :device (instance Device)
-                        :network (instance UnknownNetwork)
-                        :ni (instance UnknownNetworkInterface)
-                        :ei (instance EthernetInterface)
-                        :li (instance UnknownLinkInterface)
-                        :ipn (instance IPNetwork)
-                        :ipv4 (instance IPv4Interface)
-                        :vlan (instance VLANInterface)
-                        :son (SON.)})
+(defn gen-bd-
+  "Generates object graph of SON model due to
+  specfied amount of elements and initial state.
+  Returns an instance of SON."
+  [n initial-state]
+  (let [sm (init-model initial-state)
         a-sm (atom sm)
         _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element classes))))]
     (:son @a-sm)))
 
+
+(defn gen-bd
+  "Takes number of elements in BD, creates an initial state for
+  the SON model and passes its to the gen-bd- function."
+  [n]
+  (gen-bd- n {:building (instance Building)
+              :floor (instance Floor)
+              :room (instance Room)
+              :occupancy (instance Occupancy)
+              :sou (instance SimpleOU)
+              :cou (instance CompositeOU)
+              :device (instance Device)
+              :network (instance UnknownNetwork)
+              :ni (instance UnknownNetworkInterface)
+              :ei (instance EthernetInterface)
+              :li (instance UnknownLinkInterface)
+              :ipn (instance IPNetwork)
+              :ipv4 (instance IPv4Interface)
+              :vlan (instance VLANInterface)
+              :son (SON.)}))
