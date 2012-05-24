@@ -59,35 +59,6 @@
              (.execute script export just-drop just-create))])))
 
 
-(defn change-model
-  "Changes model: takes model and object of 
-  model and inserts object into the model."
-  [sm [o k]]
-  (do 
-    (cond (instance? Building o) (.addBuilding (:son sm) o)
-          (instance? Floor o) (.addFloor (:building sm) o)
-          (instance? Room o) (do (.addRoom (:floor sm) o) 
-                               (if (nil? (.getRoom (:occupancy sm)))
-                                 (.setRoom (:occupancy sm) o)))
-          (instance? Occupancy o) (do (.setRoom o (:room sm)) 
-                                    (.setOU o (:sou sm))
-                                    (if (nil? (.getOccupancy (:device sm)))
-                                      (.addDevice o (:device sm))))
-          (instance? SimpleOU o) (do (.addOU (:cou sm) o)
-                                   (if (nil? (.getOU (:occupancy sm)))
-                                     (.setOU (:occupancy sm) o)))
-          (instance? CompositeOU o) (.addOU (:cou sm) o)
-          (instance? Device o) (.addDevice (:occupancy sm) o)
-          (instance? LinkInterface o) (.addLinkInterface (:device sm) o)
-          (instance? EthernetInterface o) (.addLinkInterface (:device sm) o)
-          (instance? VLANInterface o) (.addLinkInterface (:device sm) o)
-          (instance? NetworkInterface o) (do (.addNetworkInterface (:li sm) o) 
-                                                  (.setNetwork o (:network sm)))
-          (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) 
-                                        (.setNetwork o (:ipn sm))))
-    (assoc sm k o)))
-
-
 (def cls
   "List of jpa type of son model."
   [Building Floor Room Occupancy SimpleOU CompositeOU 
@@ -95,18 +66,11 @@
    LinkInterface IPv4Interface IPNetwork VLANInterface SON])
 
 
-(defn gen-bd
-  "Takes number of elements in BD, creates an initial state for
-  the JPA SON model and passes its to the gen-bd- function."
-  [n]
-  (bu/gen-bd- n change-model cls))
-
-
 (defn create-bd
   "Creates BD for specified EntityManager 
   and with specified n elements."
   [n, em]
-  (let [son (gen-bd n)]
+  (let [son (bu/gen-bd n cls)]
     (do (.. em getTransaction begin) 
       (.persist em son)
       (.flush em)

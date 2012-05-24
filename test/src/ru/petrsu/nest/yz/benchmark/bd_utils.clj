@@ -225,27 +225,38 @@
   model and inserts object into the model."
   [sm [o k]]
   (do 
-    (cond (instance? Building o) (.addBuilding (:son sm) o)
-          (instance? Floor o) (.addFloor (:building sm) o)
-          (instance? Room o) (do (.addRoom (:floor sm) o) 
-                               (if (nil? (.getRoom (:occupancy sm)))
-                                 (.setRoom (:occupancy sm) o)))
-          (instance? Occupancy o) (do (.setRoom o (:room sm)) 
-                                    (.setOU o (:sou sm))
-                                    (if (nil? (.getOccupancy (:device sm)))
-                                      (.addDevice o (:device sm))))
-          (instance? SimpleOU o) (do (.addOU (:cou sm) o)
-                                   (if (nil? (.getOU (:occupancy sm)))
-                                     (.setOU (:occupancy sm) o)))
-          (instance? CompositeOU o) (.addOU (:cou sm) o)
-          (instance? Device o) (.addDevice (:occupancy sm) o)
-          (instance? UnknownLinkInterface o) (.addLinkInterface (:device sm) o)
-          (instance? EthernetInterface o) (.addLinkInterface (:device sm) o)
-          (instance? VLANInterface o) (.addLinkInterface (:device sm) o)
-          (instance? UnknownNetworkInterface o) (do (.addNetworkInterface (:li sm) o) 
-                                                  (.setNetwork o (:network sm)))
-          (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) 
-                                        (.setNetwork o (:ipn sm))))
+    (let [n (.getSimpleName (class o))]
+        
+      ; We use simple name of class for comparing due to there are different
+      ; models (ru.petrsu.nest.son.* for LocalSonManager 
+      ; and ru.petrsu.nest.son.jpa.* for JPA EntityManager) with same names of classes.
+      (case n
+        "Building" (.addBuilding (:son sm) o)
+        "Floor" (.addFloor (:building sm) o)
+        "Room" (do (.addRoom (:floor sm) o) 
+                 (if (nil? (.getRoom (:occupancy sm)))
+                   (.setRoom (:occupancy sm) o)))
+        "Occupancy" (do (.setRoom o (:room sm)) 
+                      (.setOU o (:sou sm))
+                      (if (nil? (.getOccupancy (:device sm)))
+                        (.addDevice o (:device sm))))
+        "SimpleOU" (do (.addOU (:cou sm) o)
+                     (if (nil? (.getOU (:occupancy sm)))
+                       (.setOU (:occupancy sm) o)))
+        "CompositeOU" (.addOU (:cou sm) o)
+        "Device" (.addDevice (:occupancy sm) o)
+        "EthernetInterface" (.addLinkInterface (:device sm) o)
+        "VLANInterface" (.addLinkInterface (:device sm) o)
+        "IPv4Interface" (do (.addNetworkInterface (:ei sm) o) 
+                        (.setNetwork o (:ipn sm)))
+
+        ; This is unique case LinkInterface vs UnknownLinkInterface and
+        ; NetworkInterface vs UnknownNetworkInterface.
+        (cond (>= (.indexOf n "LinkInterface") 0)
+              (.addLinkInterface (:device sm) o) 
+              (>= (.indexOf n "NetworkInterface") 0)
+              (do (.addNetworkInterface (:li sm) o) 
+                (.setNetwork o (:network sm))))))
     (assoc sm k o)))
 
 
@@ -265,20 +276,6 @@
     [se k]))
 
 
-(defn gen-bd-
-  "Generates object graph of SON model due to specfied 
-  amount of elements. Returns an instance of SON."
-  [n f-change-model cls]
-  (let [sm (init-model cls)
-        a-sm (atom sm)
-        lcls (classes cls) ; list with repeating classes (due to weights)
-        _ (dorun (repeatedly n #(swap! a-sm f-change-model (gen-element lcls cls))))]
-    (:son @a-sm)))
-
-;;
-;; Specific code for the LSM SON model.
-;;
-
 (def cls
   "List of lsm type of son model."
   [Building Floor Room Occupancy SimpleOU CompositeOU 
@@ -287,7 +284,14 @@
 
 
 (defn gen-bd
-  "Takes number of elements in BD, creates an initial state for
-  the SON model and passes its to the gen-bd- function."
-  [n]
-  (gen-bd- n change-model cls))
+  "Generates object graph of SON model due to specfied 
+  amount of elements and list of classes. If list of 
+  classes is not supplied then cls is used. Returns an instance of SON."
+  ([n]
+   (gen-bd n cls))
+  ([n cls]
+   (let [sm (init-model cls)
+         a-sm (atom sm)
+         lcls (classes cls) ; list with repeating classes (due to weights)
+         _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element lcls cls))))]
+     (:son @a-sm))))
