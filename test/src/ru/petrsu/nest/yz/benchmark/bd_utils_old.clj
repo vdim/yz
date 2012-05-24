@@ -125,7 +125,9 @@
                  :ipn (bu/instance IPNetwork)
                  :ipv4 (bu/instance IPv4Interface)
                  :vlan (bu/instance VLANInterface)
-                 :son (SON.)}))
+                 :son (SON.)}
+              change-model
+              classes))
 
 
 (defn create-bd

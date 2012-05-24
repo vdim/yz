@@ -211,21 +211,20 @@
   from SON model) and then fills properties by random values."
   [cl]
   (let [r (Random.)
+        n (.getSimpleName cl)
         se (doto (.newInstance cl)
              (.setName (str (.getSimpleName cl) "_" (names (.nextInt r (count names)))))
              (.setDescription (descs (.nextInt r (count descs)))))
-        se (if (instance? Floor se) (doto se (.setNumber (Integer. (.nextInt r 100)))) se) 
-        se (if (instance? Room se) (doto se (.setNumber (str (.nextInt r 100)))) se) 
-        se (if (instance? IPv4Interface se) 
-             (doto se (.setInetAddress (f/ip2b (gen-ip r))))
-             se)
-        se (if (instance? IPNetwork se) 
-             (doto se 
-               (.setAddress (f/ip2b (gen-ip r))) 
-               (.setMask (f/ip2b (gen-mask r))))
-             se)
-        se (if (instance? EthernetInterface se) 
-             (doto se (.setMACAddress (f/mac2b (gen-mac r))))
+        ; We use simple name of class for comparing due to there are different
+        ; models (ru.petrsu.nest.son.* for LocalSonManager 
+        ; and ru.petrsu.nest.son.jpa.* for JPA EntityManager) with same names of classes.
+        se (case n
+             "Floor" (doto se (.setNumber (Integer. (.nextInt r 100))))
+             "Room" (doto se (.setNumber (str (.nextInt r 100))))
+             "IPv4Interface" (doto se (.setInetAddress (f/ip2b (gen-ip r))))
+             "IPNetwork" (doto se (.setAddress (f/ip2b (gen-ip r))) (.setMask (f/ip2b (gen-mask r))))
+             "EthernetInterface" (doto se (.setMACAddress (f/mac2b (gen-mac r))))
+             ; Default value is self object.
              se)]
     se))
 
@@ -248,10 +247,10 @@
   "Generates object graph of SON model due to
   specfied amount of elements and initial state.
   Returns an instance of SON."
-  [n initial-state]
+  [n initial-state cm classes]
   (let [sm (init-model initial-state)
         a-sm (atom sm)
-        _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element classes))))]
+        _ (dorun (repeatedly n #(swap! a-sm cm (gen-element classes))))]
     (:son @a-sm)))
 
 
@@ -273,4 +272,6 @@
               :ipn (instance IPNetwork)
               :ipv4 (instance IPv4Interface)
               :vlan (instance VLANInterface)
-              :son (SON.)}))
+              :son (SON.)}
+           change-model
+           classes))
