@@ -107,13 +107,6 @@
    :device :network :ni :ei :li :ipv4 :ipn :vlan :son])
 
 
-(def cls
-  "List of lsm type of son model."
-  [Building Floor Room Occupancy SimpleOU CompositeOU 
-   Device UnknownNetwork UnknownNetworkInterface EthernetInterface 
-   UnknownLinkInterface IPv4Interface IPNetwork VLANInterface SON])
-
-
 (def weights
   "List of weights of SON's element in model."
   [1 ; Building
@@ -142,64 +135,6 @@
   (vec (concat (reduce (fn [r [k v]] (concat r (repeat v k)))
                        [] 
                        (partition 2 (interleave cls weights))))))
-
-
-(defn init-model
-  "Inits model."
-  [state]
-  (do
-    (.addBuilding (:son state) (:building state))
-    (.setRootDevice (:son state) (:device state))
-    (.setRootOU (:son state) (:cou state))
-
-    (.addFloor (:building state) (:floor state))
-    (.addRoom (:floor state) (:room state))
-
-    (let [o (:occupancy state)]
-      (.setRoom o (:room state))
-      (.addDevice o (:device state))
-      (.setOU o (:sou state)))
-
-    (.addOU (:cou state) (:sou state))
-    (let [d (:device state)]
-      (.addLinkInterface d (:li state))
-      (.addLinkInterface d (:ei state))
-      (.addLinkInterface d (:vlan state)))
-
-    (.addNetworkInterface (:li state) (:ni state))
-    (.addNetworkInterface (:li state) (:ipv4 state))
-    (.addNetworkInterface (:ipn state) (:ni state))
-    (.addNetworkInterface (:ipn state) (:ipv4 state))
-    state))
-
-
-(defn change-model
-  "Changes model: takes model and object of 
-  model and inserts object into the model."
-  [sm [o k]]
-  (do 
-    (cond (instance? Building o) (.addBuilding (:son sm) o)
-          (instance? Floor o) (.addFloor (:building sm) o)
-          (instance? Room o) (do (.addRoom (:floor sm) o) 
-                               (if (nil? (.getRoom (:occupancy sm)))
-                                 (.setRoom (:occupancy sm) o)))
-          (instance? Occupancy o) (do (.setRoom o (:room sm)) 
-                                    (.setOU o (:sou sm))
-                                    (if (nil? (.getOccupancy (:device sm)))
-                                      (.addDevice o (:device sm))))
-          (instance? SimpleOU o) (do (.addOU (:cou sm) o)
-                                   (if (nil? (.getOU (:occupancy sm)))
-                                     (.setOU (:occupancy sm) o)))
-          (instance? CompositeOU o) (.addOU (:cou sm) o)
-          (instance? Device o) (.addDevice (:occupancy sm) o)
-          (instance? UnknownLinkInterface o) (.addLinkInterface (:device sm) o)
-          (instance? EthernetInterface o) (.addLinkInterface (:device sm) o)
-          (instance? VLANInterface o) (.addLinkInterface (:device sm) o)
-          (instance? UnknownNetworkInterface o) (do (.addNetworkInterface (:li sm) o) 
-                                                  (.setNetwork o (:network sm)))
-          (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) 
-                                        (.setNetwork o (:ipn sm))))
-    (assoc sm k o)))
 
 
 (defn ^String gen-ip
@@ -255,6 +190,65 @@
     se))
 
 
+(defn init-model
+  "Inits model."
+  [cls]
+  (let [state (zipmap son-keywords (map instance cls))]
+    (do
+      (.addBuilding (:son state) (:building state))
+      (.setRootDevice (:son state) (:device state))
+      (.setRootOU (:son state) (:cou state))
+  
+      (.addFloor (:building state) (:floor state))
+      (.addRoom (:floor state) (:room state))
+  
+      (let [o (:occupancy state)]
+        (.setRoom o (:room state))
+        (.addDevice o (:device state))
+        (.setOU o (:sou state)))
+  
+      (.addOU (:cou state) (:sou state))
+      (let [d (:device state)]
+        (.addLinkInterface d (:li state))
+        (.addLinkInterface d (:ei state))
+        (.addLinkInterface d (:vlan state)))
+  
+      (.addNetworkInterface (:li state) (:ni state))
+      (.addNetworkInterface (:li state) (:ipv4 state))
+      (.addNetworkInterface (:ipn state) (:ni state))
+      (.addNetworkInterface (:ipn state) (:ipv4 state))
+      state)))
+
+
+(defn change-model
+  "Changes model: takes model and object of 
+  model and inserts object into the model."
+  [sm [o k]]
+  (do 
+    (cond (instance? Building o) (.addBuilding (:son sm) o)
+          (instance? Floor o) (.addFloor (:building sm) o)
+          (instance? Room o) (do (.addRoom (:floor sm) o) 
+                               (if (nil? (.getRoom (:occupancy sm)))
+                                 (.setRoom (:occupancy sm) o)))
+          (instance? Occupancy o) (do (.setRoom o (:room sm)) 
+                                    (.setOU o (:sou sm))
+                                    (if (nil? (.getOccupancy (:device sm)))
+                                      (.addDevice o (:device sm))))
+          (instance? SimpleOU o) (do (.addOU (:cou sm) o)
+                                   (if (nil? (.getOU (:occupancy sm)))
+                                     (.setOU (:occupancy sm) o)))
+          (instance? CompositeOU o) (.addOU (:cou sm) o)
+          (instance? Device o) (.addDevice (:occupancy sm) o)
+          (instance? UnknownLinkInterface o) (.addLinkInterface (:device sm) o)
+          (instance? EthernetInterface o) (.addLinkInterface (:device sm) o)
+          (instance? VLANInterface o) (.addLinkInterface (:device sm) o)
+          (instance? UnknownNetworkInterface o) (do (.addNetworkInterface (:li sm) o) 
+                                                  (.setNetwork o (:network sm)))
+          (instance? IPv4Interface o) (do (.addNetworkInterface (:ei sm) o) 
+                                        (.setNetwork o (:ipn sm))))
+    (assoc sm k o)))
+
+
 (defn gen-element
   "Selects element from vector classes due to a random number, 
   creates instance of this class and fills its properties due to the instance 
@@ -272,35 +266,28 @@
 
 
 (defn gen-bd-
-  "Generates object graph of SON model due to
-  specfied amount of elements and initial state.
-  Returns an instance of SON."
-  [n initial-state cm cls]
-  (let [sm (init-model initial-state)
+  "Generates object graph of SON model due to specfied 
+  amount of elements. Returns an instance of SON."
+  [n f-change-model cls]
+  (let [sm (init-model cls)
         a-sm (atom sm)
         lcls (classes cls) ; list with repeating classes (due to weights)
-        _ (dorun (repeatedly n #(swap! a-sm cm (gen-element lcls cls))))]
+        _ (dorun (repeatedly n #(swap! a-sm f-change-model (gen-element lcls cls))))]
     (:son @a-sm)))
+
+;;
+;; Specific code for the LSM SON model.
+;;
+
+(def cls
+  "List of lsm type of son model."
+  [Building Floor Room Occupancy SimpleOU CompositeOU 
+   Device UnknownNetwork UnknownNetworkInterface EthernetInterface 
+   UnknownLinkInterface IPv4Interface IPNetwork VLANInterface SON])
 
 
 (defn gen-bd
   "Takes number of elements in BD, creates an initial state for
   the SON model and passes its to the gen-bd- function."
   [n]
-  (gen-bd- n {:building (instance Building)
-              :floor (instance Floor)
-              :room (instance Room)
-              :occupancy (instance Occupancy)
-              :sou (instance SimpleOU)
-              :cou (instance CompositeOU)
-              :device (instance Device)
-              :network (instance UnknownNetwork)
-              :ni (instance UnknownNetworkInterface)
-              :ei (instance EthernetInterface)
-              :li (instance UnknownLinkInterface)
-              :ipn (instance IPNetwork)
-              :ipv4 (instance IPv4Interface)
-              :vlan (instance VLANInterface)
-              :son (SON.)}
-           change-model
-           cls))
+  (gen-bd- n change-model cls))

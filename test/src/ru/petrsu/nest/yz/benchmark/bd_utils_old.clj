@@ -38,12 +38,6 @@
 (def ^{:dynamic true} *dialect* (identity "org.hibernate.dialect.DerbyDialect"))
 (def ^{:dynamic true} *driver* (identity "org.apache.derby.jdbc.EmbeddedDriver"))
 
-(def cls
-  "List of jpa type of son model."
-  [Building Floor Room Occupancy SimpleOU CompositeOU 
-   Device Network NetworkInterface EthernetInterface 
-   LinkInterface IPv4Interface IPNetwork VLANInterface SON])
-
 
 (defn schema-export
   "Cleans database due to Hibernate Schema Export."
@@ -94,27 +88,18 @@
     (assoc sm k o)))
 
 
+(def cls
+  "List of jpa type of son model."
+  [Building Floor Room Occupancy SimpleOU CompositeOU 
+   Device Network NetworkInterface EthernetInterface 
+   LinkInterface IPv4Interface IPNetwork VLANInterface SON])
+
+
 (defn gen-bd
   "Takes number of elements in BD, creates an initial state for
   the JPA SON model and passes its to the gen-bd- function."
   [n]
-  (bu/gen-bd- n {:building (bu/instance Building)
-                 :floor (bu/instance Floor)
-                 :room (bu/instance Room)
-                 :occupancy (bu/instance Occupancy)
-                 :sou (bu/instance SimpleOU)
-                 :cou (bu/instance CompositeOU)
-                 :device (bu/instance Device)
-                 :network (bu/instance Network)
-                 :ni (bu/instance NetworkInterface)
-                 :ei (bu/instance EthernetInterface)
-                 :li (bu/instance LinkInterface)
-                 :ipn (bu/instance IPNetwork)
-                 :ipv4 (bu/instance IPv4Interface)
-                 :vlan (bu/instance VLANInterface)
-                 :son (SON.)}
-              change-model
-              cls))
+  (bu/gen-bd- n change-model cls))
 
 
 (defn create-bd
