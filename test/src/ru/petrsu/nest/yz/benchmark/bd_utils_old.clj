@@ -38,24 +38,11 @@
 (def ^{:dynamic true} *dialect* (identity "org.hibernate.dialect.DerbyDialect"))
 (def ^{:dynamic true} *driver* (identity "org.apache.derby.jdbc.EmbeddedDriver"))
 
-(def classes
-  ^{:doc "Defines all classes of SON model with its weights."}
-  (vec (concat (reduce (fn [r [k v]] (concat r (repeat v k)))
-                       []
-                       {[Building :building] 1
-                        [Floor :floor] 5
-                        [Room :room] 50
-                        [Occupancy :occupancy]5
-                        [SimpleOU :sou] 20
-                        [CompositeOU :cou] 5
-                        [Device :device] 300
-                        [Network :network] 5
-                        [NetworkInterface :ni] 170 
-                        [EthernetInterface :ei] 150
-                        [LinkInterface :li] 150
-                        [IPv4Interface :ipv4] 170
-                        [IPNetwork :ipn] 5
-                        [VLANInterface :vlan] 20}))))
+(def cls
+  "List of jpa type of son model."
+  [Building Floor Room Occupancy SimpleOU CompositeOU 
+   Device Network NetworkInterface EthernetInterface 
+   LinkInterface IPv4Interface IPNetwork VLANInterface SON])
 
 
 (defn schema-export
@@ -127,7 +114,7 @@
                  :vlan (bu/instance VLANInterface)
                  :son (SON.)}
               change-model
-              classes))
+              cls))
 
 
 (defn create-bd

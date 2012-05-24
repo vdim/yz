@@ -100,24 +100,48 @@
    "YZ" 
    "Scals"])
 
-(def classes
-  ^{:doc "Defines all classes of SON model with its weights."}
+
+(def son-keywords
+  "Keywords are common for both son models (lsm and jpa)."
+  [:building :floor :room :occupancy :sou :cou 
+   :device :network :ni :ei :li :ipv4 :ipn :vlan :son])
+
+
+(def cls
+  "List of lsm type of son model."
+  [Building Floor Room Occupancy SimpleOU CompositeOU 
+   Device UnknownNetwork UnknownNetworkInterface EthernetInterface 
+   UnknownLinkInterface IPv4Interface IPNetwork VLANInterface SON])
+
+
+(def weights
+  "List of weights of SON's element in model."
+  [1 ; Building
+   5 ; Floor
+   50 ; Room
+   5 ; Occupancy
+   20 ; SimpleOU
+   5 ; CompositeOU
+   300 ; Device
+   5 ; Network
+   170 ; NetworkInterface
+   150 ; EthernetInterface
+   150 ; LinkInterface
+   170 ; IPv4Interface
+   5 ; IPNetwork
+   20 ; VLANInterface
+   0 ; SON
+   ]) 
+
+
+(defn classes
+  "For each class from specified list of classes ('cls')
+  creates sequence of this classes due to its wieghts from
+  the bu/weights vector."
+  [cls]
   (vec (concat (reduce (fn [r [k v]] (concat r (repeat v k)))
-                       []
-                       {[Building :building] 1
-                        [Floor :floor] 5
-                        [Room :room] 50
-                        [Occupancy :occupancy]5
-                        [SimpleOU :sou] 20
-                        [CompositeOU :cou] 5
-                        [Device :device] 300
-                        [UnknownNetwork :network] 5
-                        [UnknownNetworkInterface :ni] 170 
-                        [EthernetInterface :ei] 150
-                        [UnknownLinkInterface :li] 150
-                        [IPv4Interface :ipv4] 170
-                        [IPNetwork :ipn] 5
-                        [VLANInterface :vlan] 20}))))
+                       [] 
+                       (partition 2 (interleave cls weights))))))
 
 
 (defn init-model
@@ -212,9 +236,11 @@
   [cl]
   (let [r (Random.)
         n (.getSimpleName cl)
+        ; Fills common properties for all sonelements.
         se (doto (.newInstance cl)
-             (.setName (str (.getSimpleName cl) "_" (names (.nextInt r (count names)))))
+             (.setName (str n "_" (names (.nextInt r (count names)))))
              (.setDescription (descs (.nextInt r (count descs)))))
+        ; Fills specified properties.
         ; We use simple name of class for comparing due to there are different
         ; models (ru.petrsu.nest.son.* for LocalSonManager 
         ; and ru.petrsu.nest.son.jpa.* for JPA EntityManager) with same names of classes.
@@ -231,14 +257,16 @@
 
 (defn gen-element
   "Selects element from vector classes due to a random number, 
-  creates instance of the class and fills its properties due to the instance 
-  function, and returns vector where first element is instance 
-  fo class and second element is its keyword. Example: 
-    (bu/gen-element bu/classes)
+  creates instance of this class and fills its properties due to the instance 
+  function, and returns vector where first element is created 
+  instance and second element is its keyword. 
+  
+  Example of a returned value: 
     [#<Device Device Device_TK> :device]"
-  [classes]
+  [classes cls]
   (let [r (Random.)
-        [cl k] (classes (.nextInt r (count classes)))
+        cl (classes (.nextInt r (count classes)))
+        k (nth son-keywords (.indexOf cls cl))
         se (instance cl)]
     [se k]))
 
@@ -247,10 +275,11 @@
   "Generates object graph of SON model due to
   specfied amount of elements and initial state.
   Returns an instance of SON."
-  [n initial-state cm classes]
+  [n initial-state cm cls]
   (let [sm (init-model initial-state)
         a-sm (atom sm)
-        _ (dorun (repeatedly n #(swap! a-sm cm (gen-element classes))))]
+        lcls (classes cls) ; list with repeating classes (due to weights)
+        _ (dorun (repeatedly n #(swap! a-sm cm (gen-element lcls cls))))]
     (:son @a-sm)))
 
 
@@ -274,4 +303,4 @@
               :vlan (instance VLANInterface)
               :son (SON.)}
            change-model
-           classes))
+           cls))
