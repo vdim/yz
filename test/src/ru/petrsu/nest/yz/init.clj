@@ -22,7 +22,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Code for starting repl."}
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
-            [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo]
+            [ru.petrsu.nest.yz.benchmark.bd-utils-jpa :as buj]
             [ru.petrsu.nest.yz.queries.bd-jpa :as bjpa]
             [ru.petrsu.nest.yz.queries.core :as qc])
   (:use ru.petrsu.nest.yz.hb-utils

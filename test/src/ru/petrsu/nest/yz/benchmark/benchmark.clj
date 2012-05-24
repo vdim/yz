@@ -25,7 +25,7 @@
         ru.petrsu.nest.yz.hb-utils
         incanter.stats)
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
-            [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo]
+            [ru.petrsu.nest.yz.benchmark.bd-utils-jpa :as buj]
             [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
@@ -68,8 +68,8 @@
   and generates some database's structure."
   []
   (let [emb (create-em)]
-    (do (buo/schema-export)
-      (buo/create-bd 1000 emb))
+    (do (buj/schema-export)
+      (buj/create-bd 1000 emb))
     emb))
 
 
@@ -511,7 +511,7 @@
                    em (create-em "nest-old" 
                                  (create-hm url dialect driver (if ram? "create-drop" "")))
                    ; For RAM database we must create structure of database.
-                   _ (if ram? (buo/create-bd db-n em))
+                   _ (if ram? (buj/create-bd db-n em))
                    em (if yz? (-createJPAElementManager em) em)]
                em))
         
@@ -555,7 +555,7 @@
   (if (.startsWith conn-s "jdbc")
     (let [[url dialect driver] (cs/split conn-s #"\s")
           m (create-hm url dialect driver "create-drop")]
-      (buo/create-bd num (create-em "nest-old" m)))
+      (buj/create-bd num (create-em "nest-old" m)))
     (qc/create-emlm (bu/gen-bd num) conn-s))
 
   (System/exit 0))

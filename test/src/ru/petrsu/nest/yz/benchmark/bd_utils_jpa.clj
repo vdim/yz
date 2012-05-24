@@ -17,9 +17,9 @@
 ;; <http://www.gnu.org/licenses/>.
 ;;
 
-(ns ru.petrsu.nest.yz.benchmark.bd-utils-old
+(ns ru.petrsu.nest.yz.benchmark.bd-utils-jpa
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Code for generating nest DB (JPA (old) variant)."}
+    :doc "Code for generating nest DB (JPA variant)."}
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu])
   (:import (ru.petrsu.nest.son.jpa Building Floor Room
                                    Occupancy SimpleOU CompositeOU Device 
