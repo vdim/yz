@@ -59,14 +59,14 @@
 (defn yz-compare
   "YZ's version of the compare function.
   Arguments: 
-    f - comparing function (>, <, >=, <=).
+    f - comparing sign (>, <, >=, <=). Must be string.
     arg1, arg2 - arguments for comparing."
   [f arg1 arg2]
   (let [r (compare arg1 arg2)]
     (cond
       ; equal to
-      (zero? r) (or (= f >=) (= f <=))
+      (zero? r) (or (= f ">=") (= f "<="))
       ; greather than
-      (pos? r) (or (= f >=) (= f >))
+      (pos? r) (or (= f ">=") (= f ">"))
       ; less than 
-      :else (or (= f <=) (= f <)))))
+      :else (or (= f "<=") (= f "<")))))

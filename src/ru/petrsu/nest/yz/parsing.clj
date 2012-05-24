@@ -424,7 +424,6 @@
                                          [tres not?] (if (= (first tres) \!)
                                                        [(subs tres 1) true]
                                                        [tres false])
-                                         f0 (fn [f] (partial ru.petrsu.nest.yz.utils/yz-compare f))
                                          f (case tres
                                              ;; Function for regular expressions.
                                              "~" #'clojure.core/re-find 
@@ -432,14 +431,15 @@
                                              ;; Identical function.
                                              "==" #'clojure.core/identical?
 
+                                             ;; Equality function.
+                                             "=" #'clojure.core/=
+                                             
+                                             ;; Not= function.
+                                             "not=" #'clojure.core/not=
+
                                              ;; Comparing functions (the yz-compare function can compare
                                              ;; all comparable objects (not only number))
-                                             ">" (f0 >)
-                                             ">=" (f0 >=)
-                                             "<=" (f0 <=)
-                                             "<" (f0 <)
-                                     
-                                             (resolve (symbol tres)))]
+                                             (partial ru.petrsu.nest.yz.utils/yz-compare tres))]
                                      (if not? (if (= f #'clojure.core/re-find)
                                                 [#'clojure.core/re-find]
                                                 (fn [v1 v2] (not (f v1 v2))))
