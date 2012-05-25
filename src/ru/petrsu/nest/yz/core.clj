@@ -115,7 +115,7 @@
 
           ; Define function for checking objects.
           [f]
-          (reduce (fn [s p] 
+          (reduce (fn [s p]
                     (if (map? p) ; some predicate (another case is :or or :and binary operation.
                       (let [{:keys [all ids func value]} p
                             [allA not-any value] 
@@ -124,16 +124,16 @@
                             ; subquery: building#(name=floor.name)
                             (if (vector? value) 
                               (let [[allA not-any rp] value] ; rp - result of parsing subquery.
-                                (if allA
-                                  [true 
-                                   not-any
-                                   ; This set doesn't depend on object.
-                                   (set (flatten (:rows (get-qr rp @a-mom @a-em))))]
-                                  [false not-any rp]))
+                                  [allA not-any
+                                   (if allA
+                                     ; This set doesn't depend on object.
+                                     (-> (get-qr rp @a-mom @a-em) :rows flatten set)
+                                     rp)])
 
                               ; If value is keyword then we must get value 
                               ; from list of parameters of query.
                               [true false (if (keyword? value) (get-qp value) value)])]
+                        
                         (conj s #(let [v (if allA
                                            value
                                            ; This set depends on object.
