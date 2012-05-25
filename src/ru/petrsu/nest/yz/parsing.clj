@@ -1278,11 +1278,14 @@
 (defn parse
   "Parses specified query ('q') in YZ language. 
   Parsing is based on specified ('mom') map of an object model.
+  If MOM is not supplied then nil is used instead of one.
   Returns an inner representation of the query."
-  [q, mom]
-  (let [r (parse+ q, mom)]
-    (if (nil? (:remainder r))
-      (:result r)
-      (throw (SyntaxException. (str "Syntax error near: " (reduce str "" (:remainder r))))))))
+  ([q]
+   (parse q nil))
+  ([q, mom]
+   (let [r (parse+ q, mom)]
+     (if (nil? (:remainder r))
+       (:result r)
+       (throw (SyntaxException. (str "Syntax error near: " (reduce str "" (:remainder r)))))))))
 
 
