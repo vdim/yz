@@ -426,7 +426,9 @@
                                                        [tres false])
                                          f (case tres
                                              ;; Function for regular expressions.
-                                             "~" #'clojure.core/re-find 
+                                             "~" (fn [v1 v2] 
+                                                   (if-not (or (nil? v1) (nil? v2))
+                                                     (re-find (re-pattern v2) v1))) ;#'clojure.core/re-find 
                                        
                                              ;; Identical function.
                                              "==" #'clojure.core/identical?
@@ -439,10 +441,10 @@
 
                                              ;; Comparing functions (the yz-compare function can compare
                                              ;; all comparable objects (not only number))
+                                             ;; At this moment tres will be >=, <=, < or >.
                                              (partial ru.petrsu.nest.yz.utils/yz-compare tres))]
-                                     (if not? (if (= f #'clojure.core/re-find)
-                                                [#'clojure.core/re-find]
-                                                (fn [v1 v2] (not (f v1 v2))))
+                                     (if not?
+                                       (fn [v1 v2] (not (f v1 v2)))
                                        f))
 
                                    ;; Strings, numbers are not needed in any processing.
