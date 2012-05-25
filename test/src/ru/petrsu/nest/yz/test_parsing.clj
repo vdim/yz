@@ -20,17 +20,18 @@
 (ns ru.petrsu.nest.yz.test-parsing
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests for parsing functions."}
-  (:use ru.petrsu.nest.yz.parsing 
-        ru.petrsu.nest.yz.core
+  (:use ru.petrsu.nest.yz.core
         ru.petrsu.nest.yz.hb-utils 
         clojure.test 
         ru.petrsu.nest.yz.queries.bd)
-  (:require [ru.petrsu.nest.yz.yz-factory :as yzf])
+  (:require [ru.petrsu.nest.yz.yz-factory :as yzf] 
+            [ru.petrsu.nest.yz.parsing :as p])
   (:import (ru.petrsu.nest.son 
              Building Room Floor 
 
              ; Importing of this classes are needed for parsing 
              ; queries with this classes in case MOM is nil.
+             ; So DON'T REMOVE THIS IMPORTS.
              Device Network NetworkInterface Occupancy)
            (ru.petrsu.nest.yz SyntaxException)))
 
@@ -67,15 +68,15 @@
 )
 
 (deftest t-get-in-nest
-         ^{:doc "Tests 'get-in-nest' function"}
-         (is (nil? (get-in-nest some-v 0 :what)))
-         (is (= "1" (get-in-nest [(assoc (some-v 0) :what "1")] 0 :what)))
-         (let [some-vv (assoc-in-nest some-v 0 :nest some-v)
-               some-vvv (assoc-in-nest some-vv 1 :nest some-v)
-               some-vvvv (assoc-in-nest some-vvv 2 :nest some-v)]
-           (is (= "2" (get-in-nest (assoc-in-nest some-vv 1 :what "2") 1 :what)))
-           (is (= "3" (get-in-nest (assoc-in-nest some-vvv 2 :what "3") 2 :what)))
-           (is (= "4" (get-in-nest (assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
+         ^{:doc "Tests the 'get-in-nest' function"}
+         (is (nil? (p/get-in-nest some-v 0 :what)))
+         (is (= "1" (p/get-in-nest [(assoc (some-v 0) :what "1")] 0 :what)))
+         (let [some-vv (p/assoc-in-nest some-v 0 :nest some-v)
+               some-vvv (p/assoc-in-nest some-vv 1 :nest some-v)
+               some-vvvv (p/assoc-in-nest some-vvv 2 :nest some-v)]
+           (is (= "2" (p/get-in-nest (p/assoc-in-nest some-vv 1 :what "2") 1 :what)))
+           (is (= "3" (p/get-in-nest (p/assoc-in-nest some-vvv 2 :what "3") 2 :what)))
+           (is (= "4" (p/get-in-nest (p/assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
 
 
 (defn sort-to-nil
@@ -83,6 +84,33 @@
   the [nil nil nil] value. Returns new MOM."
   [mom]
   (reduce (fn [m [k v]] (assoc m k (assoc v :sort [nil nil nil]))) {} mom))
+
+
+(defn remove-nils
+  "Takes vector with maps and removes 
+  nil values from this maps. Also calls 
+  remove-nils for :nest and :then keys."
+  [s]
+  (let [rn #(reduce (fn [m [k v]] 
+                      (if (nil? v) 
+                        m 
+                        (assoc m k (if (or (= k :nest) (= k :then) (= k :params) (= k :preds)) 
+                                     (remove-nils v) 
+                                     v)))) 
+                    {} %1)
+        s (cond (vector? s) (vec (map #(cond (vector? %1) (remove-nils %1)
+                                             (map? %1) (rn %1)
+                                             :else %1) s)) 
+                (map? s) (rn s)
+                :else s)]
+    s))
+
+
+(defn parse
+  "Like parse from the parsing namespace, 
+  but remove nils value from resulting structure."
+  [q mom]
+  (remove-nils (p/parse q mom)))
 
 
 (deftest t-parse
@@ -1046,7 +1074,7 @@
            (is (f "@(count il:`building'), @(count de:`room')" :indep-list :dep-each))))
 
 
-(defmacro create-is [q mom-] `(is (nil? (:remainder (parse+ ~q ~mom-)))))
+(defmacro create-is [q mom-] `(is (nil? (:remainder (p/parse+ ~q ~mom-)))))
 
 (def qlist
   ^{:doc "Defines list of YZ's queries (used Nest's model).
@@ -1871,7 +1899,7 @@
          ; It is all I need.
          (let [results (fn [l mom] 
                          (some #(let [r (try 
-                                          (:remainder (parse+ % mom))
+                                          (:remainder (p/parse+ % mom))
                                           (catch Exception e (do (.printStackTrace e) %)))]
                                   (if r %)) l))]
            (is (nil? (results clist mom-)))
