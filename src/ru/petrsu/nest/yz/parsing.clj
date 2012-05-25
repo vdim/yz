@@ -428,7 +428,7 @@
                                              ;; Function for regular expressions.
                                              "~" (fn [v1 v2] 
                                                    (if-not (or (nil? v1) (nil? v2))
-                                                     (re-find (re-pattern v2) v1))) ;#'clojure.core/re-find 
+                                                     (re-find (re-pattern v2) v1)))
                                        
                                              ;; Identical function.
                                              "==" #'clojure.core/identical?

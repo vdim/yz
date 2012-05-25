@@ -116,24 +116,31 @@
           ; Define function for checking objects.
           [f]
           (reduce (fn [s p] 
-                    (if (map? p) 
+                    (if (map? p) ; some predicate (another case is :or or :and binary operation.
                       (let [{:keys [all ids func value]} p
                             [allA not-any value] 
-                            (cond (keyword? value) [true false (get-qp value)]
-                                  (vector? value) 
-                                  (let [[allA not-any rp] value] ; rp - result of parsing subquery.
-                                    (if allA
-                                      [true 
-                                       not-any
-                                       ; This set doesn't depend on object.
-                                       (set (flatten (:rows (get-qr rp @a-mom @a-em))))]
-                                      [false not-any rp]))
-                                  :else [true false value])]
+
+                            ; if value is vector so value is described 
+                            ; subquery: building#(name=floor.name)
+                            (if (vector? value) 
+                              (let [[allA not-any rp] value] ; rp - result of parsing subquery.
+                                (if allA
+                                  [true 
+                                   not-any
+                                   ; This set doesn't depend on object.
+                                   (set (flatten (:rows (get-qr rp @a-mom @a-em))))]
+                                  [false not-any rp]))
+
+                              ; If value is keyword then we must get value 
+                              ; from list of parameters of query.
+                              [true false (if (keyword? value) (get-qp value) value)])]
                         (conj s #(let [v (if allA
                                            value
                                            ; This set depends on object.
                                            (set (flatten (process-nests value %2))))]
                                   (process-preds %1 %2 all ids func v not-any))))
+
+                      ; :or or :and binary operation.
                       (conj (pop (pop s)) 
                             (if (= p :and)
                               #(and ((peek s) %1 %2) ((peek (pop s)) %1 %2))
