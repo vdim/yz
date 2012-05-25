@@ -114,36 +114,14 @@
   `(conc (opt whitespaces) ~rule (opt whitespaces)))
 
 
-(defn- nnassoc 
-  "Like assoc, but if value is nil 
-  then returns map m without changes."
-  ([m k value]
-   (if (nil? value)
-     m
-     (assoc m k value)))
-  ([m k value & kvs]
-   (let [ret (nnassoc m k value)]
-     (if kvs 
-       (recur ret (first kvs) (second kvs) (nnext kvs))
-       ret))))
-
-
-(defn- nnassoc-in
-  "Like assoc-in, but not associcates nil values."
-  [m [k & ks] v]
-  (if ks
-    (nnassoc m k (nnassoc-in (get m k) ks v))
-    (nnassoc m k v)))
-
-
 (defn assoc-in-nest
   "Like assoc-in, but takes into account structure :result.
   Inserts some value 'v' in 'res' map to :nest key."
   [res nest-level l-tag v & kvs]
   (if (<= nest-level 0)
-    (conj (pop res) (apply nnassoc (peek res) l-tag v kvs))
+    (conj (pop res) (apply assoc (peek res) l-tag v kvs))
     (conj (pop res)
-          (nnassoc (peek res) 
+          (assoc (peek res) 
                    :nest 
                    (apply assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v kvs)))))
 
@@ -236,7 +214,7 @@
                   (assoc-in-nest res nl :preds st)
                   (let [last-then (get-in-nest res nl :then)]
                     (assoc-in-nest res nl :then 
-                                   (nnassoc-in last-then 
+                                   (assoc-in last-then 
                                              (conj (vec (repeat (dec tl) :then)) :preds) 
                                              st))))))])
 
@@ -391,7 +369,7 @@
              _ (update-info 
                  :preds 
                  #(conj (pop %) 
-                        (nnassoc (peek %) 
+                        (assoc (peek %) 
                                  :all allm
                                  k 
                                  (cond
@@ -551,7 +529,7 @@
       (if (> tl- 0)
         (let [v #(conj (vec (repeat (dec tl-) :then)) %)
               last-then (get-in-nest res nl :then)
-              last-then (nnassoc-in last-then (v :sort) sorts)]
+              last-then (assoc-in last-then (v :sort) sorts)]
           (assoc-in-nest 
             res nl :then
             (update-in last-then (v :props)
@@ -581,7 +559,7 @@
                             (if (vector? p)
                               (let [f (p 1)]
                                 (conj ps [(p 0) 
-                                          (reduce (fn [r vv] (conj r (nnassoc vv :where (get-paths (:what vv) cl)))) [] f)]))
+                                          (reduce (fn [r vv] (conj r (assoc vv :where (get-paths (:what vv) cl)))) [] f)]))
                               (conj ps p))) [] (:params k)))
 
                  ;Sorting is done by some property: {a:name}building
@@ -613,7 +591,7 @@
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some then map.
-            assoc-lth #(nnassoc %1 :what cl :where (get-paths cl %2) 
+            assoc-lth #(assoc %1 :what cl :where (get-paths cl %2) 
                                 :sort vsort :exactly ex :unique unique :limit limit)
             ; What for getting where.
             what (get-in-nest-or-then res nl tl- :what)]
@@ -627,7 +605,7 @@
                   lt (if (nil? lt) empty-then lt)
 
                   lt (assoc-lth lt what)
-                  lt (if (empty? then-v) lt (nnassoc-in last-then then-v lt))]
+                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
               (f lt)))
          (assoc-in-nest 
            res nl
@@ -809,8 +787,8 @@
                   lt (get-in last-then then-v)
                   lt (if (nil? lt) empty-then lt)
 
-                  lt (if (empty? then-v) lt (nnassoc-in last-then then-v lt))
-                  lt (update-in lt (conj then-v :sort) #(nnassoc % propid tsort))]
+                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))
+                  lt (update-in lt (conj then-v :sort) #(assoc % propid tsort))]
               (assoc-in-nest res nl :then lt))
          (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
 
@@ -1056,7 +1034,7 @@
                           (when (and rq (empty? (:remainder rq)))
                             (if allA
                               (:result rq)
-                              (vec (map #(nnassoc % :where 
+                              (vec (map #(assoc % :where 
                                                   (get-paths (:what %) (get-in-nest res nl :what))) 
                                         (:result rq)))))))
             :when rq
@@ -1203,9 +1181,9 @@
                          tl (get-info :then-level)
                          res (get-info :result)
                          q (effects (:result (parse+ ret *mom*)))
-                         q (effects (vec (map #(nnassoc % 
-                                                        :where 
-                                                        (get-paths (:what %) (get-in-nest res nl :what))) q)))
+                         q (effects (vec (map #(assoc % 
+                                                      :where 
+                                                      (get-paths (:what %) (get-in-nest res nl :what))) q)))
                          fm (get-info :f-modificator)
                          fm (effects (if (nil? fm) :dep-list fm))
                          _ (update-param [fm q])
