@@ -1,4 +1,4 @@
-(defproject ru.petrsu.nest/yz "0.0.1-alpha13"
+(defproject ru.petrsu.nest/yz "0.0.1-alpha14"
   :description "Tests for YZ's project."
   :url "https://github.com/vdim/yz"
   :dependencies [[org.clojure/clojure "1.3.0"]

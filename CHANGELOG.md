@@ -1,3 +1,10 @@
+## 0.0.1-alpha14 / 28.05.2012
+ 
+* Added support >, <, >=, <= operation for all comparable objects.
+* Added checking property during parsing in case mom is defined.
+* Added throwable object to the Result record.
+* Added support negative predicates for all supported signs: floor#(number !> 0)
+
 ## 0.0.1-alpha13 / 27.04.2012
 
 * Added throwing exception during parsing in case object is not comparable, but sorting is defined.

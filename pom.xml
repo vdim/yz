@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>ru.petrsu.nest</groupId>
   <artifactId>yz</artifactId>
-  <version>0.0.1-alpha13</version>
+  <version>0.0.1-alpha14</version>
   <name>yz</name>
   <description>YZ[ˈiːzi] is simple (easy), laconic, string-based, object query language.</description>
   <url>https://github.com/vdim/yz</url>
