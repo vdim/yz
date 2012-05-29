@@ -854,14 +854,21 @@
 
 
 (def delimiter
-  "Defines delimiter (now it is comma) for queries into one level.
+  "Defines delimiters for queries into one level.
+  Comma is used for union result of queries, while 
+  semicolon is used for intersection result of queries.
   Examples: 
     room, building
+    room; building
     room (floor, building)
+    room (floor; building)
     room (floor, building), device"
-  (complex [ret (sur-by-ws (lit \,)) 
+  (complex [ret (sur-by-ws (alt (lit \,) (lit \;)))
             nl (get-info :nest-level)
-            _ (update-info :result #(add-value % nl {})) ; Add new map to current nest level.
+            ; Add type of delimiter to vector with maps.
+            _ (update-info :result #(add-value % nl (if (= \; (second ret)) u/intersection u/union)))
+            ; Add new map to current nest level.
+            _ (update-info :result #(add-value % nl {})) 
             _ (set-info :then-level 0)]
            ret))
 
@@ -1287,5 +1294,3 @@
      (if (nil? (:remainder r))
        (:result r)
        (throw (SyntaxException. (str "Syntax error near: " (reduce str "" (:remainder r)))))))))
-
-

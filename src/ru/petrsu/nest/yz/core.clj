@@ -463,16 +463,31 @@
 (defn- process-nests
   "Processes :nest value of query structure"
   [nests obj]
-  (vec (map #(p-nest % (get-objs-by-path [obj] %)) nests)))
+  (let [op (atom nil)]
+    (reduce #(if (map? %2)
+               (let [v1 (p-nest %2 (get-objs-by-path [obj] %2))]
+                 (if @op
+                   (@op %1 v1)
+                   v1))
+               (do (reset! op %2) %1))
+            []
+            nests)))
 
 
 (defn- run-query
   "Returns result of 'query' based on specified map of object model ('mom')
   and instance of some ElementManager ('em')."
   [parse-res]
-  (vec (map #(if (nil? (get % :func)) 
-               (p-nest % (select-elems %))
-               (reduce (fn [r rf] (vec (concat r [rf []]))) [] (process-func % nil)))
+  (let [op (atom nil)]
+    (reduce #(if (map? %2)
+               (if (nil? (get %2 :func)) 
+                 (let [v1 (p-nest %2 (select-elems %2))]
+                   (if @op
+                     (@op %1 v1)
+                     v1))
+                 (conj %1 (reduce (fn [r rf] (vec (concat r [rf []]))) [] (process-func %2 nil))))
+               (do (reset! op %2) %1))
+            []
             parse-res)))
 
 
@@ -536,15 +551,18 @@
   ([data]
      (get-rows data ()))
   ([data & args]
-   (if (empty? (data 0))
+   (if (empty? data)
      (if (empty? (nth args 0))
        ()
        (list (vec (flatten args))))
      (mapcat (fn [o]
                (cond (empty? o) [nil]
-                     (empty? (o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
-                     :else (mapcat #(if (empty? %) [] (get-rows (nth % 1) args (nth % 0))) (partition 2 o))))
-             data))))
+                     (empty? (nth o 1)) (for [pair (partition 2 o)] (vec (flatten [args pair])))
+                     :else (mapcat #(if (empty? %) 
+                                      [] 
+                                      (get-rows (nth % 1) args (nth o 0) (nth % 0))) 
+                                   (partition 2 (nth o 1)))))
+             (partition 2 data)))))
 
 
 (def

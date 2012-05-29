@@ -70,3 +70,26 @@
       (pos? r) (or (= f ">=") (= f ">"))
       ; less than 
       :else (or (= f "<=") (= f "<")))))
+
+
+(defn intersection
+  "Returns intersection of two vectors comparing by two elements."
+  [v1 v2]
+  (let [v1 (partition 2 v1)
+        v2 (partition 2 v2)]
+    (loop [v1 v1 v2 v2 r []]
+      (if (or (empty? v1) (empty? v2))
+        (vec r)
+        (recur (next v1) (next v2) 
+               (if (= (first v1) (first v2)) 
+                 (concat r (first v1)) 
+                 r))))))
+
+
+(defn union
+  "Returns union of two vectors. Note: the function 
+  clojure.set/union does not fit because of order of
+  conjunction depends from count of elements in this
+  function."
+  [v1 v2]
+  (reduce conj v1 v2))
