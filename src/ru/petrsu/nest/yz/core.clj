@@ -480,12 +480,13 @@
   [parse-res]
   (let [op (atom nil)]
     (reduce #(if (map? %2)
-               (if (nil? (get %2 :func)) 
-                 (let [v1 (p-nest %2 (select-elems %2))]
+                 (let [v1 (if (nil? (get %2 :func)) 
+                            (p-nest %2 (select-elems %2))
+                            (reduce (fn [r rf] 
+                                      (conj r rf [])) [] (process-func %2 nil)))]
                    (if @op
                      (@op %1 v1)
                      v1))
-                 (conj %1 (reduce (fn [r rf] (vec (concat r [rf []]))) [] (process-func %2 nil))))
                (do (reset! op %2) %1))
             []
             parse-res)))
