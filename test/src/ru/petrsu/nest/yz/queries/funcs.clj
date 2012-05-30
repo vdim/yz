@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -79,15 +79,15 @@
 ;; Define tests
 
 (deftest t-str
-         ^{:doc "Test calling function (count)."}
-         (is (= (nth (tc/r-query "@(str \"1\" \"2\")") 0) ["12" []]))
-         (is (= (nth (tc/r-query "@(str \"asdf\" 1 \"qwer\")") 0) ["asdf1qwer" []]))
-         (is (= (nth (tc/r-query "@(str \"asdf\" 1.0 \"qwer\")") 0) ["asdf1.0qwer" []])))
+         ^{:doc "Test calling function (str)."}
+         (is (= (tc/r-query "@(str \"1\" \"2\")") ["12" []]))
+         (is (= (tc/r-query "@(str \"asdf\" 1 \"qwer\")") ["asdf1qwer" []]))
+         (is (= (tc/r-query "@(str \"asdf\" 1.0 \"qwer\")") ["asdf1.0qwer" []])))
         
 
 (deftest t-count
          ^{:doc "Tests calling function (count)."}
-         (let [f-c #(= (nth (tc/r-query %1) 0) %2)]
+         (let [f-c #(= (tc/r-query %1) %2)]
            (is (f-c "@(count il:`building')" [3 []]))
            (is (f-c "@(count de:`building')" [1 [] 1 [] 1 []]))
            (is (f-c "@(count `building')" [3 []]))

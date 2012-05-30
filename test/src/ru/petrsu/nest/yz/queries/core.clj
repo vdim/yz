@@ -201,21 +201,25 @@
 (defn- transform-q
   "Transforms query result to corresponding structure."
   [q-seq]
-  (map #(if (vector? %)
+  (vec (map #(if (vector? %)
           (transform-q %)
           (class %)) 
-       q-seq))
+       q-seq)))
 
 
 (defn- transform-first-q
   "Transforms each first element of each nested query."
   [q]
-  (if (vector? q)
-    (vec (map #(if (vector? %)
-                 [(transform-first-q (first %)) (transform-first-q (second %))]
-                 (class %)) 
-              q))
-    (class q)))
+  (cond (and (vector? q) (empty? q)) []
+        (vector? q) [(transform-first-q (first q)) (transform-first-q (second q))]
+        :else (class q)))
+
+;  (if (vector? q)
+;    (vec (map #(if (vector? %)
+;                 [(transform-first-q (first %)) (transform-first-q (second %))]
+;                 (class %)) 
+;              q))
+;    (class q)))
 
 
 (defn- do-q

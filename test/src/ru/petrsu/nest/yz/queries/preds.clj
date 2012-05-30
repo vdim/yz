@@ -86,218 +86,218 @@
 (deftest select-b1
          ^{:doc "Selects all Buildings which have b1 name."}
          (let [q (tc/r-query "building#(name=\"b1\")")]
-           (is (= (.getName ((q 0) 0)) "b1"))
-           (is (tc/check-query q [[Building []]]))))
+           (is (= (.getName (q 0)) "b1"))
+           (is (tc/check-query q [Building []]))))
 
 (deftest select-b2
          ^{:doc "Selects all Buildings which have b2 name."}
          (let [q (tc/r-query "building#(name=\"b2\")")]
-           (is (= (.getName ((q 0) 0)) "b2"))
-           (is (tc/check-query q [[Building []]]))))
+           (is (= (.getName (q 0)) "b2"))
+           (is (tc/check-query q [Building []]))))
 
 (deftest select-b1-or-b2
          ^{:doc "Selects all Buildings which have either b1 or b2 name."}
          (is (tc/check-query "building#(name=\"b1\" or name=\"b2\")"
-                             [[Building [], Building []]])))
+                             [Building [], Building []])))
 
 (deftest select-b1-and-b2
          ^{:doc "Selects all Buildings which have b1 and b2 name. 
                 Of cource this situation is nonsence, but it is enough
                 for the testing 'and' clause."}
          (is (tc/check-query "building#(name=\"b1\" and name=\"b2\")"
-                             [[]])))
+                             [])))
 
 (deftest select-b1-and-street1
          ^{:doc "Selects all Buildings which have b1 name and Street1 address."}
          (let [q (tc/r-query "building#(name=\"b1\" and address=\"Street1\")")]
-           (is (= (.getName ((q 0) 0)) "b1"))
-           (is (= (.getAddress ((q 0) 0)) "Street1"))
-           (is (tc/check-query q [[Building []]]))))
+           (is (= (.getName (q 0)) "b1"))
+           (is (= (.getAddress (q 0)) "Street1"))
+           (is (tc/check-query q [Building []]))))
 
 (deftest select-street1
          ^{:doc "Selects all Buildings which have address Street1."}
          (let [q (tc/r-query "building#(address=\"Street1\")")]
-           (is (= (.getAddress ((q 0) 0)) "Street1"))
-           (is (= (.getAddress ((q 0) 2)) "Street1"))
-           (is (tc/check-query q [[Building [], Building[]]]))))
+           (is (= (.getAddress (q 0)) "Street1"))
+           (is (= (.getAddress (q 2)) "Street1"))
+           (is (tc/check-query q [Building [], Building[]]))))
 
 (deftest select-street1-b1-b2
          ^{:doc "Selects all Buildings which have 
                 address Street1 and name either b1 or b2"}
          (let [q (tc/r-query 
                    "building#(address=\"Street1\" and (name=\"b1\" or name=\"b2\"))")]
-           (is (= (.getAddress ((q 0) 0)) "Street1"))
-           (is (or (= (.getName ((q 0) 0)) "b1") (= (.getName ((q 0) 0)) "b2")))
-           (is (tc/check-query q [[Building []]]))))
+           (is (= (.getAddress (q 0)) "Street1"))
+           (is (or (= (.getName (q 0)) "b1") (= (.getName (q 0)) "b2")))
+           (is (tc/check-query q [Building []]))))
 
 (deftest select-f1
          ^{:doc "Selects all Floors which have number 1."}
          (let [q (tc/r-query "floor#(number=1)")]
-           (is (= (.getNumber ((q 0) 0)) 1))
-           (is (empty? ((q 0) 1)))
-           (is (= (.getNumber ((q 0) 2)) 1))
-           (is (empty? ((q 0) 3)))
-           (is (tc/check-query q [[Floor [], Floor []]]))))
+           (is (= (.getNumber (q 0)) 1))
+           (is (empty? (q 1)))
+           (is (= (.getNumber (q 2)) 1))
+           (is (empty? (q 3)))
+           (is (tc/check-query q [Floor [], Floor []]))))
 
 (deftest select-f2
          ^{:doc "Selects all Floors which have number 2."}
          (let [q (tc/r-query "floor#(number=2)")]
-           (is (= (.getNumber ((q 0) 0)) 2))
-           (is (empty? ((q 0) 1)))
-           (is (tc/check-query q [[Floor []]]))))
+           (is (= (.getNumber (q 0)) 2))
+           (is (empty? (q 1)))
+           (is (tc/check-query q [Floor []]))))
 
 (deftest select-f1-nest-r101
          ^{:doc "Selects all floors which have 1 number 
                 and its rooms which have 101 number."}
          (let [q (tc/r-query "floor#(number=1) (room#(number=\"101\"))")]
-           (is (= (.getNumber ((q 0) 0)) 1))
-           (is (= (.getNumber ((((q 0) 1) 0) 0)) "101"))
-           (is (= (.getNumber ((q 0) 2)) 1))
-           (is (= (.getNumber ((((q 0) 3) 0) 0)) "101"))
-           (is (tc/check-query q [[Floor [[Room []]], Floor [[Room []]]]]))))
+           (is (= (.getNumber (q 0)) 1))
+           (is (= (.getNumber ((q 1) 0)) "101"))
+           (is (= (.getNumber (q 2)) 1))
+           (is (= (.getNumber ((q 3) 0)) "101"))
+           (is (tc/check-query q [Floor [Room []], Floor [Room []]]))))
 
 (deftest select-r101
          ^{:doc "Selects Rooms which have 101 number."}
          (is (tc/check-query  "room#(number=\"101\")"
-                             [[Room [], Room [], Room []]])))
+                             [Room [], Room [], Room []])))
 
 (deftest select-f1-then-r101
          ^{:doc "Selects Rooms which have 101 number and are located on the first floors."}
          (is (tc/check-query "floor#(number=1).room#(number=\"101\")"
-                             [[Room [], Room []]])))
+                             [Room [], Room []])))
 
 (deftest select-f1-r101-b3
          ^{:doc "Selects building which has name b3 and 
                 rooms which have 101 number and are located on the first floors"}
          (is (tc/check-query "floor#(number=1).room#(number=\"101\").building#(name=\"b3\")"
-                             [[]])))
+                             [])))
 
 (deftest select-f11-r101-b3
          ^{:doc "Selects building which has name b3 and 
                 rooms which have 101 number and are located on the eleventh floors"}
          (is (tc/check-query "floor#(number=11).room#(number=\"101\").building#(name=\"b3\")"
-                             [[]])))
+                             [])))
 
 (deftest select-f1-r101-then-b1
          ^{:doc "Selects rooms (with number 101) on the first floors and its
                 buildings which have name b1."}
          (is (let [q (tc/r-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b1\"))")]
-               (or (tc/check-query q [[Room [[]], Room [[Building []]]]])
-                   (tc/check-query q [[Room [[Building []]], Room [[]]]])))))
+               (or (tc/check-query q [Room [], Room [Building []]])
+                   (tc/check-query q [Room [Building []], Room []])))))
 
 
 (deftest select-f1-r101-then-b2
          ^{:doc "Selects rooms (with number 101) on the first floors and its
                 buildings which have name b2."}
          (is (let [q (tc/r-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b2\"))")]
-               (or (tc/check-query q [[Room [[]], Room [[Building []]]]])
-                   (tc/check-query q [[Room [[Building []]], Room [[]]]])))))
+               (or (tc/check-query q [Room [], Room [Building []]])
+                   (tc/check-query q [Room [Building []], Room []])))))
 
 (deftest select-f1-r101-then-b3
          ^{:doc "Selects rooms (with number 101) on the first floors and then
                 buildings which have name b3."}
          (is (tc/check-query "floor#(number=1).room#(number=\"101\") (building#(name=\"b3\"))"
-                             [[Room [[]], Room [[]]]])))
+                             [Room [], Room []])))
 
 (deftest select-b3-and-flnum1
          ^{:doc ""}
          (is (tc/check-query "building#(name=\"b3\" and floor.number=1)"
-                             [[]])))
+                             [])))
 
 (deftest select-b1-and-flnum4
          ^{:doc ""}
          (is (tc/check-query "building#(name=\"b1\" and floor.number=4)"
-                             [[Building []]])))
+                             [Building []])))
 
 (deftest select-b1-or-b2-and-flnum4
          ^{:doc ""}
          (is (tc/check-query "building#((name=\"b1\" or name=\"b2\") and floor.number=4)"
-                             [[Building []]])))
+                             [Building []])))
 
 (deftest select-b1-or-b2-and-flnum1
          ^{:doc ""}
          (is (tc/check-query "building#((name=\"b1\" or name=\"b2\") and floor.number=1)"
-                             [[Building [], Building []]])))
+                             [Building [], Building []])))
 
 (deftest select-b3-or-flnum1
          ^{:doc ""}
          (is (tc/check-query "building#(name=\"b3\" or floor.number=1)"
-                             [[Building [], Building [], Building []]])))
+                             [Building [], Building [], Building []])))
 
 (deftest select-flnumgt0
          ^{:doc ""}
          (is (tc/check-query "building#(floor.number>=0)"
-                             [[Building [], Building []]])))
+                             [Building [], Building []])))
 
 (deftest select-flnumgt3
          ^{:doc ""}
          (is (tc/check-query "building#(floor.number>=3)"
-                             [[Building []]])))
+                             [Building []])))
 
 (deftest select-b-flnum1-nest-r
          ^{:doc ""}
          (is (tc/check-query 
                "building#(floor.number=1) (room#(number=\"201\"))"
-               [[Building [[Room []]], Building [[Room []]]]])))
+               [Building [Room []], Building [Room []]])))
 
 (deftest select-b-nest-fngt5-or-fnlt1
          ^{:doc ""}
          (is (tc/check-query 
                "building (floor#(number>5 or number<1))"
-               [[Building [[]] Building [[]] Building [[]]]])))
+               [Building [] Building [] Building []])))
 
 
 ;; Check not= and !=
 (deftest check-not=
          (is (tc/check-query "floor#(number not= 1)"
-                             [[Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#(number != 1)"
-                             [[Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#(number != 1 && number != 2)"
-                             [[Floor [] Floor []]]))
+                             [Floor [] Floor []]))
          (is (tc/check-query "floor#(number != 1 && number != 2 && number != 3)"
-                             [[Floor []]]))
+                             [Floor []]))
          (is (tc/check-query "floor#(number != 1 && number != 2 && number != 3 && number != 4)"
-                             [[]]))
+                             []))
          (is (tc/check-query "floor#(number != 1 || number != 2)"
-                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#(number != 1 || number != 2 && number != 3)"
-                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#((number != 1 || number != 2) && number != 3)"
-                             [[Floor [] Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#(number!=(1 && 2))"
-                             [[Floor [] Floor []]]))
+                             [Floor [] Floor []]))
          (is (tc/check-query "floor#(number!=(1 && 2 && 3))"
-                             [[Floor []]]))
+                             [Floor []]))
          (is (tc/check-query "floor#(number!=(1 && 2 && 3 && 4))"
-                             [[]]))
+                             []))
          (is (tc/check-query "floor#(number!=(1 || 2))"
-                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#(number!=(1 || 2 && 3))"
-                             [[Floor [] Floor [] Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#((number!=(1 || 2) && 3))"
-                             [[Floor [] Floor [] Floor [] Floor []]]))
+                             [Floor [] Floor [] Floor [] Floor []]))
          (is (tc/check-query "floor#(number!=(4 && >2))"
-                             [[Floor []]]))
+                             [Floor []]))
          (is (tc/check-query "floor#(number!=(1 && =2))"
-                             [[Floor []]]))
+                             [Floor []]))
          (is (tc/check-query "floor#(number!=(1 && (=2 || =3)))"
-                             [[Floor [] Floor []]]))
+                             [Floor [] Floor []]))
          (is (tc/check-query "floor#(number!=(1 && =2 && 3))"
-                             [[Floor []]])))
+                             [Floor []])))
 
 
 ;; Checks sign
 (deftest select-b-fnumgt1
-         (is (tc/check-query "building#(floor.number>1)" [[Building []]]))
-         (is (tc/check-query "floor#(number>4)" [[]]))
-         (is (tc/check-query "floor#(number>=4)" [[Floor []]]))
-         (is (tc/check-query "floor#(number<1)" [[]]))
-         (is (tc/check-query "floor#(number<=1)" [[Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number  >  4)" [[]]))
-         (is (tc/check-query "floor#(number    >= 4)" [[Floor []]]))
-         (is (tc/check-query "floor#(number <1)" [[]]))
-         (is (tc/check-query "floor#(number<= 1)" [[Floor [], Floor []]])))
+         (is (tc/check-query "building#(floor.number>1)" [Building []]))
+         (is (tc/check-query "floor#(number>4)" []))
+         (is (tc/check-query "floor#(number>=4)" [Floor []]))
+         (is (tc/check-query "floor#(number<1)" []))
+         (is (tc/check-query "floor#(number<=1)" [Floor [], Floor []]))
+         (is (tc/check-query "floor#(number  >  4)" []))
+         (is (tc/check-query "floor#(number    >= 4)" [Floor []]))
+         (is (tc/check-query "floor#(number <1)" []))
+         (is (tc/check-query "floor#(number<= 1)" [Floor [], Floor []])))
 
 
 
@@ -305,34 +305,34 @@
 
 (deftest select-reduced-preds
          ^{:doc ""}
-         (is (tc/check-query "floor#(number=(1 or 2))" [[Floor [], Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number=(1 or 2 or 3))" [[Floor [], Floor [], Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number=(1 or >4))" [[Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number=(1 or =5))" [[Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number=(<1 or >4))" [[]]))
-         (is (tc/check-query "floor#(number=(1 and <2))" [[Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number=(1 and 4))" [[]]))
-         (is (tc/check-query "floor#(number=(1 and =4))" [[]]))
-         (is (tc/check-query "floor#(number=(=1 and 4))" [[]]))
-         (is (tc/check-query "floor#(number=(=1 and =4))" [[]]))
-         (is (tc/check-query "floor#(number=(1 or (>3 and <5)))" [[Floor [], Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number=(1 or (>3 and <5)))" [[Floor [], Floor [], Floor []]]))
+         (is (tc/check-query "floor#(number=(1 or 2))" [Floor [], Floor [], Floor []]))
+         (is (tc/check-query "floor#(number=(1 or 2 or 3))" [Floor [], Floor [], Floor [], Floor []]))
+         (is (tc/check-query "floor#(number=(1 or >4))" [Floor [], Floor []]))
+         (is (tc/check-query "floor#(number=(1 or =5))" [Floor [], Floor []]))
+         (is (tc/check-query "floor#(number=(<1 or >4))" []))
+         (is (tc/check-query "floor#(number=(1 and <2))" [Floor [], Floor []]))
+         (is (tc/check-query "floor#(number=(1 and 4))" []))
+         (is (tc/check-query "floor#(number=(1 and =4))" []))
+         (is (tc/check-query "floor#(number=(=1 and 4))" []))
+         (is (tc/check-query "floor#(number=(=1 and =4))" []))
+         (is (tc/check-query "floor#(number=(1 or (>3 and <5)))" [Floor [], Floor [], Floor []]))
+         (is (tc/check-query "floor#(number=(1 or (>3 and <5)))" [Floor [], Floor [], Floor []]))
          (is (tc/check-query "floor#(number=(1 or (>3 and <5)) or building.name=\"b2\")"
-                             [[Floor [], Floor [], Floor []]]))
+                             [Floor [], Floor [], Floor []]))
          (is (tc/check-query "floor#(number=(<1 or (>3 and <5)) and building.name=\"b3\")"
-                             [[]])))
+                             [])))
 
 ;; Checks nil
 
 (deftest select-nil
          ^{:doc "Tests keyword nil into predicates."}
-         (is (tc/check-query "building#(description != nil)" [[Building []]]))
-         (is (tc/check-query "building#(name != nil)" [[Building [], Building [], Building []]]))
-         (is (tc/check-query "floor#(description != nil)" [[]]))
-         (is (tc/check-query "floor#(number = nil)" [[]]))
-         (is (tc/check-query "floor#(description=nil)" [[Floor [], Floor [], Floor [], Floor [], Floor []]]))
-         (is (tc/check-query "floor#(number != nil)" [[Floor [], Floor [], Floor [], Floor [], Floor []]]))
-         (is (tc/check-query "building#(description = nil)" [[Building [], Building []]])))
+         (is (tc/check-query "building#(description != nil)" [Building []]))
+         (is (tc/check-query "building#(name != nil)" [Building [], Building [], Building []]))
+         (is (tc/check-query "floor#(description != nil)" []))
+         (is (tc/check-query "floor#(number = nil)" []))
+         (is (tc/check-query "floor#(description=nil)" [Floor [], Floor [], Floor [], Floor [], Floor []]))
+         (is (tc/check-query "floor#(number != nil)" [Floor [], Floor [], Floor [], Floor [], Floor []]))
+         (is (tc/check-query "building#(description = nil)" [Building [], Building []])))
 
 ;; Checks regular expressions
 (deftest req-expr

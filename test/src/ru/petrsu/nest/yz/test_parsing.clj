@@ -25,7 +25,8 @@
         clojure.test 
         ru.petrsu.nest.yz.queries.bd)
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf] 
-            [ru.petrsu.nest.yz.parsing :as p])
+            [ru.petrsu.nest.yz.parsing :as p] 
+            [ru.petrsu.nest.yz.utils :as u])
   (:import (ru.petrsu.nest.son 
              Building Room Floor 
 
@@ -166,8 +167,10 @@
                            :where [["floors" "rooms"]]
                            :nest [{:what ru.petrsu.nest.son.Device
                                    :where [["occupancies" "devices"]]}
+                                  u/union
                                   {:what ru.petrsu.nest.son.Floor
                                    :where [["floor"]]}]} 
+                          u/union
                           {:what ru.petrsu.nest.son.Network
                            :where [["floors" "rooms" "occupancies" "devices" "linkInterfaces" "networkInterfaces" "network"]]}]}]))
 
@@ -176,6 +179,7 @@
                  [{:what ru.petrsu.nest.son.Building 
                    :nest [{:what ru.petrsu.nest.son.Room
                            :where [["floors" "rooms"]]}
+                          u/union
                           {:what ru.petrsu.nest.son.Device
                            :where [["floors" "rooms" "occupancies" "devices"]]}]}]))
 
@@ -183,6 +187,7 @@
                  [{:what ru.petrsu.nest.son.Building 
                    :nest [{:what ru.petrsu.nest.son.Room
                            :where [["floors", "rooms"]]}
+                          u/union
                           {:what ru.petrsu.nest.son.Occupancy
                            :where [["floors" "rooms" "occupancies"]]
                            :nest [{:what ru.petrsu.nest.son.Device
@@ -195,11 +200,13 @@
                                                             "device" 
                                                             "occupancy" 
                                                             "room" "floor"]]}]}]}
+                                  u/union
                                   {:what ru.petrsu.nest.son.NetworkInterface
                                    :where [["devices" "linkInterfaces" "networkInterfaces"]]}]}]}]))
 
          (is (= (parse "building, room", mom-)
                  [{:what ru.petrsu.nest.son.Building}
+                  u/union
                   {:what ru.petrsu.nest.son.Room}]))))
 
 (deftest t-parse-props
@@ -1065,6 +1072,7 @@
            (is (f "@(count ie:`building')" :indep-each)))
            
          (let [f #(= (parse %1 mom-) [{:func #'clojure.core/count :params [[%2 [{:what Building}]]]} 
+                                      u/union
                                       {:func #'clojure.core/count :params [[%3 [{:what Room}]]]}])]
            (is (f "@(count `building'), @(count `room')" :dep-list :dep-list))
            (is (f "@(count `building'), @(count dl:`room')" :dep-list :dep-list))

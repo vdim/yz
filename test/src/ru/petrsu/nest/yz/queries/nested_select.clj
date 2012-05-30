@@ -42,22 +42,22 @@
 (deftest select-b-and-f
          ^{:doc "Selects all Building and its Floor objects."}
          (is (tc/qstruct? "building (floor)"
-                          [[Building [[Floor []]]]])))
+                          [Building [Floor []]])))
 
 (deftest select-b-and-r
          ^{:doc "Selects all Building and its Room objects."}
          (is (tc/qstruct? "building (room)"
-                          [[Building [[Room []]]]])))
+                          [Building [Room []]])))
 
 (deftest select-r-and-b
          ^{:doc "Selects all Room and its Building objects."}
          (is (tc/qstruct? "room (building)"
-                          [[Room [[Building []]]]])))
+                          [Room [Building []]])))
 
 (deftest select-f-and-b
          ^{:doc "Selects all Floor and its Building objects."}
          (is (tc/qstruct? "floor (building)"
-                          [[Floor [[Building []]]]])))
+                          [Floor [Building []]])))
 
 (deftest select-bn-and-f
          ^{:doc "Selects all Building's name and its Floor objects."}
@@ -73,7 +73,7 @@
 (deftest select-b-r-f
          ^{:doc "Selects all Building, its Room and its Floor objects."}
          (is (tc/qstruct? "building (room (floor))"
-                          [[Building [[Room [[Floor []]]]]]])))
+                          [Building [Room [Floor []]]])))
 (comment
 (deftest select-empty-links
          ^{:doc "Tests emptiness links."}
@@ -85,11 +85,11 @@
 
 (deftest select-inheritance
          ^{:doc "Tests inheritance queries."}
-         (is (tc/qstruct? "device (network)" [[Device [[IPNetwork []]]]]))
-         (is (tc/qstruct? "device (ipnetwork)" [[Device [[IPNetwork []]]]]))
-         (is (tc/qstruct? "ipnetwork (device)" [[IPNetwork [[Device []]]]]))
-         (is (tc/qstruct? "device (ethernetinterface)" [[Device [[EthernetInterface []]]]]))
-         (is (tc/qstruct? "ethernetinterface (device)" [[EthernetInterface [[Device []]]]])))
+         (is (tc/qstruct? "device (network)" [Device [IPNetwork []]]))
+         (is (tc/qstruct? "device (ipnetwork)" [Device [IPNetwork []]]))
+         (is (tc/qstruct? "ipnetwork (device)" [IPNetwork [Device []]]))
+         (is (tc/qstruct? "device (ethernetinterface)" [Device [EthernetInterface []]]))
+         (is (tc/qstruct? "ethernetinterface (device)" [EthernetInterface [Device []]])))
 
 
 (deftest select-inheritance-2

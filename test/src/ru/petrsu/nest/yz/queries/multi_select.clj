@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -44,31 +44,20 @@
 (deftest select-floors-and-buildings
          ^{:doc "Selects all Floor and Building objects."}
          (is (tc/check-query "floor, building" 
-                             [[Floor [], Floor [], Floor[]], [Building [], Building []]])))
+                             [Floor [], Floor [], Floor[], Building [], Building []])))
 
 (deftest select-buildings-and-floors
          ^{:doc "Selects all Building and Floor objects."}
          (is (tc/check-query "building, floor"
-                             [[Building [], Building []], [Floor [], Floor [], Floor []]])))
+                             [Building [], Building [], Floor [], Floor [], Floor []])))
 
 (deftest select-buildings-and-rooms
          ^{:doc "Selects all Building and Room objects."}
          (is (tc/check-query "building, room"
-                             [[Building [], Building []], []])))
+                             [Building [], Building []])))
 
 (deftest select-floors-and-rooms
          ^{:doc "Selects all Floor and Room objects."}
          (is (tc/check-query "floor, room" 
-                             [[Floor [], Floor [], Floor[]], []])))
-
-(deftest select-b-f-r
-         ^{:doc "Selects all Building, Floor and Room objects."}
-         (is (tc/qstruct? "building, floor, room" 
-                          [[Building []], [Floor []], [nil nil]])))
-
-(deftest select-b-r
-         ^{:doc "Selects all Building and Floor objects."}
-         (is (tc/qstruct? "building, floor"
-                          [[Building []], [Floor []]])))
-
+                             [Floor [], Floor [], Floor[]])))
 

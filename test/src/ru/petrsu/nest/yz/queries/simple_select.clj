@@ -46,53 +46,53 @@
 (deftest select-buildings
          ^{:doc "Selects all Building objects.
                 Result should be (for our son) like this: [[#<Building Building> [], #<Building Building> []]]"}
-         (is (tc/check-query "building" [[Building [], Building []]])))
+         (is (tc/check-query "building" [Building [], Building []])))
 
 (deftest select-floors
          ^{:doc "Selects all Floor objects.
                 Result should be like this: 
                 [#<Floor Floor 0> [], #<Floor Floor 0> [], #<Floor Floor 0> []]]"}
-         (is (tc/check-query "floor" [[Floor [], Floor[], Floor[]]])))
+         (is (tc/check-query "floor" [Floor [], Floor[], Floor[]])))
 
 (deftest select-devices
          ^{:doc "Selects all Device objects. Result should be empty."}
-         (is (tc/check-query "device" [[]])))
+         (is (tc/check-query "device" [])))
 
 (deftest select-b-names
          ^{:doc "Selects building's names"}
          (let [q (tc/r-query "building.name")]
-           (is (or (= q [['("building1") [] '("building2") []]])
-                   (= q [['("building2") [] '("building1") []]])))))
+           (is (or (= q ['("building1") [] '("building2") []])
+                   (= q ['("building2") [] '("building1") []])))))
 
 
 (deftest select-prop
          ^{:doc "Checks props"}
-         (is (= (tc/r-query "floor.number") [['(nil) [] '(nil) [] '(nil) []]]))
-         (is (= (tc/r-query "floor.name") [['(nil) [] '(nil) [] '(nil) []]]))
-         (is (= (tc/r-query "building.floor.number") [['(nil) [] '(nil) [] '(nil) []]])))
+         (is (= (tc/r-query "floor.number") ['(nil) [] '(nil) [] '(nil) []]))
+         (is (= (tc/r-query "floor.name") ['(nil) [] '(nil) [] '(nil) []]))
+         (is (= (tc/r-query "building.floor.number") ['(nil) [] '(nil) [] '(nil) []])))
 
 
 (deftest select-props
          ^{:doc "Checks props"}
-         (is (= (tc/r-query "floor[number name]") [['(nil nil) [] '(nil nil) [] '(nil nil) []]]))
-         (is (= (tc/r-query "floor[name number]") [['(nil nil) [] '(nil nil) [] '(nil nil) []]]))
+         (is (= (tc/r-query "floor[number name]") ['(nil nil) [] '(nil nil) [] '(nil nil) []]))
+         (is (= (tc/r-query "floor[name number]") ['(nil nil) [] '(nil nil) [] '(nil nil) []]))
          (is (tc/eq-colls (flatten (tc/rows-query "building[name]")) ["building1" "building2"]))
-         (is (= (tc/r-query "room[number]") [['("1") []]])))
+         (is (= (tc/r-query "room[number]") ['("1") []])))
 
 
 (deftest select-self-and-dp
          ^{:doc "Checks selecting default property and self object."}
-         (is (= (tc/qstruct? "floor[&]" [[Floor []]])))
-         (is (= (tc/r-query "room[&.]") [['("1") []]])))
+         (is (= (tc/qstruct? "floor[&]" [Floor []])))
+         (is (= (tc/r-query "room[&.]") ['("1") []])))
 
 
 (deftest select-by-short-name
          ^{:doc "Selects object by short name"}
-         (is (tc/qstruct? "b" [[Building []]]))
-         (is (tc/qstruct? "f" [[Floor []]]))
-         (is (tc/check-query "ni" [[]]))
-         (is (tc/check-query "ip4i" [[]]))
-         (is (tc/qstruct? "f (b)" [[Floor [[Building []]]]]))
-         (is (tc/qstruct? "floor (b)" [[Floor [[Building []]]]]))
-         (is (tc/qstruct? "f (building)" [[Floor [[Building []]]]])))
+         (is (tc/qstruct? "b" [Building []]))
+         (is (tc/qstruct? "f" [Floor []]))
+         (is (tc/check-query "ni" []))
+         (is (tc/check-query "ip4i" []))
+         (is (tc/qstruct? "f (b)" [Floor [Building []]]))
+         (is (tc/qstruct? "floor (b)" [Floor [Building []]]))
+         (is (tc/qstruct? "f (building)" [Floor [Building []]])))
 
