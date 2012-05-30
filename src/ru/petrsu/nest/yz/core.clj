@@ -315,8 +315,7 @@
                              (cond (instance? Result q) (:rows q)
                                    (or (= fmod :indep-each) (= fmod :dep-each))
                                    {:mode :single 
-                                    :res (map (fn [p] (get-rows [p])) 
-                                              (mapcat (fn [r] (map vec (partition 2 r))) rq))}
+                                    :res (map get-rows (map vec (partition 2 rq)))}
                                    :else (get-rows rq)))
 
                            ; param is another function.
