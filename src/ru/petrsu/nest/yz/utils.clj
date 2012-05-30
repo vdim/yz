@@ -73,17 +73,20 @@
 
 
 (defn intersection
-  "Returns intersection of two vectors comparing by two elements."
+  "Returns intersection of two vectors comparing by two elements.
+  Arguments must the following recursive structure: 
+    [el1 [el11 [el111 [] el112 [] ...] el12 [el121 [] ...]] el2 [el21 [] ...]]"
   [v1 v2]
   (let [v1 (partition 2 v1)
-        v2 (partition 2 v2)]
-    (loop [v1 v1 v2 v2 r []]
-      (if (or (empty? v1) (empty? v2))
-        (vec r)
-        (recur (next v1) (next v2) 
-               (if (= (first v1) (first v2)) 
-                 (concat r (first v1)) 
-                 r))))))
+        v2 (partition 2 v2)
+        r (for [v11 v1 v22 v2 :when (and (= (first v11) (first v22)) 
+                                         (let [s1 (second v11)
+                                               s2 (second v22)]
+                                           (or (and (empty? s1) (empty? s2))
+                                               (let [i (intersection s1 s2)]
+                                               (and (= i s1) (= i s2))))))]
+            v11)]
+    (vec (reduce #(conj %1 (first %2) (second %2)) [] r))))
 
 
 (defn union
