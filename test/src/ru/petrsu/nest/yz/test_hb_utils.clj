@@ -122,3 +122,47 @@
                  ru.petrsu.nest.son.jpa.AbstractOU
                  #{ru.petrsu.nest.son.jpa.CompositeOU ru.petrsu.nest.son.jpa.SimpleOU}})))
 
+
+(deftest t-intersection
+         ^{:doc "Tests the intersection function."}
+         (is (= [] (intersection [1 []] [2 []])))
+         
+         (is (= [1 []] (intersection [1 []] [1 []])))
+         (is (= [1 []] (intersection [1 []] [1 [] 3 []])))
+         (is (= [1 []] (intersection [1 []] [3 [] 1 []])))
+         (is (= [1 []] (intersection [2 [] 1 []] [1 []])))
+         (is (= [1 []] (intersection [1 [] 2 []] [1 []])))
+         (is (= [1 []] (intersection [2 [] 1 []] [1 [] 3 []])))
+         (is (= [1 []] (intersection [1 [] 2 []] [1 [] 3 []])))
+
+         (is (= [1 [] 2 []] (intersection [1 [] 2 []] [1 [] 2 []])))
+         (is (= [1 [] 2 []] (intersection [3 [] 1 [] 2 []] [1 [] 2 []])))
+         (is (= [1 [] 2 []] (intersection [1 [] 3 [] 2 []] [1 [] 2 []])))
+         (is (= [1 [] 2 []] (intersection [1 [] 2 [] 3 []] [1 [] 2 []])))
+         (is (= [1 [] 2 []] (intersection [1 [] 2 []] [3 [] 1 [] 2 []])))
+         (is (= [1 [] 2 []] (intersection [1 [] 2 []] [1 [] 3 [] 2 []])))
+         (is (= [1 [] 2 []] (intersection [1 [] 2 []] [1 [] 2 [] 3 []])))
+         
+         (is (= [] (intersection [1 []] [1 [1 []]])))
+         (is (= [] (intersection [1 []] [1 [2 []]])))
+         (is (= [] (intersection [1 [1 []]] [1 [2 []]])))
+         (is (= [1 [2 []]] (intersection [1 [2 []]] [1 [2 []]])))
+         (is (= [2 [] 1 [2 []]] (intersection [2 [] 1 [2 []]] [1 [2 []] 2 []])))
+         (is (= [2 [] 1 [2 []]] (intersection [3 [] 2 [] 1 [2 []]] [1 [2 []] 2 []])))
+         (is (= [2 [] 1 [2 []]] (intersection [2 [] 1 [2 []]] [3 [] 1 [2 []] 2 []])))
+         (is (= [2 [] 1 [2 []]] (intersection [3 [1 []] 2 [] 1 [2 []]] [3 [] 1 [2 []] 2 []])))
+         (is (= [2 [] 1 [2 []]] (intersection [3 [1 []] 2 [] 1 [2 []]] [3 [2 []] 1 [2 []] 2 []])))
+         (is (= [2 [] 1 [2 []]] (intersection [3 [1 [] 2 []] 2 [] 1 [2 []]] [3 [2 []] 1 [2 []] 2 []])))
+         (is (= [2 [] 1 [2 []]] (intersection [3 [1 [] 2 []] 2 [] 1 [2 []]] [1 [2 []] 3 [2 []] 2 []])))
+
+
+         (is (= [2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] (intersection [2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] 
+                                                               [2 [1 [4 [] 5 [6 [] 7 [8 []]]]]])))
+         (is (= [2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] (intersection [1 [] 2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] 
+                                                               [2 [1 [4 [] 5 [6 [] 7 [8 []]]]]])))
+         (is (= [1 [] 2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] (intersection [1 [] 2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] 
+                                                                    [2 [1 [4 [] 5 [6 [] 7 [8 []]]]] 1 []])))
+         (is (= [] (intersection [1 [] 2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] 
+                                 [2 [1 [4 [] 5 [6 [] 7 [9 []]]]]])))
+         (is (= [1 []] (intersection [1 [] 2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] 
+                                     [2 [1 [4 [] 5 [6 [] 7 [9 []]]]] 1 []]))))
