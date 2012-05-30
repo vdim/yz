@@ -1041,8 +1041,12 @@
                           (when (and rq (empty? (:remainder rq)))
                             (if allA
                               (:result rq)
-                              (vec (map #(assoc % :where 
-                                                  (get-paths (:what %) (get-in-nest res nl :what))) 
+                              (vec (map #(if (map? %) ; % may not be map because of query which 
+                                                      ; contains union or intersection operation
+                                           (assoc % :where 
+                                                  
+                                                  (get-paths (:what %) (get-in-nest res nl :what)))
+                                           %)
                                         (:result rq)))))))
             :when rq
                          
