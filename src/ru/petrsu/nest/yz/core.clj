@@ -83,7 +83,7 @@
 (def a-mom (atom nil))
 
 
-(declare process-preds process-prop process-func get-objs get-qp get-qr process-nests)
+(declare process-preds process-prop process-func get-objs get-qp get-qr process-nests get-objs-by-path)
 (defn filter-by-preds
   "Gets sequence of objects and vector with predicates and
   returns new sequence of objects which are filtered by this predicates."
@@ -137,7 +137,7 @@
                         (conj s #(let [v (if allA
                                            value
                                            ; This set depends on object.
-                                           (set (flatten (process-nests value %2))))]
+                                           (set (flatten (process-nests value (partial get-objs-by-path [%2])))))]
                                   (process-preds %1 %2 all ids func v not-any))))
 
                       ; :or or :and binary operation.
@@ -294,7 +294,7 @@
   (nth @p/query-params (dec (Integer/parseInt (name n)))))
 
 
-(declare get-rows, run-query)
+(declare get-rows)
 (defn- process-func
   "Gets :function map of q-representation 
   and returns value of evaluation of one."
@@ -310,8 +310,8 @@
                                  q (if (keyword? q) (get-qp q) q)
                                  rq (cond (instance? Result q) q
                                           (or (= fmod :indep-list) (= fmod :indep-each) (nil? obj))
-                                          (run-query q)
-                                          :else (process-nests q obj))]
+                                          (process-nests q select-elems)
+                                          :else (process-nests q (partial get-objs-by-path [obj])))]
                              (cond (instance? Result q) (:rows q)
                                    (or (= fmod :indep-each) (= fmod :dep-each))
                                    {:mode :single 
@@ -454,41 +454,26 @@
   (if (empty? objs)
     []
     (let [n (:nest nest)]
-      (reduce #(conj %1 (%2 1) (if (nil? n) [] (process-nests n (%2 0))))
+      (reduce #(conj %1 (%2 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(%2 0)]))))
               []
               (process-then objs (:then nest) (:props nest) (:sort nest))))))
 
 
 (defn- process-nests
   "Processes :nest value of query structure"
-  [nests obj]
+  [nests f]
   (let [op (atom nil)]
     (reduce #(if (map? %2)
-               (let [v1 (p-nest %2 (get-objs-by-path [obj] %2))]
+               (let [v1 (if (nil? (get %2 :func)) 
+                          (p-nest %2 (f %2))
+                          (reduce (fn [r rf] 
+                                    (conj r rf [])) [] (process-func %2 nil)))]
                  (if @op
                    (@op %1 v1)
                    v1))
                (do (reset! op %2) %1))
             []
             nests)))
-
-
-(defn- run-query
-  "Returns result of 'query' based on specified map of object model ('mom')
-  and instance of some ElementManager ('em')."
-  [parse-res]
-  (let [op (atom nil)]
-    (reduce #(if (map? %2)
-                 (let [v1 (if (nil? (get %2 :func)) 
-                            (p-nest %2 (select-elems %2))
-                            (reduce (fn [r rf] 
-                                      (conj r rf [])) [] (process-func %2 nil)))]
-                   (if @op
-                     (@op %1 v1)
-                     v1))
-               (do (reset! op %2) %1))
-            []
-            parse-res)))
 
 
 (defn- get-column-name
@@ -586,7 +571,7 @@
   (let [query-res (if (instance? Throwable parse-res)
                     parse-res
                     (try
-                      (run-query parse-res)
+                      (process-nests parse-res select-elems)
                       (catch Throwable e e)))]
     (if (instance? Throwable query-res)
       (Result. [] (get-message query-res) query-res [] ())
