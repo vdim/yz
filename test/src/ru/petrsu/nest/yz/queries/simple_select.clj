@@ -21,7 +21,10 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Processes simple select queries."}
   (:use clojure.test)
-  (:require [ru.petrsu.nest.yz.queries.core :as tc])
+  (:require [ru.petrsu.nest.yz.queries.core :as tc] 
+            [ru.petrsu.nest.yz.core :as yz]
+            [ru.petrsu.nest.yz.queries.bd :as bd]
+            [ru.petrsu.nest.yz.hb-utils :as hb])
   (:import (ru.petrsu.nest.son SON Building Room Floor NetworkInterface IPv4Interface)))
 
 
@@ -96,3 +99,19 @@
          (is (tc/qstruct? "floor (b)" [Floor [Building []]]))
          (is (tc/qstruct? "f (building)" [Floor [Building []]])))
 
+
+(deftest not-found-property
+         ^{:doc "Tests :not-found returned value of 
+                the get-fv function using bd/mem database."}
+         (let [f #(let [r (yz/pquery %1 (hb/mom-from-file "nest.mom") bd/mem)]
+                    (if (:error r)
+                      (throw (:thrwable r))
+                      (:rows r)))]
+           (is (= (count (f "li")) 6))
+           (is (= (count (f "li[MACAddress]")) 5))
+           (is (= (count (f "li[& MACAddress]")) 5))
+           (is (= (count (f "li[MACAddress &]")) 5))
+           (is (tc/eq-colls (f "cou.room") [[bd/r1001_f1_b2] [bd/r102_f1_b1]]))
+           (is (tc/eq-colls (f "cou (room)") [[bd/rootCompositeOU] 
+                                              [bd/cou_d2 bd/r1001_f1_b2] 
+                                              [bd/cou_d1 bd/r102_f1_b1]]))))
