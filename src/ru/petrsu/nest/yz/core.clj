@@ -271,8 +271,6 @@
         ; If value is nil then function returns nil.
         (nil? v) nil
 
-        ; If value not found into bean map then we try find this value due to java reflection.
-
         ; If value is an array then we check whether a type of the array from the MOM, If true then
         ; we returns a collection from this array.
         (and (.isArray (class v)) (get @a-mom (.getComponentType (class v)))) (seq v)
