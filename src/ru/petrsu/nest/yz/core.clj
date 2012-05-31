@@ -272,12 +272,6 @@
         (nil? v) nil
 
         ; If value not found into bean map then we try find this value due to java reflection.
-        (= v :not-found)
-        (loop [^Class cl (class o)]
-          (cond (nil? cl) (throw (Exception. (str "Not found property: " field-name)))
-                (contains? (set (map #(.getName %) (.getDeclaredFields cl))) field-name)
-                (.get (doto (.getDeclaredField cl field-name) (.setAccessible true)) o)
-                :else (recur (:superclass (bean cl)))))
 
         ; If value is an array then we check whether a type of the array from the MOM, If true then
         ; we returns a collection from this array.
