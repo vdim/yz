@@ -428,12 +428,16 @@
   [objs, then, props, tsort]
   (loop [objs- objs, then- then, props- props, tsort tsort]
     (if (or (nil? then-) (every? nil? objs-))
-      (let [pp (map (fn [o] [o, (process-props o props-)]) objs-)]
+      (let [pp (remove #(let [v (% 1)] 
+                          (if (seq? v)
+                            (some (fn [o] (= o :not-found)) v)
+                            false))
+                       (map (fn [o] [o, (process-props o props-)]) objs-))]
         (if props-
           (sort-rq pp tsort true)
           pp))
       (recur (if (and (nil? (:where then-)) props-)
-               (flatten (map #(process-props % props-) objs-))
+               (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
                (get-objs-by-path objs- then-))
              (:then then-) 
              (:props then-)

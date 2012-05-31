@@ -162,8 +162,8 @@
                          :else son-or-em)
          em (if (instance? ElementManager son-or-em)
               son-or-em
-              (qc/create-emm son-or-em))
- 
+              (qc/em-memory son-or-em mom))
+
          times (do-times-q (partial pquery query mom em) n)
          s-times (apply + times)
          c-times (count times)]
@@ -279,9 +279,9 @@
   (let [sdate (Date.) ; Date of starting the benchmark.
         bd ; Database
         (cond (or hql? (instance? ElementManager bd)) bd
-              (number? bd) (qc/create-emm (bu/gen-bd bd)) 
+              (number? bd) (qc/em-memory (bu/gen-bd bd) mom) 
               (instance? EntityManager bd) (-createJPAElementManager bd)
-              :else (qc/create-emm bd))
+              :else (qc/em-memory bd mom))
         cbd (if hql? bd (((:result (pquery "@(count `sonelement')" mom bd)) 0) 0))
         nb (inc (get-num-bench f)) ; Current number of the benchmark.
         new-res (reduce #(str %1 (cond (.startsWith %2 ";") 
@@ -409,7 +409,7 @@
   where first element is execution time and second element is query
   (result vector is sorted by time for query)."
   [mom bd n qlist] 
-  (let [bd (if (number? bd) (qc/create-emm (bu/gen-bd bd)) bd)]
+  (let [bd (if (number? bd) (qc/em-memory (bu/gen-bd bd) mom) bd)]
     (sort-by #(% 1) (map (fn [q] [q (first (bench-quering n q mom bd))]) qlist))))
 
 

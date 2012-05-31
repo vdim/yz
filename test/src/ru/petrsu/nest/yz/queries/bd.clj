@@ -145,4 +145,4 @@
            (.setRootOU rootCompositeOU)))
 
 ;; Memory Element Manager.
-(def mem (tc/create-emm son))
+(def mem (tc/em-memory son))

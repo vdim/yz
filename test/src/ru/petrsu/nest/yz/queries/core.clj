@@ -54,37 +54,18 @@
 
 (defn em-memory
   "Implementation of the memory ElementManager."
-  [son, id-cache]
-  (let [elems (map identity (se-iterator son))]
-    (reify ElementManager
-      (^java.util.Collection getElems [_ ^Class claz] 
-           (filter #(instance? claz %) elems))
-      (getMom [_] (throw (UnsupportedOperationException. "Not supported.")))
-
-      ;; Value is got from bean of the object o.
-      (^Object getPropertyValue [this ^Object o, ^String property]
-         ((keyword property) (bean o))))))
-      ;(getById [_ ^Object id] (get id-cache id))))
-
-
-(defn create-id-cache
-  "Creates id's cache. This is Map where key is id of 
-  object and value is object. (Need for testing getById 
-  function of ElementManager.)"
-  [son]
-  (reduce #(assoc %1 (.getId %2) %2) 
-          {}
-          (map identity
-               (reify Iterable 
-                 (^java.util.Iterator iterator [_] 
-                    (ru.petrsu.nest.son.SonBeanUtils$BreadthFirstIterator. son))))))
-
-
-(defn create-emm
-  "Returns implementation of the memory ElementManager 
-  for specified son."
-  [son]
-  (em-memory son (create-id-cache son)))
+  ([son]
+   (em-memory son nil))
+  ([son mom]
+   (let [elems (map identity (se-iterator son))]
+     (reify ElementManager
+       (^java.util.Collection getElems [_ ^Class claz] 
+            (filter #(instance? claz %) elems))
+       (getMom [_] mom)
+ 
+       ;; Value is got from bean of the object o.
+       (^Object getPropertyValue [this ^Object o, ^String property]
+          ((keyword property) (bean o)))))))
 
 
 (defn create-emlm
@@ -146,7 +127,7 @@
        (binding [*mom* mom
                  *em* (case type-em
                         :localsonmanager (create-emlm son)
-                        :memorymanager (em-memory son (create-id-cache son))
+                        :memorymanager (em-memory son mom)
                         :multicollectionmanager 
                         (let [bs (seq (.getBuildings son))
                               coll (or bs [son])] 
