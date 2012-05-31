@@ -17,9 +17,9 @@
 ;; <http://www.gnu.org/licenses/>.
 ;;
 
-(ns ru.petrsu.nest.yz.test-hb-utils
+(ns ru.petrsu.nest.yz.test-utils
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Tests for functions which generate MOM."}
+    :doc "Tests utils functions."}
   (:use ru.petrsu.nest.yz.hb-utils clojure.test ru.petrsu.nest.yz.utils)
   (:require [ru.petrsu.nest.yz.init :as yzi])
   (:import (ru.petrsu.nest.son Floor Room Building)))
