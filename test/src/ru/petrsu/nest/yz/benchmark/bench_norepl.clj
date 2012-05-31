@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -21,7 +21,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Runs benchmark from command line for specified list of parameters."}
   (:require [ru.petrsu.nest.yz.benchmark.benchmark :as bb] 
-            [ru.petrsu.nest.yz.benchmark.bd-utils-old :as buo] 
+            [ru.petrsu.nest.yz.benchmark.bd-utils-jpa :as buj] 
             [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [net.kryshen.planter.store :as store] 
             [ru.petrsu.nest.yz.queries.core :as qc])
@@ -44,7 +44,7 @@
         n (Integer/parseInt n)
         bd (Integer/parseInt bd)
         bd (case mod-bd
-             "jpa" (buo/create-bd 
+             "jpa" (buj/create-bd 
                      bd (.createEntityManager (Persistence/createEntityManagerFactory "nest-old")))
              "lsm" (create-lsm (store/store (str "data-"bd)))
              "lsm-gen" (qc/create-emlm (bu/gen-bd bd))
