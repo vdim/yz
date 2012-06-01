@@ -1,3 +1,8 @@
+## 0.0.1-alpha15 / 01.06.2012
+
+* API: changed structure of the :result value which is returned by the pquery function.
+* Added support intersection of result of queries: floor; room
+
 ## 0.0.1-alpha14 / 28.05.2012
  
 * Added support >, <, >=, <= operation for all comparable objects.
