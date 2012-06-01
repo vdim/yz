@@ -400,9 +400,24 @@
         (= prop :#self-object#) obj
         (= prop :#default-property#) (get-fv obj (p/get-dp (class obj) @a-mom))
         is-recur (loop [res [] obj- (get-fv obj prop)]
-                   (if (nil? obj-)
-                     res
-                     (recur (conj res obj-) (get-fv obj- prop))))
+                   (let [obj- (if (set? obj-) (seq obj-) obj-)]
+                     (if (or (nil? obj-) 
+                             (= :not-found obj-) 
+                             (and (seq? obj-) (or (empty? obj-) (every? #(= % :not-found) obj-))))
+                       res
+                       (recur (conj res obj-) (if (seq? obj-) 
+                                                (reduce #(if (= %2 :not-found)
+                                                           %1
+                                                           (let [r (get-fv %2 prop)
+                                                                 r (if (set? r) (seq r) r)]
+                                                             (if (= :not-found r)
+                                                               %1
+                                                               (conj %1 r)))) 
+                                                        [] obj-)
+                                                (let [r (get-fv obj- prop)]
+                                                  (if (= :not-found r)
+                                                    nil
+                                                    r)))))))
         :else (get-fv obj prop)))
 
 
