@@ -250,14 +250,19 @@
 (defn eq-colls
   "Equals two collections."
   [coll1 coll2]
-  (let [s-coll1 (set coll1)
-        s-coll2 (set coll2)]
-    (if (or (not= (count coll1) (count coll2))
-            (not= (count s-coll1) (count s-coll2)))
-      false
-      (and
-        (empty? (remove #(contains? s-coll2 %) coll1))
-        (empty? (remove #(contains? s-coll1 %) coll2))))))
+  (if (and (coll? coll1) (coll? coll2))
+    (let [s-coll1 (set coll1)
+          s-coll2 (set coll2)
+          f (fn [c1 c2] (empty? (remove #(if (coll? %)
+                                           (some (fn [coll11] (eq-colls coll11 %)) c2)
+                                           (contains? s-coll2 %)) c1)))]
+      (if (or (not= (count coll1) (count coll2))
+              (not= (count s-coll1) (count s-coll2)))
+        false
+        (and
+          (f s-coll1 s-coll2)
+          (f s-coll2 s-coll1))))
+    false))
 
 
 (defn eq-maps
