@@ -410,7 +410,9 @@
                                                          (let [r (get-fv %2 prop)] 
                                                            (if (or (nil? r) (= r :not-found))
                                                              %1
-                                                             (conj %1 r))))
+                                                             (if (coll? r)
+                                                               (concat %1 r)
+                                                               (conj %1 r)))))
                                                       [] obj-) 
                                               (get-fv obj- prop)))))
         :else (get-fv obj prop)))
