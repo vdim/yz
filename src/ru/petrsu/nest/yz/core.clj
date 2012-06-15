@@ -380,10 +380,10 @@
   [sources m]
   (let [{:keys [preds where ^Class what sort exactly unique limit]} m
         f (if exactly #(= (class %) what) #(instance? what %))
-        path (apply min-key count where) ; At this moment we use path with minimum edges.
         elems (sort-rq (filter-by-preds 
                          (filter f
-                                 (let [objs (reduce #(get-objs %2 %1) sources path)]
+                                 (let [objs (mapcat (fn [path] (reduce #(get-objs %2 %1) sources path)) 
+                                                    where)]
                                    (if unique (distinct objs) objs))) preds)
                        sort false)]
     (limiting elems limit)))
