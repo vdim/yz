@@ -105,7 +105,7 @@
           m-go (memoize (fn [ids o]
                           (cond (vector? ids) 
                               (reduce (fn [r {:keys [id cl]}]
-                                        (let [objs- (reduce #(get-objs %2 %1) r id)]
+                                        (let [objs- (reduce get-objs r id)]
                                           (if (nil? cl)
                                             objs-
                                             (filter (partial instance? cl) objs-))))
@@ -334,7 +334,7 @@
 (defn- get-objs
   "Returns sequence of objects which belong to 'objs' 
   by specified 'field-name'."
-  [^String field-name, objs]
+  [objs ^String field-name]
   (flatten (map #(let [fv (get-fv % field-name)]
                    ; DON'T REMOVE THIS IF.
                    ; At least sets are not flattened.
@@ -382,7 +382,7 @@
         f (if exactly #(= (class %) what) #(instance? what %))
         elems (sort-rq (filter-by-preds 
                          (filter f
-                                 (let [objs (mapcat (fn [path] (reduce #(get-objs %2 %1) sources path)) 
+                                 (let [objs (mapcat (fn [path] (reduce get-objs  sources path)) 
                                                     where)]
                                    (if unique (distinct objs) objs))) preds)
                        sort false)]
