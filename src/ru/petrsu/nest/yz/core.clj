@@ -382,8 +382,18 @@
         f (if exactly #(= (class %) what) #(instance? what %))
         elems (sort-rq (filter-by-preds 
                          (filter f
-                                 (let [objs (mapcat (fn [path] (reduce get-objs  sources path)) 
-                                                    where)]
+                                 (let [objs (cond 
+                                              ; where is vector with paths from cl-target to cl-source.
+                                              (vector? where) 
+                                              (mapcat #(reduce get-objs sources %) where)
+
+                                              ; where is map where a class -> a path.
+                                              (map? where)
+                                              (reduce #(let [p (get where (class %2))]
+                                                         (if p
+                                                           (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) p))
+                                                           %1)) 
+                                                      () sources))]
                                    (if unique (distinct objs) objs))) preds)
                        sort false)]
     (limiting elems limit)))
