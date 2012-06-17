@@ -195,13 +195,6 @@
         (vector? q) [(transform-first-q (first q)) (transform-first-q (second q))]
         :else (class q)))
 
-;  (if (vector? q)
-;    (vec (map #(if (vector? %)
-;                 [(transform-first-q (first %)) (transform-first-q (second %))]
-;                 (class %)) 
-;              q))
-;    (class q)))
-
 
 (defn- do-q
   "Executes query, If error is occured then
