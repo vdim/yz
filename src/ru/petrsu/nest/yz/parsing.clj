@@ -1149,7 +1149,7 @@
   "Processes function name."
   (complex [n (partial text [\space \newline \tab])
             _ (update-info :function 
-                           #(if-let [f (let [sym (symbol (reduce str "" n))]
+                           #(if-let [f (let [sym (symbol (.toString n))]
                                          (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
                               (conj (pop %) (assoc (peek %) :func f))
                               (throw (NotFoundFunctionException. (str "Could not found function " (reduce str "" n) ".")))))]
