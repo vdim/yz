@@ -137,3 +137,20 @@
          (let [f #(distinct (flatten (tc/rows-query %)))]
            (is (tc/eq-colls (f "building (floor[&])") [bd/b1 bd/b2 bd/f1_b1 bd/f2_b1 bd/f3_b1 bd/f1_b2]))
            (is (tc/eq-colls (f "building (floor[&.])") [bd/b1 bd/b2 1 2 3]))))
+
+
+(deftest late-binding
+         ^{:doc "Tests for late binding (in case there is no path from
+                cl-source to cl-target and paths from children of cl-source
+                to cl-target is used.)"}
+         (is (tc/qparse "aou (room)"))
+         (is (tc/eq-colls (tc/rows-query "aou (room)") 
+                          [[bd/rootCompositeOU]
+                           [bd/cou_d2 bd/r1001_f1_b2]
+                           [bd/cou_d1 bd/r102_f1_b1]
+                           [bd/sou2_d2 bd/r1001_f1_b2]
+                           [bd/sou1_d2]
+                           [bd/sou1_d1 bd/r102_f1_b1]
+                           [bd/sou2_d1]]))
+         )
+
