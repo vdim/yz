@@ -34,7 +34,7 @@
              ; queries with this classes in case MOM is nil.
              ; So DON'T REMOVE THIS IMPORTS.
              Device Network NetworkInterface Occupancy)
-           (ru.petrsu.nest.yz SyntaxException)))
+           (ru.petrsu.nest.yz SyntaxException NotDefinedDPException)))
 
 (def mom- 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
@@ -924,7 +924,7 @@
                    {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
            (let [mom- (assoc mom- Floor (assoc (get mom- Floor) :dp nil))]
-             (is (thrown? RuntimeException (parse "building#(floor.=1)" mom-))))
+             (is (thrown? NotDefinedDPException (parse "building#(floor.=1)" mom-))))
              ;(is (= (parse "building#(floor.=1)" mom-)
              ;        [{:what Building
              ;          :preds [{:ids [{:id ["floors"] :cl Floor}], :func #'clojure.core/=, :value 1}]}])))
@@ -1929,7 +1929,7 @@
            (is (thrown? NullPointerException (f ", building")))
            (is (thrown? SyntaxException (f "building, ")))
            (is (thrown? SyntaxException (f "building#(floor.∀room.number=1)")))
-           (is (thrown? RuntimeException (f "building#(name = room#(number=1)")))
+           (is (thrown? SyntaxException (f "building#(name = room#(number=1)")))
            (let [em (yzf/c-em [(->SType "P1")] [SType])]
              (is (thrown? ClassCastException (parse "a:stype" (.getMom em)))))))
 
