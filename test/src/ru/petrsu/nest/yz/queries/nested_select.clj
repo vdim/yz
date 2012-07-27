@@ -119,17 +119,17 @@
 
 (deftest neg-parse-nest-queries
          ^{:doc "Contains tests which are thrown exceptions."}
-         (is (thrown? RuntimeException (tc/qparse "somelem")))
-         (is (thrown? RuntimeException (tc/qparse "building (somelem)")))
-         (is (thrown? RuntimeException (tc/qparse "building (room, somelem)")))
-         (is (thrown? RuntimeException (tc/qparse "building (somelem, room)")))
-         (is (thrown? RuntimeException (tc/qparse "building (room, floor, somelem)")))
-         (is (thrown? RuntimeException (tc/qparse "building (room, floor, device, somelem)")))
-         (is (thrown? RuntimeException (tc/qparse "building (room (somelem))")))
-         (is (thrown? RuntimeException (tc/qparse "building (room (floor (somelem)))")))
-         (is (thrown? RuntimeException (tc/qparse "building (somelem)")))
-         (is (thrown? RuntimeException (tc/qparse "building, somelem")))
-         (is (thrown? RuntimeException (tc/qparse "somelem, building"))))
+         (is (thrown? NotFoundElementException (tc/qparse "somelem")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (somelem)")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (room, somelem)")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (somelem, room)")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (room, floor, somelem)")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (room, floor, device, somelem)")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (room (somelem))")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (room (floor (somelem)))")))
+         (is (thrown? NotFoundElementException (tc/qparse "building (somelem)")))
+         (is (thrown? NotFoundElementException (tc/qparse "building, somelem")))
+         (is (thrown? NotFoundElementException (tc/qparse "somelem, building"))))
 
 
 (deftest dp-in-nest
