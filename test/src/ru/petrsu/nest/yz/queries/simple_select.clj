@@ -108,9 +108,9 @@
                       (throw (:thrwable r))
                       (:rows r)))]
            (is (= (count (f "li")) 6))
-           (is (= (count (f "li[MACAddress]")) 5))
-           (is (= (count (f "li[& MACAddress]")) 5))
-           (is (= (count (f "li[MACAddress &]")) 5))
+           (is (= (count (f "li[MACAddress]")) 6))
+           (is (= (count (f "li[& MACAddress]")) 6))
+           (is (= (count (f "li[MACAddress &]")) 6))
            (is (tc/eq-colls (f "cou.room") [[bd/r1001_f1_b2] [bd/r102_f1_b1]]))
            (is (tc/eq-colls (f "cou (room)") [[bd/rootCompositeOU] 
                                               [bd/cou_d2 bd/r1001_f1_b2] 
