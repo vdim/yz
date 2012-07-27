@@ -27,7 +27,8 @@
          
          In order to use YZ you must have some implementation 
          of the ElementManager interface (see below) and pass it to the pquery function."}
-  (:require [ru.petrsu.nest.yz.parsing :as p])
+  (:require [ru.petrsu.nest.yz.parsing :as p] 
+            [clojure.core.reducers :as r])
   (:import (clojure.lang PersistentArrayMap PersistentVector)))
 
 
@@ -468,13 +469,16 @@
 
 (defn- p-nest
   "Processes :nest value with some objects."
-  [^PersistentArrayMap nest, objs]
+  [^PersistentArrayMap nest objs]
   (if (empty? objs)
     []
     (let [n (:nest nest)]
-      (reduce #(conj %1 (%2 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(%2 0)]))))
-              []
-              (process-then objs (:then nest) (:props nest) (:sort nest))))))
+      (r/fold (fn
+                ([]
+                 [])
+                ([arg0 arg1]
+                 (conj arg0 (arg1 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(arg1 0)]))))))
+              (vec (process-then objs (:then nest) (:props nest) (:sort nest)))))))
 
 
 (defn- process-nests
