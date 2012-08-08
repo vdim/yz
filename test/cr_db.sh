@@ -26,6 +26,9 @@ driver_hsqldb="org.hsqldb.jdbcDriver"
 # Define default database.
 database="h2"
 
+# Default java options.
+JAVA_OPTIONS=""
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Generate database of specified type for specified amount elements.
@@ -34,6 +37,7 @@ Options:
     -d, --database <database>   database (h2, derby, hsqldb, lsm). h2 by default.
     -n, --elems-database <\"el1 el2 ...\"> list with amount elements into databases
 				(all by default).
+    -j, --java-options <\"options\"> define java options.
     -h, --help			display this help message and exit"
 
 # Handling options.
@@ -42,6 +46,7 @@ while true; do
         -d|--database) database=$2; shift 2;;
         -h|--help) echo "$usage"; exit 0 ;; 
 	-n|--elems-database) n_db=$2; shift 2;;
+	-j|--java-options) JAVA_OPTIONS=$2; shift 2;;
         -*) echo "unknown option $1" >&2 ; exit 1 ;;
 	*) break ;;
     esac
@@ -81,6 +86,6 @@ for n in $n_db; do
 
 	# Run generate-bd function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
 	# For more details see doc string for the clojure.main/main function.
-	java -cp $CP clojure.main -i $clj_file -e "($clj_func $n \"$url\")" 
+	java $JAVA_OPTIONS -cp $CP clojure.main -i $clj_file -e "($clj_func $n \"$url\")" 
 done;
 
