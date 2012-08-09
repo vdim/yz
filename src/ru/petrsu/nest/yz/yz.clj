@@ -28,8 +28,9 @@
   (:gen-class :name ru.petrsu.nest.yz.QueryYZ
               :constructors {[ru.petrsu.nest.yz.core.ElementManager] [], 
                              [ru.petrsu.nest.yz.core.ElementManager String] []}
-              :methods [[getResultList [String] java.util.List]
+              :methods [[getResultList [String] java.util.List] 
                         [getSingleResult [String] Object]
+                        [getFlatResult [String] java.util.List]
                         [getResult [String] java.util.Map]
                         [getStructuredResult [] java.util.List]
                         [getError [] String]
@@ -117,3 +118,9 @@
     (if (or (not= (count rows) 1) (not= (count (nth rows 0)) 1))
       (throw (Exception. "Result is not single."))
       (nth (nth rows 0) 0))))
+
+
+(defn -getFlatResult
+  "Returns result as flat collection."
+  [this, ^String query]
+  (flatten (-getResultList this, query)))
