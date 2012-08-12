@@ -622,7 +622,14 @@
   parameterized queries:
     (defq q \"floor#(number=$1)\") 
     (q 1)
-    (q 2)"
+    (q 2)  
+  You can indicate connection information into meta information of macro:
+    (defq ^{:mom i-mom, :em mem} \"floor#(number=$1)\")
+  Also defq provide more concise variant for connection definition 
+  (it may be usefull for definition many parameterized queries):
+    (def conn ^{:mom i-mom, :em mem})
+    (def q1 ^{:conn conn} \"some query 1\")
+    (def q2 ^{:conn conn} \"some query 2\")"
   [name ^String query]
   (let [mi (meta name)
         conn (:conn mi)
