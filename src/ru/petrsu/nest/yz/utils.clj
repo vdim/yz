@@ -21,7 +21,7 @@
 (ns ru.petrsu.nest.yz.utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Namespace for common functions."}
-  (:import (ru.petrsu.nest.yz DefaultProperty)
+  (:import (ru.petrsu.nest.yz DefaultProperty NotFoundPathException)
            (java.lang.annotation Annotation)
            (java.lang.reflect Field)))
 
@@ -96,3 +96,39 @@
   function."
   [v1 v2]
   (reduce conj v1 v2))
+
+
+(defn get-paths
+  "Returns list of paths beetwen cl-target and cl-source.
+  The search is based on a MOM (Map Of Model)."
+  [^Class cl-target, ^Class cl-source mom]
+  (if (or (nil? cl-target) (nil? cl-source)
+          (= :not-specified cl-target) (= :not-specified cl-source)
+          (not (class? cl-target)) (not (class? cl-source)))
+    nil
+    (loop [cl- cl-target]
+      (let [paths (get (get mom cl-source) cl-)]
+        (if (empty? paths)
+          (if (nil? cl-)
+            (let [paths (some #(let [ps (get (get mom cl-source) %)]
+                                 (if (not (empty? ps)) ps)) 
+                              (ancestors cl-target)) 
+                  children (get-in mom [:children cl-source])
+                  ; In case there are paths between children and cl-target
+                  ; we return map where child -> paths between this child and
+                  ; cl-target.
+                  paths (if (empty? paths)
+                          (reduce #(let [; path from child to cl-target
+                                         p (get (get mom %2) cl-target)]
+                                     (if p
+                                       (assoc %1 %2 p)
+                                       %1))
+                                  {}
+                                  children)
+                          paths)]
+              (if (empty? paths)
+                (if mom
+                  (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
+                paths))
+            (recur (:superclass (get mom cl-))))
+          paths)))))
