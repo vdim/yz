@@ -26,15 +26,15 @@
 
 (def classes #{Floor, Room, Building})
 
-(deftest t-get-paths
-         ^{:doc "Tests the get-paths function."}
-          (is (= (first (get-paths Room Building classes))
+(deftest t-get-ps
+         ^{:doc "Tests the get-ps function."}
+          (is (= (first (get-ps Room Building classes))
                  {:path [ru.petrsu.nest.son.Room ru.petrsu.nest.son.Floor ru.petrsu.nest.son.Building], 
                   :ppath ["floor" "building"]}))
-          (is (= (first (get-paths Floor Building classes))
+          (is (= (first (get-ps Floor Building classes))
                  {:path [ru.petrsu.nest.son.Floor ru.petrsu.nest.son.Building], 
                   :ppath ["building"]}))
-          (is (= (first (get-paths Building Floor classes))
+          (is (= (first (get-ps Building Floor classes))
                  {:path [ru.petrsu.nest.son.Building ru.petrsu.nest.son.Floor], 
                   :ppath ["floors"]})))
 
