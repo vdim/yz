@@ -28,6 +28,7 @@
          In order to use YZ you must have some implementation 
          of the ElementManager interface (see below) and pass it to the pquery function."}
   (:require [ru.petrsu.nest.yz.parsing :as p])
+  (:use ru.petrsu.nest.yz.utils)
   (:import (clojure.lang PersistentArrayMap PersistentVector)))
 
 
@@ -234,25 +235,35 @@
     elems))
 
 
+(defn- get-qp
+  "Returns value from p/query-params for 
+  specified number (has string type)."
+  [n]
+  (nth @p/query-params (dec (Integer/parseInt (name n)))))
+
+
 (defn- select-elems
   "Returns from storage objects which have 
   ':what' class from the nest map."
   [nest]
   (let [^ElementManager em @a-em
         {:keys [^Class what ^PersistentVector preds sort exactly unique limit]} nest]
-    (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
-      (sort-rq (.getElems em what preds) sort false)
-      (let [; Get elements
-            elems (.getElems em what)
-            ; Filter by exactly option.
-            elems (if exactly (filter #(= (class %) what) elems) elems)
-            ; Filter by unique option.
-            elems (if unique (distinct elems) elems) 
-            ; Filter by list of predicates and then sort.
-            elems (sort-rq (filter-by-preds elems preds) sort false)
-            ; Filter by limit option.
-            elems (limiting elems limit)]
-        elems))))
+    (if (keyword? what)
+      (let [v (get-qp what)]
+        (if (coll? v) v [v]))
+      (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
+        (sort-rq (.getElems em what preds) sort false)
+        (let [; Get elements
+              elems (.getElems em what)
+              ; Filter by exactly option.
+              elems (if exactly (filter #(= (class %) what) elems) elems)
+              ; Filter by unique option.
+              elems (if unique (distinct elems) elems) 
+              ; Filter by list of predicates and then sort.
+              elems (sort-rq (filter-by-preds elems preds) sort false)
+              ; Filter by limit option.
+              elems (limiting elems limit)]
+          elems)))))
 
 
 (defn- get-fv
@@ -277,13 +288,6 @@
 
         ; Returns value.
         :else v))))
-
-
-(defn- get-qp
-  "Returns value from p/query-params for 
-  specified number (has string type)."
-  [n]
-  (nth @p/query-params (dec (Integer/parseInt (name n)))))
 
 
 (declare get-rows)
@@ -379,6 +383,7 @@
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
   (let [{:keys [preds where ^Class what sort exactly unique limit]} m
+        where (or where (get-paths what (class (first sources)) @a-mom))
         f (if exactly #(= (class %) what) #(instance? what %))
         elems (sort-rq (filter-by-preds 
                          (filter f
@@ -639,5 +644,6 @@
         nparams (count @p/query-params)
         params (repeatedly nparams gensym)]
     `(defn ~(symbol (str name)) 
-       ([~@params] (do (reset! p/query-params (list ~@params))
-                     (get-qr ~parse-res ~mom ~em))))))
+       ([~@params] 
+        (reset! p/query-params (list ~@params))
+        (get-qr ~parse-res ~mom ~em)))))

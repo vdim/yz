@@ -33,7 +33,7 @@
   (:require [clojure.string :as cs]
             [ru.petrsu.nest.yz.utils :as u])
   (:import (clojure.lang PersistentArrayMap PersistentVector Keyword)
-           (ru.petrsu.nest.yz SyntaxException NotFoundPathException 
+           (ru.petrsu.nest.yz SyntaxException
                               NotFoundElementException NotFoundFunctionException
                               NotDefinedDPException NotFoundPropertyException)))
 
@@ -181,40 +181,6 @@
       (get-in-then res nl tl k))))
 
 
-(defn- get-paths
-  "Returns list of paths beetwen cl-target and cl-source."
-  [^Class cl-target, ^Class cl-source]
-  (if (or (nil? cl-target) (nil? cl-source)
-          (= :not-specified cl-target) (= :not-specified cl-source))
-    nil
-    (loop [cl- cl-target]
-      (let [paths (get (get *mom* cl-source) cl-)]
-        (if (empty? paths)
-          (if (nil? cl-)
-            (let [paths (some #(let [ps (get (get *mom* cl-source) %)]
-                                 (if (not (empty? ps)) ps)) 
-                              (ancestors cl-target)) 
-                  children (get-in *mom* [:children cl-source])
-                  ; In case there are paths between children and cl-target
-                  ; we return map where child -> paths between this child and
-                  ; cl-target.
-                  paths (if (empty? paths)
-                          (reduce #(let [; path from child to cl-target
-                                         p (get (get *mom* %2) cl-target)]
-                                     (if p
-                                       (assoc %1 %2 p)
-                                       %1))
-                                  {}
-                                  children)
-                          paths)]
-              (if (empty? paths)
-                (if *mom*
-                  (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
-                paths))
-            (recur (:superclass (get *mom* cl-))))
-          paths)))))
-
-
 (defn- change-preds
   "Changed ':preds' and 'result' of the state."
   [state]
@@ -278,7 +244,7 @@
       But if we have :cl, we can filter list with sac
       and avoid error."
   [id, cl-source, cl-target]
-  (let [paths (get-paths cl-target cl-source)]
+  (let [paths (u/get-paths cl-target cl-source *mom*)]
     (if (empty? paths)
       ;; If path is not found then function returns self id. 
       ;; We can't throw exception, because we don't know whether 
@@ -572,7 +538,7 @@
                             (if (vector? p)
                               (let [f (p 1)]
                                 (conj ps [(p 0) 
-                                          (reduce (fn [r vv] (conj r (assoc vv :where (get-paths (:what vv) cl)))) [] f)]))
+                                          (reduce (fn [r vv] (conj r (assoc vv :where (u/get-paths (:what vv) cl *mom*)))) [] f)]))
                               (conj ps p))) [] (:params k)))
 
                  ;Sorting is done by some property: {a:name}building
@@ -588,7 +554,10 @@
   "This function is called when id is found in query. Returns new result."
   [res ^String id nl tl is-recur tsort unique hb-range lb-range tail]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
-        ^Class cl (if (and (nil? *mom*) (> tl 0)) nil (find-class id))
+        cl (cond 
+             (.startsWith id "$") (do (swap! query-params conj nil) (keyword (subs id 1)))
+             (and (nil? *mom*) (> tl 0)) nil 
+             :else (find-class id))
         last-then (get-in-nest res nl :then)
         tl- (dec tl)]
     (if (nil? cl)
@@ -604,7 +573,7 @@
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some then map.
-            assoc-lth #(assoc %1 :what cl :where (get-paths cl %2) 
+            assoc-lth #(assoc %1 :what cl :where (u/get-paths cl %2 *mom*)
                                 :sort vsort :exactly ex :unique unique :limit limit)
             ; What for getting where.
             what (get-in-nest-or-then res nl tl- :what)]
@@ -616,14 +585,14 @@
                   ;; Because of get-in can return nil, but lt must be not nil.
                   lt (get-in last-then then-v)
                   lt (if (nil? lt) empty-then lt)
-
+  
                   lt (assoc-lth lt what)
                   lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
               (f lt)))
          (assoc-in-nest 
            res nl
            :what cl
-           :where (get-paths cl, what)
+           :where (u/get-paths cl what *mom*)
            :sort vsort
            :exactly ex
            :unique unique 
@@ -858,7 +827,7 @@
 (defn- process-id
   "Processes some id due to functions 'f'"
   [f]
-  (complex [id (conc (alt (lit-conc-seq "&.") (rep+ alpha)) 
+  (complex [id (conc (alt (lit-conc-seq "&.") (conc (lit \$) integer) (rep+ alpha)) 
                      (opt (lit \^))) ; Defines whether class must be exact.
             _ (partial set-id (reduce str (flatten id)) f)]
             id))
@@ -1058,7 +1027,7 @@
                                                       ; contains union or intersection operation
                                            (assoc % :where 
                                                   
-                                                  (get-paths (:what %) (get-in-nest res nl :what)))
+                                                  (u/get-paths (:what %) (get-in-nest res nl :what) *mom*))
                                            %)
                                         (:result rq)))))))
             :when rq
@@ -1207,7 +1176,7 @@
                          q (effects (:result (parse+ ret *mom*)))
                          q (effects (vec (map #(assoc % 
                                                       :where 
-                                                      (get-paths (:what %) (get-in-nest res nl :what))) q)))
+                                                      (u/get-paths (:what %) (get-in-nest res nl :what) *mom*)) q)))
                          fm (get-info :f-modificator)
                          fm (effects (if (nil? fm) :dep-list fm))
                          _ (update-param [fm q])
