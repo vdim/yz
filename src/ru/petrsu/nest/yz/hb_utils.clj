@@ -111,7 +111,7 @@
           (recur to-t (conj to-f m) (rest vv)))))))
 
   
-(defn get-paths
+(defn get-ps
   "Returns sequence of maps. Each map contains following keys:
     :path path between \"from\" and \"to\" as classes
     :ppath path between \"from\" and \"to\" as properties"
@@ -132,10 +132,10 @@
 
 
 (defn- get-s-paths
-  "Gets maps from get-paths and transforms value of :ppath key to
+  "Gets maps from get-ps and transforms value of :ppath key to
   one string. Returns sequence of this strings."
   [from to classes]
-  (vec (map :ppath (get-paths from to classes))))
+  (vec (map :ppath (get-ps from to classes))))
 
 
 (defn get-fields-name
