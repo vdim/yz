@@ -74,15 +74,17 @@
 ;; Define tests
 
 (deftest long-limiting
-         (let [ls [1 2 3 1 5 6]]
-           (is (tc/eq-colls (yzf/collq "1:long" ls) [[2] [3] [1] [5] [6]]))
-           (is (tc/eq-colls (yzf/collq "1-2:long" ls) [[2] [3]]))
-           (is (tc/eq-colls (yzf/collq "1-1:long" ls) [[2]]))
-           (is (tc/eq-colls (yzf/collq "0-1:long" ls) [[1] [2]]))
-           (is (tc/eq-colls (yzf/collq "0-2:long" ls) [[1] [2] [3]]))
-           (is (tc/eq-colls (yzf/collq "-1:long" ls) [[1] [2] [3] [1] [5]]))
-           (is (tc/eq-colls (yzf/collq "-0-1:long" ls) [[5] [6]]))
-           (is (tc/eq-colls (yzf/collq "-1-1:long" ls) [[5]]))))
+         (let [ls [1 2 3 1 5 6]
+               f #(is (tc/eq-colls (yzf/collq %1 ls) %2))]
+           (f "1:long" [[2] [3] [1] [5] [6]])
+           (f "1-2:long" [[2] [3]])
+           (f "1-1:long" [[2]])
+           (f "0-1:long" [[1] [2]])
+           (f "0-2:long" [[1] [2] [3]])
+           (f "-1:long" [[1] [2] [3] [1] [5]])
+           (f "-0-1:long" [[5] [6]])
+           (f "-1-1:long" [[5]])))
+
 
 (deftest building-limiting
          (let [mom (assoc tc/*mom* Building
