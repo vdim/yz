@@ -485,17 +485,23 @@
   "Processes :nest value of query structure"
   [nests f]
   (let [op (atom nil)]
-    (reduce #(if (map? %2)
-               (let [v1 (if (nil? (get %2 :func)) 
-                          (p-nest %2 (f %2))
-                          (reduce (fn [r rf] 
-                                    (conj r rf [])) [] (process-func %2 nil)))]
-                 (if @op
-                   (@op %1 v1)
-                   v1))
-               (do (reset! op %2) %1))
-            []
-            nests)))
+    (r/fold 
+      2
+      (fn 
+        ([] [])
+        ([arg1 arg2]
+         (if @op
+           (@op arg1 arg2)
+           arg2)))
+      (fn [arg1 arg2]
+        (if (map? arg2)
+          (let [v1 (if (nil? (get arg2 :func)) 
+                     (p-nest arg2 (f arg2))
+                     (reduce (fn [r rf] 
+                               (conj r rf [])) [] (process-func arg2 nil)))]
+            v1)
+          (do (reset! op arg2) arg1)))
+      nests)))
 
 
 (defn- get-column-name
