@@ -76,7 +76,7 @@ Options:
 			    the -q option is ignored.
     -Q, --query		    specify query. In case the option is specified then 
 			    the -q option is ignored. Example for double quotes: 
-				-Q 'building#(name=\"Building_CRT\")
+				-Q 'building#(name=\\\"Building_CRT\\\")'
     -n, --elems-database <\"el1 ...\"> list with amount elements into databases
     -c, --count <num>	    count of execution. 1 by default.
     -p, --prefix <prefix>   prefix for files for result of benchmark. Empty by default.
