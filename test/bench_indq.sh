@@ -60,6 +60,9 @@ idle_count=0
 # Default criterium library usage.
 library_cr=false
 
+# If q-num is -2, then user must specify query.
+query=""
+
 # Help string
 usage="Usage: $0 [OPTION...]
 Benchmark individual queries.
@@ -69,7 +72,11 @@ Options:
     -t, --db_type <type>    type of database (ram or hdd). ram by default.
     -d, --database <database> database (h2, derby, hsqldb, lsm). h2 by default.
     -q, --query-num <num>   number of query (use -1 for benchmarking all queries) 
-			    from vector. -1 by default.
+			    from vector. -1 by default. If -Q option is specified then
+			    the -q option is ignored.
+    -Q, --query		    specify query. In case the option is specified then 
+			    the -q option is ignored. Example for double quotes: 
+				-Q 'building#(name=\"Building_CRT\")
     -n, --elems-database <\"el1 ...\"> list with amount elements into databases
     -c, --count <num>	    count of execution. 1 by default.
     -p, --prefix <prefix>   prefix for files for result of benchmark. Empty by default.
@@ -88,6 +95,7 @@ while true; do
         -t|--dbtype) db_type="$2"; shift 2 ;;
         -d|--database) database=$2; shift 2;;
         -q|--query-num) q_num=$2; shift 2;;
+        -Q|--query) query=$2; shift 2;;
         -h|--help) echo "$usage"; exit 0 ;; 
 	-n|--elems-database) n_db=$2; shift 2;;
 	-c|--count) c=$2; shift 2;;
@@ -134,7 +142,7 @@ for i in `seq $c`; do
 	conns=${!database}
 	
 	params="\"$lang\" $q_num \"$db_type\" \"$conns\" \"$lang-$db_type-$database$label\" \
-	       $n \"$prefix\" \"$measurement\" $idle_count $library_cr"
+	       $n \"$prefix\" \"$measurement\" $idle_count $library_cr \"$query\""
 
 	# Run bench-ind-query function from ru.petrsu.nest.yz.benchmark.benchmark namespace. 
 	# For more details see doc string for the clojure.main/main function.
