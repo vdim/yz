@@ -21,7 +21,8 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Pretty BD with Nest model for testing."}
   (:require [ru.petrsu.nest.yz.queries.core :as tc]
-            [ru.petrsu.nest.util.utils :as f])
+            [ru.petrsu.nest.util.utils :as f]
+            [ru.petrsu.nest.yz.hb-utils :as hbu])
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 
                                IPv4Interface, UnknownLinkInterface,
@@ -146,3 +147,6 @@
 
 ;; Memory Element Manager.
 (def mem (tc/em-memory son))
+
+;; MOM of Nest model
+(def bd-mom (hbu/mom-from-file "nest.mom"))
