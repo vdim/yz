@@ -485,7 +485,11 @@
 (defn- process-nests
   "Processes :nest value of query structure"
   [nests f]
-  (let [op (atom nil)]
+  (let [; op is operation between result of queries
+        ; (union or intersection). 
+        ; Union: building, room
+        ; Intersection: building; room
+        op (atom nil)]
     (reduce #(if (map? %2)
                (let [v1 (if (nil? (get %2 :func)) 
                           (p-nest %2 (f %2))
