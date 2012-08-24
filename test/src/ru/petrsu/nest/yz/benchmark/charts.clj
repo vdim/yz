@@ -186,7 +186,7 @@
            [] (remove empty? (line-seq (cio/reader f))))))
 
 
-(defn bar-chart-by-lang
+(defn bar-chart-by-label
   "Creates bar chart (JFreeChart object) where categories is set of databases 
   (in fact amount elements of databases), values is set of 
   some characteristic of query (or list with queries),
@@ -198,9 +198,9 @@
     [x y title] - vector with x, y labels and title of chart 
                   ([nil nil nil] by default)."
   ([f ch]
-   (bar-chart-by-lang f ch #{} [nil nil nil]))
+   (bar-chart-by-label f ch #{} [nil nil nil]))
   ([f ch labels]
-   (bar-chart-by-lang f ch labels [nil nil nil]))
+   (bar-chart-by-label f ch labels [nil nil nil]))
   ([f ch labels [x y title]]
    (let [r (remove empty? (get-res-from-ind-file f labels))
          lines (map (fn [l] {:time (l (ch bb/ind-chars)) 
@@ -245,7 +245,7 @@
      (map #(let [f (str path-i "/" prefix % ".txt")
                  gf (str path-c "/" prefix % ".png")]
              (try
-               (let [chart (bar-chart-by-lang f :q50 labels [x y (titles %)])
+               (let [chart (bar-chart-by-label f :q50 labels [x y (titles %)])
                      _ (.setItemFont (.getLegend chart) l-font)]
                
                  (ic/save chart gf :width 1024 :height 768))
