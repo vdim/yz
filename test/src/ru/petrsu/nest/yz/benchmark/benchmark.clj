@@ -493,10 +493,12 @@
       idle-count - idle count of calling query before executing measurement.
       cr? - defines whether benchmarking must be used the cr library.
       query - In case query is specified then q-num is ignored.
+      lqueries - name of list of queires. If it is specified then q-num and query 
+        parameters are ignored.
 
   Note #1: result of benchmark is saved to the f-prefixnumber_query.txt file.
   Note #2: benchmark is run once."
-  [lang q-num db-type conn-s legend-label db-n f-prefix measurement idle-count cr? query]
+  [lang q-num db-type conn-s legend-label db-n f-prefix measurement idle-count cr? query lqueries]
   (let [jdbc? (.startsWith conn-s "jdbc")
         ram? (= "ram" db-type)
         yz? (= lang "yz")
@@ -523,7 +525,8 @@
                yz/individual-queries-jpa
                yz/individual-queries)
              hql/individual-queries)
-        qs (cond (not-empty query) [query]
+        qs (cond (not-empty lqueries) [(eval (symbol lqueries))]
+                 (not-empty query) [query]
                  (= q-num -1) qs 
                  :else [(qs q-num)])
 
@@ -534,7 +537,8 @@
         mom (let [f (if jdbc? "nest_jpa.mom" "nest.mom")] 
               (mom-from-file f))]
     
-    (map-indexed #(let [f (str f-prefix (cond (not-empty query) "01_others" 
+    (map-indexed #(let [f (str f-prefix (cond (not-empty lqueries) (name (symbol lqueries))
+                                              (not-empty query) "01_others" 
                                               (= q-num -1) %1 
                                               :else q-num) ".txt")]
                     (with-open [wrtr (cio/writer f :append true)]
@@ -548,7 +552,8 @@
                                                                     (if (vector? %2)
                                                                       (bench-for-list-hql n %2 em) 
                                                                       (bench-quering-hql n %2 em)))
-                                                                  [db-n legend-label *measurement* query])) false)))))
+                                                                  [db-n legend-label *measurement* query lqueries])) 
+                                             false)))))
                  qs)))
 
 
