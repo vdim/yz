@@ -61,7 +61,7 @@
         (.typeName e)
         (str (.typeName e) \space display-name))))
   Comparable
-  (compareTo [_]
+  (compareTo [_ _]
     0)
   SonBean
   (getId [e]
