@@ -455,12 +455,12 @@
                           (if (seq? v)
                             (some (fn [o] (= o :not-found)) v)
                             false))
-                       (map (fn [o] [o, (process-props o props-)]) objs-))]
+                       (into [] (r/map (fn [o] [o, (process-props o props-)]) objs-)))]
         (if props-
           (sort-rq pp tsort true)
           pp))
       (recur (if (and (nil? (:where then-)) props-)
-               (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
+               (remove #(= % :not-found) (flatten (into [] (r/map #(process-props % props-) objs-))))
                (get-objs-by-path objs- then-))
              (:then then-) 
              (:props then-)
