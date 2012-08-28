@@ -1489,9 +1489,9 @@
    "{a:@(count `room') d:name}building"
    "{a:@(count `room') a:name}building"
    "{a:@(count `room') a:name d:description}building"
-   "{a:@(count `room') a:name d:description a:floors}building"
-   "{a:name d:description a:@(count `room') a:floors}building"
-   "{a:name d:description a:floors a:@(count `room')}building"
+   "{a:@(count `room') a:name d:description a:floor}building"
+   "{a:name d:description a:@(count `room') a:floor}building"
+   "{a:name d:description a:floor a:@(count `room')}building"
 
 ;; Regular expressions
    "room#(number~\".*\")"
