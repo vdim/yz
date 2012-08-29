@@ -95,4 +95,4 @@
 (defn slowf
   "Slow function for testing parallelism."
   [p]
-  (dotimes [_ 1e8] (string? p)))
+  (dotimes [_ 1e7] (string? p)))
