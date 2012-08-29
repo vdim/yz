@@ -1116,7 +1116,7 @@
 
 (def process-fn
   "Processes function name."
-  (complex [n (partial text [\space \newline \tab])
+  (complex [n (partial text [\space \newline \tab \)])
             _ (update-info :function 
                            #(if-let [f (let [sym (symbol (.toString n))]
                                          (some (fn [ns-] (ns-resolve ns- sym)) (all-ns)))]
