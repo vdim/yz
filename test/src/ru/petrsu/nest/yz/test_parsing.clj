@@ -1846,6 +1846,10 @@
    "@(str)"
    "building[@(str)]"
    "building[name @(str)]"
+
+   ;; Tests for fixing exception "java.lang.Character cannot be cast to java.lang.String"
+   "@(class r)"
+   "@(class room)"
    ])
 
 

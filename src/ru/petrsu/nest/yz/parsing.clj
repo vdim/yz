@@ -1212,7 +1212,7 @@
 (def pid
   "Defines parameter as some id."
   (complex [id (rep+ alpha)
-            _ (update-param (symbol (reduce str id)))]
+            _ (update-param (symbol (reduce str "" id)))]
            id))
 
 
