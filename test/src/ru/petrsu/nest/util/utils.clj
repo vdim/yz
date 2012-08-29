@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -90,3 +90,9 @@
   [v]
   (let [_ (println "v = " v)]
     v))
+
+
+(defn slowf
+  "Slow function for testing parallelism."
+  [p]
+  (dotimes [_ 1e8] (string? p)))
