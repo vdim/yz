@@ -435,14 +435,14 @@
   [obj, props]
   (if (empty? props)
     obj
-    (map #(let [new-objs (process-prop % obj)]
-            (if (sequential? new-objs)
-              ; If value of property is sequence (or array) then we
-              ; return sequence. It may be usefull for queries
-              ; something like this building.floors.rooms.occupancy
-              (seq new-objs)
-              new-objs))
-         props)))
+    (into [] (r/map #(let [new-objs (process-prop % obj)]
+                       (if (sequential? new-objs)
+                         ; If value of property is sequence (or array) then we
+                         ; return sequence. It may be usefull for queries
+                         ; something like this building.floors.rooms.occupancy
+                         (seq new-objs)
+                         new-objs))
+                    props))))
 
 
 (defn- process-then
@@ -455,7 +455,7 @@
                           (if (seq? v)
                             (some (fn [o] (= o :not-found)) v)
                             false))
-                       (into [] (r/map (fn [o] [o, (process-props o props-)]) objs-)))]
+                       (map (fn [o] [o, (process-props o props-)]) objs-))]
         (if props-
           (sort-rq pp tsort true)
           pp))
