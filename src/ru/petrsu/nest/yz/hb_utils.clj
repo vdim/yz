@@ -230,6 +230,40 @@
       s-classes)))
 
 
+(defn get-paths-to-parent
+  "In case path between two classes is empty, then
+  this function tries to find path between first class and
+  parent of second class."
+  [mom classes]
+  (reduce (fn [m cl-source]
+            (reduce (fn [m2 cl-target] 
+                      (let [paths (get-in m2 [cl-source cl-target])]
+                        (if (empty? paths)
+                          (let [paths (some #(let [ps (get-in m2 [cl-source %])]
+                                               (if (not (empty? ps)) ps)) 
+                                            (ancestors cl-target)) 
+                                ; In case there are paths between children and cl-target
+                                ; we return map where child -> paths between this child and
+                                ; cl-target.
+                                paths (if (empty? paths)
+                                        (reduce #(let [; path from child to cl-target
+                                                       p (get-in m2 [%2 cl-target])]
+                                                   (if p
+                                                     (assoc %1 %2 p)
+                                                     %1))
+                                                {}
+                                                (get-in m2 [:children cl-source]))
+                                        paths)]
+                            (if (not-empty paths) 
+                                (assoc-in m2 [cl-source cl-target] paths)
+                              m2))
+                          m2)))
+                    m 
+                    classes))
+          mom
+          classes))
+
+
 (defn gen-mom
   "Generates mom from list of classes."
   [classes, mom-old]
@@ -237,8 +271,11 @@
         sns (get-sns mom, (:sns mom-old))
         snames (get-names mom :simpleName (:snames mom-old))
         names (get-names mom :name (:names mom-old))
-        children (children classes)]
-    (assoc mom :sns sns :names names :snames snames :children children)))
+        children (children classes)
+        mom (assoc mom :sns sns :names names :snames snames :children children)
+        mom (get-paths-to-parent mom classes)]
+    mom))
+
 
 (defn gen-mom-from-cfg
   "Generates MOM from hibernate configuration xml file 
