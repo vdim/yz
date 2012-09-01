@@ -113,7 +113,6 @@
             (let [paths (some #(let [ps (get (get mom cl-source) %)]
                                  (if (not (empty? ps)) ps)) 
                               (ancestors cl-target)) 
-                  children (get-in mom [:children cl-source])
                   ; In case there are paths between children and cl-target
                   ; we return map where child -> paths between this child and
                   ; cl-target.
@@ -124,7 +123,7 @@
                                        (assoc %1 %2 p)
                                        %1))
                                   {}
-                                  children)
+                                  (get-in mom [:children cl-source]))
                           paths)]
               (if (empty? paths)
                 (if mom
