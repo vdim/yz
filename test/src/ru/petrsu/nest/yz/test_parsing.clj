@@ -84,7 +84,10 @@
   "Takes the MOM and associates with the :sort key 
   the [nil nil nil] value. Returns new MOM."
   [mom]
-  (reduce (fn [m [k v]] (assoc m k (assoc v :sort [nil nil nil]))) {} mom))
+  (reduce (fn [m [k v]] 
+            (if (map? v)
+              (assoc m k (assoc v :sort [nil nil nil]))
+              (assoc m k v))) {} mom))
 
 
 (defn remove-nils
