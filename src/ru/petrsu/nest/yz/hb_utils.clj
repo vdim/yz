@@ -214,7 +214,6 @@
             (assoc m
                    cl
                    (reduce #(let [paths (get-s-paths cl %2 (set classes))]
-                                  
                               (if (empty? paths)
                                 %1 
                                 (assoc %1 %2 paths)))
@@ -258,24 +257,25 @@
 
 
 (defn copy-paths
-  ""
+  "If there is path from one class to another and from another class to
+  yet another class but there is not path from the one class to the 
+  yet another class then we create path from the one class to the
+  yet another class."
   [mom classes]
   (reduce (fn [m cl-source]
             (reduce (fn [m2 cl-target] 
                       (let [paths (get-in m2 [cl-source cl-target])]
-                            (if (not-empty paths) 
-                              (if (map? paths)
-                                m2
-                                (let [m-of-source (get m2 cl-source)
-                                      m-of-target (get m2 cl-target)]
-                                  (assoc m2 cl-source
-                                         (reduce #(if (or (= cl-source %2) (get m-of-source %2) )
-                                                    %
-                                                    (let [ps (vec (for [a paths b (get m-of-target %2)] (vec (concat a b))))]
-                                                      (if (not-empty ps)
-                                                        (assoc %1 %2 ps)
-                                                        %)))
-                                                 m-of-source classes))))
+                            (if (not (and (empty? paths) (map? paths)))
+                              (let [m-of-source (get m2 cl-source)
+                                    m-of-target (get m2 cl-target)]
+                                (assoc m2 cl-source
+                                       (reduce #(if (or (= cl-source %2) (get m-of-source %2))
+                                                  %
+                                                  (let [ps (vec (for [a paths b (get m-of-target %2)] (vec (concat a b))))]
+                                                    (if (not-empty ps)
+                                                      (assoc %1 %2 ps)
+                                                      %)))
+                                               m-of-source classes)))
                               m2)))
                     m 
                     classes))
@@ -293,9 +293,9 @@
                       (let [paths (get-in m2 [cl-source cl-target])]
                         (if (empty? paths)
                           (let [paths (f m2 cl-source cl-target)]
-                            (if (not-empty paths) 
-                              (assoc-in m2 [cl-source cl-target] paths)
-                              m2))
+                            (if (empty? paths) 
+                              m2
+                              (assoc-in m2 [cl-source cl-target] paths)))
                           m2)))
                     m 
                     classes))
