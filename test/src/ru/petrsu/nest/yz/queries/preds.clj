@@ -543,3 +543,18 @@
            (is (f "room[number]#(number!>=\"102\")" ["101" "101" "101" "1001" "1002"]))
            (is (f "room[number]#(number<=\"101\")" ["101" "101" "101" "1001" "1002"]))
            (is (f "room[number]#(number!>\"101\")" ["101" "101" "101" "1001" "1002"]))))
+
+
+(deftest keywords-in-rcp
+         ^{:doc "Tests keywords into RCP: ."}
+         (let [f #(tc/eq-colls (flatten (tc/rows-query %1)) %2)]
+           (is (f "building#(description=(\"Some desc\" || =nil))" [b1 b2 b3]))
+           (is (f "building#(description=(\"Some desc\" || !=nil))" [b1]))
+           (is (f "building#(description=(\"Some desc\" && =nil))" []))
+           (is (f "building#(description=(\"Some desc\" && !=nil))" [b1]))
+           (is (f "building#(description=(!=nil || \"Some desc\"))" [b1 b2 b3]))
+           (is (f "building#(description=(!=nil && =\"Some desc\"))" [b1]))
+           (is (f "building#(description=(!=nil || \"Another desc\"))" [b1 b2 b3]))
+           (is (f "building#(description=(!=nil && =\"Another desc\"))" []))
+           (is (f "device#(forwarding=((1 || 2) && !=true))" []))
+           (is (f "device#(forwarding=((1 || 2) && !=false))" []))))

@@ -1037,6 +1037,14 @@
            cp))
 
 
+(def keywords
+  "Defines alternatives of keywords (true, false, nil) 
+  and value as param ($1)"
+  (alt (change-pred (lit-conc-seq "true") :value true)
+       (change-pred (lit-conc-seq "false") :value false)
+       (change-pred (lit-conc-seq "nil") :value nil)))
+
+
 ;; The block "value" has the following BNF:
 ;;    value -> v value'
 ;;    value'-> or v value' | ε
@@ -1052,10 +1060,9 @@
 
                    ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
                    (conc (opt (change-pred sign :func))
-                         (change-pred string :value :string))
-                   (change-pred (lit-conc-seq "true") :value true)
-                   (change-pred (lit-conc-seq "false") :value false)
-                   (change-pred (lit-conc-seq "nil") :value nil)
+                         (alt (change-pred string :value :string) 
+                              keywords))
+                   keywords
                    (change-pred value-as-param :value :parameter)
                    (pfunc-as-param :value)
                   
