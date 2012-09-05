@@ -311,7 +311,8 @@
         snames (get-names mom :simpleName (:snames mom-old))
         names (get-names mom :name (:names mom-old))
         children (children classes)
-        mom (assoc mom :sns sns :names names :snames snames :children children)
+        mom (assoc mom :sns sns :names names :snames snames :children children
+                   :namespaces (get mom-old :namespaces))
         mom (get-paths-to-parent mom classes paths-to-parent)
         mom (copy-paths mom classes)
         mom (get-paths-to-parent mom classes paths-to-child)]
