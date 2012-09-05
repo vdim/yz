@@ -131,7 +131,7 @@
                (concat res to-t))))))
 
 
-(defn- get-s-paths
+(defn get-s-paths
   "Gets maps from get-ps and transforms value of :ppath key to
   one string. Returns sequence of this strings."
   [from to classes]
@@ -180,6 +180,32 @@
                       cl)
                %1)) old-names mom))
 
+
+(defn paths-to-parent
+  "Returns paths from cl-source to parent of cl-target."
+  [mom cl-source cl-target]
+  (some #(if (not= % cl-source)
+           (let [ps (get-in mom [cl-source %])]
+             (if (not (empty? ps)) 
+               ps)))
+        (ancestors cl-target)))
+
+
+(defn paths-to-child
+  "Returns paths from cl-source to child of cl-target."
+  [mom cl-source cl-target]
+  ; In case there are paths between children and cl-target
+  ; we return map where child -> paths between this child and
+  ; cl-target.
+  (reduce #(let [; path from child to cl-target
+                 p (get-in mom [%2 cl-target])]
+             (if p
+               (assoc %1 %2 p)
+               %1))
+          {}
+          (get-in mom [:children cl-source])))
+
+
 (defn- gen-basic-mom
   "Generates mom from list of classes 
   (\"classes\" contains list with Class of name mom's classes.)"
@@ -188,8 +214,9 @@
             (assoc m
                    cl
                    (reduce #(let [paths (get-s-paths cl %2 (set classes))]
+                                  
                               (if (empty? paths)
-                                %1
+                                %1 
                                 (assoc %1 %2 paths)))
                            (init-map-for-cl cl (get mom-old cl)) 
                            classes)))
@@ -230,32 +257,44 @@
       s-classes)))
 
 
-(defn get-paths-to-parent
-  "In case path between two classes is empty, then
-  this function tries to find path between first class and
-  parent of second class."
+(defn copy-paths
+  ""
   [mom classes]
   (reduce (fn [m cl-source]
             (reduce (fn [m2 cl-target] 
                       (let [paths (get-in m2 [cl-source cl-target])]
-                        (if (empty? paths)
-                          (let [paths (some #(let [ps (get-in m2 [cl-source %])]
-                                               (if (not (empty? ps)) ps)) 
-                                            (ancestors cl-target)) 
-                                ; In case there are paths between children and cl-target
-                                ; we return map where child -> paths between this child and
-                                ; cl-target.
-                                paths (if (empty? paths)
-                                        (reduce #(let [; path from child to cl-target
-                                                       p (get-in m2 [%2 cl-target])]
-                                                   (if p
-                                                     (assoc %1 %2 p)
-                                                     %1))
-                                                {}
-                                                (get-in m2 [:children cl-source]))
-                                        paths)]
                             (if (not-empty paths) 
-                                (assoc-in m2 [cl-source cl-target] paths)
+                              (if (map? paths)
+                                m2
+                                (let [m-of-source (get m2 cl-source)
+                                      m-of-target (get m2 cl-target)]
+                                  (assoc m2 cl-source
+                                         (reduce #(if (or (= cl-source %2) (get m-of-source %2) )
+                                                    %
+                                                    (let [ps (vec (for [a paths b (get m-of-target %2)] (vec (concat a b))))]
+                                                      (if (not-empty ps)
+                                                        (assoc %1 %2 ps)
+                                                        %)))
+                                                 m-of-source classes))))
+                              m2)))
+                    m 
+                    classes))
+          mom
+          classes))
+
+
+(defn get-paths-to-parent
+  "In case path between two classes is empty, then
+  this function tries to find path between first class and
+  parent of second class."
+  [mom classes f]
+  (reduce (fn [m cl-source]
+            (reduce (fn [m2 cl-target] 
+                      (let [paths (get-in m2 [cl-source cl-target])]
+                        (if (empty? paths)
+                          (let [paths (f m2 cl-source cl-target)]
+                            (if (not-empty paths) 
+                              (assoc-in m2 [cl-source cl-target] paths)
                               m2))
                           m2)))
                     m 
@@ -273,7 +312,9 @@
         names (get-names mom :name (:names mom-old))
         children (children classes)
         mom (assoc mom :sns sns :names names :snames snames :children children)
-        mom (get-paths-to-parent mom classes)]
+        mom (get-paths-to-parent mom classes paths-to-parent)
+        mom (copy-paths mom classes)
+        mom (get-paths-to-parent mom classes paths-to-child)]
     mom))
 
 
@@ -310,12 +351,41 @@
         (with-pprint-dispatch cd (println (write mom :stream nil)))))))
 
 
+(defn- symbol->class 
+  "Takes some object.
+  In case object is map then transform symbol keys or values to class.
+  In case object is set then transform symbol values to class.
+  In case object is symbol, then transform object to class."
+  [mom]
+  (let [tocl #(if (symbol? %) (Class/forName (name %)) %)]
+    (cond (map? mom)
+          (reduce (fn [m [k v]] (assoc m (tocl k) (symbol->class v)))
+                  {} 
+                  mom)
+          (set? mom) (map tocl mom)
+          :else (tocl mom))))
+
+
 (defn mom-from-file
   "Takes a name of the file (resource file) and restores a mom from one."
   [f]
+  ; WARNING: DON'T CHANGE THIS CODE TO CODE WHICH
+  ; IS USED THE LOAD-READER FUNCTION BECAUSE OF IN CASE
+  ; MOM IS MORE THAN 64Kb THEN EXCEPTION CLASSFORMATERROR
+  ; IS CAUSED.
   (let [fl (ClassLoader/getSystemResourceAsStream f)
-        fl (or fl (cio/file f))]
-    (load-reader (cio/reader fl))))
+        fl (or fl (java.io.FileInputStream. (cio/file f)))]
+    (with-open [r (-> (java.io.InputStreamReader. fl)
+                    (java.io.BufferedReader.)
+                    (java.io.PushbackReader.))]
+      (let [mom (symbol->class (read r))
+            ; Make using user's namespaces.
+            ; MOM can have key :namespaces and string value,
+            ; which has code for using namespaces. For example
+            ; {:namespaces "(use 'ru.petrsu.nest.util.utils)", ...}
+            namespaces (:namespaces mom)
+            _ (if namespaces (eval (read-string namespaces)))]
+        mom))))
 
 
 (defn mom-to-file
@@ -324,7 +394,7 @@
                           or list of classes or MOM. In case it is not MOM
                           first MOM is generated and then wrote to file.
     f - a name of target file.
-    appent - If 'append' is supplied (true) then information is appended to existing file
+    append - If 'append' is supplied (true) then information is appended to existing file
              (false by default)."
   ([emf-or-hbcfg-or-mom f]
    (mom-to-file emf-or-hbcfg-or-mom f false))
@@ -367,3 +437,5 @@
                        old-mom)
               (throw (Exception. (str "Unexpected type of sources: " src))))]
     (mom-to-file mom out)))
+
+

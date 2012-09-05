@@ -110,24 +110,7 @@
       (let [paths (get (get mom cl-source) cl-)]
         (if (empty? paths)
           (if (nil? cl-)
-            (let [paths (some #(let [ps (get (get mom cl-source) %)]
-                                 (if (not (empty? ps)) ps)) 
-                              (ancestors cl-target)) 
-                  ; In case there are paths between children and cl-target
-                  ; we return map where child -> paths between this child and
-                  ; cl-target.
-                  paths (if (empty? paths)
-                          (reduce #(let [; path from child to cl-target
-                                         p (get (get mom %2) cl-target)]
-                                     (if p
-                                       (assoc %1 %2 p)
-                                       %1))
-                                  {}
-                                  (get-in mom [:children cl-source]))
-                          paths)]
-              (if (empty? paths)
                 (if mom
                   (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
-                paths))
             (recur (:superclass (get mom cl-))))
           paths)))))
