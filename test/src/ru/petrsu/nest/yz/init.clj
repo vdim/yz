@@ -39,10 +39,11 @@
         clojure.walk
         clojure.core.protocols)
 
-  (:import (ru.petrsu.nest.son SON Building Room Floor
-                               Device, IPNetwork, EthernetInterface, 
-                               IPv4Interface, UnknownLinkInterface,
-                               CompositeOU, SimpleOU, Occupancy)
+  (:import (ru.petrsu.nest.son SON, SpatialElement, Building, Room, Floor,
+                               Device, Network, IPNetwork, UnknownNetwork,
+                               NetworkElement, NetworkInterface, IPv4Interface, UnknownNetworkInterface,
+                               EthernetInterface, LinkInterface, VLANInterface, UnknownLinkInterface,
+                               OrganizationalElement, AbstractOU, CompositeOU, SimpleOU, Occupancy)
            (university.model Course, Faculty, Student)))
 
 ;; MOM of the SON model from the Nest project (lsm version).
