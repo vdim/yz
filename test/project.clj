@@ -7,8 +7,9 @@
                  [com.h2database/h2 "1.3.160"]
                  [org.hsqldb/hsqldb "2.2.4"]
                  [org.clojure/algo.monads "0.1.0"] 
-                 [incanter/incanter-charts "1.3.0-SNAPSHOT"]
-                 [incanter/incanter-core "1.3.0-SNAPSHOT"]
+                 [incanter/incanter-charts "1.3.0"]
+                 [incanter/incanter-core "1.3.0"]
+                 [incanter/incanter-pdf "1.3.0"]
                  [criterium "0.2.1-SNAPSHOT"]]
   :java-source-path "src/"
   :dev-dependencies [[lein-clojars "0.7.0"]]
