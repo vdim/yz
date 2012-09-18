@@ -22,6 +22,7 @@
     :doc "Creates charts for results of benchmarks."}
   (:use incanter.stats
         incanter.charts 
+        incanter.pdf
         ru.petrsu.nest.yz.queries.nest-queries)
   (:require [clojure.java.io :as cio] 
             [clojure.string :as cs]
@@ -66,6 +67,27 @@
    "Scenario: enlivener-queries" ; enlivener-queries scenario
    "Scenario: address-info-queries" ; address-info-queries scenario
    "Scenario: tree-queries" ; tree-queries scenario
+   ""
+   ""
+   ""
+   ""
+   ""
+   ""
+   ])
+
+
+(def title-queries
+  "Titles as queries."
+  ["device" ; simple selection
+   "device#(name=\"Device_MB\")" ; simple selection with simple filtering
+   "device#(name=\"Device_MB\" && ..." ; simple selection with compose filtering
+   "device (building)" ; query with join
+   "building (device)" ; query with join
+   "li (n (d))" ; query with join
+   "{↑description}device" ; query with ordering
+   "enlivener-queries" ; enlivener-queries scenario
+   "address-info-queries" ; address-info-queries scenario
+   "tree-queries" ; tree-queries scenario
    ""
    ""
    ""
@@ -213,7 +235,7 @@
                           i)) 
                      lines)]
      (ic/with-data (ic/dataset [:time :db :lang] lines)
-                   (bar-chart :db :time :group-by :lang 
+                   (line-chart :db :time :group-by :lang 
                               :legend true :x-label x
                               :y-label y :title title)))))
 
@@ -226,7 +248,8 @@
     path-c - path for files with charts (if path-c is 
              not supplied then path-i is used instead of).
     labels - set of labels (group-by's category).
-    mode - type of language (:ru and :en are supported now).
+    mode - type of language. :ru (russia title), :en (english title) 
+             and :qs (title is query) are supported now.
     prefix - prefix for files with benchmark (empty by default)."
   ([path-i]
    (gen-bar-charts path-i path-i #{} :en ""))
@@ -240,15 +263,21 @@
    (let [[x y titles] (case mode 
                        :ru ["Количество элементов" "Время (мс)" title-queries-ru]
                        :en ["Amount Elements" "Time (msecs)" title-queries-en]
+                       :qs ["Amount Elements" "Time (msecs)" title-queries]
                         (throw (Exception. (str "Unknown language: " (name mode)))))
-         l-font (java.awt.Font. "Arial" java.awt.Font/BOLD 18)]
+         l-font (java.awt.Font. "Arial" java.awt.Font/BOLD 34)
+         a-font (java.awt.Font. "Arial" java.awt.Font/BOLD 22)
+         ]
      (map #(let [f (str path-i "/" prefix % ".txt")
-                 gf (str path-c "/" prefix % ".png")]
+                 gf (str path-c "/" prefix % ".pdf")]
              (try
                (let [chart (bar-chart-by-label f :q50 labels [x y (titles %)])
-                     _ (.setItemFont (.getLegend chart) l-font)]
+                     _ (.setItemFont (.getLegend chart) l-font)
+                     _ (.setFont (.getTitle chart) l-font)
+                     _ (.. chart getCategoryPlot getDomainAxis (setTickLabelFont a-font))
+                    ]
                
-                 (ic/save chart gf :width 1024 :height 768))
+                 (save-pdf chart gf :width 1024 :height 768))
                (catch java.io.FileNotFoundException e nil)))
           (range 0 (count yz/individual-queries))))))
 
