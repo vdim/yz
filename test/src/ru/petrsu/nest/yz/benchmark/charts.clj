@@ -275,7 +275,10 @@
                      _ (.setItemFont (.getLegend chart) l-font)
                      _ (.setFont (.getTitle chart) l-font)
                      _ (.. chart getCategoryPlot getDomainAxis (setTickLabelFont a-font))
-                    ]
+                     _ (.. chart getCategoryPlot getDomainAxis (setLabelFont a-font))
+                     _ (.. chart getCategoryPlot getRangeAxis (setTickLabelFont a-font))
+                     _ (.. chart getCategoryPlot getRangeAxis (setLabelFont l-font))
+                     ]
                
                  (save-pdf chart gf :width 1024 :height 768))
                (catch java.io.FileNotFoundException e nil)))
