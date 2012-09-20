@@ -233,11 +233,16 @@
                         (if (= 0 i)
                           (compare (:time %1) (:time %2))
                           i)) 
-                     lines)]
+                     lines)
+         ; Amount of series (in fact amount lines into chart)
+         series (count (set (map :lang lines)))]
      (ic/with-data (ic/dataset [:time :db :lang] lines)
-                   (line-chart :db :time :group-by :lang 
-                              :legend true :x-label x
-                              :y-label y :title title)))))
+                   (reduce 
+                     #(set-stroke %1 :series %2 :width 5)
+                     (line-chart :db :time :group-by :lang 
+                                 :legend true :x-label x
+                                 :y-label y :title title)
+                     (range 0 series))))))
 
 
 (defn gen-bar-charts
