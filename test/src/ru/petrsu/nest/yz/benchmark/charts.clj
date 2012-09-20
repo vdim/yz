@@ -261,26 +261,29 @@
    (gen-bar-charts path-i path-c labels mode ""))
   ([path-i path-c labels mode prefix]
    (let [[x y titles] (case mode 
-                       :ru ["Количество элементов" "Время (мс)" title-queries-ru]
-                       :en ["Amount Elements" "Time (msecs)" title-queries-en]
-                       :qs ["Amount Elements" "Time (msecs)" title-queries]
+                        :ru ["Количество элементов" "Время (мс)" title-queries-ru]
+                        :en ["Amount Elements" "Time (msecs)" title-queries-en]
+                        :qs ["Amount Elements" "Time (msecs)" title-queries]
                         (throw (Exception. (str "Unknown language: " (name mode)))))
-         l-font (java.awt.Font. "Arial" java.awt.Font/BOLD 34)
-         a-font (java.awt.Font. "Arial" java.awt.Font/BOLD 22)
-         ]
+         ; Returns bold arial font for specified size.
+         font #(java.awt.Font. "Arial" java.awt.Font/BOLD %)
+         ; big font for labels 
+         l-font (font 34)
+         ; middle font for tick label
+         a-font (font 22)]
      (map #(let [f (str path-i "/" prefix % ".txt")
-                 gf (str path-c "/" prefix % ".pdf")]
+                 gf (str path-c "/" prefix % ".png")]
              (try
                (let [chart (bar-chart-by-label f :q50 labels [x y (titles %)])
-                     _ (.setItemFont (.getLegend chart) l-font)
-                     _ (.setFont (.getTitle chart) l-font)
-                     _ (.. chart getCategoryPlot getDomainAxis (setTickLabelFont a-font))
-                     _ (.. chart getCategoryPlot getDomainAxis (setLabelFont a-font))
-                     _ (.. chart getCategoryPlot getRangeAxis (setTickLabelFont a-font))
-                     _ (.. chart getCategoryPlot getRangeAxis (setLabelFont l-font))
-                     ]
+                     _ (.. chart getLegend (setItemFont l-font))
+                     _ (.. chart getTitle (setFont l-font))
+                     plot (.. chart getCategoryPlot)
+                     _ (.. plot getDomainAxis (setTickLabelFont a-font))
+                     _ (.. plot getDomainAxis (setLabelFont l-font))
+                     _ (.. plot getRangeAxis (setTickLabelFont a-font))
+                     _ (.. plot getRangeAxis (setLabelFont l-font))]
                
-                 (save-pdf chart gf :width 1024 :height 768))
+                 (ic/save chart gf :width 1024 :height 768))
                (catch java.io.FileNotFoundException e nil)))
           (range 0 (count yz/individual-queries))))))
 
