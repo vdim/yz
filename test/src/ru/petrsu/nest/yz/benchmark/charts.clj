@@ -248,24 +248,28 @@
 (defn gen-bar-charts
   "Generates bar charts from files with benchmarks of 
   individual queries (0.txt, 1.txt ...) and saves it to
-  corresponding file (0.png, 1.png ...). Parameters:
-    path-i - path to files with benchmarks.
-    path-c - path for files with charts (if path-c is 
-             not supplied then path-i is used instead of).
-    labels - set of labels (group-by's category).
-    mode - type of language. :ru (russia title), :en (english title) 
-             and :qs (title is query) are supported now.
-    prefix - prefix for files with benchmark (empty by default)."
-  ([path-i]
-   (gen-bar-charts path-i path-i #{} :en ""))
-  ([path-i path-c]
-   (gen-bar-charts path-i path-c #{} :en ""))
-  ([path-i path-c labels]
-   (gen-bar-charts path-i path-c labels :en ""))
-  ([path-i path-c labels mode]
-   (gen-bar-charts path-i path-c labels mode ""))
-  ([path-i path-c labels mode prefix]
-   (let [[x y titles] (case mode 
+  corresponding file (0.png, 1.png ...). Options:
+    :path-i - path to files with benchmarks.
+    :path-c - path for files with charts (if path-c is 
+              not supplied then path-i is used instead of).
+    :labels - set of labels (group-by's category).
+    :mode - type of language. :ru (russia title), :en (english title) 
+            and :qs (title is query) are supported now.
+    :prefix - prefix for files with benchmark (empty by default).
+    :ftype - type of file with chart (support :pdf and :png)
+            (png by default)."
+  ([path-i & options]
+   (let [{:keys [path-c labels mode prefix ftype]} options
+         path-c (or path-c path-i)
+         ; png by defaul
+         ftype (or ftype :png)
+         ; Function for saving chart
+         fsave (case ftype 
+                 :png ic/save
+                 :pdf save-pdf
+                 (throw (Exception. (str "Unknown type of saving file: " (name ftype)))))
+
+         [x y titles] (case mode 
                         :ru ["Количество элементов" "Время (мс)" title-queries-ru]
                         :en ["Amount Elements" "Time (msecs)" title-queries-en]
                         :qs ["Amount Elements" "Time (msecs)" title-queries]
@@ -277,7 +281,7 @@
          ; middle font for tick label
          a-font (font 22)]
      (map #(let [f (str path-i "/" prefix % ".txt")
-                 gf (str path-c "/" prefix % ".png")]
+                 gf (str path-c "/" prefix % (str "." (name ftype)))]
              (try
                (let [chart (bar-chart-by-label f :q50 labels [x y (titles %)])
                      _ (.. chart getLegend (setItemFont l-font))
@@ -288,7 +292,7 @@
                      _ (.. plot getRangeAxis (setTickLabelFont a-font))
                      _ (.. plot getRangeAxis (setLabelFont l-font))]
                
-                 (ic/save chart gf :width 1024 :height 768))
+                 (fsave chart gf :width 1024 :height 768))
                (catch java.io.FileNotFoundException e nil)))
           (range 0 (count yz/individual-queries))))))
 
