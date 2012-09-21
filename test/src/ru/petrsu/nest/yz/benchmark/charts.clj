@@ -208,41 +208,41 @@
            [] (remove empty? (line-seq (cio/reader f))))))
 
 
-(defn bar-chart-by-label
+(defn chart-by-label
   "Creates bar chart (JFreeChart object) where categories is set of databases 
   (in fact amount elements of databases), values is set of 
   some characteristic of query (or list with queries),
   and group-by's category is set of labels (use empty set for all labels).
+  Parameters:
     f - name of a file with result of benchmark (suppose that it is file with
         benchmark of individual queries).
-    ch - characteristic of execution a query (see definition of the characteristic map).
-    labels - set of labels which are used for group-by's category of chart.
-    [x y title] - vector with x, y labels and title of chart 
+  Options:
+    :ch - characteristic of execution a query (see definition of the characteristic map).
+    :labels - set of labels which are used for group-by's category of chart.
+    :titles - vector with x, y labels and title of chart 
                   ([nil nil nil] by default)."
-  ([f ch]
-   (bar-chart-by-label f ch #{} [nil nil nil]))
-  ([f ch labels]
-   (bar-chart-by-label f ch labels [nil nil nil]))
-  ([f ch labels [x y title]]
-   (let [r (remove empty? (get-res-from-ind-file f labels))
-         lines (map (fn [l] {:time (l (ch bb/ind-chars)) 
-                             :db (l (:amount-elems bb/ind-chars)) 
-                             :lang (l (:legend-label bb/ind-chars))})
-                    r)
-         lines (sort #(let [i (compare (:db %1) (:db %2))]
-                        (if (= 0 i)
-                          (compare (:time %1) (:time %2))
-                          i)) 
-                     lines)
-         ; Amount of series (in fact amount lines into chart)
-         series (count (set (map :lang lines)))]
-     (ic/with-data (ic/dataset [:time :db :lang] lines)
-                   (reduce 
-                     #(set-stroke %1 :series %2 :width 5)
-                     (line-chart :db :time :group-by :lang 
-                                 :legend true :x-label x
-                                 :y-label y :title title)
-                     (range 0 series))))))
+  [f & options]
+  (let [{:keys [ch labels titles]} options
+        [x y title] titles
+        r (remove empty? (get-res-from-ind-file f labels))
+        lines (map (fn [l] {:time (l (ch bb/ind-chars)) 
+                            :db (l (:amount-elems bb/ind-chars)) 
+                            :lang (l (:legend-label bb/ind-chars))})
+                   r)
+        lines (sort #(let [i (compare (:db %1) (:db %2))]
+                       (if (= 0 i)
+                         (compare (:time %1) (:time %2))
+                         i)) 
+                    lines)
+        ; Amount of series (in fact amount lines into chart)
+        series (count (set (map :lang lines)))]
+    (ic/with-data (ic/dataset [:time :db :lang] lines)
+                  (reduce 
+                    #(set-stroke %1 :series %2 :width 5)
+                    (line-chart :db :time :group-by :lang 
+                                :legend true :x-label x
+                                :y-label y :title title)
+                    (range 0 series)))))
 
 
 (defn gen-bar-charts
@@ -256,45 +256,48 @@
     :mode - type of language. :ru (russia title), :en (english title) 
             and :qs (title is query) are supported now.
     :prefix - prefix for files with benchmark (empty by default).
-    :ftype - type of file with chart (support :pdf and :png)
-            (png by default)."
-  ([path-i & options]
-   (let [{:keys [path-c labels mode prefix ftype]} options
-         path-c (or path-c path-i)
-         ; png by defaul
-         ftype (or ftype :png)
-         ; Function for saving chart
-         fsave (case ftype 
-                 :png ic/save
-                 :pdf save-pdf
-                 (throw (Exception. (str "Unknown type of saving file: " (name ftype)))))
+    :ftype - type of file with chart (support :pdf and :png, :png by default).
+    :ctype - type of chart (support :line and :bar, :line by defaul)"
+  [path-i & options]
+  (let [{:keys [path-c labels mode prefix ftype ctype]} options
+        path-c (or path-c path-i)
+        ; png by default
+        ftype (or ftype :png)
+        ; Function for saving chart
+        fsave (case ftype 
+                :png ic/save
+                :pdf save-pdf
+                (throw (Exception. (str "Unknown type of saving file: " (name ftype)))))
 
-         [x y titles] (case mode 
-                        :ru ["Количество элементов" "Время (мс)" title-queries-ru]
-                        :en ["Amount Elements" "Time (msecs)" title-queries-en]
-                        :qs ["Amount Elements" "Time (msecs)" title-queries]
-                        (throw (Exception. (str "Unknown language: " (name mode)))))
-         ; Returns bold arial font for specified size.
-         font #(java.awt.Font. "Arial" java.awt.Font/BOLD %)
-         ; big font for labels 
-         l-font (font 34)
-         ; middle font for tick label
-         a-font (font 22)]
-     (map #(let [f (str path-i "/" prefix % ".txt")
-                 gf (str path-c "/" prefix % (str "." (name ftype)))]
-             (try
-               (let [chart (bar-chart-by-label f :q50 labels [x y (titles %)])
-                     _ (.. chart getLegend (setItemFont l-font))
-                     _ (.. chart getTitle (setFont l-font))
-                     plot (.. chart getCategoryPlot)
-                     _ (.. plot getDomainAxis (setTickLabelFont a-font))
-                     _ (.. plot getDomainAxis (setLabelFont l-font))
-                     _ (.. plot getRangeAxis (setTickLabelFont a-font))
-                     _ (.. plot getRangeAxis (setLabelFont l-font))]
-               
-                 (fsave chart gf :width 1024 :height 768))
-               (catch java.io.FileNotFoundException e nil)))
-          (range 0 (count yz/individual-queries))))))
+        ; :line by default
+        ctype (or ctype :line)
+
+        [x y titles] (case mode 
+                       :ru ["Количество элементов" "Время (мс)" title-queries-ru]
+                       :en ["Amount Elements" "Time (msecs)" title-queries-en]
+                       :qs ["Amount Elements" "Time (msecs)" title-queries]
+                       (throw (Exception. (str "Unknown language: " (name mode)))))
+        ; Returns bold arial font for specified size.
+        font #(java.awt.Font. "Arial" java.awt.Font/BOLD %)
+        ; big font for labels 
+        l-font (font 34)
+        ; middle font for tick label
+        a-font (font 22)]
+    (map #(let [f (str path-i "/" prefix % ".txt")
+                gf (str path-c "/" prefix % (str "." (name ftype)))]
+            (try
+              (let [chart (chart-by-label f :ch :q50 :labels labels :titles [x y (titles %)])
+                    _ (.. chart getLegend (setItemFont l-font))
+                    _ (.. chart getTitle (setFont l-font))
+                    plot (.. chart getCategoryPlot)
+                    _ (.. plot getDomainAxis (setTickLabelFont a-font))
+                    _ (.. plot getDomainAxis (setLabelFont l-font))
+                    _ (.. plot getRangeAxis (setTickLabelFont a-font))
+                    _ (.. plot getRangeAxis (setLabelFont l-font))]
+              
+                (fsave chart gf :width 1024 :height 768))
+              (catch java.io.FileNotFoundException e nil)))
+         (range 0 (count yz/individual-queries)))))
 
 
 (defn- localize
