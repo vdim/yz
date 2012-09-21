@@ -220,9 +220,10 @@
     :ch - characteristic of execution a query (see definition of the characteristic map).
     :labels - set of labels which are used for group-by's category of chart.
     :titles - vector with x, y labels and title of chart 
-                  ([nil nil nil] by default)."
+                  ([nil nil nil] by default).
+    :ctype - type of chart (bar or line)."
   [f & options]
-  (let [{:keys [ch labels titles]} options
+  (let [{:keys [ch labels titles ctype]} options
         [x y title] titles
         r (remove empty? (get-res-from-ind-file f labels))
         lines (map (fn [l] {:time (l (ch bb/ind-chars)) 
@@ -239,17 +240,24 @@
     (ic/with-data (ic/dataset [:time :db :lang] lines)
                   (reduce 
                     #(set-stroke %1 :series %2 :width 5)
-                    (line-chart :db :time :group-by :lang 
-                                :legend true :x-label x
-                                :y-label y :title title)
+                    (case ctype 
+                      :line (line-chart :db :time :group-by :lang 
+                                        :legend true :x-label x
+                                        :y-label y :title title)
+                      :bar (bar-chart :db :time :group-by :lang 
+                                      :legend true :x-label x
+                                      :y-label y :title title)
+                      (throw (Exception. (str "Unknown type of chart: " (name ctype)))))
                     (range 0 series)))))
 
 
 (defn gen-bar-charts
   "Generates bar charts from files with benchmarks of 
   individual queries (0.txt, 1.txt ...) and saves it to
-  corresponding file (0.png, 1.png ...). Options:
+  corresponding file (0.png, 1.png ...). 
+  Parameters:
     :path-i - path to files with benchmarks.
+  Options:
     :path-c - path for files with charts (if path-c is 
               not supplied then path-i is used instead of).
     :labels - set of labels (group-by's category).
@@ -286,7 +294,8 @@
     (map #(let [f (str path-i "/" prefix % ".txt")
                 gf (str path-c "/" prefix % (str "." (name ftype)))]
             (try
-              (let [chart (chart-by-label f :ch :q50 :labels labels :titles [x y (titles %)])
+              (let [chart (chart-by-label f :ch :q50 :labels labels 
+                                          :titles [x y (titles %)] :ctype ctype)
                     _ (.. chart getLegend (setItemFont l-font))
                     _ (.. chart getTitle (setFont l-font))
                     plot (.. chart getCategoryPlot)
