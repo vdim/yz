@@ -633,7 +633,11 @@
     (q 1)
     (q 2)  
   You can indicate connection information into meta information of macro:
-    (defq ^{:mom i-mom, :em mem} q \"floor#(number=$1)\")"
+    (defq ^{:mom i-mom, :em mem} q \"floor#(number=$1)\")
+  For multiple definition of queries you can define map with connection
+  information and then you can attach its to name something like this:
+    (def conn {:mom i-mom, :em mem})
+    (defq (with-meta q conn) \"floor#(number=$1)\")"
   [name ^String query]
   (let [mi (meta name)
         {:keys [mom em]} mi
