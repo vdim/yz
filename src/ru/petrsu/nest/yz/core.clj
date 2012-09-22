@@ -639,7 +639,13 @@
   For multiple definition of queries you can define map with connection
   information and then you can attach its to name something like this:
     (def conn {:mom i-mom, :em mem})
-    (defq (with-meta q conn) \"floor#(number=$1)\")"
+    (defq (with-meta q conn) \"floor#(number=$1)\")
+  
+  Also you should not define ElementManager. You can do this later. It may be 
+  usefull for one query and many ElementManager. Example:
+    (defq ^{:mom i-mom} q \"floor#(number=$1)\")
+    (q 1 em1)
+    (q 1 em2)"
   [name ^String query]
   (let [mi (meta name)
         {:keys [mom em]} mi
@@ -647,6 +653,6 @@
         nparams (count @p/query-params)
         params (repeatedly nparams gensym)]
     `(defn ~(symbol (str name)) 
-       ([~@params] 
+       ([~@params & args#] 
         (reset! p/query-params (list ~@params))
-        (get-qr ~parse-res ~mom ~em)))))
+        (get-qr ~parse-res ~mom (or ~em (first args#)))))))
