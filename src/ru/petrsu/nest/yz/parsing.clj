@@ -1001,7 +1001,7 @@
             length (effects (count newrm))
             ; In case allA is true then subquery is independent
             ; In case not-any is true then every? function is used, otherwise some function is used.
-            [allA not-any newrm] (effects (let [st (reduce str (take 6 newrm)) ; newrm starts with some 6 characters.
+            [allA not-any newrm] (effects (let [st (reduce str "" (take 6 newrm)) ; newrm starts with some 6 characters.
                                                 f (fn [v] (some #(if (.startsWith st %) %) v))
                                                 [r n] (some (fn [[fr n]] (if fr [fr n]))
                                                             [[(f ["Ŷ∀" "∀Ŷ" "A:all:" "all:A:" 
@@ -1062,8 +1062,12 @@
                    (conc (opt (change-pred sign :func))
                          (alt (change-pred string :value :string) 
                               keywords))
+
+                   ;; true, false, nil
                    keywords
-                   (change-pred value-as-param :value :parameter)
+
+                   ;; Value as parameter: floor#(name = $1)
+                   (change-pred value-as-param :value :parameter) 
                    (pfunc-as-param :value)
                   
                    ;; Rule for subqueries into the right part of predicate.
