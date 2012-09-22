@@ -29,7 +29,8 @@
          of the ElementManager interface (see below) and pass it to the pquery function."}
   (:require [ru.petrsu.nest.yz.parsing :as p])
   (:use ru.petrsu.nest.yz.utils)
-  (:import (clojure.lang PersistentArrayMap PersistentVector)))
+  (:import (clojure.lang PersistentArrayMap PersistentVector)
+           (ru.petrsu.nest.yz NotDefinedElementManagerException)))
 
 
 (definterface ElementManager
@@ -595,6 +596,7 @@
   [parse-res ^PersistentArrayMap mom ^ElementManager em]
   (reset! a-em em) 
   (reset! a-mom mom)
+  (if (nil? em) (throw (NotDefinedElementManagerException. "Not defined element manager.")))
   (let [query-res (if (instance? Throwable parse-res)
                     parse-res
                     (try
