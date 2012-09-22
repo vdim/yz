@@ -29,6 +29,7 @@ which is based on [monads] (http://www.intensivesystems.net/tutorials/monads_101
 * The pquery function from [core.clj](https://github.com/vdim/yz/blob/master/src/ru/petrsu/nest/yz/core.clj) returns map where 
     * :result - hierarchical structure of result query.
     * :error - if error is occured then value of this keyword contains string representation of the error. If not then value is nil.
+    * :thrwable - if error is occured then value of this keyword is Throwable object.
     * :columns - list with default names of columns.
     * :rows - representation of a result query as set of rows (tuples).
 
@@ -44,6 +45,7 @@ MOM may contain the following information:
 * comparators (it may be useful in case you can not change your model, but you want to sort your selection and 
 this class does not implement [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) 
 interface). Note that comparator from MOM has more high priority than implementation of the Comparable interface.
+* namespaces for functions.
 
 In point of view of the Clojure data structure MOM is map where keys are classes of 
 model and values are maps with information. You can see example of MOM
@@ -75,7 +77,7 @@ This question requires deep researching.
 [Comparable] (http://docs.oracle.com/javase/6/docs/api/java/lang/Comparable.html) interface. 
 You can define comparator in the MOM (see above section) as well.
 * For implementation "removing duplicates" feature 
-[distinct] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/distinct) function of Clojure are used.
+[distinct] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/distinct) function of Clojure is used.
 * Operator == is implemented due to 
 [identical?] (http://clojure.github.com/clojure/clojure.core-api.html#clojure.core/identical?) function of Clojure.
 
