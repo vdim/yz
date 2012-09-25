@@ -477,7 +477,9 @@
                 ([]
                  [])
                 ([arg0 arg1]
-                 (conj arg0 (arg1 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(arg1 0)]))))))
+                 (vec (concat arg0 arg1))))
+              (fn [arg0 arg1]
+                (conj arg0 (arg1 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(arg1 0)])))))
               (vec (process-then objs (:then nest) (:props nest) (:sort nest)))))))
 
 
