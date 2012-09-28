@@ -24,6 +24,7 @@
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-jpa :as buj]
             [ru.petrsu.nest.yz.queries.bd-jpa :as bjpa]
+            [incanter.core :as ic]
             [ru.petrsu.nest.yz.queries.core :as qc])
   (:use ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
@@ -113,3 +114,33 @@
    ru.petrsu.nest.son.jpa.AbstractSonModificationOccurence 
    ru.petrsu.nest.son.jpa.SonPropertyModificationOccurence 
    ru.petrsu.nest.son.jpa.SonReferenceModificationOccurence])
+
+(def son-matrix
+  ; B F R O SOU COU D LI VLAN NI N
+  [[0 1 0 0 0 0 0 0 0 0 0]
+   [1 0 1 0 0 0 0 0 0 0 0]
+   [0 1 0 1 0 0 0 0 0 0 0]
+   [0 0 1 0 1 0 1 0 0 0 0]
+   [0 0 0 1 0 1 0 0 0 0 0]
+   [0 0 0 1 0 1 0 0 0 0 0]
+   [0 0 0 0 1 1 0 0 0 0 0]
+   [0 0 0 0 0 0 1 1 1 1 0]
+   [0 0 0 0 0 0 0 1 0 0 0]
+   [0 0 0 0 0 0 0 1 0 0 1]
+   [0 0 0 0 0 0 0 0 0 1 0]])
+
+(def deg
+  ; 
+  [[1 0 0 0 0 0 0 0 0 0 0]
+   [0 2 0 0 0 0 0 0 0 0 0]
+   [0 0 2 0 0 0 0 0 0 0 0]
+   [0 0 0 3 0 0 0 0 0 0 0]
+   [0 0 0 0 2 0 0 0 0 0 0]
+   [0 0 0 0 0 2 0 0 0 0 0]
+   [0 0 0 0 0 0 2 0 0 0 0]
+   [0 0 0 0 0 0 0 4 0 0 0]
+   [0 0 0 0 0 0 0 0 1 0 0]
+   [0 0 0 0 0 0 0 0 0 2 0]
+   [0 0 0 0 0 0 0 0 0 0 2]])
+
+(def son-d (ic/det (ic/minus deg son-matrix)))
