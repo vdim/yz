@@ -594,9 +594,9 @@
 (defn get-qr
   "Takes result of parsing and returns result of quering."
   [parse-res ^PersistentArrayMap mom ^ElementManager em]
-  (reset! a-em em) 
-  (reset! a-mom mom)
-  (if (nil? em) (throw (NotDefinedElementManagerException. "Not defined element manager.")))
+  (if em (reset! a-em em))
+  (if mom (reset! a-mom mom))
+  (if (nil? @a-em) (throw (NotDefinedElementManagerException. "Not defined element manager.")))
   (let [query-res (if (instance? Throwable parse-res)
                     parse-res
                     (try
@@ -649,7 +649,7 @@
   [name ^String query]
   (let [mi (meta name)
         {:keys [mom em]} mi
-        parse-res (p/parse query (eval mom))
+        parse-res (p/parse query (if mom (eval mom) @a-mom))
         nparams (count @p/query-params)
         params (repeatedly nparams gensym)]
     `(defn ~(symbol (str name)) 
