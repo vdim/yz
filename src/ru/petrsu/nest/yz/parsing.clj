@@ -215,7 +215,9 @@
   is failed then exeption is thrown."
   [^Class cl ^String prop]
   (letfn [(prop? [clazz] (some #(= prop (.getName %)) (u/descriptors clazz)))]
-    (or (nil? *mom*) (= prop "&") (= prop "&.") (map? prop)
+    (or (nil? *mom*) (= prop "&") (= prop "&.") 
+        (map? prop) ; prop is calling of function: ip4i[@(ip &.inetAddress)]
+        (keyword? cl) ; cl is keyword in case query is something like this: $1[name]
         (prop? cl)
         (some #(prop? %) (get-in *mom* [:children cl]))
         (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
