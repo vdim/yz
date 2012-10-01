@@ -1,4 +1,4 @@
-(defproject ru.petrsu.nest/yz "0.0.1-alpha15"
+(defproject ru.petrsu.nest/yz "0.0.1-alpha16"
   :description "YZ[ˈiːzi] is simple (easy), laconic, string-based, object query language."
   :url "https://github.com/vdim/yz"
   :dependencies [[org.clojure/clojure "1.3.0"]

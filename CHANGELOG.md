@@ -1,3 +1,8 @@
+## 0.0.1-alpha16 / 01.10.2012
+
+* Improved the defq macros: support late definition for ElementManager and MOM.
+* Added throwing exception in case ElementManager is nil.
+
 ## 0.0.1-alpha15 / 01.06.2012
 
 * API: changed structure of the :result value which is returned by the pquery function.
