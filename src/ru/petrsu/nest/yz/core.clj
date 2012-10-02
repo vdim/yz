@@ -249,22 +249,27 @@
   [nest]
   (let [^ElementManager em @a-em
         {:keys [^Class what ^PersistentVector preds sort exactly unique limit]} nest]
-    (if (keyword? what)
-      (let [v (get-qp what)]
-        (if (coll? v) v [v]))
-      (if (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
-        (sort-rq (.getElems em what preds) sort false)
-        (let [; Get elements
-              elems (.getElems em what)
+    (let [elems (cond (keyword? what)
+                      (let [v (get-qp what)]
+                        (if (coll? v) v [v]))
+                      (instance? ru.petrsu.nest.yz.core.ExtendedElementManager em)
+                      (.getElems em what preds)
+                      :else
+                      (.getElems em what))
+                  
               ; Filter by exactly option.
               elems (if exactly (filter #(= (class %) what) elems) elems)
               ; Filter by unique option.
               elems (if unique (distinct elems) elems) 
               ; Filter by list of predicates and then sort.
-              elems (sort-rq (filter-by-preds elems preds) sort false)
+              elems (sort-rq 
+                      (if (instance? ElementManager em)
+                        (filter-by-preds elems preds)
+                        elems) 
+                      sort false)
               ; Filter by limit option.
               elems (limiting elems limit)]
-          elems)))))
+          elems)))
 
 
 (defn- get-fv
