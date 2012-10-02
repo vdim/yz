@@ -71,3 +71,33 @@
            (f bd/b1 4 [])
            (f bd/b2 1 [[bd/f1_b2]])
            (f bd/b2 2 [])))
+
+
+(defq ^{:mom bd/bd-mom, :em bd/mem} q5 "$1#(number=$2)")
+
+(deftest t-q5
+         (let [f #(is (tc/eq-colls (:rows (q5 %1 %2)) %3))]
+           (f bd/f1_b1 1 [[bd/f1_b1]])
+           (f bd/f1_b1 2 [])
+           (f bd/f2_b1 2 [[bd/f2_b1]])
+           (f bd/f2_b1 1 [])))
+
+
+; List of properties after parameter.
+(defq ^{:mom bd/bd-mom, :em bd/mem} q6 "$1[name]")
+
+(deftest t-q6
+         (let [f #(is (tc/eq-colls (:rows (q6 %1)) %2))]
+           (f bd/b1 [["MB"]])
+           (f bd/b2 [["TK"]])
+           (f [bd/b1 bd/b2] [["MB"] ["TK"]])))
+
+
+; Definition defq without ElementManager.
+(defq ^{:mom bd/bd-mom} q7 "$1[name]")
+
+(deftest t-q7
+         (let [f #(is (tc/eq-colls (:rows (q7 %1 bd/mem)) %2))]
+           (f bd/b1 [["MB"]])
+           (f bd/b2 [["TK"]])
+           (f [bd/b1 bd/b2] [["MB"] ["TK"]])))
