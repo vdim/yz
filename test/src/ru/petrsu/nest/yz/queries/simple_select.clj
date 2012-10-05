@@ -61,18 +61,25 @@
          ^{:doc "Selects all Device objects. Result should be empty."}
          (is (tc/check-query "device" [])))
 
-(deftest select-b-names
+(deftest select-b-names-as-then
          ^{:doc "Selects building's names"}
          (let [q (tc/r-query "building.name")]
+           (is (or (= q ["building1" [] "building2" []])
+                   (= q ["building2" [] "building1" []])))))
+
+(deftest select-b-names-as-prop
+         ^{:doc "Selects building's names"}
+         (let [q (tc/r-query "building[name]")]
            (is (or (= q ['("building1") [] '("building2") []])
                    (= q ['("building2") [] '("building1") []])))))
 
-
 (deftest select-prop
          ^{:doc "Checks props"}
-         (is (= (tc/r-query "floor.number") ['(nil) [] '(nil) [] '(nil) []]))
-         (is (= (tc/r-query "floor.name") ['(nil) [] '(nil) [] '(nil) []]))
-         (is (= (tc/r-query "building.floor.number") ['(nil) [] '(nil) [] '(nil) []])))
+         (is (= (tc/r-query "floor.number") []))
+         (is (= (tc/r-query "floor.name") []))
+         (is (= (tc/r-query "floor[number]") ['(nil) [] '(nil) [] '(nil) []]))
+         (is (= (tc/r-query "floor[name]") ['(nil) [] '(nil) [] '(nil) []]))
+         (is (= (tc/r-query "building.floor.number") [])))
 
 
 (deftest select-props

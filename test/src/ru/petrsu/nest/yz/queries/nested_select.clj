@@ -61,7 +61,7 @@
 
 (deftest select-bn-and-f
          ^{:doc "Selects all Building's name and its Floor objects."}
-         (let [q (flatten (tc/rows-query "building.name (floor)"))
+         (let [q (flatten (tc/rows-query "building[name] (floor)"))
                ]
            (is (tc/eq-colls q ["MB" "MB" "MB" "TK" bd/f1_b1 bd/f2_b1 bd/f3_b1 bd/f1_b2]))))
 
