@@ -214,7 +214,9 @@
   have property 'prop' in case MOM is defined. If searching 
   is failed then exeption is thrown."
   [^Class cl ^String prop]
-  (letfn [(prop? [clazz] (some #(= prop (.getName %)) (u/descriptors clazz)))]
+  (letfn [(prop? [clazz] (some #(if (= prop (.getName %))
+                                  (.getPropertyType %)) 
+                               (u/descriptors clazz)))]
     (or (nil? *mom*) (= prop "&") (= prop "&.") 
         (map? prop) ; prop is calling of function: ip4i[@(ip &.inetAddress)]
         (keyword? cl) ; cl is keyword in case query is something like this: $1[name]
@@ -458,16 +460,57 @@
     [nil nil nil]))
 
 
+(defn- transform-sort
+  "Takes vector with sort and specified 
+  class and transforms it for passing to core.clj"
+  [vsort tsort cl]
+  (cond 
+    ; vsort is map where key is name of the property (or function) and 
+    ; value is type of the sort (:asc, :desc).
+    (map? vsort) 
+    (reduce 
+      #(let [[k v] %2
+             p (cond 
+                 ; Sorting is done by default property: {a:&.}building
+                 (= :#default-property# k) (get-dp cl *mom*) 
+                 
+                 ; Sorting is done by result of a function: {a:@(count `room')}building
+                 (map? k) 
+                 (assoc k :params 
+                        (reduce 
+                          (fn [ps p]
+                            (if (vector? p)
+                              (let [f (p 1)]
+                                (conj ps [(p 0) 
+                                          (reduce (fn [r vv] (conj r (assoc vv :where (u/get-paths (:what vv) cl *mom*)))) [] f)]))
+                              (conj ps p))) [] (:params k)))
+
+                 ;Sorting is done by some property: {a:name}building
+                 :else k)]
+         (conj %1 (list p (get-sort v cl p)))) [] vsort)
+
+    ; tsort won't be nil into queries something like this: a:building
+    ; (tsort = :asc)
+    tsort (get-sort tsort cl :self)))
+
+
 (defn- found-prop
-  "This function is called when likely some property is found"
-  [res id nl tl is-recur tsort _ _ _ _]
+  "This function is called when likely some property is found.
+    medium? defines queries something like this: 
+      sou.parent.li
+    where parent is property"
+  [res id nl tl is-recur tsort unique hb-range lb-range tail medium? ex]
   (let [tl- (dec tl)
         what (get-in-nest-or-then res (inc nl) tl- :what) 
         
         ; Check whether class "what" has property "id". 
         ; If searching failed then exception is thrown.
-        _ (check-prop what id)
-
+        cl (check-prop what id)
+        cl (if (true? cl) 
+             nil 
+             (if (or (.isArray cl) (some (partial = java.lang.Iterable) (ancestors cl)))
+               (.getComponentType cl)
+               cl))
         id (cond ; self object
                  (= id "&") :#self-object#
                  ; default property
@@ -507,54 +550,44 @@
           ; (time (dotimes [_ 1e7] (lvec [1 2 3]))): "Elapsed time: 327.200079 msecs"
           ; (time (dotimes [_ 1e7] (vec [1 2 3]))): "Elapsed time: 7122.513999 msecs"
           lvec #(if (vector? %) % (vec %))]
-      (if (> tl- 0)
-        (let [v #(conj (vec (repeat (dec tl-) :then)) %)
-              last-then (get-in-nest res nl :then)
-              last-then (assoc-in last-then (v :sort) sorts)]
-          (assoc-in-nest 
-            res nl :then
-            (update-in last-then (v :props)
-                       #(lvec (conj % [id is-recur])))))
-        (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur])))))))
-
-
-(defn- transform-sort
-  "Takes vector with sort and specified 
-  class and transforms it for passing to core.clj"
-  [vsort tsort cl]
-  (cond 
-    ; vsort is map where key is name of the property (or function) and 
-    ; value is type of the sort (:asc, :desc).
-    (map? vsort) 
-    (reduce 
-      #(let [[k v] %2
-             p (cond 
-                 ; Sorting is done by default property: {a:&.}building
-                 (= :#default-property# k) (get-dp cl *mom*) 
-                 
-                 ; Sorting is done by result of a function: {a:@(count `room')}building
-                 (map? k) 
-                 (assoc k :params 
-                        (reduce 
-                          (fn [ps p]
-                            (if (vector? p)
-                              (let [f (p 1)]
-                                (conj ps [(p 0) 
-                                          (reduce (fn [r vv] (conj r (assoc vv :where (u/get-paths (:what vv) cl *mom*)))) [] f)]))
-                              (conj ps p))) [] (:params k)))
-
-                 ;Sorting is done by some property: {a:name}building
-                 :else k)]
-         (conj %1 (list p (get-sort v cl p)))) [] vsort)
-
-    ; tsort won't be nil into queries something like this: a:building
-    ; (tsort = :asc)
-    tsort (get-sort tsort cl :self)))
+      (if medium? 
+        (let [last-then (get-in-nest res nl :then)
+              f #(assoc-in-nest res nl :then %)
+              ; Define limit
+              limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
+              ; Vector with type of sorting, comparator and keyfn.
+              vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
+              vsort (transform-sort vsort tsort cl)
+              ; Function for association some values of some then map.
+              assoc-lth #(assoc %1 :what cl :where [[(name id)]]
+                                  :sort vsort :exactly ex :unique unique :limit limit)
+              ; What for getting where.
+              what (get-in-nest-or-then res nl tl- :what)]
+            (if (nil? last-then)
+              (f (assoc-lth empty-then))
+              (let [then-v (repeat tl- :then)
+                    ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
+                    ;; Because of get-in can return nil, but lt must be not nil.
+                    lt (get-in last-then then-v)
+                    lt (if (nil? lt) empty-then lt)
+        
+                    lt (assoc-lth lt)
+                    lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
+                (f lt))))
+        (if (> tl- 0)
+          (let [v #(conj (vec (repeat (dec tl-) :then)) %)
+                last-then (get-in-nest res nl :then)
+                last-then (assoc-in last-then (v :sort) sorts)]
+            (assoc-in-nest 
+              res nl :then
+              (update-in last-then (v :props)
+                         #(lvec (conj % [id is-recur])))))
+          (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur]))))))))
 
 
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
-  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail]
+  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail _ _]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
         cl (cond 
              (.startsWith id "$") (do (swap! query-params conj nil) (keyword (subs id 1)))
@@ -564,7 +597,7 @@
         tl- (dec tl)]
     (if (nil? cl)
       (if (> tl 0)
-        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail)
+        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex)
         ; If then-level is 0 (so we can conclude that it is not property) 
         ; and class wasn't found then we must throw exception.
         (throw (NotFoundElementException. (str "Not found element: " id))))
@@ -823,7 +856,9 @@
              (:is-recur state)
              (:cur-sort state)
              (:unique state) 
-             (:hb-range state) (:lb-range state) (:tail state)))])
+             (:hb-range state) (:lb-range state) (:tail state)
+             nil
+             nil))])
 
 
 (defn- process-id

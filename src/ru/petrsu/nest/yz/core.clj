@@ -443,16 +443,16 @@
   "If nest has props then function returns value of property(ies),
   otherwise obj is returned."
   [obj, props]
-  (if (empty? props)
-    obj
-    (map #(let [new-objs (process-prop % obj)]
-            (if (sequential? new-objs)
-              ; If value of property is sequence (or array) then we
-              ; return sequence. It may be usefull for queries
-              ; something like this building.floors.rooms.occupancy
-              (seq new-objs)
-              new-objs))
-         props)))
+  (let [f #(let [new-objs (process-prop % obj)]
+             (if (sequential? new-objs)
+               ; If value of property is sequence (or array) then we
+               ; return sequence. It may be usefull for queries
+               ; something like this building.floors.rooms.occupancy
+               (seq new-objs)
+               new-objs))]
+    (cond (empty? props) obj
+          (-> props first vector?) (map f props)
+          :else [(f props)])))
 
 
 (defn- process-then
@@ -461,7 +461,7 @@
   [objs, then, props, tsort]
   (loop [objs- objs, then- then, props- props, tsort tsort]
     (if (or (nil? then-) (every? nil? objs-))
-      (let [pp (remove #(let [v (% 1)] 
+      (let [pp (remove #(let [v (% 1)]
                           (if (seq? v)
                             (some (fn [o] (= o :not-found)) v)
                             false))
@@ -469,7 +469,7 @@
         (if props-
           (sort-rq pp tsort true)
           pp))
-      (recur (if (and (nil? (:where then-)) props-)
+      (recur (if (or (and props- (nil? (:where then-))) (and props- (-> props- first vector? not)))
                (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
                (get-objs-by-path objs- then-))
              (:then then-) 
