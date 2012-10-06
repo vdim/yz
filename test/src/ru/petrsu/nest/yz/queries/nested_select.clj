@@ -154,3 +154,9 @@
                            [bd/sou2_d1]]))
          )
 
+
+(deftest prop-medium
+         ^{:doc "Tests queries with prop as medium link."}
+         (let [sou (doto (ru.petrsu.nest.son.SimpleOU.) (.setName "S_TE"))
+               _ (.addOU bd/rootCompositeOU sou)]
+           (is (tc/eq-colls (tc/rows-query "cou.parent.sou") [[sou] [sou]]))))
