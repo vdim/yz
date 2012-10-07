@@ -543,8 +543,7 @@
      "network"]],
    ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]]}},
  :sns
- {nil :names,
-  "b" ru.petrsu.nest.son.Building,
+ {"b" ru.petrsu.nest.son.Building,
   "d" ru.petrsu.nest.son.Device,
   "ei" ru.petrsu.nest.son.EthernetInterface,
   "f" ru.petrsu.nest.son.Floor,
