@@ -166,7 +166,13 @@
   "Creates a map: short names (key) 
   and classes (value) from MOM as value."
   [mom, old-sns]
-  (reduce #(assoc %1 (:sn (%2 1)) (%2 0)) old-sns mom))
+  (reduce #(let [; short name from mom
+                 sn (:sn (%2 1))
+                 cl (%2 0)]
+             (if (class? cl)
+               (assoc %1 sn cl)
+               %1)) 
+          old-sns mom))
 
 
 (defn- get-names
