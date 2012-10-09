@@ -470,10 +470,15 @@
         (if props-
           (sort-rq pp tsort true)
           pp))
-      (recur (if (and props- (or (nil? (:where then-))
-                                 (-> props- first vector? not)))
+      (recur (cond 
+               (:recursive then-)
+               (loop [objs- (remove nil? objs-) res objs-]
+                      (if (empty? objs-)
+                        (flatten res)
+                        (recur (remove nil? (get-objs-by-path objs- then-)) (conj res objs-))))
+               (and props- (or (nil? (:where then-)) (-> props- first vector? not)))
                (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
-               (get-objs-by-path objs- then-))
+               :else (get-objs-by-path objs- then-))
              (:then then-) 
              (:props then-)
              (:sort then-)))))
