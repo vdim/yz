@@ -479,28 +479,37 @@
              (:sort then-)))))
 
 
+(defn- p-then
+  "Auxiliary function for processing then clause of query.
+  Takes list of object and next nest and calls process-then
+  with appropriate parameters."
+  [objs nest]
+  (apply process-then objs ((juxt :then :props :sort) nest)))
+
+
 (defn- p-nest
   "Processes :nest value with some objects."
-  [^PersistentArrayMap nest, objs]
+  [^PersistentArrayMap nest objs rec]
   (if (empty? objs)
     []
     (let [n (:nest nest)
-          rec (:recursive nest)]
-      (reduce #(if rec
-                 (conj %1 (-> (process-then [%2] (:then nest) (:props nest) (:sort nest)) first second)
+          f #(if (nil? n) [] (process-nests n (partial get-objs-by-path [%1])))]
+      (reduce #(apply conj %1
+                (if rec
+                  [(-> (p-then [%2] nest) first second)
                    (let [what (:what nest)
                          objs- (remove nil? (mapcat (fn [path] (reduce get-objs [%2] path)) (get-in @a-mom [what what])))
-                         newv (if (nil? n) [] (process-nests n (partial get-objs-by-path [%2])))]
+                         newv (f %2)]
                      (if (empty? objs-)
                        newv
                        (reduce (fn [a1 a2] 
-                                 (vec (concat a1 (p-nest nest [a2])))) 
-                               newv objs-))))
-                 (conj %1 (%2 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(%2 0)])))))
+                                 (vec (concat a1 (p-nest nest [a2] rec)))) 
+                               newv objs-)))]
+                 [(%2 1) (f (%2 0))]))
               []
               (if rec
                 objs
-                (process-then objs (:then nest) (:props nest) (:sort nest)))))))
+                (p-then objs nest))))))
 
 
 (defn- process-nests
@@ -515,7 +524,7 @@
                (let [v1 (if (get %2 :func)
                           (reduce (fn [r rf] 
                                     (conj r rf [])) [] (process-func %2 nil))
-                          (p-nest %2 (f %2)))]
+                          (p-nest %2 (f %2) (:recursive %2)))]
                  (if @op
                    (@op %1 v1)
                    v1))
