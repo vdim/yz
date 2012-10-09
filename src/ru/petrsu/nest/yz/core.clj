@@ -471,13 +471,18 @@
           (sort-rq pp tsort true)
           pp))
       (recur (cond 
+               ; Process recursive then-.
                (:recursive then-)
-               (loop [objs- (remove nil? objs-) res objs-]
-                      (if (empty? objs-)
-                        (flatten res)
-                        (recur (remove nil? (get-objs-by-path objs- then-)) (conj res objs-))))
+               (loop [objs- (remove nil? (get-objs-by-path objs- then-)) res []]
+                 (if (empty? objs-)
+                   (flatten res)
+                   (recur (remove nil? (get-objs-by-path objs- then-)) (conj res objs-))))
+
+               ; Process properties if any (in case where is nil, or property is meduim link).
                (and props- (or (nil? (:where then-)) (-> props- first vector? not)))
                (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
+
+               ; Get next objects.
                :else (get-objs-by-path objs- then-))
              (:then then-) 
              (:props then-)
@@ -511,7 +516,7 @@
                        (reduce (fn [a1 a2] 
                                  (vec (concat a1 (p-nest nest [a2] rec)))) 
                                newv objs-)))]
-                 [(%2 1) (f (%2 0))]))
+                  [(%2 1) (f (%2 0))]))
               []
               (if rec
                 objs
