@@ -23,7 +23,8 @@
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc])
-  (:import (ru.petrsu.nest.son SON Occupancy SimpleOU CompositeOU)))
+  (:import (ru.petrsu.nest.son SON Occupancy SimpleOU 
+                               CompositeOU Room Floor Building)))
 
 
 ;; Define model
@@ -32,13 +33,18 @@
 ;;    -> IT Department
 ;;        -> Database
 ;;            -> MySQL
+;;                room:102
 ;;            -> Oracle
+;;                room:102
 ;;            -> NoSQL
+;;                room:102
 ;;        -> Web-site
 ;;            -> Online Shop
 ;;            -> Inner Web
+;;                room:101
 ;;        -> Network
 ;;            -> Local Network
+;;                room:101
 ;;    -> Management Department
 ;;    -> Finance Department
 ;;        -> Insure Department
@@ -104,10 +110,57 @@
                (.setName "Fee Department")
                (.setParent fin_cou)))
 
+(def web_room (doto (Room.)
+                (.setName "Web Room")
+                (.setNumber "100")))
 
+(def net_room (doto (Room.)
+                (.setName "Network Room")
+                (.setNumber "101")))
 
+(def bd_room (doto (Room.)
+                (.setName "Database Room")
+                (.setNumber "102")))
 
-(def son (doto (SON.) (.setRootOU main_cou))) 
+(def o1 (doto (Occupancy.)
+          (.setOU inner_sou)
+          (.setRoom web_room)))
+
+(def o2 (doto (Occupancy.)
+          (.setOU local_sou)
+          (.setRoom net_room)))
+
+(def o3 (doto (Occupancy.)
+          (.setOU oracle_sou)
+          (.setRoom bd_room)))
+
+(def o4 (doto (Occupancy.)
+          (.setOU mysql_sou)
+          (.setRoom bd_room)))
+
+(def o5 (doto (Occupancy.)
+          (.setOU nosql_sou)
+          (.setRoom bd_room)))
+
+(def f1_b1 (doto (Floor.) 
+             (.setNumber (Integer. 1))
+             (.addRoom bd_room)))
+
+(def f2_b1 (doto (Floor.) 
+             (.setNumber (Integer. 2))
+             (.addRoom net_room)))
+
+(def f1_b2 (doto (Floor.) 
+             (.setNumber (Integer. 1))
+             (.addRoom web_room)))
+
+(def b1 (doto (Building.) (.setName "MB") (.addFloor f1_b1) (.addFloor f2_b1)))
+(def b2 (doto (Building.) (.setName "TK") (.addFloor f1_b2)))
+
+(def son (doto (SON.) 
+           (.addBuilding b1) 
+           (.addBuilding b2) 
+           (.setRootOU main_cou))) 
 
 
 
