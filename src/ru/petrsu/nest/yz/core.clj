@@ -498,6 +498,7 @@
                 (if rec
                   [(-> (p-then [%2] nest) first second)
                    (let [what (:what nest)
+                         ; List of objects which is got due to recursive link.
                          objs- (remove nil? (mapcat (fn [path] (reduce get-objs [%2] path)) (get-in @a-mom [what what])))
                          newv (f %2)]
                      (if (empty? objs-)
