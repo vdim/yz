@@ -499,7 +499,7 @@
     medium? defines queries something like this: 
       sou.parent.li
     where parent is property"
-  [res id nl tl is-recur tsort unique hb-range lb-range tail medium? ex]
+  [res id nl tl is-recur tsort unique hb-range lb-range tail medium? ex rec]
   (let [tl- (dec tl)
         what (get-in-nest-or-then res (inc nl) tl- :what) 
         
@@ -560,7 +560,8 @@
               vsort (transform-sort vsort tsort cl)
               ; Function for association some values of some then map.
               assoc-lth #(assoc %1 :what cl :where [[(name id)]]
-                                  :sort vsort :exactly ex :unique unique :limit limit)
+                                :sort vsort :exactly ex 
+                                :recursive rec :unique unique :limit limit)
               ; What for getting where.
               what (get-in-nest-or-then res nl tl- :what)]
             (if (nil? last-then)
@@ -587,8 +588,9 @@
 
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
-  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail _ _]
+  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail _ _ _]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
+        [id rec] (if (.startsWith id "*") [(subs id 1) true] [id nil])
         cl (cond 
              (.startsWith id "$") (do (swap! query-params conj nil) (keyword (subs id 1)))
              (and (nil? *mom*) (> tl 0)) nil 
@@ -597,7 +599,7 @@
         tl- (dec tl)]
     (if (nil? cl)
       (if (> tl 0)
-        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex)
+        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex rec)
         ; If then-level is 0 (so we can conclude that it is not property) 
         ; and class wasn't found then we must throw exception.
         (throw (NotFoundElementException. (str "Not found element: " id))))
@@ -609,7 +611,8 @@
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some then map.
             assoc-lth #(assoc %1 :what cl :where (u/get-paths cl %2 *mom*)
-                                :sort vsort :exactly ex :unique unique :limit limit)
+                              :sort vsort :exactly ex :unique unique 
+                              :limit limit :recursive rec)
             ; What for getting where.
             what (get-in-nest-or-then res nl tl- :what)]
         (if (> tl 0)
@@ -630,6 +633,7 @@
            :where (u/get-paths cl what *mom*)
            :sort vsort
            :exactly ex
+           :recursive rec
            :unique unique 
            :limit limit))))))
 
@@ -857,6 +861,7 @@
              (:cur-sort state)
              (:unique state) 
              (:hb-range state) (:lb-range state) (:tail state)
+             nil
              nil
              nil))])
 

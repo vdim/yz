@@ -457,7 +457,8 @@
 
 (defn- process-then
   "Processes :then value of query structure.
-  Returns sequence of objects."
+  Returns sequence of objects.
+  Recursive defines whether a link is recursive."
   [objs, then, props, tsort]
   (loop [objs- objs, then- then, props- props, tsort tsort]
     (if (or (nil? then-) (every? nil? objs-))
@@ -469,7 +470,8 @@
         (if props-
           (sort-rq pp tsort true)
           pp))
-      (recur (if (or (and props- (nil? (:where then-))) (and props- (-> props- first vector? not)))
+      (recur (if (or (and props- (nil? (:where then-))) 
+                     (and props- (-> props- first vector? not)))
                (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
                (get-objs-by-path objs- then-))
              (:then then-) 
@@ -482,10 +484,23 @@
   [^PersistentArrayMap nest, objs]
   (if (empty? objs)
     []
-    (let [n (:nest nest)]
-      (reduce #(conj %1 (%2 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(%2 0)]))))
+    (let [n (:nest nest)
+          rec (:recursive nest)]
+      (reduce #(if rec
+                 (conj %1 (-> (process-then [%2] (:then nest) (:props nest) (:sort nest)) first second)
+                   (let [what (:what nest)
+                         objs- (remove nil? (mapcat (fn [path] (reduce get-objs [%2] path)) (get-in @a-mom [what what])))
+                         newv (if (nil? n) [] (process-nests n (partial get-objs-by-path [%2])))]
+                     (if (empty? objs-)
+                       newv
+                       (reduce (fn [a1 a2] 
+                                 (vec (concat a1 (p-nest nest [a2])))) 
+                               newv objs-))))
+                 (conj %1 (%2 1) (if (nil? n) [] (process-nests n (partial get-objs-by-path [(%2 0)])))))
               []
-              (process-then objs (:then nest) (:props nest) (:sort nest))))))
+              (if rec
+                objs
+                (process-then objs (:then nest) (:props nest) (:sort nest)))))))
 
 
 (defn- process-nests
@@ -497,10 +512,10 @@
         ; Intersection: building; room
         op (atom nil)]
     (reduce #(if (map? %2)
-               (let [v1 (if (nil? (get %2 :func)) 
-                          (p-nest %2 (f %2))
+               (let [v1 (if (get %2 :func)
                           (reduce (fn [r rf] 
-                                    (conj r rf [])) [] (process-func %2 nil)))]
+                                    (conj r rf [])) [] (process-func %2 nil))
+                          (p-nest %2 (f %2)))]
                  (if @op
                    (@op %1 v1)
                    v1))
