@@ -277,3 +277,19 @@
                                 [man_cou nil]
                                 [insure_cou nil]
                                 [fee_cou nil]])))
+
+
+(deftest id-recur
+         (is (f2 "cou" [main_cou []
+                        it_cou [] man_cou [] fin_cou []
+                        bd_cou [] web_cou [] net_cou []
+                        insure_cou [] fee_cou []]))
+         (is (f2 "*cou" [main_cou []
+                         it_cou [main_cou []] 
+                         man_cou [main_cou []] 
+                         fin_cou [main_cou []]
+                         bd_cou [it_cou [main_cou []]] 
+                         web_cou [it_cou [main_cou []]] 
+                         net_cou [it_cou [main_cou []]]
+                         insure_cou [fin_cou [main_cou []]] 
+                         fee_cou [it_cou [main_cou []]]])))

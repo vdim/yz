@@ -1860,6 +1860,14 @@
    ;; Tests for fixing exception "java.lang.Character cannot be cast to java.lang.String"
    "@(class r)"
    "@(class room)"
+
+   ;; Recursive link
+   "*li"
+   "li.*li"
+   "li.*link"
+   "li.*link.cou"
+   "li.cou.*parent"
+   "li.cou.*parent.cou"
    ])
 
 
