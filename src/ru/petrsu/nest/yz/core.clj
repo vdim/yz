@@ -464,8 +464,7 @@
     (if (or (nil? then-) (every? nil? objs-))
       (let [pp (remove #(let [v (% 1)]
                           (if (seq? v)
-                            (some (fn [o] (= o :not-found)) v)
-                            false))
+                            (some (partial = :not-found) v)))
                        (map (fn [o] [o, (process-props o props-)]) objs-))]
         (if props-
           (sort-rq pp tsort true)
@@ -473,10 +472,10 @@
       (recur (cond 
                ; Process recursive then-.
                (:recursive then-)
-               (loop [objs- (remove nil? (get-objs-by-path objs- then-)) res []]
+               (loop [objs- (get-objs-by-path objs- then-) res []]
                  (if (empty? objs-)
                    (flatten res)
-                   (recur (remove nil? (get-objs-by-path objs- then-)) (conj res objs-))))
+                   (recur (get-objs-by-path objs- then-) (conj res objs-))))
 
                ; Process properties if any (in case where is nil, or property is meduim link).
                (and props- (or (nil? (:where then-)) (-> props- first vector? not)))
@@ -509,7 +508,7 @@
                   [(-> (p-then [%2] nest) first second)
                    (let [what (:what nest)
                          ; List of objects which is got due to recursive link.
-                         objs- (remove nil? (mapcat (fn [path] (reduce get-objs [%2] path)) (get-in @a-mom [what what])))
+                         objs- (remove nil? (mapcat (partial reduce get-objs [%2]) (get-in @a-mom [what what])))
                          newv (f %2)]
                      (if (empty? objs-)
                        newv
