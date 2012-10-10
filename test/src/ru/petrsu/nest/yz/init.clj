@@ -24,7 +24,9 @@
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-jpa :as buj]
             [ru.petrsu.nest.yz.queries.bd-jpa :as bjpa]
-            [ru.petrsu.nest.yz.queries.core :as qc])
+            [ru.petrsu.nest.yz.queries.core :as qc]
+            [clojure.core.reducers :as r]
+            )
   (:use ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
         ru.petrsu.nest.yz.queries.uni-bd
@@ -112,3 +114,11 @@
    ru.petrsu.nest.son.jpa.AbstractSonModificationOccurence 
    ru.petrsu.nest.son.jpa.SonPropertyModificationOccurence 
    ru.petrsu.nest.son.jpa.SonReferenceModificationOccurence])
+
+
+(defn mapping [f]
+  (fn [f1]
+    (fn [result input]
+      (f1 result (f input)))))
+
+(defn sleep [n] (Thread/sleep n))
