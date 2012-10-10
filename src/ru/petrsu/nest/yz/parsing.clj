@@ -499,8 +499,9 @@
     medium? defines queries something like this: 
       sou.parent.li
     where parent is property"
-  [res id nl tl is-recur tsort unique hb-range lb-range tail medium? ex rec]
-  (let [tl- (dec tl)
+  [res id nl tl is-recur tsort unique hb-range lb-range tail & args]
+  (let [[medium? ex rec] args
+        tl- (dec tl)
         what (get-in-nest-or-then res (inc nl) tl- :what) 
         
         ; Check whether class "what" has property "id". 
@@ -588,7 +589,7 @@
 
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
-  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail _ _ _]
+  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
         [id rec] (if (.startsWith id "*") [(subs id 1) true] [id nil])
         cl (cond 
@@ -860,10 +861,7 @@
              (:is-recur state)
              (:cur-sort state)
              (:unique state) 
-             (:hb-range state) (:lb-range state) (:tail state)
-             nil
-             nil
-             nil))])
+             (:hb-range state) (:lb-range state) (:tail state)))])
 
 
 (defn- process-id
