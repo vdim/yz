@@ -610,33 +610,26 @@
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
-            ; Function for association some values of some then map.
-            assoc-lth #(assoc %1 :what cl :where (u/get-paths cl %2 *mom*)
-                              :sort vsort :exactly ex :unique unique 
-                              :limit limit :recursive rec)
+            ; Function for association some values of some map.
+            ; %1 must be partial function with first parameter some map.
+            passoc #(%1 :what cl :where (u/get-paths cl %2 *mom*)
+                       :sort vsort :exactly ex :unique unique 
+                       :limit limit :recursive rec)
             ; What for getting where.
             what (get-in-nest-or-then res nl tl- :what)]
         (if (> tl 0)
           (if (nil? last-then)
-            (f (assoc-lth empty-then (get-in-nest res nl :what)))
+            (f (passoc (partial assoc empty-then) (get-in-nest res nl :what)))
             (let [then-v (repeat tl- :then)
                   ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
                   ;; Because of get-in can return nil, but lt must be not nil.
                   lt (get-in last-then then-v)
                   lt (if (nil? lt) empty-then lt)
   
-                  lt (assoc-lth lt what)
+                  lt (passoc (partial assoc lt) what)
                   lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
               (f lt)))
-         (assoc-in-nest 
-           res nl
-           :what cl
-           :where (u/get-paths cl what *mom*)
-           :sort vsort
-           :exactly ex
-           :recursive rec
-           :unique unique 
-           :limit limit))))))
+          (passoc (partial assoc-in-nest res nl) what))))))
 
 
 (defn- add-op-to-preds
