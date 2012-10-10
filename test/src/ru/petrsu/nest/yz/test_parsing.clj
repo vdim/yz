@@ -33,7 +33,7 @@
              ; Importing of this classes are needed for parsing 
              ; queries with this classes in case MOM is nil.
              ; So DON'T REMOVE THIS IMPORTS.
-             Device Network NetworkInterface Occupancy)
+             Device Network NetworkInterface Occupancy LinkInterface CompositeOU)
            (ru.petrsu.nest.yz SyntaxException NotDefinedDPException)))
 
 (def mom- 
