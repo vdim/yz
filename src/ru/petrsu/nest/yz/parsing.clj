@@ -211,8 +211,9 @@
 
 (defn- check-prop
   "Checks whether class 'cl' or one of children of class 'cl' 
-  have property 'prop' in case MOM is defined. If searching 
-  is failed then exeption is thrown."
+  have property 'prop' in case MOM is defined. 
+  If prop is defined then returns class of property.
+  If searching is failed then exeption is thrown."
   [^Class cl ^String prop]
   (letfn [(prop? [clazz] (some #(if (= prop (.getName %))
                                   (.getPropertyType %)) 
@@ -221,7 +222,7 @@
         (map? prop) ; prop is calling of function: ip4i[@(ip &.inetAddress)]
         (keyword? cl) ; cl is keyword in case query is something like this: $1[name]
         (prop? cl)
-        (some #(prop? %) (get-in *mom* [:children cl]))
+        (some prop? (get-in *mom* [:children cl]))
         (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
 
 
@@ -495,23 +496,20 @@
 
 
 (defn- found-prop
-  "This function is called when likely some property is found.
-    medium? defines queries something like this: 
-      sou.parent.li
-    where parent is property"
+  "This function is called when likely some property is found."
   [res id nl tl is-recur tsort unique hb-range lb-range tail & args]
-  (let [[medium? ex rec] args
+  (let [; medium? defines queries something like this: 
+        ;   sou.parent.li
+        ; where parent is property
+        [medium? ex rec] args
         tl- (dec tl)
-        what (get-in-nest-or-then res (inc nl) tl- :what) 
+
+        getp #(get-in-nest-or-then res (inc nl) tl- %)
+        what (getp :what) 
         
         ; Check whether class "what" has property "id". 
         ; If searching failed then exception is thrown.
         cl (check-prop what id)
-        cl (if (true? cl) 
-             nil 
-             (if (or (.isArray cl) (some (partial = java.lang.Iterable) (ancestors cl)))
-               (.getComponentType cl)
-               cl))
         id (cond ; self object
                  (= id "&") :#self-object#
                  ; default property
@@ -519,72 +517,70 @@
                  ; id is function, e.g.: building[@(count `floor')]
                  (map? id) id
                  ; property itself
-                 :else (keyword (str id)))] 
-    (let [sorts (get-in-nest-or-then res (inc nl) tl- :sort)
-          props (get-in-nest-or-then res (inc nl) tl- :props)
-          sorts (cond
-                  
-                  ; Not nothing, so sorts is nil.
-                  (and (not tsort) (not sorts)) nil
+                 :else (keyword (str id)))
+        sorts (getp :sort)
+        last-then (get-in-nest res nl :then)
+        a-then #(assoc-in-nest res nl :then %)] 
+    (if medium? 
+      (let [cl (if (true? cl) 
+                 nil 
+                 (if (or (.isArray cl) (some (partial = java.lang.Iterable) (ancestors cl)))
+                   (.getComponentType cl)
+                   cl))
+            ; Define limit
+            limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
+            ; Vector with type of sorting, comparator and keyfn.
+            sorts (transform-sort sorts tsort cl)
+            ; Function for association some values of some then map.
+            assoc-lth #(assoc %1 :what cl :where [[(name id)]]
+                              :sort sorts :exactly ex 
+                              :recursive rec :unique unique :limit limit)]
+          (if (nil? last-then)
+            (a-then (assoc-lth empty-then))
+            (let [then-v (repeat tl- :then)
+                  ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
+                  ;; Because of get-in can return nil, but lt must be not nil.
+                  lt (get-in last-then then-v)
+                  lt (if (nil? lt) empty-then lt)
+      
+                  lt (assoc-lth lt)
+                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
+              (a-then lt))))
+      (let [props (getp :props)
+            sorts (cond
                     
-                  ; If sort is map (from query {a:name, d:description}room), then another sorting is ignore.
-                  ;(every? list? sorts) sorts 
-                  (or (and sorts (every? list? sorts)) (map? sorts)) sorts 
-
-                  ; Because of sorting type is not nil first time (sorts is nil), then we must
-                  ; create structure of value's :sort key: vector [nil nil nil] for
-                  ; class which is selected plus vector [nil nil nil] for each 
-                  ; property which has already added plus vector for current type of 
-                  ; sorting (get-sort function).
-                  (not sorts)
-                  (conj (vec (repeat (count props) [nil nil nil])) [nil nil nil] (get-sort tsort, what, id))
-
-                  ; If sorts is not nil, then we must add some vector for current type of sorting
-                  ; (get-sort function).
-                  :else (if (vector? (sorts 0)) 
-                          (conj sorts (get-sort tsort, what, id))
-                          (conj [sorts] (get-sort tsort, what, id))))
-          f #(assoc-in-nest res nl %1 %2 :sort sorts)
-            
-          ; This function is need for improving performance because first element of :props is
-          ; not vector but next is. Result of benchmark in case parameter is vector:
-          ; (time (dotimes [_ 1e7] (lvec [1 2 3]))): "Elapsed time: 327.200079 msecs"
-          ; (time (dotimes [_ 1e7] (vec [1 2 3]))): "Elapsed time: 7122.513999 msecs"
-          lvec #(if (vector? %) % (vec %))]
-      (if medium? 
-        (let [last-then (get-in-nest res nl :then)
-              f #(assoc-in-nest res nl :then %)
-              ; Define limit
-              limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
-              ; Vector with type of sorting, comparator and keyfn.
-              vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
-              vsort (transform-sort vsort tsort cl)
-              ; Function for association some values of some then map.
-              assoc-lth #(assoc %1 :what cl :where [[(name id)]]
-                                :sort vsort :exactly ex 
-                                :recursive rec :unique unique :limit limit)
-              ; What for getting where.
-              what (get-in-nest-or-then res nl tl- :what)]
-            (if (nil? last-then)
-              (f (assoc-lth empty-then))
-              (let [then-v (repeat tl- :then)
-                    ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
-                    ;; Because of get-in can return nil, but lt must be not nil.
-                    lt (get-in last-then then-v)
-                    lt (if (nil? lt) empty-then lt)
-        
-                    lt (assoc-lth lt)
-                    lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
-                (f lt))))
+                    ; Not nothing, so sorts is nil.
+                    (and (not tsort) (not sorts)) nil
+                      
+                    ; If sort is map (from query {a:name, d:description}room), then another sorting is ignore.
+                    (or (and sorts (every? list? sorts)) (map? sorts)) sorts 
+  
+                    ; Because of sorting type is not nil first time (sorts is nil), then we must
+                    ; create structure of value's :sort key: vector [nil nil nil] for
+                    ; class which is selected plus vector [nil nil nil] for each 
+                    ; property which has already added plus vector for current type of 
+                    ; sorting (get-sort function).
+                    (not sorts)
+                    (-> props count (repeat [nil nil nil]) vec (conj [nil nil nil] (get-sort tsort, what, id)))
+  
+                    ; If sorts is not nil, then we must add some vector for current type of sorting
+                    ; (get-sort function).
+                    :else (conj (if (vector? (sorts 0)) sorts [sorts]) 
+                                (get-sort tsort, what, id)))
+              
+            ; This function is need for improving performance because first element of :props is
+            ; not vector but next is. Result of benchmark in case parameter is vector:
+            ; (time (dotimes [_ 1e7] (lvec [1 2 3]))): "Elapsed time: 327.200079 msecs"
+            ; (time (dotimes [_ 1e7] (vec [1 2 3]))): "Elapsed time: 7122.513999 msecs"
+            lvec #(if (vector? %) % (vec %))]
         (if (> tl- 0)
           (let [v #(conj (vec (repeat (dec tl-) :then)) %)
-                last-then (get-in-nest res nl :then)
                 last-then (assoc-in last-then (v :sort) sorts)]
-            (assoc-in-nest 
-              res nl :then
-              (update-in last-then (v :props)
-                         #(lvec (conj % [id is-recur])))))
-          (f :props (lvec (conj (get-in-nest res nl :props) [id is-recur]))))))))
+            (a-then (update-in last-then (v :props) #(lvec (conj % [id is-recur])))))
+          (assoc-in-nest 
+            res nl 
+            :sort sorts 
+            :props (lvec (conj (get-in-nest res nl :props) [id is-recur]))))))))
 
 
 (defn- found-id
