@@ -101,3 +101,43 @@
            (f bd/b1 [["MB"]])
            (f bd/b2 [["TK"]])
            (f [bd/b1 bd/b2] [["MB"] ["TK"]])))
+
+; Parameter in medium if path: building.$1.room
+(defq ^{:mom bd/bd-mom, :em bd/mem} q8 "building.$1.room")
+(deftest t-q8
+         (let [f #(is (tc/eq-colls (:rows (q8 %1)) %2))]
+           (f bd/f1_b1 [[bd/r101_f1_b1] [bd/r102_f1_b1]])
+           (f bd/f2_b1 [[bd/r201_f2_b1] [bd/r202_f2_b1]])))
+
+
+(defq ^{:mom bd/bd-mom, :em bd/mem} q9 "building.$1")
+(deftest t-q9
+         (let [f #(is (= (:rows (q9 %1)) %2))]
+           (f bd/f1_b1 [[bd/f1_b1]])
+           (f bd/f2_b1 [[bd/f2_b1]])))
+
+
+(defq ^{:mom bd/bd-mom, :em bd/mem} q10 "building.$1[number]")
+(deftest t-q10
+         (let [f #(is (= (:rows (q10 %1)) %2))]
+           (f bd/f1_b1 [[1]])
+           (f bd/f2_b1 [[2]])))
+
+
+(defq ^{:mom bd/bd-mom, :em bd/mem} q11 "building.$1#(number=1)")
+(deftest t-q11
+         (let [f #(is (tc/eq-colls (:rows (q11 %1)) %2))]
+           (f [bd/f1_b1 bd/f2_b1] [[bd/f1_b1]])))
+
+
+(defq ^{:mom bd/bd-mom, :em bd/mem} q12 "building.$1#(number=$2)")
+(deftest t-q12
+         (let [f #(is (tc/eq-colls (:rows (q12 %1 %2)) %3))]
+           (f [bd/f1_b1 bd/f2_b1] 1 [[bd/f1_b1]])
+           (f bd/f1_b1 1 [[bd/f1_b1]])
+           (f bd/f2_b1 1 [])
+           (f [bd/f1_b1] 1 [[bd/f1_b1]])
+           (f [bd/f2_b1] 1 [])
+           (f [bd/f1_b1 bd/f2_b1] 2 [[bd/f2_b1]])
+           (f [bd/f1_b1 bd/f2_b1] 3 [])))
+

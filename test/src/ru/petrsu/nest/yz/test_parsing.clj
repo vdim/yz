@@ -1851,6 +1851,8 @@
    "$1 ($2 (ni ($3)))"
    "$1 ($2, ni, $3)"
    "$1.ni.$2.$3"
+   "building.$1"
+   "building.$1.room"
 
    ;; Query with function without parameters
    "@(str)"
