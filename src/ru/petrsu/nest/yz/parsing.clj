@@ -447,7 +447,7 @@
       (let [prop (cond (= prop :#default-property#) (get-dp cl *mom*)
                        (= prop :#self-object#) :self
                        :else prop)
-            f #(let [v (get-in (get *mom* cl) [:sort prop %])]
+            f #(let [v (get-in *mom* [cl :sort prop %])]
                  (if (string? v)
                    (create-f v)
                    v))
