@@ -432,7 +432,7 @@
                  (ns-imports %)) 
           (all-ns))
     (let [l-id (cs/lower-case (str id))]
-      (some #(get-in *mom* [% l-id]) [:sns :names :snames]))))
+      (get-in *mom* [:names l-id]))))
 
 
 (defn- get-sort

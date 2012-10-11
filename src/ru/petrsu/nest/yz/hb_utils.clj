@@ -182,7 +182,7 @@
   (reduce #(let [cl (%2 0)]
              (if (instance? Class cl)
                (assoc %1 
-                      (cst/lower-case (key (bean cl))) 
+                      (-> cl bean key cst/lower-case) 
                       cl)
                %1)) old-names mom))
 
@@ -313,11 +313,11 @@
   "Generates mom from list of classes."
   [classes, mom-old]
   (let [mom (dissoc-nil (gen-basic-mom classes, mom-old))
-        sns (get-sns mom, (:sns mom-old))
-        snames (get-names mom :simpleName (:snames mom-old))
-        names (get-names mom :name (:names mom-old))
+        names (get-sns mom, (:names mom-old))
+        names (get-names mom :simpleName names)
+        names (get-names mom :name names)
         children (children classes)
-        mom (assoc mom :sns sns :names names :snames snames :children children
+        mom (assoc mom :names names :children children
                    :namespaces (get mom-old :namespaces))
         mom (get-paths-to-parent mom classes paths-to-parent)
         mom (copy-paths mom classes)
