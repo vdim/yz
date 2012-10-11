@@ -159,7 +159,7 @@
   (if (nil? vsort)
     rq
     (let [;; Functions for getting comparator.
-          get-comp #(let [tcomp (if %1 %1 compare)]
+          get-comp #(let [tcomp (or %1 compare)]
                       (cond (nil? %2) nil
                             (= %2 :asc) tcomp
                             (= %2 :desc) (fn [v1, v2] (* -1 (tcomp v1 v2)))))
@@ -172,8 +172,8 @@
                                 tcomp (get-comp tcomp tsort)
                                 c (cond (nil? tsort) 0
                                         (and tcomp keyfn) (tcomp (keyfn (nth v1 %)) (keyfn (nth v2 %)))
-                                        tsort (tcomp (nth v1 %) (nth v2 %)))]
-                           (if (= c 0) nil c)) 
+                                        :else (tcomp (nth v1 %) (nth v2 %)))]
+                           (if-not (= c 0) c))
                         (range 0 (min (count v1) (count v2))))]
                 (if (nil? r) 0 r))))
 
