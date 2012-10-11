@@ -162,28 +162,16 @@
    :superclass (:superclass (bean cl))})
 
 
-(defn- get-sns
-  "Creates a map: short names (key) 
-  and classes (value) from MOM as value."
-  [mom, old-sns]
-  (reduce #(let [; short name from mom
-                 sn (:sn (%2 1))
-                 cl (%2 0)]
-             (if (class? cl)
-               (assoc %1 sn cl)
-               %1)) 
-          old-sns mom))
-
-
 (defn- get-names
-  [mom, key, old-names]
+  [mom, old-names]
   "Creates a map: names (key) 
   and classes (value) from MOM as value."
   (reduce #(let [cl (%2 0)]
-             (if (instance? Class cl)
+             (if (class? cl)
                (assoc %1 
-                      (-> cl bean key cst/lower-case) 
-                      cl)
+                      (-> cl bean :simpleName cst/lower-case) cl
+                      (-> cl bean :name cst/lower-case) cl
+                      (:sn (%2 1)) cl)
                %1)) old-names mom))
 
 
@@ -313,11 +301,9 @@
   "Generates mom from list of classes."
   [classes, mom-old]
   (let [mom (dissoc-nil (gen-basic-mom classes, mom-old))
-        names (get-sns mom, (:names mom-old))
-        names (get-names mom :simpleName names)
-        names (get-names mom :name names)
-        children (children classes)
-        mom (assoc mom :names names :children children
+        mom (assoc mom 
+                   :names (get-names mom (:names mom-old))
+                   :children (children classes)
                    :namespaces (get mom-old :namespaces))
         mom (get-paths-to-parent mom classes paths-to-parent)
         mom (copy-paths mom classes)
