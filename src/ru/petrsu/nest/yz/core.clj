@@ -240,7 +240,7 @@
   "Returns value from p/query-params for 
   specified number (has string type)."
   [n]
-  (nth @p/query-params (dec (Integer/parseInt (name n)))))
+  (nth @p/query-params (-> n name Integer/parseInt dec)))
 
 
 (defn- select-elems
@@ -389,23 +389,36 @@
   (value of the :what key from m) class and are belonged to 'sources' objects."
   [sources m]
   (let [{:keys [preds where ^Class what sort exactly unique limit]} m
-        where (or where (get-paths what (class (first sources)) @a-mom))
+        s-cl (class (first sources))
+        where (or where (get-paths what s-cl @a-mom))
         f (if exactly #(= (class %) what) #(instance? what %))
         elems (sort-rq (filter-by-preds 
-                         (filter f
-                                 (let [objs (cond 
-                                              ; where is vector with paths from cl-target to cl-source.
-                                              (vector? where) 
-                                              (mapcat #(reduce get-objs sources %) where)
+                          (let [objs (cond 
+                                       ; In case what is keyword then get objects from params.
+                                       (keyword? what)
+                                       (let [v (get-qp what)
+                                             v (if (coll? v) v [v])
+                                             ; Check whether objects from v belong to sources
+                                             v (filter #(let [wh (get-paths (class %) s-cl @a-mom)
+                                                              obs (set (mapcat (partial reduce get-objs sources) wh))]
+                                                          (contains? obs %)) v)]
+                                         v)
+                                       ; where is vector with paths from cl-target to cl-source.
+                                       (vector? where) 
+                                       (mapcat #(reduce get-objs sources %) where)
 
-                                              ; where is map where a class -> a path.
-                                              (map? where)
-                                              (reduce #(let [p (get where (class %2))]
-                                                         (if p
-                                                           (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) p))
-                                                           %1)) 
-                                                      () sources))]
-                                   (if unique (distinct objs) objs))) preds)
+                                       ; where is map where a class -> a path.
+                                       (map? where)
+                                       (reduce #(let [p (get where (class %2))]
+                                                  (if p
+                                                    (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) p))
+                                                    %1)) 
+                                               () sources))
+                                objs (if unique (distinct objs) objs)]
+                            (if (keyword? what)
+                              objs
+                              (filter f objs)))
+                         preds)
                        sort false)]
     (limiting elems limit)))
 
