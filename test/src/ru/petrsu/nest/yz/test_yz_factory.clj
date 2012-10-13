@@ -25,7 +25,8 @@
             [ru.petrsu.nest.yz.queries.core :as qc]
             [ru.petrsu.nest.yz.hb-utils :as hu]
             [ru.petrsu.nest.yz.queries.bd :as bd])
-  (:import (ru.petrsu.nest.son SON Building Room Floor))
+  (:import (ru.petrsu.nest.son SON Building Room Floor) 
+           (ru.petrsu.nest.yz NotFoundElementException))
   (:use clojure.test))
 
 
@@ -63,10 +64,11 @@
            (is (f [:clazz Long :rtype :rows] [[1] [2] [3]]))
            (is (f [:clazz Long :rtype :result] [1 [] 2 [] 3 []])))
            
-         (is (thrown? Exception (yzf/collq "long" [1] :clazz String)))
-         (is (thrown? Exception (yzf/collq "long" ["af"] :clazz String)))
-         (is (thrown? Exception (yzf/collq "string" [1] :clazz Long)))
-         (is (thrown? Exception (yzf/collq "string" ["af"] :clazz Long)))
+         (is (thrown? NotFoundElementException (yzf/collq "long" [1] :clazz String)))
+         (is (thrown? NotFoundElementException (yzf/collq "long" ["af"] :clazz String)))
+         (is (thrown? NotFoundElementException (yzf/collq "string" [1] :clazz Long)))
+         (is (thrown? NotFoundElementException (yzf/collq "string" ["af"] :clazz Long)))
+         (is (thrown? NotFoundElementException (yzf/collq "string" ["af"] :clazz Long)))
          
          (is (= (yzf/collq "long" ["af"] :rtype :result) []))
          (is (= (yzf/collq "string" [1 2 3] :rtype :result) []))
@@ -82,4 +84,16 @@
          (is (= (yzf/collq "long" ["af" 1 "sd"] :rtype :rows :clazz Long) [[1]]))
          (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :rows :clazz String) [["af"]]))
          (is (= (yzf/collq "long" ["af" 1 "sd"] :rtype :result :clazz Long) [1 []]))
-         (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :result :clazz String) ["af" []])))
+         (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :result :clazz String) ["af" []]))
+
+         (is (= (yzf/collq "string" [1 2 "af" 3] :clazz [String]) [["af"]]))
+         (is (qc/eq-colls (yzf/collq "long" [1 2 "af" 3] :clazz [String Long]) [[1] [2] [3]]))
+
+         (is (= (yzf/collq "building" [1 2 bd/b1] :clazz [Building]) [[bd/b1]]))
+         (is (= (yzf/collq "building" [bd/b2 1 2 bd/b1] :clazz [Building]) [[bd/b1] [bd/b2]]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2] :clazz [Building Floor]) [[bd/b2]]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2] :rtype :result :clazz [Building Floor]) 
+                [bd/b2 []]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2 bd/f1_b2] :rtype :result :clazz [Building Floor]) 
+                [bd/b2 [bd/f1_b2 []]]))
+         )

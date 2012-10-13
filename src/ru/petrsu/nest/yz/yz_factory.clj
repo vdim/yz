@@ -349,7 +349,8 @@
   (let [parts (partition 2 args)
         {:keys [rtype clazz]} (zipmap (map first parts) (map second parts))
         rtype (or rtype :rows) ; type of result. :rows by default.
-        [cls mom] (if clazz [[clazz] :generate] [nil nil]) ; if clazz is nil then mom will be nil.
+        clazz (if (or (nil? clazz) (coll? clazz)) clazz [clazz])
+        [cls mom] (if clazz [clazz :generate] [nil nil]) ; if clazz is nil then mom will be nil.
         em (c-em coll cls mom) ; define element manager
         r (yz/pquery q em)]
     (if (:error r) 
