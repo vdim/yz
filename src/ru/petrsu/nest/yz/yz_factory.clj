@@ -353,7 +353,7 @@
         em (c-em coll cls mom) ; define element manager
         r (yz/pquery q em)]
     (if (:error r) 
-      (throw (Exception. (:error r)))
+      (throw (:thrwable r))
       (rtype r))))
 
 
