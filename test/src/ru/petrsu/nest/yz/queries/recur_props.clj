@@ -179,7 +179,7 @@
 (defn- f2 
   "Compares result of a specified query and some value."
   [q v] 
-  (tc/eq-colls (tc/r-query q) v))
+  (tc/eq-results? (tc/r-query q) v))
 
 
 (defn- f3 
@@ -198,7 +198,6 @@
 
          (is (f2 "sou#(name=\"Local Network\")[parent]" [(list net_cou) []]))
          (is (f2 "sou#(name=\"Local Network\")[*parent]" [(list (list net_cou it_cou main_cou)) []]))
-         (is (f2 "sou#(name=\"Local Network\")[*parent]" [(list (list main_cou net_cou it_cou)) []]))
          (is (f2 "sou#(name=\"Local Network\")[& *parent]" [(list local_sou (list net_cou it_cou main_cou)) []]))
          (is (f2 "sou#(name=\"Local Network\")[*parent &]" [(list (list net_cou it_cou main_cou) local_sou) []]))
          (is (f2 "sou#(name=\"Local Network\")[name & *parent]" 
@@ -208,7 +207,7 @@
 
 
 (deftest t-recur-ous
-         (is (f1 "cou#(name~\"base\")[*OUs]" [mysql_sou oracle_sou nosql_sou]))
+         (is (f1 "cou#(name~\"base\")[*OUs]" [nosql_sou mysql_sou oracle_sou]))
          (is (f1 "cou#(name~\"base\")[& *OUs]" [bd_cou mysql_sou oracle_sou nosql_sou]))
          (is (f2 "cou#(name~\"base\")[*OUs]" 
                  [(list (list (list mysql_sou oracle_sou nosql_sou))) []]))
@@ -281,15 +280,15 @@
 
 (deftest id-recur
          (is (f2 "cou" [main_cou []
-                        it_cou [] man_cou [] fin_cou []
-                        bd_cou [] web_cou [] net_cou []
-                        insure_cou [] fee_cou []]))
+                        it_cou [] fin_cou [] man_cou [] 
+                        web_cou [] net_cou [] bd_cou []
+                                                 fee_cou [] insure_cou []]))
          (is (f2 "*cou" [main_cou []
                          it_cou [main_cou []] 
-                         man_cou [main_cou []] 
                          fin_cou [main_cou []]
-                         bd_cou [it_cou [main_cou []]] 
+                         man_cou [main_cou []] 
                          web_cou [it_cou [main_cou []]] 
                          net_cou [it_cou [main_cou []]]
-                         insure_cou [fin_cou [main_cou []]] 
-                         fee_cou [it_cou [main_cou []]]])))
+                         bd_cou [it_cou [main_cou []]] 
+                         fee_cou [fin_cou [main_cou []]]
+                         insure_cou [fin_cou [main_cou []]]])))
