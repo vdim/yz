@@ -336,10 +336,15 @@
 
   Examples:
     (collq \"string\" [1 2 \"1\" 3])
+      => (["1"])
     (collq \"long\" [1 2 \"1\" 3])
+      => ([1] [2] [3])
     (collq \"string\" [1 2 \"1\" 3] :rtype :result)
+      => ["1" []]
     (collq \"string\" [1 2 \"1\" 3] :rtype :result :clazz String)
-    (collq \"string\" [1 2 \"1\" 3] :clazz String)"
+      => ["1" []]
+    (collq \"string\" [1 2 \"1\" 3] :clazz String)
+      => (["1"])"
   [^String q coll & args]
   (let [parts (partition 2 args)
         {:keys [rtype clazz]} (zipmap (map first parts) (map second parts))
