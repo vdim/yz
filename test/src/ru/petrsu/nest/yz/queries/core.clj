@@ -258,6 +258,28 @@
     false))
 
 
+(defn eq-results?
+  "Equals two result of query (value of the 
+  :result key from structure which 
+  returns by the pquery function)."
+  [c1 c2]
+  (if (not= (count c1) (count c2))
+    false
+    (let [pc1 (set (partition 2 c1))
+          pc2 (set (partition 2 c2))
+          r (for [a pc1 b pc2 :when (let [[f1 s1] a
+                                          [f2 s2] b]
+                                      (and 
+                                        (if (and (coll? f1) (coll? f2))
+                                          (eq-colls f1 f2)
+                                          (= f1 f2))
+                                        (if (and (empty? s1) (empty? s2)) 
+                                          true
+                                          (eq-results? s1 s2))))]
+              a)]
+      (= (count r) (count pc1) (count pc2)))))
+
+    
 (defn eq-maps
   "Equals two maps where value is collection 
   (collections are equaled due to eq-colls)."
