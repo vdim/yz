@@ -349,6 +349,9 @@
         representation of the result respectively). :rows is used by default.
       :verbose key specify whether result includes elements which is
         not contained into the coll.
+      :mom key defines Map Of Object Model. If it is not specified then
+        mom is generated from value of :clazz key. If MOM is specified
+        then :clazz key is ignored.
 
   Examples:
     (collq \"string\" [1 2 \"1\" 3])
@@ -363,12 +366,15 @@
       => ([\"1\"])"
   [^String q coll & args]
   (let [parts (partition 2 args)
-        {:keys [rtype clazz verbose]} (zipmap (map first parts) (map second parts))
+        {:keys [rtype clazz verbose mom]} (zipmap (map first parts) (map second parts))
         rtype (or rtype :rows) ; type of result. :rows by default.
-        clazz (if (or (nil? clazz) (coll? clazz)) clazz [clazz])
-        [cls mom] (if clazz [clazz :generate] [nil nil]) ; if clazz is nil then mom will be nil.
+        [cls mom] (if mom 
+                    [(filter class? (keys mom)) mom]
+                    (let [clazz (if (or (nil? clazz) (coll? clazz)) clazz [clazz])]
+                      ; if clazz is nil then mom will be nil.
+                      (if clazz [clazz (hu/gen-mom clazz nil)] [nil nil]))) 
         em (c-em coll cls mom) ; define element manager
-        r (yz/pquery q em)]
+        r (yz/pquery q mom em)]
     (if (:error r) 
       (throw (:thrwable r))
       (if verbose

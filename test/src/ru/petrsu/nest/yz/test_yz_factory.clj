@@ -106,4 +106,9 @@
                 [bd/b2 []]))
          (is (= (yzf/collq "building (floor)" [bd/b2 1 2 bd/f1_b2] :rtype :result :clazz [Building Floor]) 
                 [bd/b2 [bd/f1_b2 []]]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2 bd/f1_b2] :rtype :result :mom mom-) 
+                [bd/b2 [bd/f1_b2 []]]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2 bd/f1_b2] 
+                           :rtype :result :mom mom- :clazz [Building Floor]) 
+                [bd/b2 [bd/f1_b2 []]]))
          )
