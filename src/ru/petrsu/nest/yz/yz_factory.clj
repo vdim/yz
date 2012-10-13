@@ -323,6 +323,20 @@
    (mc-em coll classes)))
 
 
+(defn rfilter
+  "Filters results due to a specified collection.
+  Returns new result which is not contain elements
+  which are not into the collection. Collection must 
+  be set because of contains? function is used."
+  [result coll]
+  (vec (reduce (fn [r [f s]] 
+                 (if (contains? coll f) 
+                   (concat r [f (if (empty? s) s (rfilter s coll))])
+                   r))
+               []
+               (partition 2 result))))
+
+
 (defn collq
   "Simple interface for quering. User should define just
   query and collection with objects. Parameters:
@@ -333,6 +347,8 @@
         If clazz is not supplied then MOM will be nil.
       :rtype key is type of result (:rows or :result - flat or hierarchical 
         representation of the result respectively). :rows is used by default.
+      :verbose key specify whether result includes elements which is
+        not contained into the coll.
 
   Examples:
     (collq \"string\" [1 2 \"1\" 3])
@@ -347,7 +363,7 @@
       => ([\"1\"])"
   [^String q coll & args]
   (let [parts (partition 2 args)
-        {:keys [rtype clazz]} (zipmap (map first parts) (map second parts))
+        {:keys [rtype clazz verbose]} (zipmap (map first parts) (map second parts))
         rtype (or rtype :rows) ; type of result. :rows by default.
         clazz (if (or (nil? clazz) (coll? clazz)) clazz [clazz])
         [cls mom] (if clazz [clazz :generate] [nil nil]) ; if clazz is nil then mom will be nil.
@@ -355,7 +371,12 @@
         r (yz/pquery q em)]
     (if (:error r) 
       (throw (:thrwable r))
-      (rtype r))))
+      (if verbose
+        (rtype r)
+        (let [result (rfilter (:result r) (set coll))
+              rows (yz/get-rows result)
+              r (assoc r :result result :rows rows)]
+          (rtype r))))))
 
 
 (comment

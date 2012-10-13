@@ -90,9 +90,19 @@
          (is (qc/eq-colls (yzf/collq "long" [1 2 "af" 3] :clazz [String Long]) [[1] [2] [3]]))
 
          (is (= (yzf/collq "building" [1 2 bd/b1] :clazz [Building]) [[bd/b1]]))
-         (is (= (yzf/collq "building" [bd/b2 1 2 bd/b1] :clazz [Building]) [[bd/b1] [bd/b2]]))
+         (is (qc/eq-colls (yzf/collq "building" [bd/b2 1 2 bd/b1] :clazz [Building]) [[bd/b1] [bd/b2]]))
          (is (= (yzf/collq "building (floor)" [bd/b2 1 2] :clazz [Building Floor]) [[bd/b2]]))
          (is (= (yzf/collq "building (floor)" [bd/b2 1 2] :rtype :result :clazz [Building Floor]) 
+                [bd/b2 []]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2] 
+                           :rtype :result 
+                           :clazz [Building Floor] 
+                           :verbose true) 
+                [bd/b2 [bd/f1_b2 []]]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2] 
+                           :rtype :result 
+                           :clazz [Building Floor] 
+                           :verbose false) 
                 [bd/b2 []]))
          (is (= (yzf/collq "building (floor)" [bd/b2 1 2 bd/f1_b2] :rtype :result :clazz [Building Floor]) 
                 [bd/b2 [bd/f1_b2 []]]))
