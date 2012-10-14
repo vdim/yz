@@ -75,7 +75,7 @@
 
 (deftest long-limiting
          (let [ls [1 2 3 1 5 6]
-               f #(is (tc/eq-colls (yzf/collq %1 ls) %2))]
+               f #(is (tc/eq-colls (yzf/collq %1 ls :rtype :rows) %2))]
            (f "1:long" [[2] [3] [1] [5] [6]])
            (f "1-2:long" [[2] [3]])
            (f "1-1:long" [[2]])

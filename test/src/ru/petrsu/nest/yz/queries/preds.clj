@@ -485,7 +485,7 @@
          (let [p-longs [2 3] ; primitive longs
                c-longs [(Long. 2) (Long. 3)] ; complex longs
                c-ints [(Integer. 2) (Integer. 3)] ; complex ints
-               f #(tc/eq-colls %1 (yzf/collq %2 %3))]
+               f #(tc/eq-colls %1 (yzf/collq %2 %3 :rtype :rows))]
            (is (f [[2]] "long#(& == 2)" p-longs))
            (is (f [[2]] "long#(& = 2)" p-longs))
            (is (f [] "long#(& == 2)" c-longs))
@@ -514,7 +514,7 @@
                I2 (Integer. 2)
                I3 (Integer. 3)
                c-ints [I2 I3] ; complex ints
-               f #(tc/eq-colls %1 (yzf/collq %2 %3))]
+               f #(tc/eq-colls %1 (yzf/collq %2 %3 :rtype :rows))]
            (is (f [[3]] "long#(& !== 2)" p-longs))
            (is (f [[3]] "long#(& != 2)" p-longs))
            (is (f [[L2] [L3]] "long#(& !== 2)" c-longs))

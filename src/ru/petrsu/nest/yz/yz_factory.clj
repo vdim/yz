@@ -346,7 +346,7 @@
       :clazz key must be specify class of collection. 
         If clazz is not supplied then MOM will be nil.
       :rtype key is type of result (:rows or :result - flat or hierarchical 
-        representation of the result respectively). :rows is used by default.
+        representation of the result respectively). All structure is returned by default.
       :verbose key specify whether result includes elements which is
         not contained into the coll.
       :mom key defines Map Of Object Model. If it is not specified then
@@ -367,7 +367,6 @@
   [^String q coll & args]
   (let [parts (partition 2 args)
         {:keys [rtype clazz verbose mom]} (zipmap (map first parts) (map second parts))
-        rtype (or rtype :rows) ; type of result. :rows by default.
         [cls mom] (if mom 
                     [(filter class? (keys mom)) mom]
                     (let [clazz (if (or (nil? clazz) (coll? clazz)) clazz [clazz])]
@@ -378,10 +377,13 @@
     (if (:error r) 
       (throw (:thrwable r))
       (if verbose
-        (rtype r)
-        (let [result (rfilter (:result r) (set coll))
-              rows (yz/get-rows result)
-              r (assoc r :result result :rows rows)]
+        (if rtype (rtype r) r)
+        (if (or (nil? rtype) (= rtype :result) (= rtype :rows))
+          (let [result (rfilter (:result r) (set coll))]
+            (case rtype
+              :result result
+              :rows (yz/get-rows result)
+              nil (assoc r :result result :rows (yz/get-rows result))))
           (rtype r))))))
 
 

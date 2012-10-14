@@ -56,7 +56,6 @@
 (deftest collq-f
          ^{:doc "Tests the collq function"}
          (let [f #(qc/eq-colls (apply yzf/collq "long" [1 2 3] %1) %2)]
-           (is (f () [[1] [2] [3]]))
            (is (f [:rtype :rows] [[1] [2] [3]]))
            (is (f [:rtype :result] [1 [] 2 [] 3 []]))
            (is (f [:rtype :rows :clazz Long] [[1] [2] [3]]))
@@ -72,26 +71,24 @@
          
          (is (= (yzf/collq "long" ["af"] :rtype :result) []))
          (is (= (yzf/collq "string" [1 2 3] :rtype :result) []))
-         (is (= (yzf/collq "long" ["af"]) ()))
-         (is (= (yzf/collq "string" [1 2 3]) ()))
          (is (= (yzf/collq "long" ["af"] :rtype :rows) ()))
          (is (= (yzf/collq "string" [1 2 3] :rtype :rows) ()))
 
-         (is (= (yzf/collq "long" ["af" 1 "sd"]) [[1]]))
-         (is (= (yzf/collq "string" [1 2 "af" 3]) [["af"]]))
-         (is (= (yzf/collq "long" ["af" 1 "sd"] :clazz Long) [[1]]))
-         (is (= (yzf/collq "string" [1 2 "af" 3] :clazz String) [["af"]]))
+         (is (= (yzf/collq "long" ["af" 1 "sd"] :rtype :rows) [[1]]))
+         (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :rows) [["af"]]))
+         (is (= (yzf/collq "long" ["af" 1 "sd"] :clazz Long :rtype :rows) [[1]]))
+         (is (= (yzf/collq "string" [1 2 "af" 3] :clazz String :rtype :rows) [["af"]]))
          (is (= (yzf/collq "long" ["af" 1 "sd"] :rtype :rows :clazz Long) [[1]]))
          (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :rows :clazz String) [["af"]]))
          (is (= (yzf/collq "long" ["af" 1 "sd"] :rtype :result :clazz Long) [1 []]))
          (is (= (yzf/collq "string" [1 2 "af" 3] :rtype :result :clazz String) ["af" []]))
 
-         (is (= (yzf/collq "string" [1 2 "af" 3] :clazz [String]) [["af"]]))
-         (is (qc/eq-colls (yzf/collq "long" [1 2 "af" 3] :clazz [String Long]) [[1] [2] [3]]))
+         (is (= (yzf/collq "string" [1 2 "af" 3] :clazz [String] :rtype :rows) [["af"]]))
+         (is (qc/eq-colls (yzf/collq "long" [1 2 "af" 3] :clazz [String Long] :rtype :rows) [[1] [2] [3]]))
 
-         (is (= (yzf/collq "building" [1 2 bd/b1] :clazz [Building]) [[bd/b1]]))
-         (is (qc/eq-colls (yzf/collq "building" [bd/b2 1 2 bd/b1] :clazz [Building]) [[bd/b1] [bd/b2]]))
-         (is (= (yzf/collq "building (floor)" [bd/b2 1 2] :clazz [Building Floor]) [[bd/b2]]))
+         (is (= (yzf/collq "building" [1 2 bd/b1] :clazz [Building] :rtype :rows) [[bd/b1]]))
+         (is (qc/eq-colls (yzf/collq "building" [bd/b2 1 2 bd/b1] :clazz [Building] :rtype :rows) [[bd/b1] [bd/b2]]))
+         (is (= (yzf/collq "building (floor)" [bd/b2 1 2] :clazz [Building Floor] :rtype :rows) [[bd/b2]]))
          (is (= (yzf/collq "building (floor)" [bd/b2 1 2] :rtype :result :clazz [Building Floor]) 
                 [bd/b2 []]))
          (is (= (yzf/collq "building (floor)" [bd/b2 1 2] 

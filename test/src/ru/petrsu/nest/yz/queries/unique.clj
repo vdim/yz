@@ -75,9 +75,9 @@
 
 (deftest simple-unique
          (let [ls [1 2 3 1]]
-           (is (tc/eq-colls (yzf/collq "long" ls) [[1] [1] [2] [3]]))
-           (is (tc/eq-colls (yzf/collq "u:long" ls) [[1] [2] [3]]))
-           (is (tc/eq-colls (yzf/collq "¹long" ls) [[1] [2] [3]]))))
+           (is (tc/eq-colls (yzf/collq "long" ls :rtype :rows) [[1] [1] [2] [3]]))
+           (is (tc/eq-colls (yzf/collq "u:long" ls :rtype :rows) [[1] [2] [3]]))
+           (is (tc/eq-colls (yzf/collq "¹long" ls :rtype :rows) [[1] [2] [3]]))))
 
 
 (deftest floor-unique
