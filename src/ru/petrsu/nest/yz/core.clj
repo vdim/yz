@@ -107,7 +107,7 @@
           m-go (memoize (fn [ids o]
                           (cond (vector? ids) 
                               (reduce (fn [r {:keys [id cl]}]
-                                        (let [objs- (reduce get-objs r id)]
+                                        (let [objs- (mapcat (partial reduce get-objs r) id)]
                                           (if (nil? cl)
                                             objs-
                                             (filter (partial instance? cl) objs-))))

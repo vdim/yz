@@ -261,8 +261,8 @@
       ;; whether class or one of its children has the property.
       (do 
         (if cl-source (check-prop cl-source id))
-        [{:id [id] :cl cl-target}])
-      {:id (nth paths 0) :cl cl-target})))
+        [{:id [[id]] :cl cl-target}])
+      {:id paths :cl cl-target})))
 
 
 (defn get-dp
@@ -306,7 +306,7 @@
     (if (empty? sp-res)
       (if (.endsWith res ".") ;; Processes queries which contain default property into predicates: building#(floor.=1)
         (if-let [dp (get-dp cl- *mom*)]
-          [(conj ids- {:id [(name dp)] :cl nil}) (dp (:p-properties (get *mom* cl-)))]
+          [(conj ids- {:id [[(name dp)]] :cl nil}) (dp (:p-properties (get *mom* cl-)))]
           [ids- pp])
         [ids- pp])
       (let [id (first sp-res)

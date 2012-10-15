@@ -291,39 +291,43 @@
          (let [mom- (sort-to-nil mom-)]
           (is (= (parse "building#(name=1)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}]}]))
+                   :preds [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}]}]))
           (is (= (parse "building#(room.number=\"215\")", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["floors" "rooms"] :cl Room} 
-                                  {:id ["number"] :cl nil}], :func #'clojure.core/=, :value "215"}]}]))
+                   :preds [{:ids [{:id [["floors" "rooms"]] :cl Room} 
+                                  {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value "215"}]}]))
           (is (= (parse "building#(name=1 and address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1} 
-                           {:ids [{:id ["address"] :cl nil}], :func #'clojure.core/=, :value 2} :and]}]))
+                   :preds [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id [["address"]] :cl nil}], :func #'clojure.core/=, :value 2} :and]}]))
           (is (= (parse "building#(name=1 or address=2)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1} 
-                           {:ids [{:id ["address"] :cl nil}], :func #'clojure.core/=, :value 2} :or]}]))
+                   :preds [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id [["address"]] :cl nil}], :func #'clojure.core/=, :value 2} :or]}]))
           (is (= (parse "building#(name=1 and address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
-                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
-                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :and]}]))
+                   :preds [{:ids [{:id [["name"]], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id [["address"]], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           :and {:ids [{:id [["floors"]] :cl Floor}, 
+                                       {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 3} :and]}]))
           (is (= (parse "building#(name=1 and address=2 or floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
-                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
-                           :and {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :or]}]))
+                   :preds [{:ids [{:id [["name"]], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id [["address"]], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           :and {:ids [{:id [["floors"]] :cl Floor}, 
+                                       {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 3} :or]}]))
           (is (= (parse "building#(name=1 or address=2 and floor.number=3)", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
-                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
-                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :and :or]}]))
+                   :preds [{:ids [{:id [["name"]], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id [["address"]], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           {:ids [{:id [["floors"]] :cl Floor}, 
+                                  {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 3} :and :or]}]))
           (is (= (parse "building#(name=1 and (address=2 or floor.number=3))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
-                   :preds [{:ids [{:id ["name"], :cl nil}], :func #'clojure.core/=, :value 1} 
-                           {:ids [{:id ["address"], :cl nil}], :func #'clojure.core/=, :value 2} 
-                           {:ids [{:id ["floors"] :cl Floor}, {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 3} :or :and]}]))))
+                   :preds [{:ids [{:id [["name"]], :cl nil}], :func #'clojure.core/=, :value 1} 
+                           {:ids [{:id [["address"]], :cl nil}], :func #'clojure.core/=, :value 2} 
+                           {:ids [{:id [["floors"]] :cl Floor}, 
+                                  {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 3} :or :and]}]))))
 
 
 (deftest t-parse-sorting
@@ -904,32 +908,32 @@
                      [{:what Building
                        :preds %2}])]
            (is (f "building#(floor.=1)" 
-                  [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:ids [{:id [["floors"]] :cl Floor} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f "building#(room.=1)" 
-                  [{:ids [{:id ["floors" "rooms"] :cl Room} 
-                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:ids [{:id [["floors" "rooms"]] :cl Room} 
+                          {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f "building#(floor.room.=1)" 
-                  [{:ids [{:id ["floors"] :cl Floor} {:id ["rooms"] :cl Room}
-                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:ids [{:id [["floors"]] :cl Floor} {:id [["rooms"]] :cl Room}
+                          {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f "building#(floor.=1 && room.=2)" 
-                  [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
-                   {:ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["floors"]] :cl Floor} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:ids [{:id [["floors" "rooms"]] :cl Room} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f "building#(.=1)" 
-                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f "building#(.=1 && .=2)" 
-                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f "building#(.=(1 && 2))" 
-                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f "building#(.=1 && .=2 && .=3)" 
-                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and
-                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   {:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
            (let [mom- (assoc mom- Floor (assoc (get mom- Floor) :dp nil))]
              (is (thrown? NotDefinedDPException (parse "building#(floor.=1)" mom-))))
@@ -943,8 +947,8 @@
                                     :p-properties {:number {:s-to-r #'inc}}))]
              (is (= (parse "building#(floor.=1)" mom-)
                      [{:what Building
-                       :preds [{:ids [{:id ["floors"] :cl Floor} 
-                                      {:id ["number"] :cl nil}], :func #'clojure.core/=, 
+                       :preds [{:ids [{:id [["floors"]] :cl Floor} 
+                                      {:id [["number"]] :cl nil}], :func #'clojure.core/=, 
                                 :value {:func #'clojure.core/inc :params [1]}}]
                        }])))
            ))
@@ -954,63 +958,65 @@
          ^{:doc "Tests parsing queries with predicates which contain ALL modificator (∀)."}
          (let [f #(every? (fn [q] (= (parse q mom-) [{:what Building :preds %2}])) %1)]
            (is (f ["building#(∀floor.=1)" "building#(all:floor.=1)"]
-                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:all true :ids [{:id [["floors"]] :cl Floor} 
+                                    {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f ["building#(∀room.=1)" "building#(all:room.=1)"]
-                  [{:all true :ids [{:id ["floors" "rooms"] :cl Room} 
-                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:all true :ids [{:id [["floors" "rooms"]] :cl Room} 
+                          {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f ["building#(∀floor.room.=1)" "building#(all:floor.room.=1)"]
-                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["rooms"] :cl Room}
-                          {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:all true :ids [{:id [["floors"]] :cl Floor} {:id [["rooms"]] :cl Room}
+                          {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f ["building#(∀floor.=1 && room.=2)" "building#(all:floor.=1 && room.=2)"]
-                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
-                   {:ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:all true :ids [{:id [["floors"]] :cl Floor} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:ids [{:id [["floors" "rooms"]] :cl Room} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f ["building#(∀floor.=1 && ∀room.=2)" "building#(all:floor.=1 && all:room.=2)" 
                    "building#(all:floor.=1 && ∀room.=2)" "building#(∀floor.=1 && all:room.=2)"]
-                  [{:all true :ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
-                   {:all true :ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:all true :ids [{:id [["floors"]] :cl Floor} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:all true :ids [{:id [["floors" "rooms"]] :cl Room} 
+                                    {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f ["building#(floor.=1 && ∀room.=2)" "building#(floor.=1 && all:room.=2)"]
-                  [{:ids [{:id ["floors"] :cl Floor} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 1} 
-                   {:all true :ids [{:id ["floors" "rooms"] :cl Room} {:id ["number"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["floors"]] :cl Floor} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 1} 
+                   {:all true :ids [{:id [["floors" "rooms"]] :cl Room} {:id [["number"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f ["building#(∀.=1)" "building#(all:.=1)"]
-                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}]))
+                  [{:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}]))
            (is (f ["building#(∀.=1 && .=2)" "building#(all:.=1 && .=2)"]
-                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f ["building#(∀.=1 && ∀.=2)" "building#(all:.=1 && all:.=2)" 
                    "building#(all:.=1 && ∀.=2)" "building#(∀.=1 && all:.=2)"]
-                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f ["building#(.=1 && ∀.=2)" "building#(.=1 && all:.=2)"]
-                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f ["building#(∀.=(1 && 2))" "building#(all:.=(1 && 2))"]
-                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and]))
            (is (f ["building#(.=1 && .=2 && ∀.=3)" "building#(.=1 && .=2 && all:.=3)"]
-                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
            (is (f ["building#(.=1 && ∀.=2 && ∀.=3)" "building#(.=1 && all:.=2 && all:.=3)" 
                    "building#(.=1 && all:.=2 && ∀.=3)" "building#(.=1 && ∀.=2 && all:.=3)"]
-                  [{:ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
            (is (f ["building#(∀.=1 && ∀.=2 && ∀.=3)" "building#(all:.=1 && all:.=2 && all:.=3)"]
-                  [{:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 1}
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 2}
+                  [{:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 1}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 2}
                    :and
-                   {:all true :ids [{:id ["name"] :cl nil}], :func #'clojure.core/=, :value 3}
+                   {:all true :ids [{:id [["name"]] :cl nil}], :func #'clojure.core/=, :value 3}
                    :and]))
            ))
 
