@@ -22,7 +22,8 @@
     :doc "Processes queries within recur properties."}
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
-  (:require [ru.petrsu.nest.yz.queries.core :as tc])
+  (:require [ru.petrsu.nest.yz.queries.core :as tc] 
+            [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (ru.petrsu.nest.son SON Occupancy SimpleOU 
                                CompositeOU Room Floor Building)))
 
@@ -292,3 +293,20 @@
                          bd_cou [it_cou [main_cou []]] 
                          fee_cou [fin_cou [main_cou []]]
                          insure_cou [fin_cou [main_cou []]]])))
+
+(deftest mom-recur
+         (let [mom (assoc-in bd/bd-mom [CompositeOU Room] [[[:rec "OUs"] "occupancies" "room"]])
+               em (tc/em-memory son)]
+           (is (tc/eq-results? 
+                 (:result (pquery "cou (room)" mom em)) 
+                 [main_cou [net_room [] bd_room [] web_room [] bd_room [] bd_room []] 
+                  it_cou [net_room [] bd_room [] web_room [] bd_room [] bd_room []]
+                  web_cou [web_room []]
+                  net_cou [net_room []]
+                  bd_cou [bd_room [] bd_room [] bd_room []]
+                  fee_cou []
+                  fin_cou []
+                  insure_cou []
+                  man_cou []
+                  ]))
+           ))

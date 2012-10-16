@@ -276,22 +276,34 @@
   "Returns value of field. First we try to finding property
   due to getPropertyValue function of a ElementManager, 
   if is failed then we try to using reflection (e.g. getDeclaredField)."
-  [^Object o, field-name]
+  [^Object o, field-name] 
   (if (nil? o)
     nil
-    (let [^String field-name (if (keyword? field-name) (name field-name) field-name) 
-          v (if (= "&" field-name) ; supported self objects into predicates.
+    (let [[rec ^String fn-new] 
+          (cond ; field-name is recursive path something 
+                ; like this: [:rec "somep1" "somep2"]
+                (vector? field-name) [true (next field-name)] 
+                (keyword? field-name) [false (name field-name)]
+                :else [false field-name]) 
+          v
+          (if rec
+            (loop [objs (reduce get-objs [o] fn-new) res []]
+              (let [objs (remove #(or (nil? %) (= :not-found %)) objs)]
+                (if (empty? objs)
+                  (flatten res)
+                  (recur (reduce get-objs objs fn-new) (concat res objs)))))
+            (if (= "&" fn-new) ; supported self objects into predicates.
               o 
-              (try (.getPropertyValue @a-em o field-name)
-                (catch Exception e :not-found)))]
+              (try (.getPropertyValue @a-em o fn-new)
+                (catch Exception e :not-found))))]
       (cond 
         ; If value is nil then function returns nil.
         (nil? v) nil
-
+    
         ; If value is an array then we check whether a type of the array from the MOM, If true then
         ; we returns a collection from this array.
         (and (.isArray (class v)) (get @a-mom (.getComponentType (class v)))) (seq v)
-
+    
         ; Returns value.
         :else v))))
 
