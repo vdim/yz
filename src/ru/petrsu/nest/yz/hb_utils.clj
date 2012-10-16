@@ -18,47 +18,13 @@
 ;;
 
 
-; This functions are for working with hibernate as
-; user (at least we use hibernate in nest) 
-; can use hibernate as framework between its 
-; object model and database.
-; We suppose that hibernate.cfg.xml has structure like this:
-;    <hibernate-configuration>
-;      <session-factory>
-;          <property name="hibernate.connection.driver_class">org.apache.derby.jdbc.EmbeddedDriver</property>
-;          <property name="hibernate.connection.url">jdbc:derby:db;create=true</property>
-;          <!-- and so on.-->
-;          <mapping class="ru.petrsu.nest.son.EthernetInterface"/>
-;          <mapping class="ru.petrsu.nest.son.Network"/>
-;          <mapping class="ru.petrsu.nest.son.IPNetwork"/>
-;          <!-- and so on.-->
-;    </session-factory>
-;  </hibernate-configuration>
-
-
-
 (ns ru.petrsu.nest.yz.hb-utils
   ^{:author "Vyacheslav Dimitrov"
-    :doc "This functions are for working with hibernate because
-         user (at least we use hibernate in nest) 
-         can use hibernate as framework between its 
-         object model and database."}
+    :doc ""}
   (:use clojure.pprint)
-  (:require [clojure.xml :as cx] 
-            [clojure.set :as cs]
-            [clojure.string :as cst]
+  (:require [clojure.string :as cst]
             [clojure.java.io :as cio] 
-            [ru.petrsu.nest.yz.utils :as u])
-  (:import (javax.persistence Transient EntityManagerFactory Persistence)))
-
-
-(defn- get-classes
-  "Returns sequence of name of classes (package+name) from hibernate.cfg.xml.
-  Function extracts value from mapping tag and class attribute."
-  [hb-name]
-  (map :class  
-    (filter :class 
-      (for [attr (:content ((:content (cx/parse hb-name)) 0))] (:attrs attr)))))
+            [ru.petrsu.nest.yz.utils :as u]))
 
 
 (defn- check-type
@@ -311,21 +277,6 @@
     mom))
 
 
-(defn gen-mom-from-cfg
-  "Generates MOM from hibernate configuration xml file 
-      (usual named hibernate.cfg.xml) with 'mapping' tags.
-      It's usefull in case when you use hibernate as
-      implementation of Criteria API 2.0."
-  [hb-name, mom-old]
-  (gen-mom (map #(Class/forName %) (get-classes hb-name)), mom-old))
-
-
-(defn gen-mom-from-metamodel
-  "Takes EntityManagerFactory and generates mom from metamodel."
-  [emf, mom-old]
-  (gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities)), mom-old))
-
-
 (defn- local-dispatch-var 
   "Dispatcher for Var class for pretty printing."
   [^clojure.lang.Var v] 
@@ -389,46 +340,17 @@
     f - a name of target file.
     append - If 'append' is supplied (true) then information is appended to existing file
              (false by default)."
-  ([emf-or-hbcfg-or-mom f]
-   (mom-to-file emf-or-hbcfg-or-mom f false))
-  ([emf-or-hbcfg-or-mom f ^Boolean append]
+  ([classes-or-mom f]
+   (mom-to-file classes-or-mom f false))
+  ([classes-or-mom f ^Boolean append]
    (let [mom-old (if (true? append) (mom-from-file f) {})
-         s emf-or-hbcfg-or-mom
+         s classes-or-mom
          mom (cond
-               ; JPA's EntityManagerFactory TODO: replace by ru.petrsu.nest.yz.core.ElementManager
-               (instance? EntityManagerFactory s) (gen-mom-from-metamodel s, mom-old)
-                   
-               ; hibernate.cfg.xml
-               (instance? String s) (gen-mom-from-cfg s, mom-old)
-                   
                ; List with classes
                (sequential? s) (gen-mom s, mom-old)
                
                ; MOM itself.
                :else s)]
      (to-file mom f))))
-
-
-(defn gen-mom*
-  "Generates MOM due to specfied parameters:
-    out - name of file for MOM.
-    old-mom - name of file with old-mom (empty if not needed).
-    append - define whether new mom must be appended to old mom.
-    src - source of classes
-    classes - list with classes or name of file in case 
-      hibernate configuration is used."
-  [out old-mom ^Boolean append src classes]
-  (let [old-mom (if (and append (not (empty? old-mom))) (mom-from-file old-mom) {})
-        mom (case src 
-              :hibernate-cfg 
-              (gen-mom-from-cfg classes old-mom)
-              :persistense 
-              (gen-mom-from-metamodel 
-                (Persistence/createEntityManagerFactory classes) old-mom)
-              :list-classes 
-              (gen-mom (map #(Class/forName %) (remove empty? (cst/split classes #"\s"))) 
-                       old-mom)
-              (throw (Exception. (str "Unexpected type of sources: " src))))]
-    (mom-to-file mom out)))
 
 

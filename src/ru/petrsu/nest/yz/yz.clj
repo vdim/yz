@@ -23,7 +23,6 @@
   (:require
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
-    (javax.persistence EntityManager)
     (ru.petrsu.nest.yz.core ElementManager))
   (:gen-class :name ru.petrsu.nest.yz.QueryYZ
               :constructors {[ru.petrsu.nest.yz.core.ElementManager] [], 
