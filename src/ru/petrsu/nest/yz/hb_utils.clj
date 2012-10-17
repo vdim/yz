@@ -20,7 +20,8 @@
 
 (ns ru.petrsu.nest.yz.hb-utils
   ^{:author "Vyacheslav Dimitrov"
-    :doc ""}
+    :doc "Namespace for working with the MOM: generating, 
+         writing/reading to/from file."}
   (:use clojure.pprint)
   (:require [clojure.string :as cst]
             [clojure.java.io :as cio] 
