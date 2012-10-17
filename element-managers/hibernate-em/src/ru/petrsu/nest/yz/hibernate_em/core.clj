@@ -19,8 +19,8 @@
 
 (ns ru.petrsu.nest.yz.hibernate-em.core
   ^{:author "Vyacheslav Dimitrov"
-    :doc ""}
-
+    :doc "Implementation of the ElementManager 
+         for Hibernate tool."}
   (:require
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
@@ -33,8 +33,7 @@
                         ^{:static true} 
                         [createJPAElementManager 
                          [javax.persistence.EntityManager] 
-                         ru.petrsu.nest.yz.core.ElementManager]
-                        ]))
+                         ru.petrsu.nest.yz.core.ElementManager]]))
 
 
 (defn- contains-f?

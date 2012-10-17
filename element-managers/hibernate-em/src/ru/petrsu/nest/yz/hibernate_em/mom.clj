@@ -39,7 +39,7 @@
 (ns ru.petrsu.nest.yz.hibernate-em.mom
   ^{:author "Vyacheslav Dimitrov"
     :doc "Helper functions for generating and using the MOM from
-         Hibernate Entity Manager.."}
+         Hibernate Entity Manager."}
   (:use clojure.pprint)
   (:require [clojure.xml :as cx] 
             [clojure.set :as cs]
