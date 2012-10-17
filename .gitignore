@@ -15,3 +15,4 @@ logs/
 .lein-deps-sum
 .lein-failures
 data*
+target/
