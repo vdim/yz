@@ -1,7 +1,7 @@
 (defproject ru.petrsu.nest/yz "0.0.1-alpha16"
   :description "Tests for YZ's project."
   :url "https://github.com/vdim/yz"
-  :dependencies [[org.clojure/clojure "1.3.0"]
+  :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.hibernate/hibernate-entitymanager "3.6.1.Final"]
                  [org.apache.derby/derby "10.7.1.1"]
                  [com.h2database/h2 "1.3.160"]
@@ -11,12 +11,12 @@
                  [incanter/incanter-core "1.3.0"]
                  [incanter/incanter-pdf "1.3.0"]
                  [criterium "0.2.1-SNAPSHOT"]]
-  :java-source-path "src/"
+  :java-source-paths ["src/"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false
   :omit-source true
-  :repl-init ru.petrsu.nest.yz.init
-  :test-path "src/"
-  :source-path "../src"
-  :compile-path "../classes"
-  :resources-path "test-resource/")
+  :test-paths ["src/"]
+  :source-paths ["../src"]
+  :compile-path "../target/classes"
+  :resources-path "test-resource/" 
+  :repl-options {:init-ns ru.petrsu.nest.yz.init})
