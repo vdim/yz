@@ -283,7 +283,7 @@
   (print v))
 
 
-(defn- to-file
+(defn to-file
   "Writes mom to file"
   [mom, f]
   (let [f (if (instance? String f)
