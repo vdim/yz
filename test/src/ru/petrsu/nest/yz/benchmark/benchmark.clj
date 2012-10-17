@@ -39,7 +39,8 @@
             [net.kryshen.planter.store :as store]
             [clojure.pprint :as cp]
             [clojure.string :as cs]
-            [criterium.core :as cr])
+            [criterium.core :as cr] 
+            [ru.petrsu.nest.yz.hibernate-em.core :as hem])
   (:import (java.util Date)
            (ru.petrsu.nest.yz.core ElementManager) 
            (java.lang.management ManagementFactory)
@@ -280,7 +281,7 @@
         bd ; Database
         (cond (or hql? (instance? ElementManager bd)) bd
               (number? bd) (qc/em-memory (bu/gen-bd bd) mom) 
-              (instance? EntityManager bd) (-createJPAElementManager bd)
+              (instance? EntityManager bd) (hem/-createJPAElementManager bd)
               :else (qc/em-memory bd mom))
         cbd (if hql? bd (((:result (pquery "@(count `sonelement')" mom bd)) 0) 0))
         nb (inc (get-num-bench f)) ; Current number of the benchmark.
@@ -516,7 +517,7 @@
                                  (create-hm url dialect driver (if ram? "create-drop" "")))
                    ; For RAM database we must create structure of database.
                    _ (if ram? (buj/create-bd db-n em))
-                   em (if yz? (-createJPAElementManager em) em)]
+                   em (if yz? (hem/-createJPAElementManager em) em)]
                em))
         
         ; Define vector with queries.

@@ -25,7 +25,8 @@
             [ru.petrsu.nest.yz.benchmark.bd-utils-jpa :as buj]
             [ru.petrsu.nest.yz.queries.bd-jpa :as bjpa]
             [incanter.core :as ic]
-            [ru.petrsu.nest.yz.queries.core :as qc])
+            [ru.petrsu.nest.yz.queries.core :as qc] 
+            [ru.petrsu.nest.yz.hibernate-em.core :as hem])
   (:use ru.petrsu.nest.yz.hb-utils
         ru.petrsu.nest.yz.queries.bd
         ru.petrsu.nest.yz.queries.uni-bd
@@ -54,7 +55,7 @@
 (def jpa-mom (mom-from-file "nest_jpa.mom"))
 
 ;; Create JPA element manager from the bjpa/jpa-em EntityManager.
-(def jpa-em (-createJPAElementManager bjpa/jpa-em))
+(def jpa-em (hem/-createJPAElementManager bjpa/jpa-em))
 
 ;; Vector with all classes from SON model 
 ;; (Sometimes It is needed for testing functions from the hb-utils namespace.)

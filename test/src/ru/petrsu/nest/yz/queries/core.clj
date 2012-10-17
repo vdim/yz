@@ -27,7 +27,8 @@
             [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.yz-factory :as yzf]
-            [ru.petrsu.nest.son.local-sm :as lsm])
+            [ru.petrsu.nest.son.local-sm :as lsm] 
+            [ru.petrsu.nest.yz.hibernate-em.mom :as hmom])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
            (ru.petrsu.nest.son SonBeanUtils SON)
            (ru.petrsu.nest.yz.core ElementManager)))
@@ -171,7 +172,7 @@
    (fn [f]
      (let [em (create-em sons n)]
        (binding [*em* em
-                 *mom* (hb/gen-mom-from-metamodel (.getEntityManagerFactory em))]
+                 *mom* (hmom/gen-mom-from-metamodel (.getEntityManagerFactory em))]
          (f)
          (.close *em*))))))
 

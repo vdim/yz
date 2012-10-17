@@ -16,7 +16,9 @@
   :warn-on-reflection false
   :omit-source true
   :test-paths ["src/"]
-  :source-paths ["../src"]
+  :source-paths ["../src" ; YZ source
+                 "../element-managers/hibernate-em/src" ; JPA Element Manager source.
+                 "src/"]
   :compile-path "../target/classes"
-  :resources-path "test-resource/" 
+  :resource-paths ["test-resource/"]
   :repl-options {:init-ns ru.petrsu.nest.yz.init})
