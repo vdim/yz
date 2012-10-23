@@ -399,40 +399,44 @@
 (defn- get-objs-by-path
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
-  [sources m]
-  (let [{:keys [preds where ^Class what sort exactly unique limit]} m
-        s-cl (class (first sources))
-        where (or where (get-paths what s-cl @a-mom))
-        f (if exactly #(= (class %) what) #(instance? what %))
-        elems (sort-rq (filter-by-preds 
-                          (let [objs (cond 
-                                       ; In case what is keyword then get objects from params.
-                                       (keyword? what)
-                                       (let [v (get-qp what)
-                                             v (if (coll? v) v [v])
-                                             ; Check whether objects from v belong to sources
-                                             v (filter #(let [wh (get-paths (class %) s-cl @a-mom)
-                                                              obs (set (mapcat (partial reduce get-objs sources) wh))]
-                                                          (contains? obs %)) v)]
-                                         v)
-                                       ; where is vector with paths from cl-target to cl-source.
-                                       (vector? where) 
-                                       (mapcat #(reduce get-objs sources %) where)
-
-                                       ; where is map where a class -> a path.
-                                       (map? where)
-                                       (reduce #(let [p (get where (class %2))]
-                                                  (if p
-                                                    (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) p))
-                                                    %1)) 
-                                               () sources))
-                                objs (if unique (distinct objs) objs)]
-                            (if (keyword? what)
-                              objs
-                              (filter f objs)))
-                         preds)
-                       sort false)]
-    (limiting elems limit)))
+  ([sources m]
+   (get-objs-by-path sources m nil))
+  ([sources m cl-of-prev]
+   (let [{:keys [preds where ^Class what sort exactly unique limit all-medium]} m
+         s-cl (class (first sources))
+         where (or where (get-paths what s-cl @a-mom))
+         f (cond (nil? what) identity 
+                 exactly #(= (class %) what) 
+                 :else #(instance? what %))
+         elems (sort-rq (filter-by-preds 
+                           (let [objs (cond 
+                                        ; In case what is keyword then get objects from params.
+                                        (keyword? what)
+                                        (let [v (get-qp what)
+                                              v (if (coll? v) v [v])
+                                              ; Check whether objects from v belong to sources
+                                              v (filter #(let [wh (get-paths (class %) s-cl @a-mom)
+                                                               obs (set (mapcat (partial reduce get-objs sources) wh))]
+                                                           (contains? obs %)) v)]
+                                          v)
+                                        ; where is vector with paths from cl-target to cl-source.
+                                        (vector? where) 
+                                        (mapcat #(reduce get-objs sources %) where)
+ 
+                                        ; where is map where a class -> a path.
+                                        (map? where)
+                                        (reduce #(let [p (get where (class %2))]
+                                                   (if p
+                                                     (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) p))
+                                                     %1)) 
+                                                () sources))
+                                 objs (if unique (distinct objs) objs)]
+                             (if (keyword? what)
+                               objs
+                               (filter f objs)))
+                          preds)
+                        sort false)]
+     (limiting elems limit))))
 
 
 (defn- process-prop
@@ -484,8 +488,8 @@
   "Processes :then value of query structure.
   Returns sequence of objects.
   Recursive defines whether a link is recursive."
-  [objs, then, props, tsort]
-  (loop [objs- objs, then- then, props- props, tsort tsort]
+  [objs, then, props, tsort, all-medium, pwhat]
+  (loop [objs- objs, then- then, props- props, tsort tsort, pwhat pwhat]
     (if (or (nil? then-) (every? nil? objs-))
       (let [pp (remove #(let [v (% 1)]
                           (if (seq? v)
@@ -497,20 +501,21 @@
       (recur (cond 
                ; Process recursive then-.
                (:recursive then-)
-               (loop [objs- (get-objs-by-path objs- then-) res []]
+               (loop [objs- (get-objs-by-path objs- then- pwhat) res []]
                  (if (empty? objs-)
                    (flatten res)
-                   (recur (get-objs-by-path objs- then-) (conj res objs-))))
+                   (recur (get-objs-by-path objs- then- pwhat) (conj res objs-))))
 
                ; Process properties if any (in case where is nil, or property is meduim link).
                (and props- (or (nil? (:where then-)) (-> props- first vector? not)))
                (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
 
                ; Get next objects.
-               :else (get-objs-by-path objs- then-))
+               :else (get-objs-by-path objs- then- pwhat))
              (:then then-) 
              (:props then-)
-             (:sort then-)))))
+             (:sort then-)
+             (:what then-)))))
 
 
 (defn- p-then
@@ -518,7 +523,7 @@
   Takes list of object and next nest and calls process-then
   with appropriate parameters."
   [objs nest]
-  (apply process-then objs ((juxt :then :props :sort) nest)))
+  (apply process-then objs ((juxt :then :props :sort :all-medium :what) nest)))
 
 
 (defn- p-nest

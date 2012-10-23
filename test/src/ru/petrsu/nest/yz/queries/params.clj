@@ -141,3 +141,14 @@
            (f [bd/f1_b1 bd/f2_b1] 2 [[bd/f2_b1]])
            (f [bd/f1_b1 bd/f2_b1] 3 [])))
 
+
+; List of properties after parameter.
+(defq ^{:mom bd/bd-mom, :em bd/mem} q13 "$1.name")
+
+(deftest t-q13
+         (let [f #(is (tc/eq-colls (:rows (q13 %1)) %2))]
+           (f bd/b1 [["MB"]])
+           (f bd/b2 [["TK"]])
+           (f [bd/b1 bd/b2] [["MB"] ["TK"]])))
+
+
