@@ -420,7 +420,7 @@
                                           ; Check whether objects from v belong to sources
                                           (filter #(contains? obs %) v))
 
-                                        ; cl-of-prev is keyword, so where is nil.
+                                        ; cl-of-prev is keyword.
                                         (and (keyword? cl-of-prev) (nil? where))
                                         (reduce (fn [v o]
                                                   (concat 
