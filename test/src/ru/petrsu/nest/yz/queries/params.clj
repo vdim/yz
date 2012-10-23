@@ -142,7 +142,7 @@
            (f [bd/f1_b1 bd/f2_b1] 3 [])))
 
 
-; List of properties after parameter.
+; Property after parameter.
 (defq ^{:mom bd/bd-mom, :em bd/mem} q13 "$1.name")
 
 (deftest t-q13
@@ -150,5 +150,16 @@
            (f bd/b1 [["MB"]])
            (f bd/b2 [["TK"]])
            (f [bd/b1 bd/b2] [["MB"] ["TK"]])))
+
+
+; 
+(defq ^{:mom bd/bd-mom, :em bd/mem} q14 "$1.$2")
+
+(deftest t-q14
+         (let [f #(is (tc/eq-results? (:result (q14 %1 %2)) %3))]
+           (f [bd/b1 bd/f1_b2] 
+              [bd/r1001_f1_b2 bd/r101_f1_b1] 
+              [bd/r101_f1_b1 [] bd/r1001_f1_b2 []])))
+
 
 

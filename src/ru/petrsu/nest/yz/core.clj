@@ -403,8 +403,6 @@
    (get-objs-by-path sources m nil))
   ([sources m cl-of-prev]
    (let [{:keys [preds where ^Class what sort exactly unique limit all-medium]} m
-         s-cl (class (first sources))
-         where (or where (get-paths what s-cl @a-mom))
          f (cond (nil? what) identity 
                  exactly #(= (class %) what) 
                  :else #(instance? what %))
@@ -414,11 +412,24 @@
                                         (keyword? what)
                                         (let [v (get-qp what)
                                               v (if (coll? v) v [v])
-                                              ; Check whether objects from v belong to sources
-                                              v (filter #(let [wh (get-paths (class %) s-cl @a-mom)
-                                                               obs (set (mapcat (partial reduce get-objs sources) wh))]
-                                                           (contains? obs %)) v)]
-                                          v)
+                                              whs (reduce concat 
+                                                          (for [cl1 (set (map class v)) 
+                                                                cl2 (set (map class sources))] 
+                                                            (get-paths cl1 cl2 @a-mom)))
+                                              obs (set (mapcat (partial reduce get-objs sources) whs))]
+                                          ; Check whether objects from v belong to sources
+                                          (filter #(contains? obs %) v))
+
+                                        ; cl-of-prev is keyword, so where is nil.
+                                        (and (keyword? cl-of-prev) (nil? where))
+                                        (reduce (fn [v o]
+                                                  (concat 
+                                                    v
+                                                    (let [where (get-paths what (class o) @a-mom)]
+                                                      (mapcat #(reduce get-objs [o] %) where))))
+                                                []
+                                                sources)
+
                                         ; where is vector with paths from cl-target to cl-source.
                                         (vector? where) 
                                         (mapcat #(reduce get-objs sources %) where)
