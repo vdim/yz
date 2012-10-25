@@ -21,4 +21,7 @@
                  "src/"]
   :compile-path "../target/classes"
   :resource-paths ["test-resource/"]
-  :repl-options {:init-ns ru.petrsu.nest.yz.init})
+  :repl-options {:init-ns ru.petrsu.nest.yz.init}
+  :test-selectors {:default (fn [v] (not (:laborious v)))
+                   :laborious :laborious
+                   :all (fn [_] true)})

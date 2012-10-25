@@ -1939,7 +1939,7 @@
           (map #(str "occupancy#(name = ∀Ŷ" % ")") clist)))
 
 
-(deftest parse-remainder
+(deftest ^:laborious parse-remainder
          ^{:doc "Checks remainder after parsing for queries in 'qlist' vector.
                 It must be nil for all queries, because qlist contains
                 only correct queries."}
@@ -1992,7 +1992,7 @@
            (f qlist-pred)
            (f qlist-list)))
 )
-(deftest pquery-qlist
+(deftest ^:laborious pquery-qlist
          ^{:doc "Calling pquery for each query from qlist."}
          (let [mom- (assoc mom- Room
                              (assoc (get mom- Room) 
