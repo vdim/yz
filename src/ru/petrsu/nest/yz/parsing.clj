@@ -154,7 +154,7 @@
   ((apply comp k peek (flatten (repeat nl [:nest peek]))) res))
 
 
-(defn- get-in-nest-or-then
+(defn get-in-nest-or-then
   "If last then is nil, then returns result
   of get-in-nest, otherwise tries inspect the
   last then."

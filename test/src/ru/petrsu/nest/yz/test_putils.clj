@@ -41,3 +41,29 @@
            (is (= "2" (p/get-in-nest (p/assoc-in-nest some-vv 1 :what "2") 1 :what)))
            (is (= "3" (p/get-in-nest (p/assoc-in-nest some-vvv 2 :what "3") 2 :what)))
            (is (= "4" (p/get-in-nest (p/assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
+
+
+(deftest t-get-in-nest-or-then
+         ^{:doc "Tests the 'get-in-nest-or-then' function"}
+         (let [some-v [{:what 1 :then nil}]]
+           (is (= 1 (p/get-in-nest-or-then some-v 0 0 :what)))
+           (is (= 1 (p/get-in-nest-or-then some-v 0 1 :what)))
+           (is (nil? (p/get-in-nest-or-then some-v 1 1 :what))))
+         (let [some-v [{:what 1 :then {:what 2}}]]
+           (is (= 1 (p/get-in-nest-or-then some-v 0 0 :what)))
+           (is (= 2 (p/get-in-nest-or-then some-v 0 1 :what)))
+           (is (nil? (p/get-in-nest-or-then some-v 0 2 :what))))
+         (let [some-v [{:what 1 :then {:what 2 :then {:what 3}}}]]
+           (is (= 2 (p/get-in-nest-or-then some-v 0 1 :what)))
+           (is (= 3 (p/get-in-nest-or-then some-v 0 2 :what)))
+           (is (nil? (p/get-in-nest-or-then some-v 0 3 :what))))
+         (let [some-v [{:what 1 :then {:what 2 :then {:what 3}} 
+                        :nest [{:what 4 :then nil}]}]]
+           (is (= 4 (p/get-in-nest-or-then some-v 1 0 :what)))
+           (is (= 1 (p/get-in-nest-or-then some-v 0 0 :what)))
+           (is (= 4 (p/get-in-nest-or-then some-v 1 1 :what)))
+           (is (= 4 (p/get-in-nest-or-then some-v 1 2 :what))))
+         (let [some-v [{:what 1 :then {:what 2 :then {:what 3}} :nest [{:what 4 :then {:what 5 :then nil}}]}]]
+           (is (= 4 (p/get-in-nest-or-then some-v 1 0 :what)))
+           (is (= 5 (p/get-in-nest-or-then some-v 1 1 :what)))
+           (is (nil? (p/get-in-nest-or-then some-v 1 2 :what)))))
