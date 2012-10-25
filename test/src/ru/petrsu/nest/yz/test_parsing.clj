@@ -19,7 +19,7 @@
 
 (ns ru.petrsu.nest.yz.test-parsing
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Tests for parsing functions."}
+    :doc "Tests parsing of queries."}
   (:use ru.petrsu.nest.yz.core
         ru.petrsu.nest.yz.hb-utils 
         clojure.test 
@@ -39,12 +39,6 @@
 (def mom- 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
   (mom-from-file "nest.mom"))
-
-(def some-v
-  ^{:doc "Defines vector with single empty map."}
-  [{:what nil
-   :then nil
-   :nest nil}])
 
 (defn dis-props-sort
   "Dissociate props (sort) from specified m in case props (sort) is empty (nil)."
@@ -67,18 +61,6 @@
          (is (find-prop ru.petrsu.nest.son.Building "floors" mom-))
          (is (not (find-prop ru.petrsu.nest.son.Building "rooms" mom-))))
 )
-
-(deftest t-get-in-nest
-         ^{:doc "Tests the 'get-in-nest' function"}
-         (is (nil? (p/get-in-nest some-v 0 :what)))
-         (is (= "1" (p/get-in-nest [(assoc (some-v 0) :what "1")] 0 :what)))
-         (let [some-vv (p/assoc-in-nest some-v 0 :nest some-v)
-               some-vvv (p/assoc-in-nest some-vv 1 :nest some-v)
-               some-vvvv (p/assoc-in-nest some-vvv 2 :nest some-v)]
-           (is (= "2" (p/get-in-nest (p/assoc-in-nest some-vv 1 :what "2") 1 :what)))
-           (is (= "3" (p/get-in-nest (p/assoc-in-nest some-vvv 2 :what "3") 2 :what)))
-           (is (= "4" (p/get-in-nest (p/assoc-in-nest some-vvvv 3 :what "4") 3 :what)))))
-
 
 (defn sort-to-nil
   "Takes the MOM and associates with the :sort key 
