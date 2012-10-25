@@ -532,11 +532,10 @@
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
             sorts (transform-sort sorts tsort cl)]
-            ; Function for association some values of some then map.
-            (assoc-in-nest-or-then res nl tl- :then 
-              {:what cl :where [[(name id)]]
-               :sort sorts :exactly ex 
-               :recursive rec :unique unique :limit limit}))
+        (assoc-in-nest-or-then res nl tl- :then 
+          {:what cl :where [[(name id)]]
+           :sort sorts :exactly ex 
+           :recursive rec :unique unique :limit limit}))
       (let [props (getp :props)
             sorts (cond
                     
@@ -592,9 +591,8 @@
             vsort (get-in-nest-or-then res nl tl :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some map.
-            ; %1 must be partial function with first parameter some map.
             passoc #(assoc-in-nest-or-then 
-                      res nl tl :what cl :where %1 :sort vsort 
+                      %1 %2 tl :what cl :where %3 :sort vsort 
                       :exactly ex :unique unique :limit limit :recursive rec)
             ; What for getting where.
             what (get-in-nest-or-then res (dec nl) (dec tl) :what)
@@ -603,7 +601,7 @@
           (let [path (first paths)]
             (loop [id (first path) path (next path) r res wh what nl nl]
               (if (empty? path)
-                {:r (passoc [[id]])
+                {:r (passoc r nl [[id]])
                  :nl (inc nl)}
                 (let [cl (check-prop wh id) 
                       cl (if (true? cl) 
@@ -614,7 +612,7 @@
                   (recur (first path) (next path) 
                          (assoc-in-nest-or-then r nl tl :nest [{:what cl :where [[id]] :medium true}]) 
                          cl (inc nl))))))
-          (passoc paths))))))
+          (passoc res nl paths))))))
 
 
 (defn- add-op-to-preds
