@@ -166,15 +166,9 @@
   "If last then is nil, then returns result
   of get-in-nest, otherwise returns result get-in-then."
   [res nl tl k]
-  (let [last-then (get-in-nest res nl :then)]
-    (if (nil? last-then)
-      (let [then (get-in-nest res (dec nl) :then)]
-        (if (nil? then)
-          (get-in-nest res (dec nl) k)
-          (loop [then- then, value (k then)]
-            (if (nil? then-)
-              value
-              (recur (:then then-) (k then-))))))
+  (let [then (get-in-nest res nl :then)]
+    (if (nil? then)
+      (get-in-nest res nl k)
       (get-in-then res nl tl k))))
 
 
@@ -501,7 +495,7 @@
         [medium? ex rec] args
         tl- (dec tl)
 
-        getp #(get-in-nest-or-then res (inc nl) tl- %)
+        getp #(get-in-nest-or-then res nl tl- %)
         what (getp :what) 
         
         ; Check whether class "what" has property "id". 
@@ -600,7 +594,7 @@
       (let [; Define limit
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
-            vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
+            vsort (get-in-nest-or-then res nl tl :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some map.
             ; %1 must be partial function with first parameter some map.
@@ -608,14 +602,13 @@
                        :sort vsort :exactly ex :unique unique 
                        :limit limit :recursive rec)
             ; What for getting where.
-            what (get-in-nest-or-then res nl tl- :what)
+            what (get-in-nest-or-then res (dec nl) tl- :what)
             f (partial assoc-in-nest res nl)
             ff #(f :then %)]
         (cond 
           all-medium
-          (let [wh (get-in-nest-or-then res nl tl :what)
-                path (first (u/get-paths cl wh *mom*))]
-            (loop [id (first path) path (next path) r res wh wh nl nl]
+          (let [path (first (u/get-paths cl what *mom*))]
+            (loop [id (first path) path (next path) r res wh what nl nl]
               (if (empty? path)
                 {:r (passoc (partial assoc-in-nest r (inc nl)) nil [[id]])
                  :nl (inc nl)}
