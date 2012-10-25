@@ -154,22 +154,15 @@
   ((apply comp k peek (flatten (repeat nl [:nest peek]))) res))
 
 
-(defn- get-in-then
-  "Gets value from res due to nl and tl."
-  [res nl tl k]
-  (if (= tl 0) 
-    (get-in-nest res nl k) 
-    (get-in (get-in-nest res nl :then) (-> tl dec (repeat :then) vec (conj k))))) 
-
-
 (defn- get-in-nest-or-then
   "If last then is nil, then returns result
-  of get-in-nest, otherwise returns result get-in-then."
+  of get-in-nest, otherwise tries inspect the
+  last then."
   [res nl tl k]
   (let [then (get-in-nest res nl :then)]
-    (if (nil? then)
-      (get-in-nest res nl k)
-      (get-in-then res nl tl k))))
+    (if (or (nil? then) (= tl 0))
+      (get-in-nest res nl k) 
+      (get-in then (-> tl dec (repeat :then) vec (conj k))))))
 
 
 (defn- change-preds
@@ -330,7 +323,7 @@
              res- (effects (if (instance? Character res-) (str res-) res-))
              
              [ids pp] (effects (if (= k :ids) 
-                                 (get-ids (:ids (peek preds)) res- (get-in-then res  nl tl :what))
+                                 (get-ids (:ids (peek preds)) res- (get-in-nest-or-then res nl tl :what))
                                  [nil nil]))
              _ (if (nil? pp) (effects ()) (set-info :pp pp))
              _ (if (= k :value) (set-info :pp nil) (effects ()))
