@@ -151,7 +151,7 @@
   field of q-representation structure. First :nest key is
   nest-level times, then k is."
   [res nl k]
-  (-> res (apply comp k peek (flatten (repeat nl [:nest peek])))))
+  ((apply comp k peek (flatten (repeat nl [:nest peek]))) res))
 
 
 (defn- get-in-then
