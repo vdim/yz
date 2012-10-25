@@ -501,7 +501,7 @@
   (let [; medium? defines queries something like this: 
         ;   sou.parent.li
         ; where parent is property
-        [medium? ex rec] args
+        [medium? ex rec all-medium] args
         tl- (dec tl)
 
         getp #(get-in-nest-or-then res (inc nl) tl- %)
@@ -534,7 +534,8 @@
             ; Function for association some values of some then map.
             assoc-lth #(assoc %1 :what cl :where [[(name id)]]
                               :sort sorts :exactly ex 
-                              :recursive rec :unique unique :limit limit)]
+                              :recursive rec :unique unique :limit limit 
+                              :all-medium all-medium)]
           (if (nil? last-then)
             (a-then (assoc-lth empty-then))
             (let [then-v (repeat tl- :then)
@@ -585,7 +586,7 @@
 
 (defn- found-id
   "This function is called when id is found in query. Returns new result."
-  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail]
+  [res ^String id nl tl is-recur tsort unique hb-range lb-range tail all-medium]
   (let [[id ex] (if (.endsWith id "^") [(subs id 0 (dec (count id))) true] [id nil])
         [id rec] (if (.startsWith id "*") [(subs id 1) true] [id nil])
         cl (cond 
@@ -596,36 +597,54 @@
         tl- (dec tl)]
     (if (nil? cl)
       (if (> tl 0)
-        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex rec)
+        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex rec all-medium)
         ; If then-level is 0 (so we can conclude that it is not property) 
         ; and class wasn't found then we must throw exception.
         (throw (NotFoundElementException. (str "Not found element: " id))))
-      (let [f #(assoc-in-nest res nl :then %)
-            ; Define limit
+      (let [; Define limit
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
             vsort (get-in-nest-or-then res (inc nl) tl- :sort) 
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some map.
             ; %1 must be partial function with first parameter some map.
-            passoc #(%1 :what cl :where (u/get-paths cl %2 *mom*)
+            passoc #(%1 :what cl :where (or %3 (u/get-paths cl %2 *mom*))
                        :sort vsort :exactly ex :unique unique 
                        :limit limit :recursive rec)
             ; What for getting where.
-            what (get-in-nest-or-then res nl tl- :what)]
-        (if (> tl 0)
+            what (get-in-nest-or-then res nl tl- :what)
+            f (partial assoc-in-nest res nl)
+            ff #(f :then %)]
+        (cond 
+          all-medium
+          (let [path (first (u/get-paths cl (get-in-nest res nl :what) *mom*)) ]
+            (loop [id (first path) path (next path) r res wh what nl nl]
+              (if (empty? path)
+                {:r (passoc (partial assoc-in-nest r (inc nl)) nil [[id]])
+                 :nl (inc nl)}
+                (let [cl (check-prop wh id) 
+                      cl (if (true? cl) 
+                           nil 
+                           (if (or (.isArray cl) (some (partial = java.lang.Iterable) (ancestors cl)))
+                             (.getComponentType cl)
+                             cl))]
+                  (recur (first path) (next path) 
+                         (assoc-in-nest r nl :nest [{:what cl :where [[id]] :medium true}]) 
+                         cl 
+                         (inc nl))))))
+          (> tl 0)
           (if (nil? last-then)
-            (f (passoc (partial assoc empty-then) (get-in-nest res nl :what)))
+            (ff (passoc (partial assoc empty-then) (get-in-nest res nl :what) nil))
             (let [then-v (repeat tl- :then)
                   ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
                   ;; Because of get-in can return nil, but lt must be not nil.
                   lt (get-in last-then then-v)
                   lt (if (nil? lt) empty-then lt)
   
-                  lt (passoc (partial assoc lt) what)
+                  lt (passoc (partial assoc lt) what nil)
                   lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
-              (f lt)))
-          (passoc (partial assoc-in-nest res nl) what))))))
+              (ff lt)))
+          :else (passoc f what nil))))))
 
 
 (defn- add-op-to-preds
@@ -698,7 +717,7 @@
 
 (def alpha
   "Sequence of characters."
-  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&+/-*:?"))
+  (lit-alt-seq "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890&*"))
 
 (def digit
   "Sequence of digits."
@@ -842,15 +861,19 @@
 (defn- set-id
   [id, f, state]
   [(:remainder state) 
-   (assoc state :result 
-          (f (:result state) 
-             id
-             (:nest-level state)
-             (:then-level state)
-             (:is-recur state)
-             (:cur-sort state)
-             (:unique state) 
-             (:hb-range state) (:lb-range state) (:tail state)))])
+   (let [r (f (:result state) 
+              id
+              (:nest-level state)
+              (:then-level state)
+              (:is-recur state)
+              (:cur-sort state)
+              (:unique state) 
+              (:hb-range state) (:lb-range state) (:tail state)
+              (:all-medium state))]
+     (if (map? r)
+       (let [{:keys [r nl]} r]
+         (assoc state :result r :nest-level nl))
+       (assoc state :result r)))])
 
 
 (defn- process-id
@@ -948,7 +971,9 @@
   Sorting may be defined before id. Example: {a:number}room
   Each id may contains block from properties or predicates."
   (conc prefix-id-suffix
-        (rep* (conc (invisi-conc (lit \.) (update-info :then-level inc))
+        (rep* (conc (invisi-conc (alt (invisi-conc (lit \.) (set-info :all-medium nil)) 
+                                      (invisi-conc (lit-conc-seq "->") (set-info :all-medium true)))
+                                 (update-info :then-level inc))
                     prefix-id-suffix))))
 
 
