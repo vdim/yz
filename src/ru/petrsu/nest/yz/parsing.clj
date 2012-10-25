@@ -122,16 +122,23 @@
   (read-string (str "#=(eval " s ")")))
 
 
-(defn- add-value
-  "Conjs some value 'v' to :nest array which has nest-level 
-  of level."
-  [res nest-level v]
-  (if (<= nest-level 0)
-    (conj res v)
+(defn- process-res
+  "Helper function for processes res 
+  due to f1 and f2 functions."
+  [res nl f1 f2 & vs]
+  (if (<= nl 0)
+    (conj (f1 res) (f2 res))
     (conj (pop res)
           (assoc (peek res) 
                  :nest 
-                 (add-value (:nest (peek res)) (dec nest-level) v)))))
+                 (apply process-res (:nest (peek res)) (dec nl) f1 f2 vs)))))
+
+
+(defn- add-value
+  "Conjs some value 'v' to :nest 
+  array which has nest-level of level."
+  [res nest-level v]
+  (process-res res nest-level identity (fn [_] v)))
 
 
 (defn get-in-nest
@@ -147,7 +154,6 @@
   of get-in-nest, otherwise tries inspect the
   last then."
   [res nl tl k]
-  ;(println "tl = " tl)
   (let [then (get-in-nest res nl :then)]
     (if (or (nil? then) (zero? tl))
       (get-in-nest res nl k) 
@@ -158,12 +164,7 @@
   "Like assoc-in, but takes into account structure :result.
   Inserts some value 'v' in 'res' map to :nest key."
   [res nest-level & kvs]
-  (if (<= nest-level 0)
-    (conj (pop res) (apply assoc (peek res) kvs))
-    (conj (pop res)
-          (assoc (peek res) 
-                   :nest 
-                   (apply assoc-in-nest (:nest (peek res)) (dec nest-level) kvs)))))
+  (process-res res nest-level pop (fn [r] (apply assoc (peek r) kvs))))
 
 
 (defn assoc-in-nest-or-then
