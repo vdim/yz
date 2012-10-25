@@ -147,10 +147,11 @@
   of get-in-nest, otherwise tries inspect the
   last then."
   [res nl tl k]
+  ;(println "tl = " tl)
   (let [then (get-in-nest res nl :then)]
-    (if (or (nil? then) (= tl 0))
+    (if (or (nil? then) (zero? tl))
       (get-in-nest res nl k) 
-      (get-in then (-> tl dec (repeat :then) vec (conj k))))))
+      (get-in then  (-> tl dec (repeat :then) vec (conj k))))))
 
 
 (defn assoc-in-nest
@@ -169,19 +170,18 @@
   "Assoc some value v to some tag l-tag (and other
   tags and values) to map res due to nl and tl levels."
   [res nl tl & kvs]
-  (let [then (get-in-nest res nl :then)]
-    ;(if (or (nil? then) (zero? tl))
-    (if (zero? tl)
-      (apply assoc-in-nest res nl kvs)
-      (let [then-v (repeat (dec tl) :then)
-            ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in then v))
-            ;; Because of get-in can return nil, but lt must be not nil.
-            lt (get-in then then-v)
-            lt (if (nil? lt) empty-then lt)
+  (if (zero? tl)
+    (apply assoc-in-nest res nl kvs)
+    (let [then (get-in-nest res nl :then)
+          then-v (repeat (dec tl) :then)
+          ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in then v))
+          ;; Because of get-in can return nil, but lt must be not nil.
+          lt (get-in then then-v)
+          lt (if (nil? lt) empty-then lt)
   
-            lt (apply assoc lt kvs)
-            lt (if (empty? then-v) lt (assoc-in then then-v lt))]
-        (assoc-in-nest res nl :then lt)))))
+          lt (apply assoc lt kvs)
+          lt (if (empty? then-v) lt (assoc-in then then-v lt))]
+      (assoc-in-nest res nl :then lt))))
 
 
 (defn- change-preds
@@ -191,14 +191,7 @@
               nl (:nest-level state)
               tl (:then-level state)
               st (:preds state)]
-         (assoc (assoc state :preds []) :result 
-                (if (= tl 0) 
-                  (assoc-in-nest res nl :preds st)
-                  (let [last-then (get-in-nest res nl :then)]
-                    (assoc-in-nest res nl :then 
-                                   (assoc-in last-then 
-                                             (conj (vec (repeat (dec tl) :then)) :preds) 
-                                             st))))))])
+          (assoc state :preds [] :result (assoc-in-nest-or-then res nl tl :preds st)))])
 
 
 (defn- add-pred
@@ -774,21 +767,16 @@
                      :else (keyword (reduce str prop)))
         res (:result state)
         nl (:nest-level state)
-        tl (:then-level state)]
+        tl (:then-level state)
+        sorts (get-in-nest-or-then res nl tl :sort)
+        ; If sorts is vector then it is mean that sorts was be transfort
+        ; for transfering to core. Function get-in-nest-or-then returns
+        ; vector because of :then is nil so the get-in-nest-or-then 
+        ; takes value from nest (see implementation of the get-in-nest-or-then).
+        sorts (if (vector? sorts) nil sorts)]
     [(:remainder state) 
      (assoc state :result 
-        (if (> tl 0)
-            (let [then-v (vec (repeat (dec tl) :then))
-                  last-then (get-in-nest res nl :then)
-                  ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
-                  ;; Because of get-in can return nil, but lt must be not nil.
-                  lt (get-in last-then then-v)
-                  lt (if (nil? lt) empty-then lt)
-
-                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))
-                  lt (update-in lt (conj then-v :sort) #(assoc % propid tsort))]
-              (assoc-in-nest res nl :then lt))
-         (assoc-in-nest res nl :sort (assoc (get-in-nest res nl :sort) propid tsort))))]))
+            (assoc-in-nest-or-then res nl tl :sort (assoc sorts propid tsort)))]))
 
 
 (declare function)
