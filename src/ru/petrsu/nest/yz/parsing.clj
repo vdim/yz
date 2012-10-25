@@ -114,18 +114,6 @@
   `(conc (opt whitespaces) ~rule (opt whitespaces)))
 
 
-(defn assoc-in-nest
-  "Like assoc-in, but takes into account structure :result.
-  Inserts some value 'v' in 'res' map to :nest key."
-  [res nest-level l-tag v & kvs]
-  (if (<= nest-level 0)
-    (conj (pop res) (apply assoc (peek res) l-tag v kvs))
-    (conj (pop res)
-          (assoc (peek res) 
-                   :nest 
-                   (apply assoc-in-nest (:nest (peek res)) (dec nest-level) l-tag v kvs)))))
-
-
 (defn- create-f
   "Creates function from specified string
   something like this:
@@ -163,6 +151,37 @@
     (if (or (nil? then) (= tl 0))
       (get-in-nest res nl k) 
       (get-in then (-> tl dec (repeat :then) vec (conj k))))))
+
+
+(defn assoc-in-nest
+  "Like assoc-in, but takes into account structure :result.
+  Inserts some value 'v' in 'res' map to :nest key."
+  [res nest-level & kvs]
+  (if (<= nest-level 0)
+    (conj (pop res) (apply assoc (peek res) kvs))
+    (conj (pop res)
+          (assoc (peek res) 
+                   :nest 
+                   (apply assoc-in-nest (:nest (peek res)) (dec nest-level) kvs)))))
+
+
+(defn assoc-in-nest-or-then
+  "Assoc some value v to some tag l-tag (and other
+  tags and values) to map res due to nl and tl levels."
+  [res nl tl & kvs]
+  (let [then (get-in-nest res nl :then)]
+    ;(if (or (nil? then) (zero? tl))
+    (if (zero? tl)
+      (apply assoc-in-nest res nl kvs)
+      (let [then-v (repeat (dec tl) :then)
+            ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in then v))
+            ;; Because of get-in can return nil, but lt must be not nil.
+            lt (get-in then then-v)
+            lt (if (nil? lt) empty-then lt)
+  
+            lt (apply assoc lt kvs)
+            lt (if (empty? then-v) lt (assoc-in then then-v lt))]
+        (assoc-in-nest res nl :then lt)))))
 
 
 (defn- change-preds
@@ -502,9 +521,7 @@
                  (map? id) id
                  ; property itself
                  :else (keyword (str id)))
-        sorts (getp :sort)
-        last-then (get-in-nest res nl :then)
-        a-then #(assoc-in-nest res nl :then %)] 
+        sorts (getp :sort)]
     (if medium? 
       (let [cl (if (true? cl) 
                  nil 
@@ -514,22 +531,12 @@
             ; Define limit
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
-            sorts (transform-sort sorts tsort cl)
+            sorts (transform-sort sorts tsort cl)]
             ; Function for association some values of some then map.
-            assoc-lth #(assoc %1 :what cl :where [[(name id)]]
-                              :sort sorts :exactly ex 
-                              :recursive rec :unique unique :limit limit)]
-          (if (nil? last-then)
-            (a-then (assoc-lth empty-then))
-            (let [then-v (repeat tl- :then)
-                  ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
-                  ;; Because of get-in can return nil, but lt must be not nil.
-                  lt (get-in last-then then-v)
-                  lt (if (nil? lt) empty-then lt)
-      
-                  lt (assoc-lth lt)
-                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
-              (a-then lt))))
+            (assoc-in-nest-or-then res nl tl- :then 
+              {:what cl :where [[(name id)]]
+               :sort sorts :exactly ex 
+               :recursive rec :unique unique :limit limit}))
       (let [props (getp :props)
             sorts (cond
                     
@@ -557,14 +564,11 @@
             ; (time (dotimes [_ 1e7] (lvec [1 2 3]))): "Elapsed time: 327.200079 msecs"
             ; (time (dotimes [_ 1e7] (vec [1 2 3]))): "Elapsed time: 7122.513999 msecs"
             lvec #(if (vector? %) % (vec %))]
-        (if (> tl- 0)
-          (let [v #(conj (vec (repeat (dec tl-) :then)) %)
-                last-then (assoc-in last-then (v :sort) sorts)]
-            (a-then (update-in last-then (v :props) #(lvec (conj % [id is-recur])))))
-          (assoc-in-nest 
-            res nl 
-            :sort sorts 
-            :props (lvec (conj (get-in-nest res nl :props) [id is-recur]))))))))
+        (assoc-in-nest-or-then 
+          res nl tl- 
+          :props (lvec (conj (get-in-nest-or-then res nl tl- :props) 
+                             [id is-recur]))
+          :sort sorts)))))
 
 
 (defn- found-id
@@ -575,9 +579,7 @@
         cl (cond 
              (.startsWith id "$") (do (swap! query-params conj nil) (keyword (subs id 1)))
              (and (nil? *mom*) (> tl 0)) nil 
-             :else (find-class id))
-        last-then (get-in-nest res nl :then)
-        tl- (dec tl)]
+             :else (find-class id))]
     (if (nil? cl)
       (if (> tl 0)
         (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex rec)
@@ -591,19 +593,17 @@
             vsort (transform-sort vsort tsort cl)
             ; Function for association some values of some map.
             ; %1 must be partial function with first parameter some map.
-            passoc #(%1 :what cl :where (or %3 (u/get-paths cl %2 *mom*))
-                       :sort vsort :exactly ex :unique unique 
-                       :limit limit :recursive rec)
+            passoc #(assoc-in-nest-or-then 
+                      res nl tl :what cl :where %1 :sort vsort 
+                      :exactly ex :unique unique :limit limit :recursive rec)
             ; What for getting where.
-            what (get-in-nest-or-then res (dec nl) tl- :what)
-            f (partial assoc-in-nest res nl)
-            ff #(f :then %)]
-        (cond 
-          all-medium
-          (let [path (first (u/get-paths cl what *mom*))]
+            what (get-in-nest-or-then res (dec nl) (dec tl) :what)
+            paths (u/get-paths cl what *mom*)]
+        (if all-medium
+          (let [path (first paths)]
             (loop [id (first path) path (next path) r res wh what nl nl]
               (if (empty? path)
-                {:r (passoc (partial assoc-in-nest r (inc nl)) nil [[id]])
+                {:r (passoc [[id]])
                  :nl (inc nl)}
                 (let [cl (check-prop wh id) 
                       cl (if (true? cl) 
@@ -612,22 +612,9 @@
                              (.getComponentType cl)
                              cl))]
                   (recur (first path) (next path) 
-                         (assoc-in-nest r nl :nest [{:what cl :where [[id]] :medium true}]) 
-                         cl 
-                         (inc nl))))))
-          (> tl 0)
-          (if (nil? last-then)
-            (ff (passoc (partial assoc empty-then) (get-in-nest res nl :what) nil))
-            (let [then-v (repeat tl- :then)
-                  ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in last-then v))
-                  ;; Because of get-in can return nil, but lt must be not nil.
-                  lt (get-in last-then then-v)
-                  lt (if (nil? lt) empty-then lt)
-  
-                  lt (passoc (partial assoc lt) what nil)
-                  lt (if (empty? then-v) lt (assoc-in last-then then-v lt))]
-              (ff lt)))
-          :else (passoc f what nil))))))
+                         (assoc-in-nest-or-then r nl tl :nest [{:what cl :where [[id]] :medium true}]) 
+                         cl (inc nl))))))
+          (passoc paths))))))
 
 
 (defn- add-op-to-preds
