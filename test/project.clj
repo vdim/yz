@@ -10,7 +10,7 @@
                  [incanter/incanter-charts "1.3.0"]
                  [incanter/incanter-core "1.3.0"]
                  [incanter/incanter-pdf "1.3.0"]
-                 [criterium "0.2.1-SNAPSHOT"]]
+                 [criterium "0.3.0"]]
   :java-source-paths ["src/"]
   :dev-dependencies [[lein-clojars "0.7.0"]]
   :warn-on-reflection false
