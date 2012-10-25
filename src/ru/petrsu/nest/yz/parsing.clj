@@ -150,15 +150,12 @@
   "Like get-in, but takes into account structure of :result
   field of q-representation structure. First :nest key is
   nest-level times, then k is."
-  [res nest-level k]
-  (loop [res- res nl nest-level]
-    (if (<= nl 0)
-      (get (peek res-) k)
-      (recur (:nest (peek res-)) (dec nl)))))
+  [res nl k]
+  (-> res (apply comp k peek (flatten (repeat nl [:nest peek])))))
 
 
 (defn- get-in-then
-  "Gets value from res due to nl and tl"
+  "Gets value from res due to nl and tl."
   [res nl tl k]
   (if (= tl 0) 
     (get-in-nest res nl k) 
@@ -501,7 +498,7 @@
   (let [; medium? defines queries something like this: 
         ;   sou.parent.li
         ; where parent is property
-        [medium? ex rec all-medium] args
+        [medium? ex rec] args
         tl- (dec tl)
 
         getp #(get-in-nest-or-then res (inc nl) tl- %)
@@ -534,8 +531,7 @@
             ; Function for association some values of some then map.
             assoc-lth #(assoc %1 :what cl :where [[(name id)]]
                               :sort sorts :exactly ex 
-                              :recursive rec :unique unique :limit limit 
-                              :all-medium all-medium)]
+                              :recursive rec :unique unique :limit limit)]
           (if (nil? last-then)
             (a-then (assoc-lth empty-then))
             (let [then-v (repeat tl- :then)
@@ -597,7 +593,7 @@
         tl- (dec tl)]
     (if (nil? cl)
       (if (> tl 0)
-        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex rec all-medium)
+        (found-prop res id nl tl is-recur tsort unique hb-range lb-range tail true ex rec)
         ; If then-level is 0 (so we can conclude that it is not property) 
         ; and class wasn't found then we must throw exception.
         (throw (NotFoundElementException. (str "Not found element: " id))))
@@ -617,8 +613,9 @@
             ff #(f :then %)]
         (cond 
           all-medium
-          (let [path (first (u/get-paths cl (get-in-nest res nl :what) *mom*)) ]
-            (loop [id (first path) path (next path) r res wh what nl nl]
+          (let [wh (get-in-nest-or-then res nl tl :what)
+                path (first (u/get-paths cl wh *mom*))]
+            (loop [id (first path) path (next path) r res wh wh nl nl]
               (if (empty? path)
                 {:r (passoc (partial assoc-in-nest r (inc nl)) nil [[id]])
                  :nl (inc nl)}
