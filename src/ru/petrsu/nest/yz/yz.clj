@@ -25,7 +25,9 @@
   (:import
     (ru.petrsu.nest.yz.core ElementManager))
   (:gen-class :name ru.petrsu.nest.yz.QueryYZ
-              :constructors {[ru.petrsu.nest.yz.core.ElementManager] [], 
+              :constructors {; MOM is nil
+                             [ru.petrsu.nest.yz.core.ElementManager] [], 
+                             ; String is name of file with MOM.
                              [ru.petrsu.nest.yz.core.ElementManager String] []}
               :methods [[getResultList [String] java.util.List] 
                         [getSingleResult [String] Object]
@@ -41,7 +43,7 @@
 (def ^:dynamic *mom* (atom nil))
 
 
-(defn- get-by-key
+(defn get-by-key
   "Returns a value from the state for the specified key."
   [key, this]
   (key @(.state this)))
