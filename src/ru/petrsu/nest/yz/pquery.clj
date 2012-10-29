@@ -24,15 +24,14 @@
     (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu] [parsing :as p]))
   (:import
     (ru.petrsu.nest.yz.core ElementManager) 
-    (ru.petrsu.nest.yz QueryYZ) 
-    (clojure.lang PersistentArrayMap)
+    (ru.petrsu.nest.yz Query) 
     (java.util List))
-  (:gen-class :name ru.petrsu.nest.yz.ParametrizedQuery
+  (:gen-class :name ru.petrsu.nest.yz.ParametrizedYZQuery
               :constructors {; MOM is nil, String is query
                              [ru.petrsu.nest.yz.core.ElementManager String] [], 
                              ; First string is name file for MOM, second string is query.
                              [String ru.petrsu.nest.yz.core.ElementManager String] []}
-              :methods [[execute [java.util.List] Object]]
+              :methods [[execute [Object] ru.petrsu.nest.yz.Query]]
               :state state
               :init init))
 
@@ -64,7 +63,8 @@
 
 
 (defn -execute
-  [this ^List params]
-  (let [_ (reset! p/query-params params)
+  [this params]
+  (let [params (if (coll? params) params [params])
+        _ (reset! p/query-params params)
         {:keys [parse-res em mom]} @(.state this)]
-    (yz/get-qr parse-res mom em)))
+    (Query. (yz/get-qr parse-res mom em))))

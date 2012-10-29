@@ -4,9 +4,10 @@
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.clojure/algo.monads "0.1.0"] ]
   :aot [ru.petrsu.nest.yz.core 
+        ru.petrsu.nest.yz.query
         ru.petrsu.nest.yz.yz
-        ru.petrsu.nest.yz.yz-factory 
-        ru.petrsu.nest.yz.pquery]
+        ru.petrsu.nest.yz.pquery 
+        ru.petrsu.nest.yz.yz-factory]
   :compile-path "target/classes"
   :java-source-paths ["src/"]
   :jar-exclusions [#"\.swp$|\.java$"]

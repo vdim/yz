@@ -23,19 +23,14 @@
   (:require
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
-    (ru.petrsu.nest.yz.core ElementManager))
-  (:gen-class :name ru.petrsu.nest.yz.QueryYZ
-              :constructors {; MOM is nil
+    (ru.petrsu.nest.yz.core ElementManager)
+    (ru.petrsu.nest.yz Query))
+  (:gen-class :name ru.petrsu.nest.yz.YZQuery
+              :constructors {; MOM is nil.
                              [ru.petrsu.nest.yz.core.ElementManager] [], 
                              ; String is name of file with MOM.
-                             [ru.petrsu.nest.yz.core.ElementManager String] []}
-              :methods [[getResultList [String] java.util.List] 
-                        [getSingleResult [String] Object]
-                        [getFlatResult [String] java.util.List]
-                        [getResult [String] java.util.Map]
-                        [getStructuredResult [] java.util.List]
-                        [getError [] String]
-                        [getColumnsName [] java.util.List]]
+                             [String ru.petrsu.nest.yz.core.ElementManager] []}
+              :methods [[create [String] ru.petrsu.nest.yz.Query]]
               :state state
               :init init))
 
@@ -43,85 +38,29 @@
 (def ^:dynamic *mom* (atom nil))
 
 
-(defn get-by-key
-  "Returns a value from the state for the specified key."
-  [key, this]
-  (key @(.state this)))
-
-
 (defn- create-state
   "Creates state due to em. If f-mom isn't nil then
   MOM is extracted from file."
-  [^ElementManager em, f-mom]
+  [^ElementManager em f-mom]
   (atom {:em em 
          :mom (if (nil? @*mom*) 
                 (reset! *mom* 
                         (if (nil? f-mom)
                           (.getMom em)
                           (hu/mom-from-file f-mom)))
-                @*mom*)
-         :res nil}))
+                @*mom*)}))
 
 
 (defn -init
   "Defines constructors."
   ([^ElementManager em]
    [[] (create-state em nil)])
-  ([^ElementManager em ^String f]
+  ([^String f ^ElementManager em]
    [[] (create-state em f)]))
 
 
-(defn- pq
-  "Performs YZ's query."
+(defn -create
+  "Creates object Query for specified string query."
   [this ^String query]
-  (let [res (yz/pquery query (get-by-key :mom this) (get-by-key :em this))
-        _ (reset! (.state this) (assoc @(.state this) :res res))]
-    (if (nil? (:error res))
-      res
-      (throw (Exception. (:error res))))))
-
-
-(defn -getResult
-  "Returns a map of the result query."
-  [this, ^String query]
-  (pq this query))
-
-
-(defn -getResultList
-  "Returns rows of query's result."
-  [this, ^String query]
-  (:rows (pq this query)))
-
-
-(defn -getStructuredResult
-  "Returns a value of :result key from map of the result query."
-  [this]
-  (:result (get-by-key :res this)))
-
-
-(defn -getError
-  "Returns value of :error key from query's result."
-  [this]
-  (:error (get-by-key :res this)))
-
-
-(defn -getColumnsName
-  "Returns value of :columns key from query's result."
-  [this]
-  (:columns (get-by-key :res this)))
-
-
-(defn -getSingleResult
-  "Returns single result. If result is not single then
-  exception is thrown."
-  [this, ^String query]
-  (let [rows (:rows (pq this query))]
-    (if (or (not= (count rows) 1) (not= (count (nth rows 0)) 1))
-      (throw (Exception. "Result is not single."))
-      (nth (nth rows 0) 0))))
-
-
-(defn -getFlatResult
-  "Returns result as flat collection."
-  [this, ^String query]
-  (flatten (-getResultList this, query)))
+  (let [{:keys [em mom]} @(.state this)]
+    (Query. (yz/pquery query mom em))))

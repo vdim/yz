@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.yz-factory
   ^{:author "Vyacheslav Dimitrov"
     :doc "Factory for creating different types of the ElementManager 
-         (see code from the core.clj file) and the QueryYZ instances.
+         (see code from the core.clj file) and the YZQuery instances.
 
          At the present moment factory supports the following ElementManagers:
           - JPA's ElementManager (method createJPAElementManager). For getting it
@@ -35,7 +35,7 @@
    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
   (:import
     (ru.petrsu.nest.yz.core ElementManager)
-    (ru.petrsu.nest.yz QueryYZ)
+    (ru.petrsu.nest.yz YZQuery)
     (java.util List Collection)
     (clojure.lang APersistentMap))
   (:gen-class :name ru.petrsu.nest.yz.YZFactory
@@ -68,17 +68,17 @@
                          [java.util.Collection java.util.Collection]
                          ru.petrsu.nest.yz.core.ElementManager]
 
-                        ;; Creates QueryYZ for working with collection.
+                        ;; Creates YZQuery for working with collection.
                         ;; Collection is specified.
                         ^{:static true} 
-                        [createCollectionQueryYZ [java.util.Collection]
-                         ru.petrsu.nest.yz.QueryYZ]
+                        [createCollectionYZQuery [java.util.Collection]
+                         ru.petrsu.nest.yz.YZQuery]
 
-                        ;; Creates QueryYZ for working with collection.
+                        ;; Creates YZQuery for working with collection.
                         ;; Collection and list of classes are specified.
                         ^{:static true} 
-                        [createCollectionQueryYZ [java.util.Collection java.util.Collection]
-                         ru.petrsu.nest.yz.QueryYZ]
+                        [createCollectionYZQuery [java.util.Collection java.util.Collection]
+                         ru.petrsu.nest.yz.YZQuery]
                         
                         ;; Creates MOM from specified file.
                         ^{:static true} 
@@ -133,12 +133,12 @@
    (c-em coll classes)))
 
 
-(defn -createCollectionQueryYZ
-  "Returns instance of the QueryYZ which works with collection."
+(defn -createCollectionYZQuery
+  "Returns instance of the YZQuery which works with collection."
   ([^java.util.Collection coll]
-   (ru.petrsu.nest.yz.QueryYZ. (c-em coll nil)))
+   (ru.petrsu.nest.yz.YZQuery. (c-em coll nil)))
   ([^java.util.Collection coll ^java.util.Collection classes]
-   (ru.petrsu.nest.yz.QueryYZ. (c-em coll classes))))
+   (ru.petrsu.nest.yz.YZQuery. (c-em coll classes))))
 
 
 (defn -createMomFromFile
