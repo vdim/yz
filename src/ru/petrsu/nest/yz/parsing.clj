@@ -838,11 +838,13 @@
               (:cur-sort state)
               (:unique state) 
               (:hb-range state) (:lb-range state) (:tail state)
-              (:all-medium state))]
+              (:all-medium state))
+         params [:unique nil :hb-range nil :lb-range nil :tail false]]
      (if (map? r)
        (let [{:keys [r nl]} r]
-         (assoc state :result r :nest-level nl :all-medium nil :then-level 0))
-       (assoc state :result r)))])
+         (apply assoc state :result r 
+                :nest-level nl :all-medium nil :then-level 0 params))
+       (apply assoc state :result r params)))])
 
 
 (defn- process-id
@@ -919,20 +921,10 @@
        (alt propsort idsort+emptiness)))
 
 
-(def id-and-restore
-  "Defines rule which recognizes id and then restores
-  the following values of keys of q-representation structure:
-    :unique, :hb-bound, :lb-bound, :tail."
-  (invisi-conc id (set-info :unique nil) 
-               (set-info :hb-range nil)
-               (set-info :lb-range nil)
-               (set-info :tail false)))
-
-
 (def prefix-id-suffix
   "Defines the following rule: 
     sort-or-unique-or-limit id-and-restore props-and-where"
-  (conc sort-or-unique-or-limit id-and-restore props-and-where))
+  (conc sort-or-unique-or-limit id props-and-where))
 
 
 (def bid
