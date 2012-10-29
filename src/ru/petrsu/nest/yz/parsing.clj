@@ -223,6 +223,18 @@
         (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
 
 
+(defn- get-type
+  "Calls check-prop and in case check-prop returns
+  class then it returns this class or component type."
+  [^Class cl ^String prop]
+  (let [cl (check-prop cl prop)]
+    (if (true? cl) 
+      nil 
+      (if (or (.isArray cl) (some (partial = java.lang.Iterable) (ancestors cl)))
+        (.getComponentType cl)
+        cl))))
+
+
 (declare find-class)
 (defn- get-path
   "Returns map where 
@@ -506,7 +518,7 @@
         
         ; Check whether class "what" has property "id". 
         ; If searching failed then exception is thrown.
-        cl (check-prop what id)
+        cl (get-type what id)
         id (cond ; self object
                  (= id "&") :#self-object#
                  ; default property
@@ -517,12 +529,7 @@
                  :else (keyword (str id)))
         sorts (getp :sort)]
     (if medium? 
-      (let [cl (if (true? cl) 
-                 nil 
-                 (if (or (.isArray cl) (some (partial = java.lang.Iterable) (ancestors cl)))
-                   (.getComponentType cl)
-                   cl))
-            ; Define limit
+      (let [; Define limit
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
             ; Vector with type of sorting, comparator and keyfn.
             sorts (transform-sort sorts tsort cl)]
@@ -599,12 +606,7 @@
                 {:r (assoc-in-nest-or-then 
                       r nl 0 :nest [(merge {:what cl :where [[id]] :medium true :sort vsort} params)])
                  :nl (inc nl)}
-                (let [cl (check-prop wh id) 
-                      cl (if (true? cl) 
-                           nil 
-                           (if (or (.isArray cl) (some (partial = java.lang.Iterable) (ancestors cl)))
-                             (.getComponentType cl)
-                             cl))]
+                (let [cl (get-type wh id)]
                   (recur (first path) (next path) 
                          (assoc-in-nest-or-then r nl 0 :nest [{:what cl :where [[id]] :medium true}]) 
                          cl (inc nl))))))
