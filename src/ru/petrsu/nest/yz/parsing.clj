@@ -606,7 +606,7 @@
                              (.getComponentType cl)
                              cl))]
                   (recur (first path) (next path) 
-                         (assoc-in-nest-or-then r nl tl :nest [{:what cl :where [[id]] :medium true}]) 
+                         (assoc-in-nest-or-then r nl 0 :nest [{:what cl :where [[id]] :medium true}]) 
                          cl (inc nl))))))
           (apply assoc-in-nest-or-then res nl tl 
                  :where (-> tl dec paths) :what cl :sort (vsort nl tl)
