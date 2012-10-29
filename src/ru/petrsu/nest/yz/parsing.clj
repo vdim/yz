@@ -718,14 +718,12 @@
 
 (def descsort
   "Defines rule for sorting by descenting."
-  (complex [_ (alt (lit \↓) (lit-conc-seq "d:"))]
-           :desc))
+  (constant-semantics (alt (lit \↓) (lit-conc-seq "d:")) :desc))
 
 
 (def ascsort
   "Defines rule for sorting by ascending."
-  (complex [_ (alt (lit \↑) (lit-conc-seq "a:"))]
-           :asc))
+  (constant-semantics (alt (lit \↑) (lit-conc-seq "a:")) :asc))
 
 
 (def unique
@@ -752,12 +750,16 @@
 
 (def limit
   "Defines rule for limiting result of query: 3-4:building."
-  (complex [r (conc (alt (conc tail (bound :lb-range) (lit \-) (bound :hb-range)) ; range from n to m objects starting with last element
-                         (conc (bound :lb-range) (lit \-) (bound :hb-range)) ; range from n to m objects starting with first element
-                         (conc tail (bound :hb-range)) ; n last objects
-                         (bound :hb-range)) ; n first objects
-                    (lit \:))]
-           r))
+  (conc (alt 
+          ; range from n to m objects starting with last element
+          (conc tail (bound :lb-range) (lit \-) (bound :hb-range)) 
+          ; range from n to m objects starting with first element
+          (conc (bound :lb-range) (lit \-) (bound :hb-range)) 
+          ; n last objects  
+          (conc tail (bound :hb-range)) 
+          ; n first objects   
+          (bound :hb-range)) 
+        (lit \:)))
 
 
 (defn- set-sort
@@ -772,10 +774,7 @@
                      (= prop [\& \.]) :#default-property#
                      (= prop [\&]) :self
                      :else (keyword (reduce str prop)))
-        res (:result state)
-        nl (:nest-level state)
-        tl (:then-level state)
-        all-medium (:all-medium state)
+        [res nl tl all-medium] ((juxt :result :nest-level :then-level :all-medium) state)
         sorts (if all-medium 
                 (get-in-nest-or-then res (inc nl) 0 :sort)
                 (get-in-nest-or-then res nl tl :sort))
