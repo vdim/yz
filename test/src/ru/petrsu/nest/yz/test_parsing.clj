@@ -1080,6 +1080,128 @@
            (is (f "@(count il:`building'), @(count de:`room')" :indep-list :dep-each))))
 
 
+(deftest all-medium
+         ^{:doc "Tests parsing queries with getting 
+                all medium: building->room."}
+         (let [f #(= (parse %1 mom-)
+                     [(merge
+                        {:what Building
+                         :nest [{:what Floor
+                                 :where [["floors"]]
+                                 :medium true
+                                 :nest [(merge {:what Room :where [["rooms"]] :medium true} %2)]}]}
+                        %3)])]
+           (is (f "building->room" nil nil))
+           (is (f "building->u:room" {:unique true} nil))
+           (is (f "building->{a:number}room" {:sort ['(:number [:asc nil nil])]} nil))
+           (is (f "building->{a:number d:name}room" 
+                  {:sort ['(:name [:desc nil nil]) '(:number [:asc nil nil])]} nil))
+           (is (f "building->{a:number d:name d:&}room" 
+                  {:sort ['(:self [:desc nil nil]) 
+                          '(:name [:desc nil nil]) 
+                          '(:number [:asc nil nil])]} nil))
+           (is (f "building->1-5:room" {:limit [1 5 false]} nil))
+           (is (f "building->room[number]" {:props [[:number false]]} nil))
+           (is (f "building->1-5:room[number]" {:limit [1 5 false] :props [[:number false]]} nil))
+           (is (f "building->{d:name}1-5:room[number]" 
+                  {:limit [1 5 false] :props [[:number false]] 
+                   :sort ['(:name [:desc nil nil])]} nil))
+           (is (f "1-5:building->room" nil {:limit [1 5 false]}))
+           (is (f "{a:name}building->room" nil {:sort ['(:name [:asc nil nil])]}))
+           (is (f "u:building->room" nil {:unique true}))
+           (is (f "{a:name}u:building->room" nil {:unique true :sort ['(:name [:asc nil nil])]}))
+           (is (f "{a:name}u:1-5:building->room" nil {:limit [1 5 false] :unique true :sort ['(:name [:asc nil nil])]}))
+           (is (f "{a:name}u:1-5:building->room[number]" 
+                  {:props [[:number false]]} 
+                  {:limit [1 5 false] :unique true :sort ['(:name [:asc nil nil])]}))
+           (is (f "{a:name}u:1-5:building->4-7:room[number]" 
+                  {:props [[:number false]] :limit [4 7 false]} 
+                  {:limit [1 5 false] :unique true :sort ['(:name [:asc nil nil])]}))
+           (is (f "{a:name}u:1-5:building->{d:description}4-7:room[number]" 
+                  {:props [[:number false]] :limit [4 7 false] :sort ['(:description [:desc nil nil])]}
+                  {:limit [1 5 false] :unique true :sort ['(:name [:asc nil nil])]})))
+
+         (let [f #(= (parse %1 mom-)
+                     [(merge
+                        {:what Floor
+                         :nest [{:what Floor
+                                 :where [["floors"]]
+                                 :medium true
+                                 :nest [(merge {:what Room :where [["rooms"]] :medium true} %2)]}]
+                         :then (merge {:what Building :where [["building"]]} %4)}
+                        %3)])]
+           (is (f "floor.building->room" nil nil nil))
+           (is (f "floor.building->u:room" {:unique true} nil nil))
+           (is (f "floor.building->{a:number}room" {:sort ['(:number [:asc nil nil])]} nil nil))
+           (is (f "floor.building->{a:number d:name}room" 
+                  {:sort ['(:name [:desc nil nil]) '(:number [:asc nil nil])]} nil nil))
+           (is (f "floor.building->{a:number d:name d:&}room" 
+                  {:sort ['(:self [:desc nil nil]) 
+                          '(:name [:desc nil nil]) 
+                          '(:number [:asc nil nil])]} nil nil))
+           (is (f "floor.building->1-5:room" {:limit [1 5 false]} nil nil))
+           (is (f "floor.building->room[number]" {:props [[:number false]]} nil nil))
+           (is (f "floor.building->1-5:room[number]" {:limit [1 5 false] :props [[:number false]]} nil nil))
+           (is (f "floor.building->{d:name}1-5:room[number]" 
+                  {:limit [1 5 false] :props [[:number false]] 
+                   :sort ['(:name [:desc nil nil])]} nil nil))
+           (is (f "u:floor.building->u:room" 
+                  {:unique true} 
+                  {:unique true} 
+                  nil))
+           (is (f "{a:number}2-6:floor[description].building->{d:name}1-5:room[number]" 
+                  {:limit [1 5 false] :props [[:number false]] 
+                   :sort ['(:name [:desc nil nil])]} 
+                  {:limit [2 6 false] :props [[:description false]] 
+                   :sort ['(:number [:asc nil nil])]} 
+                  nil))
+           (is (f "{a:number}2-6:floor[description].{a:description}3-7:building->{d:name}1-5:room[number]" 
+                  {:limit [1 5 false] :props [[:number false]] 
+                   :sort ['(:name [:desc nil nil])]} 
+                  {:limit [2 6 false] :props [[:description false]] 
+                   :sort ['(:number [:asc nil nil])]} 
+                  {:limit [3 7 false] :sort ['(:description [:asc nil nil])]})))
+         (let [f #(= (parse %1 mom-)
+                     [(merge
+                        {:what Floor
+                         :nest [{:what Floor
+                                 :where [["floors"]]
+                                 :medium true
+                                 :nest [(merge {:what Room :where [["rooms"]] :medium true} %2)]}]
+                         :then (merge {:what Building :where [["building"]]} %4)}
+                        %3)])]
+           (is (f "floor.building->room (floor)" 
+                  {:nest [{:what Floor :where [["floor"]]}]} 
+                  nil nil))
+           (is (f "floor.building->room (u:floor)" 
+                  {:nest [{:what Floor :where [["floor"]] :unique true}]} 
+                  nil nil))
+           (is (f "floor.building->room ({a:number}floor)" 
+                  {:nest [{:what Floor :where [["floor"]] :sort ['(:number [:asc nil nil])]}]}
+                  nil nil))
+           (is (f "floor.building->room (floor[a:number])" 
+                  {:nest [{:what Floor :where [["floor"]] 
+                           :sort [[nil nil nil] [:asc nil nil]] :props [[:number false]]}]}
+                  nil nil))
+           (is (f "floor.building->u:room (floor[a:number])" 
+                  {:nest [{:what Floor :where [["floor"]] 
+                           :sort [[nil nil nil] [:asc nil nil]] :props [[:number false]]}]
+                   :unique true}
+                  nil nil))
+           (is (f "floor.building->{a:number}room ({d:name}floor[number])" 
+                  {:nest [{:what Floor :where [["floor"]] 
+                           :sort ['(:name [:desc nil nil])] :props [[:number false]]}]
+                   :sort ['(:number [:asc nil nil])]}
+                  nil nil))
+           (is (f "floor.building->{a:number}u:room ({d:name}floor[number])" 
+                  {:nest [{:what Floor :where [["floor"]] 
+                           :sort ['(:name [:desc nil nil])] :props [[:number false]]}]
+                   :unique true
+                   :sort ['(:number [:asc nil nil])]}
+                  nil nil))
+         ))
+
+
 (defmacro create-is [q mom-] `(is (nil? (:remainder (p/parse+ ~q ~mom-)))))
 
 (def qlist
@@ -1858,6 +1980,14 @@
    "li.*link.cou"
    "li.cou.*parent"
    "li.cou.*parent.cou"
+   
+   ;; Queries with getting all-medium
+   "building->room"
+   "building->room (ni)"
+   "floor.building->room (ni)"
+   "building->u:room"
+   "u:building->u:room"
+   "u:building->{a:number b:&.}u:room[name]"
    ])
 
 
