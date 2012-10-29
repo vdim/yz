@@ -581,21 +581,23 @@
         (throw (NotFoundElementException. (str "Not found element: " id))))
       (let [; Define limit
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
+            params {:exactly ex :unique unique :limit limit :recursive rec}
+            
+            ; Function for getting paths.
+            paths #(u/get-paths cl (get-in-nest-or-then res (dec nl) %1 :what) *mom*) 
+            
             ; Vector with type of sorting, comparator and keyfn.
-            vsort (get-in-nest-or-then res nl tl :sort) 
-            vsort (transform-sort vsort tsort cl)
-            ; Function for association some values of some map.
-            passoc #(assoc-in-nest-or-then 
-                      %1 %2 tl :what cl :where %3 :sort vsort 
-                      :exactly ex :unique unique :limit limit :recursive rec)
-            ; What for getting where.
-            what (get-in-nest-or-then res (dec nl) (dec tl) :what)
-            paths (u/get-paths cl what *mom*)]
+            vsort #(transform-sort (get-in-nest-or-then res %1 %2 :sort) tsort cl)]
         (if all-medium
-          (let [path (first paths)]
+          (let [what (get-in-nest-or-then res (dec nl) tl :what)
+                path (-> tl paths first) 
+                
+                ; Vector with type of sorting, comparator and keyfn.
+                vsort (vsort (inc nl) 0)]
             (loop [id (first path) path (next path) r res wh what nl nl]
               (if (empty? path)
-                {:r (passoc r nl [[id]])
+                {:r (assoc-in-nest-or-then 
+                      r nl 0 :nest [(merge {:what cl :where [[id]] :medium true :sort vsort} params)])
                  :nl (inc nl)}
                 (let [cl (check-prop wh id) 
                       cl (if (true? cl) 
@@ -606,7 +608,9 @@
                   (recur (first path) (next path) 
                          (assoc-in-nest-or-then r nl tl :nest [{:what cl :where [[id]] :medium true}]) 
                          cl (inc nl))))))
-          (passoc res nl paths))))))
+          (apply assoc-in-nest-or-then res nl tl 
+                 :where (-> tl dec paths) :what cl :sort (vsort nl tl)
+                 (mapcat identity params)))))))
 
 
 (defn- add-op-to-preds
@@ -769,15 +773,21 @@
         res (:result state)
         nl (:nest-level state)
         tl (:then-level state)
-        sorts (get-in-nest-or-then res nl tl :sort)
+        all-medium (:all-medium state)
+        sorts (if all-medium 
+                (get-in-nest-or-then res (inc nl) 0 :sort)
+                (get-in-nest-or-then res nl tl :sort))
         ; If sorts is vector then it is mean that sorts was be transfort
         ; for transfering to core. Function get-in-nest-or-then returns
         ; vector because of :then is nil so the get-in-nest-or-then 
         ; takes value from nest (see implementation of the get-in-nest-or-then).
-        sorts (if (vector? sorts) nil sorts)]
+        sorts (if (vector? sorts) nil sorts)
+        sorts (assoc sorts propid tsort)]
     [(:remainder state) 
-     (assoc state :result 
-            (assoc-in-nest-or-then res nl tl :sort (assoc sorts propid tsort)))]))
+     (let [params (if all-medium
+                    [0 :nest [{:sort sorts}]]
+                    [tl :sort sorts])]
+       (assoc state :result (apply assoc-in-nest-or-then res nl params)))]))
 
 
 (declare function)
@@ -829,7 +839,7 @@
               (:all-medium state))]
      (if (map? r)
        (let [{:keys [r nl]} r]
-         (assoc state :result r :nest-level nl))
+         (assoc state :result r :nest-level nl :all-medium nil :then-level 0))
        (assoc state :result r)))])
 
 
@@ -928,9 +938,8 @@
   Sorting may be defined before id. Example: {a:number}room
   Each id may contains block from properties or predicates."
   (conc prefix-id-suffix
-        (rep* (conc (invisi-conc (alt (invisi-conc (lit \.) (set-info :all-medium nil)) 
-                                      (invisi-conc (lit-conc-seq "->") (set-info :all-medium true)))
-                                 (update-info :then-level inc))
+        (rep* (conc (alt (invisi-conc (lit \.) (update-info :then-level inc))
+                         (invisi-conc (lit-conc-seq "->") (set-info :all-medium true)))
                     prefix-id-suffix))))
 
 
