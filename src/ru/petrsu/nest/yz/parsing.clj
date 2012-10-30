@@ -145,18 +145,43 @@
   "Like get-in, but takes into account structure of :result
   field of q-representation structure. First :nest key is
   nest-level times, then k is."
-  [res nl k]
-  ((apply comp k peek (flatten (repeat nl [:nest peek]))) res))
+  [res nl k last-or-prev]
+  (if (and (empty? (peek (:nest (peek res)))) (= last-or-prev :last))
+    (k (peek res))
+    (loop [res res]
+      (let [ln (peek res)
+            n (peek (:nest ln))
+            nn (peek (:nest n))
+            _ (println "nn = " nn)
+            _ (println "ln = " ln)
+            _ (println "next = " n)
+            ]
+        ;(if (or (nil? (:nest ln)) (nil? (k (peek (:nest ln)))))
+        (if (nil? (k nn))
+          (case last-or-prev
+            :last (k n)
+            :prev (k ln)
+            )
+        (if (or (empty? n) (nil? n))
+          (case last-or-prev
+            :last (k n)
+            :prev (k ln)
+            )
+          (recur (:nest ln)))))))
+  ;((apply comp k peek (flatten (repeat nl [:nest peek]))) res))
 
 
 (defn get-in-nest-or-then
   "If last then is nil, then returns result
   of get-in-nest, otherwise tries inspect the
   last then."
-  [res nl tl k]
-  (let [then (get-in-nest res nl :then)]
+  [res nl tl k last-or-prev]
+  (let [then (get-in-nest res nl :then :last)
+        ;_ (println "res = " res ", then = " then)
+        ;_ (println "k = " k ", gin = " (get-in-nest res nl k :last))
+        ]
     (if (or (nil? then) (zero? tl))
-      (get-in-nest res nl k) 
+      (get-in-nest res nl k last-or-prev) 
       (get-in then  (-> tl dec (repeat :then) vec (conj k))))))
 
 
@@ -173,7 +198,7 @@
   [res nl tl & kvs]
   (if (zero? tl)
     (apply assoc-in-nest res nl kvs)
-    (let [then (get-in-nest res nl :then)
+    (let [then (get-in-nest res nl :then :last)
           then-v (repeat (dec tl) :then)
           ;; DON'T MODIFY next two lines to: lt (if (nil? lt) empty-then (get-in then v))
           ;; Because of get-in can return nil, but lt must be not nil.
@@ -348,7 +373,7 @@
              res- (effects (if (instance? Character res-) (str res-) res-))
              
              [ids pp] (effects (if (= k :ids) 
-                                 (get-ids (:ids (peek preds)) res- (get-in-nest-or-then res nl tl :what))
+                                 (get-ids (:ids (peek preds)) res- (get-in-nest-or-then res nl tl :what :last))
                                  [nil nil]))
              _ (if (nil? pp) (effects ()) (set-info :pp pp))
              _ (if (= k :value) (set-info :pp nil) (effects ()))
@@ -513,7 +538,7 @@
         [medium? ex rec] args
         tl- (dec tl)
 
-        getp #(get-in-nest-or-then res nl tl- %)
+        getp #(get-in-nest-or-then res nl tl- % :last)
         what (getp :what) 
         
         ; Check whether class "what" has property "id". 
@@ -566,7 +591,7 @@
             lvec #(if (vector? %) % (vec %))]
         (assoc-in-nest-or-then 
           res nl tl- 
-          :props (lvec (conj (get-in-nest-or-then res nl tl- :props) 
+          :props (lvec (conj (get-in-nest-or-then res nl tl- :props :last) 
                              [id is-recur]))
           :sort sorts)))))
 
@@ -591,25 +616,33 @@
             params {:exactly ex :unique unique :limit limit :recursive rec}
             
             ; Function for getting paths.
-            paths #(u/get-paths cl (get-in-nest-or-then res (dec nl) %1 :what) *mom*) 
+            _ (println "res = " res)
+            paths #(u/get-paths cl (get-in-nest-or-then res (dec nl) %1 :what :last) *mom*) 
+            _ (println "what = " (get-in-nest-or-then res (dec nl) tl :what :last))
             
             ; Vector with type of sorting, comparator and keyfn.
-            vsort #(transform-sort (get-in-nest-or-then res %1 %2 :sort) tsort cl)]
+            vsort #(transform-sort (get-in-nest-or-then res %1 %2 :sort :last) tsort cl)]
         (if all-medium
-          (let [what (get-in-nest-or-then res (dec nl) tl :what)
-                path (-> tl paths first) 
+          (let [what (get-in-nest-or-then res (dec nl) tl :what :last)
+                ;path (-> tl paths first) 
+                paths (paths tl) 
                 
                 ; Vector with type of sorting, comparator and keyfn.
                 vsort (vsort (inc nl) 0)]
-            (loop [id (first path) path (next path) r res wh what nl nl]
-              (if (empty? path)
-                {:r (assoc-in-nest-or-then 
-                      r nl 0 :nest [(merge {:what cl :where [[id]] :sort vsort} params)])
-                 :nl (inc nl)}
-                (let [cl (get-type wh id)]
-                  (recur (first path) (next path) 
-                         (assoc-in-nest-or-then r nl 0 :nest [{:what cl :where [[id]] :medium true}]) 
-                         cl (inc nl))))))
+            (loop [paths paths res res]
+              (if (empty? paths)
+                res
+                (let [path (first paths)]
+                  (recur (next paths)
+                         (loop [id (first path) path (next path) r res wh what nl nl]
+                           (if (empty? path)
+                             {:r (assoc-in-nest-or-then 
+                                   r nl 0 :nest [(merge {:what cl :where [[id]] :sort vsort} params)])
+                              :nl (inc nl)}
+                             (let [cl (get-type wh id)]
+                               (recur (first path) (next path) 
+                                      (assoc-in-nest-or-then r nl 0 :nest [{:what cl :where [[id]] :medium true}]) 
+                                      cl (inc nl))))))))))
           (apply assoc-in-nest-or-then res nl tl 
                  :where (-> tl dec paths) :what cl :sort (vsort nl tl)
                  (mapcat identity params)))))))
@@ -776,8 +809,9 @@
                      :else (keyword (reduce str prop)))
         [res nl tl all-medium] ((juxt :result :nest-level :then-level :all-medium) state)
         sorts (if all-medium 
-                (get-in-nest-or-then res (inc nl) 0 :sort)
-                (get-in-nest-or-then res nl tl :sort))
+                (get-in-nest-or-then res (inc nl) 0 :sort :last)
+                (get-in-nest-or-then res nl tl :sort :last))
+        ;_ (println "sorts = " (get-in-nest-or-then res nl tl :sort :last))
         ; If sorts is vector then it is mean that sorts was be transfort
         ; for transfering to core. Function get-in-nest-or-then returns
         ; vector because of :then is nil so the get-in-nest-or-then 
@@ -1040,7 +1074,7 @@
                                                       ; contains union or intersection operation
                                            (assoc % :where 
                                                   
-                                                  (u/get-paths (:what %) (get-in-nest res nl :what) *mom*))
+                                                  (u/get-paths (:what %) (get-in-nest res nl :what :last) *mom*))
                                            %)
                                         (:result rq)))))))
             :when rq
@@ -1200,7 +1234,7 @@
                          q (effects (:result (parse+ ret *mom*)))
                          q (effects (vec (map #(assoc % 
                                                       :where 
-                                                      (u/get-paths (:what %) (get-in-nest res nl :what) *mom*)) q)))
+                                                      (u/get-paths (:what %) (get-in-nest res nl :what :last) *mom*)) q)))
                          fm (get-info :f-modificator)
                          fm (effects (if (nil? fm) :dep-list fm))
                          _ (update-param [fm q])

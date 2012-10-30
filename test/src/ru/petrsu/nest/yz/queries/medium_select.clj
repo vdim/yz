@@ -24,12 +24,8 @@
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc] 
-            [ru.petrsu.nest.util.utils :as f]
             [ru.petrsu.nest.yz.queries.bd :as bd])
-  (:import (ru.petrsu.nest.son 
-             SON, Building, Room, Floor, Network,
-             Device, IPNetwork, EthernetInterface, NetworkInterface,
-             LinkInterface, IPv4Interface, UnknownLinkInterface)
+  (:import (ru.petrsu.nest.son Room Occupancy)
            (ru.petrsu.nest.yz NotFoundElementException)))
 
 ;; Define entity manager.
@@ -56,3 +52,19 @@
          (is (tc/eq-colls (tc/rows-query "ni#(inetAddress=@(ip2b \"172.20.255.109\")).building->room")
                            [[bd/b2 bd/f1_b2 bd/r1001_f1_b2]
                             [bd/b2 bd/f1_b2 bd/r1002_f1_b2]])))
+
+
+(deftest medium-select-several-paths
+         (let [r (doto (Room.) (.setNumber "Magic Room"))
+               o (doto (Occupancy.)
+                   (.addDevice bd/rootDevice) (.setRoom r))]
+           (is (tc/eq-colls (tc/rows-query "son->room")
+                            [[bd/son bd/b1 bd/f1_b1 bd/r101_f1_b1]
+                             [bd/son bd/b1 bd/f1_b1 bd/r102_f1_b1]
+                             [bd/son bd/b1 bd/f2_b1 bd/r201_f2_b1]
+                             [bd/son bd/b1 bd/f2_b1 bd/r202_f2_b1]
+                             [bd/son bd/b2 bd/f1_b2 bd/r1001_f1_b2]
+                             [bd/son bd/b2 bd/f1_b2 bd/r1002_f1_b2]
+                             [bd/son bd/rootDevice bd/f1_b2 o r]
+                             [bd/son bd/rootDevice bd/f1_b2 bd/o2 bd/r1001_f1_b2]
+                             ]))))
