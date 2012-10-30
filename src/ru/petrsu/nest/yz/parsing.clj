@@ -604,7 +604,7 @@
             (loop [id (first path) path (next path) r res wh what nl nl]
               (if (empty? path)
                 {:r (assoc-in-nest-or-then 
-                      r nl 0 :nest [(merge {:what cl :where [[id]] :medium true :sort vsort} params)])
+                      r nl 0 :nest [(merge {:what cl :where [[id]] :sort vsort} params)])
                  :nl (inc nl)}
                 (let [cl (get-type wh id)]
                   (recur (first path) (next path) 

@@ -402,7 +402,7 @@
   ([sources m]
    (get-objs-by-path sources m nil))
   ([sources m cl-of-prev]
-   (let [{:keys [preds where ^Class what sort exactly unique limit all-medium]} m
+   (let [{:keys [preds where ^Class what sort exactly unique limit medium]} m
          f (cond (nil? what) identity 
                  exactly #(= (class %) what) 
                  :else #(instance? what %))
@@ -544,19 +544,24 @@
     []
     (let [n (:nest nest)
           f #(if (nil? n) [] (process-nests n (partial get-objs-by-path [%1])))]
-      (reduce #(apply conj %1
-                (if rec
-                  [(-> (p-then [%2] nest) first second)
-                   (let [what (:what nest)
-                         ; List of objects which is got due to recursive link.
-                         objs- (remove nil? (mapcat (partial reduce get-objs [%2]) (get-in @a-mom [what what])))
-                         newv (f %2)]
-                     (if (empty? objs-)
-                       newv
-                       (reduce (fn [a1 a2] 
-                                 (vec (concat a1 (p-nest nest [a2] rec)))) 
-                               newv objs-)))]
-                  [(%2 1) (f (%2 0))]))
+      (reduce #(if (:medium nest)
+                 (let [r (f (%2 0))]
+                   (if (empty? r)
+                     %1
+                     (apply conj %1 [(%2 1) r])))
+                 (apply conj %1
+                        (if rec
+                          [(-> (p-then [%2] nest) first second)
+                           (let [what (:what nest)
+                                 ; List of objects which is got due to recursive link.
+                                 objs- (remove nil? (mapcat (partial reduce get-objs [%2]) (get-in @a-mom [what what])))
+                                 newv (f %2)]
+                             (if (empty? objs-)
+                               newv
+                               (reduce (fn [a1 a2] 
+                                         (vec (concat a1 (p-nest nest [a2] rec)))) 
+                                       newv objs-)))]
+                          [(%2 1) (f (%2 0))])))
               []
               (if rec
                 objs

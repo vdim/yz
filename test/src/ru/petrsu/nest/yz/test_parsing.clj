@@ -1089,7 +1089,7 @@
                          :nest [{:what Floor
                                  :where [["floors"]]
                                  :medium true
-                                 :nest [(merge {:what Room :where [["rooms"]] :medium true} %2)]}]}
+                                 :nest [(merge {:what Room :where [["rooms"]]} %2)]}]}
                         %3)])]
            (is (f "building->room" nil nil))
            (is (f "building->u:room" {:unique true} nil))
@@ -1127,7 +1127,7 @@
                          :nest [{:what Floor
                                  :where [["floors"]]
                                  :medium true
-                                 :nest [(merge {:what Room :where [["rooms"]] :medium true} %2)]}]
+                                 :nest [(merge {:what Room :where [["rooms"]]} %2)]}]
                          :then (merge {:what Building :where [["building"]]} %4)}
                         %3)])]
            (is (f "floor.building->room" nil nil nil))
@@ -1167,7 +1167,7 @@
                          :nest [{:what Floor
                                  :where [["floors"]]
                                  :medium true
-                                 :nest [(merge {:what Room :where [["rooms"]] :medium true} %2)]}]
+                                 :nest [(merge {:what Room :where [["rooms"]]} %2)]}]
                          :then (merge {:what Building :where [["building"]]} %4)}
                         %3)])]
            (is (f "floor.building->room (floor)" 
