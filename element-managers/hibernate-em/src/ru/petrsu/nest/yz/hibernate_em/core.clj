@@ -22,7 +22,7 @@
     :doc "Implementation of the ElementManager 
          for Hibernate tool."}
   (:require
-   (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
+   (ru.petrsu.nest.yz [core :as yz] [mom-utils :as mu]))
   (:import
     (javax.persistence EntityManager)
     (javax.persistence.criteria CriteriaQuery CriteriaBuilder Predicate Root)
@@ -102,7 +102,7 @@
 
   ;; Implementation getMom's method. Gets all classes from JPA's metamodel and
   ;; then gerenates MOM.
-  (getMom [_] (hu/gen-mom 
+  (getMom [_] (mu/gen-mom 
                 (map #(.getJavaType %) 
                      (.. em getEntityManagerFactory getMetamodel getEntities))
                 nil))

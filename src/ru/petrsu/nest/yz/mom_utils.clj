@@ -18,7 +18,7 @@
 ;;
 
 
-(ns ru.petrsu.nest.yz.hb-utils
+(ns ru.petrsu.nest.yz.mom-utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Namespace for working with the MOM: generating, 
          writing/reading to/from file."}

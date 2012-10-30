@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -21,7 +21,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "This code implements GUI for the demonstration using YZ."}
   (:require [ru.petrsu.nest.yz.core :as c]
-            [ru.petrsu.nest.yz.hb-utils :as hb]
+            [ru.petrsu.nest.yz.mom-utils :as mu]
             [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (javax.swing JPanel JTable JScrollPane 
                         JFrame JTextField JOptionPane)
@@ -82,7 +82,7 @@
       (.addKeyListener component listener)
       listener))
 
-(def mom (hb/mom-from-file "nest.mom"))
+(def mom (mu/mom-from-file "nest.mom"))
 (def em bd/mem)
 
 (defn- create-qtext

@@ -25,7 +25,7 @@
             [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [net.kryshen.planter.store :as store] 
             [ru.petrsu.nest.yz.queries.core :as qc])
-  (:use ru.petrsu.nest.yz.hb-utils ru.petrsu.nest.son.local-sm)
+  (:use ru.petrsu.nest.yz.mom-utils ru.petrsu.nest.son.local-sm)
   (:import (javax.persistence Persistence)))
 
 

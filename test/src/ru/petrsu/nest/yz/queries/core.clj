@@ -22,7 +22,7 @@
     :doc "Helper functions for testing YZ's queries."}
   (:use clojure.test)
   (:use clojure.java.shell)
-  (:require [ru.petrsu.nest.yz.hb-utils :as hb]
+  (:require [ru.petrsu.nest.yz.mom-utils :as mu]
             [net.kryshen.planter.store :as planter]
             [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.yz.parsing :as p]
@@ -124,7 +124,7 @@
    (setup-son son *file-mom*))
   ([son nf]
    (fn [f]
-     (let [mom (hb/mom-from-file nf)]
+     (let [mom (mu/mom-from-file nf)]
        (binding [*mom* mom
                  *em* (case type-em
                         :localsonmanager (create-emlm son)

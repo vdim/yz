@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.test-utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests utils functions."}
-  (:use ru.petrsu.nest.yz.hb-utils clojure.test ru.petrsu.nest.yz.utils)
+  (:use ru.petrsu.nest.yz.mom-utils clojure.test ru.petrsu.nest.yz.utils)
   (:require [ru.petrsu.nest.yz.init :as yzi])
   (:import (ru.petrsu.nest.son Floor Room Building)))
 

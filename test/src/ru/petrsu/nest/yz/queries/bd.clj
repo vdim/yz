@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -22,7 +22,7 @@
     :doc "Pretty BD with Nest model for testing."}
   (:require [ru.petrsu.nest.yz.queries.core :as tc]
             [ru.petrsu.nest.util.utils :as f]
-            [ru.petrsu.nest.yz.hb-utils :as hbu])
+            [ru.petrsu.nest.yz.mom-utils :as mu])
   (:import (ru.petrsu.nest.son SON Building Room Floor
                                Device, IPNetwork, EthernetInterface, 
                                IPv4Interface, UnknownLinkInterface,
@@ -149,4 +149,4 @@
 (def mem (tc/em-memory son))
 
 ;; MOM of Nest model
-(def bd-mom (hbu/mom-from-file "nest.mom"))
+(def bd-mom (mu/mom-from-file "nest.mom"))

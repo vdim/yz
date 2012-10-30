@@ -32,7 +32,7 @@
             with elements and list of classes for MOM if any."}
 
   (:require
-   (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
+   (ru.petrsu.nest.yz [core :as yz] [mom-utils :as mu]))
   (:import
     (ru.petrsu.nest.yz.core ElementManager)
     (ru.petrsu.nest.yz YZQuery)
@@ -94,19 +94,19 @@
     - mom - name of file with MOM (if any, nil by default) 
         or mom itself.
         In case mom is nil then mom is generated due to 
-        the gen-mom function from the hb-utils namespace."
+        the gen-mom function from the mom-utils namespace."
   ([^Collection coll, ^Collection classes]
    (c-em coll classes :generate))
   ([^Collection coll, ^Collection classes mom]
    (let [mom (cond 
                ; getting mom from file.
-               (string? mom) (hu/mom-from-file mom)
+               (string? mom) (mu/mom-from-file mom)
                ; generating mom from list of classes.    
                (= mom :generate) 
                (let [cls (if (or (nil? classes) (empty? classes))
                            (and (seq coll) [(class (nth coll 0))])
                            classes)]
-                 (hu/gen-mom cls nil))
+                 (mu/gen-mom cls nil))
                ;If mom is itself or nil.
                :else mom)]
      (reify ElementManager
@@ -144,7 +144,7 @@
 (defn -createMomFromFile
   "Creates MOM from specified name of file."
   [^String f-name]
-  (hu/mom-from-file f-name))
+  (mu/mom-from-file f-name))
 
 
 (defn find-related-colls
@@ -179,8 +179,8 @@
                    (keys coll-or-elems)
                    classes)
          mom (cond (map? mom) mom
-                   (string? mom) (hu/mom-from-file mom)
-                   :else (hu/gen-mom classes nil))
+                   (string? mom) (mu/mom-from-file mom)
+                   :else (mu/gen-mom classes nil))
          ; Maps class to collection of elements with this class.
          elems (cond (map? coll-or-elems) coll-or-elems
                      (coll? coll-or-elems)
@@ -264,7 +264,7 @@
                     [(filter class? (keys mom)) mom]
                     (let [clazz (if (or (nil? clazz) (coll? clazz)) clazz [clazz])]
                       ; if clazz is nil then mom will be nil.
-                      (if clazz [clazz (hu/gen-mom clazz nil)] [nil nil]))) 
+                      (if clazz [clazz (mu/gen-mom clazz nil)] [nil nil]))) 
         em (c-em coll cls mom) ; define element manager
         r (yz/pquery q mom em)]
     (if (:error r) 

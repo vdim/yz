@@ -21,7 +21,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Wrapper for using the YZ from Java code."}
   (:require
-   (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu]))
+   (ru.petrsu.nest.yz [core :as yz] [mom-utils :as mu]))
   (:import
     (ru.petrsu.nest.yz.core ElementManager)
     (ru.petrsu.nest.yz Query))
@@ -47,7 +47,7 @@
                 (reset! *mom* 
                         (if (nil? f-mom)
                           (.getMom em)
-                          (hu/mom-from-file f-mom)))
+                          (mu/mom-from-file f-mom)))
                 @*mom*)}))
 
 

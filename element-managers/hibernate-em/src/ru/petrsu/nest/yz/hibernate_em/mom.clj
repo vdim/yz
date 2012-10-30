@@ -46,7 +46,7 @@
             [clojure.string :as cst]
             [clojure.java.io :as cio] 
             [ru.petrsu.nest.yz.utils :as u] 
-            [ru.petrsu.nest.yz.hb-utils :as hu])
+            [ru.petrsu.nest.yz.mom-utils :as mu])
   (:import (javax.persistence Transient EntityManagerFactory Persistence)))
 
 
@@ -65,13 +65,13 @@
       It's usefull in case when you use hibernate as
       implementation of Criteria API 2.0."
   [hb-name, mom-old]
-  (hu/gen-mom (map #(Class/forName %) (get-classes hb-name)), mom-old))
+  (mu/gen-mom (map #(Class/forName %) (get-classes hb-name)), mom-old))
 
 
 (defn gen-mom-from-metamodel
   "Takes EntityManagerFactory and generates mom from metamodel."
   [emf, mom-old]
-  (hu/gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities)), mom-old))
+  (mu/gen-mom (map #(.getJavaType %) (.. emf getMetamodel getEntities)), mom-old))
 
 
 (defn gen-mom*
@@ -83,7 +83,7 @@
     classes - list with classes or name of file in case 
       hibernate configuration is used."
   [out old-mom ^Boolean append src classes]
-  (let [old-mom (if (and append (not (empty? old-mom))) (hu/mom-from-file old-mom) {})
+  (let [old-mom (if (and append (not (empty? old-mom))) (mu/mom-from-file old-mom) {})
         mom (case src 
               :hibernate-cfg 
               (gen-mom-from-cfg classes old-mom)
@@ -91,10 +91,10 @@
               (gen-mom-from-metamodel 
                 (Persistence/createEntityManagerFactory classes) old-mom)
               :list-classes 
-              (hu/gen-mom (map #(Class/forName %) (remove empty? (cst/split classes #"\s"))) 
+              (mu/gen-mom (map #(Class/forName %) (remove empty? (cst/split classes #"\s"))) 
                        old-mom)
               (throw (Exception. (str "Unexpected type of sources: " src))))]
-    (hu/mom-to-file mom out)))
+    (mu/mom-to-file mom out)))
 
 
 (defn mom-to-file
@@ -108,7 +108,7 @@
   ([emf-or-hbcfg-or-mom f]
    (mom-to-file emf-or-hbcfg-or-mom f false))
   ([emf-or-hbcfg-or-mom f ^Boolean append]
-   (let [mom-old (if (true? append) (hu/mom-from-file f) {})
+   (let [mom-old (if (true? append) (mu/mom-from-file f) {})
          s emf-or-hbcfg-or-mom
          mom (cond
                ; JPA's EntityManagerFactory TODO: replace by ru.petrsu.nest.yz.core.ElementManager
@@ -117,6 +117,6 @@
                ; hibernate.cfg.xml
                (instance? String s) (gen-mom-from-cfg s, mom-old)
                    
-               ; Try to use function mom-to-file from hb-utils namespace.
-               :else (hu/mom-to-file s f append))]
-     (hu/to-file mom f))))
+               ; Try to use function mom-to-file from mom-utils namespace.
+               :else (mu/mom-to-file s f append))]
+     (mu/to-file mom f))))

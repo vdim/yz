@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -20,7 +20,7 @@
 (ns ru.petrsu.nest.yz.test-core
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests for core functions."}
-  (:require [ru.petrsu.nest.yz.hb-utils :as hb]
+  (:require [ru.petrsu.nest.yz.mom-utils :as mu]
             [ru.petrsu.nest.yz.core :as c]
             [ru.petrsu.nest.yz.parsing :as p])
   (:use clojure.test))
@@ -28,7 +28,7 @@
 
 (def mom 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
-  (hb/mom-from-file "nest.mom"))
+  (mu/mom-from-file "nest.mom"))
 
 (comment
 (deftest t-get-columns

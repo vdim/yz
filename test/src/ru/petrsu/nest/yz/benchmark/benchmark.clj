@@ -22,11 +22,10 @@
     :doc "System for benchmarking different types of queries."}
   (:use ru.petrsu.nest.yz.core 
         ru.petrsu.nest.yz.yz-factory 
-        ru.petrsu.nest.yz.hb-utils
+        ru.petrsu.nest.yz.mom-utils
         incanter.stats)
   (:require [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils-jpa :as buj]
-            [ru.petrsu.nest.yz.hb-utils :as hb]
             [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.benchmark.yz :as yz]
             [ru.petrsu.nest.yz.benchmark.hql :as hql]

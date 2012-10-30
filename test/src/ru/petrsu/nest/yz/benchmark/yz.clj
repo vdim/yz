@@ -21,7 +21,7 @@
     ^{:author "Vyacheslav Dimitrov"
           :doc "YZ queries for benchmark."}
   (:use ru.petrsu.nest.yz.core ru.petrsu.nest.yz.queries.nest-queries)
-  (:require [ru.petrsu.nest.yz.hb-utils :as hu] 
+  (:require [ru.petrsu.nest.yz.mom-utils :as mu] 
             [ru.petrsu.nest.yz.benchmark.bd-utils :as bu]))
 
 
@@ -53,7 +53,7 @@
   executes query, and prints time of executing query."
   [num, n, m]
   (let [em (.createEntityManager (javax.persistence.Persistence/createEntityManagerFactory n m))
-        mom (hu/mom-from-file "nest.mom")]
+        mom (mu/mom-from-file "nest.mom")]
     (println (run-yz (queries (Integer/parseInt num)) em mom))
     (.close em)))
 

@@ -21,7 +21,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests parsing of queries."}
   (:use ru.petrsu.nest.yz.core
-        ru.petrsu.nest.yz.hb-utils 
+        ru.petrsu.nest.yz.mom-utils 
         clojure.test 
         ru.petrsu.nest.yz.queries.bd)
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf] 

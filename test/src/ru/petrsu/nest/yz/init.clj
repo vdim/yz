@@ -27,7 +27,7 @@
             [incanter.core :as ic]
             [ru.petrsu.nest.yz.queries.core :as qc] 
             [ru.petrsu.nest.yz.hibernate-em.core :as hem])
-  (:use ru.petrsu.nest.yz.hb-utils
+  (:use ru.petrsu.nest.yz.mom-utils
         ru.petrsu.nest.yz.queries.bd
         ru.petrsu.nest.yz.queries.uni-bd
         ru.petrsu.nest.yz.benchmark.benchmark
@@ -58,7 +58,7 @@
 (def jpa-em (hem/-createJPAElementManager bjpa/jpa-em))
 
 ;; Vector with all classes from SON model 
-;; (Sometimes It is needed for testing functions from the hb-utils namespace.)
+;; (Sometimes It is needed for testing functions from the mom-utils namespace.)
 (def classes
   [ru.petrsu.nest.son.SonElement 
    ru.petrsu.nest.son.SON 

@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -22,12 +22,10 @@
     :doc "Clojure's implementation of the LocalSonManager from Nest
          project. This is needed for correct order of the compiling."}
   (:require
-    (ru.petrsu.nest.yz [core :as yz] [hb-utils :as hu])
     (net.kryshen.planter [store :as ps] [core :as pc]) 
     (ru.petrsu.nest [son :as sn]))
   (:import
-    (ru.petrsu.nest.yz.core ElementManager)
-    (ru.petrsu.nest.son SON)))
+    (ru.petrsu.nest.yz.core ElementManager)))
 
 
 (defn ^ElementManager create-lsm

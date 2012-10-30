@@ -23,7 +23,7 @@
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf]
             [ru.petrsu.nest.yz.core :as c] 
             [ru.petrsu.nest.yz.queries.core :as qc]
-            [ru.petrsu.nest.yz.hb-utils :as hu]
+            [ru.petrsu.nest.yz.mom-utils :as mu]
             [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (ru.petrsu.nest.son SON Building Room Floor) 
            (ru.petrsu.nest.yz NotFoundElementException))
@@ -32,7 +32,7 @@
 
 (def mom- 
   ^{:doc "Defines the map of the object model (used Nest's model)"}
-  (hu/mom-from-file "nest.mom"))
+  (mu/mom-from-file "nest.mom"))
 
 
 (deftest find-rc

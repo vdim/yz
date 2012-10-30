@@ -24,7 +24,7 @@
   (:require [ru.petrsu.nest.yz.queries.core :as tc] 
             [ru.petrsu.nest.yz.core :as yz]
             [ru.petrsu.nest.yz.queries.bd :as bd]
-            [ru.petrsu.nest.yz.hb-utils :as hb])
+            [ru.petrsu.nest.yz.mom-utils :as mu])
   (:import (ru.petrsu.nest.son SON Building Room Floor NetworkInterface IPv4Interface)))
 
 
@@ -110,7 +110,7 @@
 (deftest not-found-property
          ^{:doc "Tests :not-found returned value of 
                 the get-fv function using bd/mem database."}
-         (let [f #(let [r (yz/pquery %1 (hb/mom-from-file "nest.mom") bd/mem)]
+         (let [f #(let [r (yz/pquery %1 (mu/mom-from-file "nest.mom") bd/mem)]
                     (if (:error r)
                       (throw (:thrwable r))
                       (:rows r)))]
