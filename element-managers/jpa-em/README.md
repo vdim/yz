@@ -1,4 +1,4 @@
-# Hibernate Element Manager
+# JPA Element Manager
 
 This project is implementation of the ru.petrsu.nest.yz.core.ElementManager for Hibernate tool.
 

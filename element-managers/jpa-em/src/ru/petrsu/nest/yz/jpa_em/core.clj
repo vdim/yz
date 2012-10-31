@@ -27,7 +27,7 @@
     (javax.persistence.criteria CriteriaQuery CriteriaBuilder Predicate Root)
     (ru.petrsu.nest.yz.core ElementManager ExtendedElementManager)
     (clojure.lang PersistentVector PersistentArrayMap))
-  (:gen-class :name ru.petrsu.nest.yz.HibernateEM
+  (:gen-class :name ru.petrsu.nest.yz.JPAEelemetManager
               :methods [;; JPA's element manager.
                         ^{:static true} 
                         [createJPAElementManager 
