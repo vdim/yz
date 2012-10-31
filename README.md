@@ -50,6 +50,11 @@ At the moment there is implementation for Clojure/Java in Clojure.
 * Creating.
 * Updating.
 
+## Language Bindings
+
+* [Java] (http://www.oracle.com/technetwork/java/)
+* [Clojure] (http://clojure.com)
+
 ## Restriction
 Project is in alpha stage and it is just prototype, not for production use.
 
