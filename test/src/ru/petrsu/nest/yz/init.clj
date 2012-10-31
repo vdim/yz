@@ -26,7 +26,7 @@
             [ru.petrsu.nest.yz.queries.bd-jpa :as bjpa]
             [incanter.core :as ic]
             [ru.petrsu.nest.yz.queries.core :as qc] 
-            [ru.petrsu.nest.yz.hibernate-em.core :as hem])
+            [ru.petrsu.nest.yz.jpa-em.core :as hem])
   (:use ru.petrsu.nest.yz.mom-utils
         ru.petrsu.nest.yz.queries.bd
         ru.petrsu.nest.yz.queries.uni-bd

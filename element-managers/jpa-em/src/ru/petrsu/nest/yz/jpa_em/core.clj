@@ -17,10 +17,9 @@
 ;; <http://www.gnu.org/licenses/>.
 ;;
 
-(ns ru.petrsu.nest.yz.hibernate-em.core
+(ns ru.petrsu.nest.yz.jpa-em.core
   ^{:author "Vyacheslav Dimitrov"
-    :doc "Implementation of the ElementManager 
-         for Hibernate tool."}
+    :doc "Implementation of the ElementManager for JPA 2.0."}
   (:require
    (ru.petrsu.nest.yz [core :as yz] [mom-utils :as mu]))
   (:import

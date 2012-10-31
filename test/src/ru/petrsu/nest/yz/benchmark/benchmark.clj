@@ -39,7 +39,7 @@
             [clojure.pprint :as cp]
             [clojure.string :as cs]
             [criterium.core :as cr] 
-            [ru.petrsu.nest.yz.hibernate-em.core :as hem])
+            [ru.petrsu.nest.yz.jpa-em.core :as hem])
   (:import (java.util Date)
            (ru.petrsu.nest.yz.core ElementManager) 
            (java.lang.management ManagementFactory)

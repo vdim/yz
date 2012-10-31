@@ -17,7 +17,7 @@
   :omit-source true
   :test-paths ["src/"]
   :source-paths ["../src" ; YZ source
-                 "../element-managers/hibernate-em/src" ; JPA Element Manager source.
+                 "../element-managers/jpa-em/src" ; JPA Element Manager source.
                  "src/"]
   :compile-path "../target/classes"
   :resource-paths ["test-resource/"]
