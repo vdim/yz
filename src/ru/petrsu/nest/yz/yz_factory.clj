@@ -110,7 +110,7 @@
                ;If mom is itself or nil.
                :else mom)]
      (reify ElementManager
-       (^Collection getElems [_ ^Class cl] 
+       (^Iterable getElems [_ ^Class cl] 
           (if (= cl Object) 
             coll
             (filter #(instance? cl %) coll)))
@@ -191,7 +191,7 @@
                                                    (class coll-or-elems) 
                                                    ". It must be map or collection."))))]
      (reify ElementManager
-       (^Collection getElems [_ ^Class cl] (get elems cl))
+       (^Iterable getElems [_ ^Class cl] (get elems cl))
        (^APersistentMap getMom [_] mom)
       
        ;; If o is map then value of key "property" is returned 

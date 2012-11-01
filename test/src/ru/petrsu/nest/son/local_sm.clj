@@ -32,7 +32,7 @@
   "Returns LocalSonManager."
   [store]
   (reify ElementManager
-    (^java.util.Collection getElems [_ ^Class claz] 
+    (^java.lang.Iterable getElems [_ ^Class claz] 
        (ps/instances-of store claz))
     (getMom [_] 
        (throw (UnsupportedOperationException. "Not supported yet.")))

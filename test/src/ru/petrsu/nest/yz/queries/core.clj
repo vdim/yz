@@ -60,7 +60,7 @@
   ([son mom]
    (let [elems (map identity (se-iterator son))]
      (reify ElementManager
-       (^java.util.Collection getElems [_ ^Class claz] 
+       (^java.lang.Iterable getElems [_ ^Class claz] 
             (filter #(instance? claz %) elems))
        (getMom [_] mom)
  

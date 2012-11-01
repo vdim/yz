@@ -49,7 +49,7 @@
          
          getPropertyValue takes an object and name of a property and returns
          a value of this property."}
-  (^java.util.Collection getElems [^Class claz])
+  (^java.lang.Iterable getElems [^Class claz])
   (^clojure.lang.APersistentMap getMom [])
   (^Object getPropertyValue [^Object o, ^String property]))
 

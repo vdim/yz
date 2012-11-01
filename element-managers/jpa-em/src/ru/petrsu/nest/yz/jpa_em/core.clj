@@ -96,7 +96,7 @@
   ElementManager
   ;; Implementation getElems's method. Root is created for 
   ;; specified class
-  (^java.util.Collection getElems [this ^Class claz] 
+  (^java.lang.Iterable getElems [this ^Class claz] 
      (.getElems this claz nil))
 
   ;; Implementation getMom's method. Gets all classes from JPA's metamodel and
