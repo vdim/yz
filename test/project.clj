@@ -3,6 +3,9 @@
   :url "https://github.com/vdim/yz"
   :dependencies [[org.clojure/clojure "1.4.0"]
                  [org.hibernate/hibernate-entitymanager "3.6.1.Final"]
+                 [com.orientechnologies/orient-commons "1.1.0"]
+                 [com.orientechnologies/orientdb-core "1.1.0"]
+                 [com.orientechnologies/orientdb-object "1.1.0"]
                  [org.apache.derby/derby "10.7.1.1"]
                  [com.h2database/h2 "1.3.160"]
                  [org.hsqldb/hsqldb "2.2.4"]
@@ -18,6 +21,7 @@
   :test-paths ["src/"]
   :source-paths ["../src" ; YZ source
                  "../element-managers/jpa-em/src" ; JPA Element Manager source.
+                 "../element-managers/orientdb-em/src" ; OrientDB Element Manager source.
                  "src/"]
   :compile-path "../target/classes"
   :resource-paths ["test-resource/"]
