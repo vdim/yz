@@ -60,8 +60,8 @@
   (let [rels (get-related (last (:path m)) classes)]
     (if (empty? rels)
       m
-      (for [[cl prop] rels]
-        (assoc (assoc m :ppath (conj (:ppath m) prop)) :path (conj (:path m) cl))))))
+      (map (fn [[cl prop]] 
+             (assoc m :ppath (conj (:ppath m) prop) :path (conj (:path m) cl))) rels))))
 
 
 (defn- check-to
@@ -69,13 +69,13 @@
   first vector contains maps where last element of :path key equals 'to',
   second vector otherwise."
   [to v]
-  (loop [to-t [] to-f [] vv v]
-    (if (empty? vv)
-      [to-t to-f]
-      (let [m (first vv)]
-        (if (= (last (:path m)) to)
-          (recur (conj to-t m) to-f (rest vv))
-          (recur to-t (conj to-f m) (rest vv)))))))
+  (reduce 
+    (fn [[to-t to-f] m]
+      (if (= (-> m :path last) to)
+        [(conj to-t m) to-f]
+        [to-t (conj to-f m)]))
+    [[] []]
+    v))
 
   
 (defn get-ps
@@ -103,15 +103,6 @@
   one string. Returns sequence of this strings."
   [from to classes]
   (vec (map :ppath (get-ps from to classes))))
-
-
-(defn get-fields-name
-  "Returns list of all field's names (including superclass's
-  fields and excluding fields with Transient annotation)."
-  [cl]
-  (if (or (nil? cl)  (.isInterface cl))
-    ()
-    (map name (keys (bean (.newInstance cl))))))
 
 
 (defn init-map-for-cl
