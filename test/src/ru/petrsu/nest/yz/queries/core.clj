@@ -285,11 +285,12 @@
   "Equals two maps where value is collection 
   (collections are equaled due to eq-colls)."
   [map1 map2]
-  (let [check-map #(reduce (fn [r [k v1]] (and r (let [v2 (get %1 k)]
-                                                   (cond
-                                                     (map? v1) (eq-maps v1 v2)
-                                                     (coll? v1) (eq-colls v1 v2)
-                                                     :else (= v1 v2)))))
+  (let [check-map #(reduce (fn [r [k v1]] (and r (let [v2 (get %1 k)
+                                                       t (cond
+                                                           (map? v1) (eq-maps v1 v2)
+                                                           (coll? v1) (eq-colls v1 v2)
+                                                           :else (= v1 v2))]
+                                                   t)))
                            true %2)]
     (and
       (check-map map1 map2)
