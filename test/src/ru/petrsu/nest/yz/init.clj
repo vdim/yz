@@ -41,12 +41,12 @@
         clojure.walk
         clojure.core.protocols)
 
-  (:import (ru.petrsu.nest.son SON, SpatialElement, Building, Room, Floor,
+  (:import (ru.petrsu.nest.son SonElement SON, SpatialElement, Building, Room, Floor,
                                Device, Network, IPNetwork, UnknownNetwork,
                                NetworkElement, NetworkInterface, IPv4Interface, UnknownNetworkInterface,
                                EthernetInterface, LinkInterface, VLANInterface, UnknownLinkInterface,
                                OrganizationalElement, AbstractOU, CompositeOU, SimpleOU, Occupancy)
-           (university.model Course, Faculty, Student)))
+           (university.model Course, Faculty, Student Company)))
 
 ;; MOM of the SON model from the Nest project (lsm version).
 (def i-mom (mom-from-file "nest.mom"))
@@ -86,7 +86,7 @@
 
 ;; Vector with all classes from University model.
 (def uni-classes
-  [Course, Faculty, Student])
+  [Course, Faculty, Student, Company])
 
 ;; Vector with all classes from SON model (jpa version).
 (def jpa-classes

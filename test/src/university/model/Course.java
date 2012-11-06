@@ -10,6 +10,7 @@ public class Course {
     private String title;
 
     private Faculty teacher;
+    private Faculty creator;
     private HashSet<Student> roster = new HashSet<Student>();
 
     public Faculty getFaculty() {
@@ -18,6 +19,14 @@ public class Course {
     
     public void setFaculty(Faculty teacher) {
 	this.teacher = teacher;
+    }
+
+    public Faculty getCreator() {
+	return creator;
+    }
+    
+    public void setCreator(Faculty creator) {
+	this.creator = creator;
     }
 
     public HashSet<Student> getStudents() {

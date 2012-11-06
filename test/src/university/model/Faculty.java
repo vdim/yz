@@ -6,6 +6,8 @@ public class Faculty {
     private String office;
     private String name;
     private HashSet<Course> courses = new HashSet<Course>();
+    private HashSet<Course> coursesCreated = new HashSet<Course>();
+    private Company company;
     
     public String getOffice() {
 	return office;
@@ -31,6 +33,14 @@ public class Faculty {
 	courses.add(s);
     }
 
+    public HashSet<Course> getCoursesCreated() {
+	return coursesCreated;
+    }
+
+    public void addCourseCreated(Course s) {
+	coursesCreated.add(s);
+    }
+
     @Override
     public String toString() {
         String name = getName();
@@ -40,4 +50,13 @@ public class Faculty {
         
         return name;
     }
+    
+    public Company getCompany() {
+	return company;
+    }
+    
+    public void setCompany(Company company) {
+	this.company = company;
+    }
+    
 }
