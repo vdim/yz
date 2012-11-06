@@ -138,8 +138,7 @@
   [mom cl-source cl-target]
   (some #(if (not= % cl-source)
            (let [ps (get-in mom [cl-source %])]
-             (if (not (empty? ps)) 
-               ps)))
+             (not-empty ps)))
         (ancestors cl-target)))
 
 
@@ -214,59 +213,52 @@
   yet another class then we create path from the one class to the
   yet another class."
   [mom classes]
-  (reduce (fn [m cl-source]
-            (reduce (fn [m2 cl-target] 
-                      (let [paths (get-in m2 [cl-source cl-target])]
-                            (if (not (and (empty? paths) (map? paths)))
-                              (let [m-of-source (get m2 cl-source)
-                                    m-of-target (get m2 cl-target)]
-                                (assoc m2 cl-source
-                                       (reduce #(if (or (= cl-source %2) (get m-of-source %2))
-                                                  %
-                                                  (let [ps (vec (for [a paths b (get m-of-target %2)] (vec (concat a b))))]
-                                                    (if (not-empty ps)
-                                                      (assoc %1 %2 ps)
-                                                      %)))
-                                               m-of-source classes)))
-                              m2)))
-                    m 
-                    classes))
+  (reduce (fn [mom [cl-source cl-target]] 
+            (let [paths (get-in mom [cl-source cl-target])]
+                  (if (not (and (empty? paths) (map? paths)))
+                    (let [m-of-source (get mom cl-source)
+                          m-of-target (get mom cl-target)]
+                      (assoc mom cl-source
+                             (reduce #(if (or (= cl-source %2) (get m-of-source %2))
+                                        %
+                                        (let [ps (vec (for [a paths b (get m-of-target %2)] (vec (concat a b))))]
+                                          (if (not-empty ps)
+                                            (assoc %1 %2 ps)
+                                            %)))
+                                     m-of-source classes)))
+                    mom)))
+  
           mom
-          classes))
+          (for [cl-s classes cl-t classes] [cl-s cl-t])))
 
 
-(defn get-paths-to-parent
-  "In case path between two classes is empty, then
-  this function tries to find path between first class and
-  parent of second class."
+(defn get-paths-to
+  "In case path between two classes is empty the function 
+  tries to find path between first class and
+  parent of second class due to specified function f."
   [mom classes f]
-  (reduce (fn [m cl-source]
-            (reduce (fn [m2 cl-target] 
-                      (let [paths (get-in m2 [cl-source cl-target])]
-                        (if (empty? paths)
-                          (let [paths (f m2 cl-source cl-target)]
-                            (if (empty? paths) 
-                              m2
-                              (assoc-in m2 [cl-source cl-target] paths)))
-                          m2)))
-                    m 
-                    classes))
-          mom
-          classes))
+  (reduce (fn [mom [cl-s cl-t]]
+            (if-let [paths (or (get-in mom [cl-s cl-t]) (f mom cl-s cl-t))]
+              (assoc-in mom [cl-s cl-t] paths)
+              mom))
+          mom 
+          (for [cl-s classes cl-t classes] [cl-s cl-t])))
 
 
 (defn gen-mom
   "Generates mom from list of classes."
-  [classes, mom-old]
-  (let [mom (dissoc-nil (gen-basic-mom classes, mom-old))
-        mom (assoc mom 
-                   :names (get-names mom (:names mom-old))
-                   :children (children classes)
-                   :namespaces (get mom-old :namespaces))
-        mom (get-paths-to-parent mom classes paths-to-parent)
-        mom (copy-paths mom classes)
-        mom (get-paths-to-parent mom classes paths-to-child)]
-    mom))
+  ([classes]
+   (gen-mom classes {}))
+  ([classes, mom-old]
+   (let [mom (dissoc-nil (gen-basic-mom classes, mom-old))
+         mom (assoc mom 
+                    :names (get-names mom (:names mom-old))
+                    :children (children classes)
+                    :namespaces (get mom-old :namespaces))
+         mom (get-paths-to mom classes paths-to-parent)
+         mom (copy-paths mom classes)
+         mom (get-paths-to mom classes paths-to-child)]
+     mom)))
 
 
 (defn- local-dispatch-var 
@@ -277,7 +269,7 @@
 
 (defn to-file
   "Writes mom to file"
-  [mom, f]
+  [mom f]
   (let [f (if (instance? String f)
             (cio/file f)
             f)]
@@ -292,14 +284,14 @@
   In case object is map then transform symbol keys or values to class.
   In case object is set then transform symbol values to class.
   In case object is symbol, then transform object to class."
-  [mom]
+  [o]
   (let [tocl #(if (symbol? %) (Class/forName (name %)) %)]
-    (cond (map? mom)
+    (cond (map? o)
           (reduce (fn [m [k v]] (assoc m (tocl k) (symbol->class v)))
                   {} 
-                  mom)
-          (set? mom) (map tocl mom)
-          :else (tocl mom))))
+                  o)
+          (set? o) (map tocl o)
+          :else (tocl o))))
 
 
 (defn mom-from-file
@@ -326,23 +318,21 @@
 
 (defn mom-to-file
   "Writes mom to file. Arguments:
-    emf-or-hbcfg-or-mom - EntityManagerFactory or String (name of hibernate config file) 
-                          or list of classes or MOM. In case it is not MOM
-                          first MOM is generated and then wrote to file.
+    cls-or-mom - List of classes or MOM. In case it is not MOM
+                  first MOM is generated and then wrote to file.
     f - a name of target file.
     append - If 'append' is supplied (true) then information is appended to existing file
              (false by default)."
-  ([classes-or-mom f]
-   (mom-to-file classes-or-mom f false))
-  ([classes-or-mom f ^Boolean append]
+  ([cls-or-mom f]
+   (mom-to-file cls-or-mom f false))
+  ([cls-or-mom f ^Boolean append]
    (let [mom-old (if (true? append) (mom-from-file f) {})
-         s classes-or-mom
          mom (cond
                ; List with classes
-               (sequential? s) (gen-mom s, mom-old)
+               (sequential? cls-or-mom) (gen-mom cls-or-mom mom-old)
                
                ; MOM itself.
-               :else s)]
+               :else cls-or-mom)]
      (to-file mom f))))
 
 
