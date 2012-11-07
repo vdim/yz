@@ -23,8 +23,7 @@
   (:use clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc] 
             [ru.petrsu.nest.yz.core :as yz]
-            [ru.petrsu.nest.yz.queries.bd :as bd]
-            [ru.petrsu.nest.yz.mom-utils :as mu])
+            [ru.petrsu.nest.yz.queries.bd :as bd])
   (:import (ru.petrsu.nest.son SON Building Room Floor NetworkInterface IPv4Interface)))
 
 
@@ -90,6 +89,18 @@
          (is (= (tc/r-query "room[number]") ['("1") []])))
 
 
+(deftest select-primitive-props
+         ^{:doc "Checks selecting of the primitive props."}
+         (let [f #(let [r (yz/pquery %1 bd/bd-mom bd/mem)]
+                    (if (:error r)
+                      (throw (:thrwable r))
+                      (:rows r)))]
+           (is (tc/eq-colls (f "device") [[bd/rootDevice] [bd/d1]]))
+           (is (tc/eq-colls (f "device.forwarding") [[false] [false]]))
+           (is (= (count (f "li.MACAddress")) 6))
+         ))
+
+
 (deftest select-self-and-dp
          ^{:doc "Checks selecting default property and self object."}
          (is (= (tc/qstruct? "floor[&]" [Floor []])))
@@ -110,7 +121,7 @@
 (deftest not-found-property
          ^{:doc "Tests :not-found returned value of 
                 the get-fv function using bd/mem database."}
-         (let [f #(let [r (yz/pquery %1 (mu/mom-from-file "nest.mom") bd/mem)]
+         (let [f #(let [r (yz/pquery %1 bd/bd-mom bd/mem)]
                     (if (:error r)
                       (throw (:thrwable r))
                       (:rows r)))]

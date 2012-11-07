@@ -403,8 +403,7 @@
    (get-objs-by-path sources m nil))
   ([sources m cl-of-prev]
    (let [{:keys [preds where ^Class what sort exactly unique limit medium]} m
-         f (cond (nil? what) identity 
-                 exactly #(= (class %) what) 
+         f (cond exactly #(= (class %) what) 
                  :else #(instance? what %))
          elems (sort-rq (filter-by-preds 
                            (let [objs (cond 
@@ -442,7 +441,7 @@
                                                      %1)) 
                                                 () sources))
                                  objs (if unique (distinct objs) objs)]
-                             (if (keyword? what)
+                             (if (or (keyword? what) (nil? what) (.isPrimitive what))
                                objs
                                (filter f objs)))
                           preds)
