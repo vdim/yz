@@ -88,6 +88,9 @@
 (def uni-classes
   [Course, Faculty, Student, Company])
 
+;; MOM of the University model
+(def uni-mom (gen-mom uni-classes))
+
 ;; Vector with all classes from SON model (jpa version).
 (def jpa-classes
   [ru.petrsu.nest.son.jpa.Room 
