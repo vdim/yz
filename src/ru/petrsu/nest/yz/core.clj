@@ -147,7 +147,11 @@
                               #(and ((peek s) %1 %2) ((peek (pop s)) %1 %2))
                               #(or ((peek s) %1 %2) ((peek (pop s)) %1 %2))))))
                   []  preds)]
-      (into [] (r/filter #(f m-go %) (vec objs))))))
+      (into [] (r/fold r/cat #(let [r (f m-go %2)]
+                                (if r
+                                  (doto %1 (.add %2))
+                                  %1))
+                       (vec objs))))))
 
 
 (defn- sort-rq
