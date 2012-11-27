@@ -400,8 +400,8 @@
   "Returns sequence of objects which has cl-target's 
   (value of the :what key from m) class and are belonged to 'sources' objects."
   ([sources m]
-   (get-objs-by-path sources m nil))
-  ([sources m cl-of-prev]
+   (get-objs-by-path sources nil m))
+  ([sources cl-of-prev m]
    (let [{:keys [preds where ^Class what sort exactly unique limit medium]} m
          f (cond exactly #(= (class %) what) 
                  :else #(instance? what %))
@@ -419,27 +419,40 @@
                                           ; Check whether objects from v belong to sources
                                           (filter #(contains? obs %) v))
 
-                                        ; cl-of-prev is keyword.
-                                        (and (keyword? cl-of-prev) (nil? where))
-                                        (reduce (fn [v o]
-                                                  (concat 
-                                                    v
-                                                    (let [where (get-paths what (class o) @a-mom)]
-                                                      (mapcat #(reduce get-objs [o] %) where))))
-                                                []
-                                                sources)
-
                                         ; where is vector with paths from cl-target to cl-source.
                                         (vector? where) 
                                         (mapcat #(reduce get-objs sources %) where)
  
-                                        ; where is map where a class -> a path.
-                                        (map? where)
-                                        (reduce #(let [p (get where (class %2))]
-                                                   (if p
-                                                     (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) p))
-                                                     %1)) 
-                                                () sources))
+                                        ; what is interface or abstract, so we have to
+                                        ; find all object which are children of what
+                                        (and (int-or-abs? what) (nil? where))
+                                        (let [children (get-in @a-mom [:children what])]
+                                          (reduce #(mapcat 
+                                                     (fn [cl-what]
+                                                       (let [; At runtime we don't throw exceptions, because of
+                                                             ; other chilren may have paths.
+                                                             paths (try 
+                                                                     (get-paths cl-what (class %2) @a-mom)
+                                                                     (catch Exception e nil))]
+                                                         (if paths
+                                                           (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) paths))
+                                                           %1))) children)
+                                                  () sources))
+
+                                        ; cl-of-prev is keyword (means it was params) 
+                                        ; or interface of abstract class so we have to
+                                        ; get class from sources.
+                                        (and (or (keyword? cl-of-prev) (int-or-abs? cl-of-prev)) (nil? where))
+                                        (reduce (fn [v o]
+                                                  (concat 
+                                                    v
+                                                    (let [where (try 
+                                                                  (get-paths what (class o) @a-mom)
+                                                                  (catch Exception e nil))]
+                                                      (mapcat #(reduce get-objs [o] %) where))))
+                                                []
+                                                sources))
+
                                  objs (if unique (distinct objs) objs)]
                              (if (or (keyword? what) (nil? what) (.isPrimitive what))
                                objs
@@ -511,17 +524,17 @@
       (recur (cond 
                ; Process recursive then-.
                (:recursive then-)
-               (loop [objs- (get-objs-by-path objs- then- pwhat) res []]
+               (loop [objs- (get-objs-by-path objs- pwhat then-) res []]
                  (if (empty? objs-)
                    (flatten res)
-                   (recur (get-objs-by-path objs- then- pwhat) (conj res objs-))))
+                   (recur (get-objs-by-path objs- pwhat then-) (conj res objs-))))
 
                ; Process properties if any (in case where is nil, or property is meduim link).
                (and props- (or (nil? (:where then-)) (-> props- first vector? not)))
                (remove #(= % :not-found) (flatten (map #(process-props % props-) objs-)))
 
                ; Get next objects.
-               :else (get-objs-by-path objs- then- pwhat))
+               :else (get-objs-by-path objs- pwhat then-))
              (:then then-) 
              (:props then-)
              (:sort then-)
@@ -542,7 +555,7 @@
   (if (empty? objs)
     []
     (let [n (:nest nest)
-          f #(if (nil? n) [] (process-nests n (partial get-objs-by-path [%1])))]
+          f #(if (nil? n) [] (process-nests n (partial get-objs-by-path [%1] (:what nest))))]
       (reduce #(if (:medium nest)
                  (let [r (f (%2 0))]
                    (if (empty? r)
