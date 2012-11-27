@@ -443,14 +443,10 @@
                                         ; or interface of abstract class so we have to
                                         ; get class from sources.
                                         (and (or (keyword? cl-of-prev) (int-or-abs? cl-of-prev)) (nil? where))
-                                        (reduce (fn [v o]
-                                                  (concat 
-                                                    v
-                                                    (let [where (try 
-                                                                  (get-paths what (class o) @a-mom)
-                                                                  (catch Exception e nil))]
-                                                      (mapcat #(reduce get-objs [o] %) where))))
-                                                []
+                                        (mapcat #(let [where (try 
+                                                              (get-paths what (class %) @a-mom)
+                                                              (catch Exception e nil))]
+                                                  (mapcat (partial reduce get-objs [%]) where))
                                                 sources))
 
                                  objs (if unique (distinct objs) objs)]
