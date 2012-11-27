@@ -27,8 +27,8 @@
          
          In order to use YZ you must have some implementation 
          of the ElementManager interface (see below) and pass it to the pquery function."}
-  (:require [ru.petrsu.nest.yz.parsing :as p])
-  (:use ru.petrsu.nest.yz.utils)
+  (:require [ru.petrsu.nest.yz.parsing :as p]
+            [ru.petrsu.nest.yz.utils :as u])
   (:import (clojure.lang PersistentArrayMap PersistentVector)
            (ru.petrsu.nest.yz NotDefinedElementManagerException)))
 
@@ -414,7 +414,7 @@
                                               whs (reduce concat 
                                                           (for [cl1 (set (map class v)) 
                                                                 cl2 (set (map class sources))] 
-                                                            (get-paths cl1 cl2 @a-mom)))
+                                                            (u/get-paths cl1 cl2 @a-mom)))
                                               obs (set (mapcat (partial reduce get-objs sources) whs))]
                                           ; Check whether objects from v belong to sources
                                           (filter #(contains? obs %) v))
@@ -425,14 +425,14 @@
  
                                         ; what is interface or abstract, so we have to
                                         ; find all object which are children of what
-                                        (and (int-or-abs? what) (nil? where))
+                                        (and (u/int-or-abs? what) (nil? where))
                                         (let [children (get-in @a-mom [:children what])]
                                           (reduce #(mapcat 
                                                      (fn [cl-what]
                                                        (let [; At runtime we don't throw exceptions, because of
                                                              ; other chilren may have paths.
                                                              paths (try 
-                                                                     (get-paths cl-what (class %2) @a-mom)
+                                                                     (u/get-paths cl-what (class %2) @a-mom)
                                                                      (catch Exception e nil))]
                                                          (if paths
                                                            (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) paths))
@@ -442,9 +442,9 @@
                                         ; cl-of-prev is keyword (means it was params) 
                                         ; or interface of abstract class so we have to
                                         ; get class from sources.
-                                        (and (or (keyword? cl-of-prev) (int-or-abs? cl-of-prev)) (nil? where))
+                                        (and (or (keyword? cl-of-prev) (u/int-or-abs? cl-of-prev)) (nil? where))
                                         (mapcat #(let [where (try 
-                                                              (get-paths what (class %) @a-mom)
+                                                              (u/get-paths what (class %) @a-mom)
                                                               (catch Exception e nil))]
                                                   (mapcat (partial reduce get-objs [%]) where))
                                                 sources))
