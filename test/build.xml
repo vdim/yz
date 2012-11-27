@@ -31,6 +31,7 @@
             <sysproperty key="clojure.compile.warn-on-reflection"
                          value="true"/>
             <arg value="ru.petrsu.nest.son"/>
+            <arg value="ru.petrsu.nest.yz.yz-son"/>
         </java>
     </target>
 </project>
