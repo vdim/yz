@@ -28,6 +28,17 @@
             [ru.petrsu.nest.yz.utils :as u]))
 
 
+(defn sort-classes
+  "Sorts list of classes in the following order: firsts are parents, 
+  nexts are child."
+  [classes]
+  (sort (fn [cl1 cl2]
+          (cond (contains? (-> cl1 ancestors set) cl2) 1 
+                (contains? (-> cl2 ancestors set) cl1) -1
+                :else 0))
+        classes))
+
+
 (defn- check-type
   "Defines whether type of pd (PropertyDescription) is contained in list of classes."
   [pd classes]
@@ -93,7 +104,7 @@
       (if (= old-paths new-paths) ; not new piece of path
         res
         (recur to-f 
-               (set (remove #(contains? new-paths %) new-elems)) 
+               (set (remove #(and (not= % to) (contains? new-paths %)) new-elems)) 
                new-paths 
                (concat res to-t))))))
 
@@ -133,31 +144,7 @@
                %1)) old-names mom))
 
 
-(defn paths-to-parent
-  "Returns paths from cl-source to parent of cl-target."
-  [mom cl-source cl-target]
-  (some #(if (not= % cl-source)
-           (let [ps (get-in mom [cl-source %])]
-             (not-empty ps)))
-        (ancestors cl-target)))
-
-
-(defn paths-to-child
-  "Returns paths from cl-source to child of cl-target."
-  [mom cl-source cl-target]
-  ; In case there are paths between children and cl-target
-  ; we return map where child -> paths between this child and
-  ; cl-target.
-  (reduce #(let [; path from child to cl-target
-                 p (get-in mom [%2 cl-target])]
-             (if p
-               (assoc %1 %2 p)
-               %1))
-          {}
-          (get-in mom [:children cl-source])))
-
-
-(defn- gen-basic-mom
+(defn gen-basic-mom
   "Generates mom from list of classes 
   (\"classes\" contains list with Class of name mom's classes.)"
   [classes, mom-old]
@@ -207,12 +194,12 @@
       s-classes)))
 
 
-(defn copy-paths
+(defn concat-paths
   "If there is path from one class to another and from another class to
   yet another class but there is not path from the one class to the 
   yet another class then we create path from the one class to the
   yet another class."
-  [mom classes]
+  [mom cl-cl classes]
   (reduce (fn [mom [cl-source cl-target]] 
             (let [paths (get-in mom [cl-source cl-target])]
                   (if (not (and (empty? paths) (map? paths)))
@@ -227,22 +214,141 @@
                                             %)))
                                      m-of-source classes)))
                     mom)))
-  
           mom
-          (for [cl-s classes cl-t classes] [cl-s cl-t])))
+          cl-cl))
+
+
+(defn paths-to-parent
+  "Returns paths from cl-source to parent of cl-target."
+  [mom cl-source cl-target]
+  (some #(if (not= % cl-source)
+           (let [ps (get-in mom [cl-source %])]
+             (not-empty ps))) 
+        (ancestors cl-target)))
+        ;[(-> cl-target bean :superclass)]))
+
+
+(defn paths-to-child
+  "Returns paths from cl-source to child of cl-target."
+  [mom cl-source cl-target]
+  ; In case there are paths between children and cl-target
+  ; we return map where child -> paths between this child and
+  ; cl-target.
+  (reduce #(let [; path from child to cl-target
+                 p (get-in mom [cl-source %2])]
+             (if p
+               (assoc %1 %2 p)
+               %1))
+          nil
+          (get-in mom [:children cl-target])))
+
+
+(defn paths-from-parent
+  "Returns paths from cl-source to child of cl-target."
+  [mom cl-source cl-target]
+  ; In case there are paths between children and cl-target
+  ; we return map where child -> paths between this child and
+  ; cl-target.
+  (reduce #(let [; path from child to cl-target
+                 p (get-in mom [%2 cl-target])]
+             (if p
+               (assoc %1 %2 p)
+               %1))
+          nil 
+          (ancestors cl-source)))
+          ;[(-> cl-source bean :superclass)]))
+
+
+(defn paths-from-child
+  "Returns paths from child of cl-source to cl-target."
+  [mom cl-source cl-target]
+  ; In case there are paths between children and cl-target
+  ; we return map where child -> paths between this child and
+  ; cl-target.
+  (reduce #(let [; path from child to cl-target
+                 p (get-in mom [%2 cl-target])]
+             (if p
+               (assoc %1 %2 p)
+               %1))
+          nil
+          (get-in mom [:children cl-source])))
+
+
+(defn paths-from-ints
+  "Returns path from an abstract interface 
+  to the specified class. The path is map
+  where key is a child of \"a-cl\" and value is
+  path from the child to \"cl\"."
+  [mom a-cl cl]
+  (reduce #(let [p (get-in mom [%2 cl])]
+             (if (and p (not= %2 cl))
+               (assoc %1 %2 p)
+               %1))
+          nil
+          (get-in mom [:children a-cl])))
+
+
+(defn paths-to-ints
+  "Returns path from the specified class to 
+  an abstract interface. The path is map
+  where key is a child of \"a-cl\" and value is
+  path from \"cl\" to the child."
+  [mom cl a-cl]
+  (reduce #(let [p (get-in mom [cl %2])]
+             (if (and p (not= %2 cl))
+               (assoc %1 %2 p)
+               %1))
+          nil
+          (get-in mom [:children a-cl])))
 
 
 (defn get-paths-to
   "In case path between two classes is empty the function 
   tries to find path between first class and
   parent of second class due to specified function f."
-  [mom classes f]
+  [mom cl-cl f]
   (reduce (fn [mom [cl-s cl-t]]
             (if-let [paths (or (get-in mom [cl-s cl-t]) (f mom cl-s cl-t))]
               (assoc-in mom [cl-s cl-t] paths)
               mom))
           mom 
-          (for [cl-s classes cl-t classes] [cl-s cl-t])))
+          cl-cl))
+
+
+(defn c-paths
+  "Counts path into specified MOM."
+  [mom cl-cl]
+  (reduce #(if (get-in mom %2) (inc %1) %1) 0 cl-cl))
+
+
+(defn ints-not-ints
+  "Takes list of classes and returns vector
+  where first element is classes which are not
+  interface or abstract class and second element
+  is classes which are."
+  [classes]
+  (reduce (fn [[not-ins ins] cl] (if (u/int-or-abs? cl)
+                                   [not-ins (conj ins cl)]
+                                   [(conj not-ins cl) ins])) 
+          [[] []] 
+          classes))
+
+
+(defn copy-paths
+  "Returns new mom. Let's we have three classes: a, b, c.
+  The a is parent of the b, there is path between c and a, but
+  there is no path between c and b, so we copy the path to c and b."
+  [mom classes]
+  (reduce
+    (fn [mom [a b c]]
+      (if (empty? (get-in mom [c b]))
+        (let [children (set (get-in mom [:children a]))]
+          (if (and (contains? children b) (not-empty (get-in mom [c a])))
+            (assoc-in mom  [c b] (get-in mom [c a]))
+            mom))
+        mom))
+    mom
+    (for [a classes b classes c classes :when (and (not= a b) (not= b c) (not= a c))] [a b c])))
 
 
 (defn gen-mom
@@ -250,14 +356,61 @@
   ([classes]
    (gen-mom classes {}))
   ([classes, mom-old]
-   (let [mom (dissoc-nil (gen-basic-mom classes, mom-old))
+   (let [cl-cl (for [cl-s (sort-classes classes) cl-t (sort-classes classes)] [cl-s cl-t])
+         [cls-without-ints interfaces] (ints-not-ints classes)
+         cl-cl-without-ints (for [cl-s (sort-classes cls-without-ints) 
+                                  cl-t (sort-classes cls-without-ints)] 
+                              [cl-s cl-t])
+         
+         mom (dissoc-nil (gen-basic-mom (sort-classes classes) mom-old))
          mom (assoc mom 
                     :names (get-names mom (:names mom-old))
                     :children (children classes)
                     :namespaces (get mom-old :namespaces))
-         mom (get-paths-to mom classes paths-to-parent)
+
+         ; Copy paths.
          mom (copy-paths mom classes)
-         mom (get-paths-to mom classes paths-to-child)]
+         ; Concats paths.
+         mom (concat-paths mom cl-cl-without-ints cls-without-ints)
+;         _ (println "count of paths = " (c-paths mom cl-cl))
+;         mom (get-paths-to mom cl-cl-without-ints paths-from-parent)
+;         _ (println "count of paths = " (c-paths mom cl-cl))
+;         mom (get-paths-to mom cl-cl-without-ints paths-to-parent)
+;         _ (println "count of paths = " (c-paths mom cl-cl))
+;         mom (get-paths-to mom cl-cl-without-ints paths-from-child)
+;         _ (println "count of paths = " (c-paths mom cl-cl))
+;         mom (get-paths-to mom cl-cl-without-ints paths-to-child)
+;         _ (println "count of paths = " (c-paths mom cl-cl)) 
+;         
+;         
+;         cl-cl2 (for [cl-s (sort-classes interfaces) cl-t (sort-classes cls-without-ints)] [cl-s cl-t])
+;         mom (get-paths-to mom cl-cl2 paths-to-ints)
+;         _ (println "count of paths = " (c-paths mom cl-cl))  
+;         mom (get-paths-to mom cl-cl2 paths-from-ints)
+;         _ (println "count of paths = " (c-paths mom cl-cl)) 
+;         
+;         cl-cl3 (for [cl-s (sort-classes cls-without-ints) cl-t (sort-classes interfaces)] [cl-s cl-t])
+;         mom (get-paths-to mom cl-cl3 paths-to-ints)
+;         _ (println "count of paths = " (c-paths mom cl-cl))  
+;         mom (get-paths-to mom cl-cl3 paths-from-ints)
+;         _ (println "count of paths = " (c-paths mom cl-cl)) 
+         
+         ;_ (println "before copy-paths = " (get-in mom [ru.petrsu.nest.son.CompositeOU ru.petrsu.nest.son.Room]))
+        
+         
+         ;mom (copy-paths mom cl-cl classes)
+         ;_ (println "count of paths = " (c-paths mom cl-cl))
+         
+         ;cls_empty1 (reduce #(if (get-in mom %2) %1 (conj %1 %2)) [] cl-cl)
+         ;_ (pprint cls_empty1)
+         ;cls_empty2 (reduce #(if (get-in mom %2) %1 (conj %1 %2)) [] cl-cl)
+         ;_ (pprint (remove #(contains? (set cls_empty2) %) cls_empty1))
+         ;mom (get-paths-to mom classes paths-to-parent)
+         ;mom (get-paths-to mom classes paths-to-child)
+         ;mom (get-paths-to mom classes paths-from-parent)
+         ;mom (get-paths-to mom classes paths-from-child)
+         ;mom (copy-paths mom classes)
+         ]
      mom)))
 
 
