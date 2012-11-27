@@ -98,6 +98,14 @@
   (reduce conj v1 v2))
 
 
+(defn int-or-abs?
+  "Defines whether the specified class 
+  is interface or abstract class."
+  [clazz]
+  (when (and clazz (class? clazz))
+    (or (.isInterface clazz) (Modifier/isAbstract (.getModifiers clazz)))))
+
+
 (defn get-paths
   "Returns list of paths beetwen cl-target and cl-source.
   The search is based on a MOM (Map Of Model)."
