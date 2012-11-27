@@ -23,7 +23,7 @@
     :doc "Namespace for common functions."}
   (:import (ru.petrsu.nest.yz DefaultProperty NotFoundPathException)
            (java.lang.annotation Annotation)
-           (java.lang.reflect Field)))
+           (java.lang.reflect Field Modifier)))
 
 
 (defn get-short-name
@@ -106,11 +106,8 @@
           (= :not-specified cl-target) (= :not-specified cl-source)
           (not (class? cl-target)) (not (class? cl-source)))
     nil
-    (loop [cl- cl-target]
-      (let [paths (get (get mom cl-source) cl-)]
-        (if (empty? paths)
-          (if (nil? cl-)
-                (if mom
-                  (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
-            (recur (:superclass (get mom cl-))))
-          paths)))))
+    (let [paths (get-in mom [cl-source cl-target])]
+      (if (empty? paths)
+        (if (and mom (not (int-or-abs? cl-source)) (not (int-or-abs? cl-target)))
+          (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
+        paths))))
