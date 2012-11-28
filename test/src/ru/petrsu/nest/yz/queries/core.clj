@@ -289,7 +289,8 @@
                                                        t (cond
                                                            (map? v1) (eq-maps v1 v2)
                                                            (coll? v1) (eq-colls v1 v2)
-                                                           :else (= v1 v2))]
+                                                           :else (= v1 v2))
+                                                       _ (if (not t) (println "k = " k ", v1 = " v1 ", v2 = " v2))]
                                                    t)))
                            true %2)]
     (and
