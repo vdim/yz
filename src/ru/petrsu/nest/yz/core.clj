@@ -423,10 +423,22 @@
                                         (vector? where) 
                                         (mapcat #(reduce get-objs sources %) where)
  
-                                        ; what is interface or abstract, so we have to
-                                        ; find all object which are children of what
-                                        (and (u/int-or-abs? what) (nil? where))
-                                        (let [children (get-in @a-mom [:children what])]
+                                        ; cl-of-prev is keyword (means it was params) 
+                                        ; so we have to get class from sources
+                                        ; (in any case where is nil).
+                                        (keyword? cl-of-prev) 
+                                        (mapcat #(let [where (try 
+                                                               (u/get-paths what (class %) @a-mom)
+                                                               (catch Exception e nil))]
+                                                   (mapcat (partial reduce get-objs [%]) where))
+                                                sources)
+
+                                        ; where is nil, but exeception is not caused 
+                                        ; during parsing, so there is paths from children 
+                                        ; of what to sources.
+                                        (nil? where)
+                                        (let [children (remove u/int-or-abs? 
+                                                               (concat [what] (get-in @a-mom [:children what])))]
                                           (reduce #(mapcat 
                                                      (fn [cl-what]
                                                        (let [; At runtime we don't throw exceptions, because of
@@ -437,17 +449,7 @@
                                                          (if paths
                                                            (concat %1 (mapcat (fn [path] (reduce get-objs [%2] path)) paths))
                                                            %1))) children)
-                                                  () sources))
-
-                                        ; cl-of-prev is keyword (means it was params) 
-                                        ; or interface of abstract class so we have to
-                                        ; get class from sources.
-                                        (and (or (keyword? cl-of-prev) (u/int-or-abs? cl-of-prev)) (nil? where))
-                                        (mapcat #(let [where (try 
-                                                              (u/get-paths what (class %) @a-mom)
-                                                              (catch Exception e nil))]
-                                                  (mapcat (partial reduce get-objs [%]) where))
-                                                sources))
+                                                  () sources)))
 
                                  objs (if unique (distinct objs) objs)]
                              (if (or (keyword? what) (nil? what) (.isPrimitive what))

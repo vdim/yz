@@ -106,6 +106,17 @@
     (or (.isInterface clazz) (Modifier/isAbstract (.getModifiers clazz)))))
 
 
+(defn paths-to-children?
+  "Defines whether there is path from some
+  child of cl-source to cl-target or its children.
+  Returns some path."
+  [^Class cl-target ^Class cl-source mom]
+  (letfn [(cl+children [cl] (concat [cl] (get-in mom [:children cl])))]
+    (some #(some (fn [cl] (get-in mom [% cl])) 
+                 (cl+children cl-target))
+          (cl+children cl-source))))
+
+
 (defn get-paths
   "Returns list of paths beetwen cl-target and cl-source.
   The search is based on a MOM (Map Of Model)."
@@ -116,6 +127,6 @@
     nil
     (let [paths (get-in mom [cl-source cl-target])]
       (if (empty? paths)
-        (if (and mom (not (int-or-abs? cl-source)) (not (int-or-abs? cl-target)))
+        (if (and mom (not (paths-to-children? cl-target cl-source mom)))
           (throw (NotFoundPathException. (str "Not found path between " cl-source " and " cl-target "."))))
         paths))))
