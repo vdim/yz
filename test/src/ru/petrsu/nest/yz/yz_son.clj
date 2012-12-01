@@ -6,7 +6,8 @@
 
 (ns ru.petrsu.nest.yz.yz-son
   ^{:author "Michail Kryshen, Vyacheslav Dimitrov"
-    :doc "Extended SON model. Needed for testing MOM.
+    :doc "Extended SON model. Needed for testing MOM and
+         different cases of paths.
          CHANGELOG:
           * added MiddleOU."}
   (:use
@@ -248,5 +249,16 @@
   SpatialElement
   (getIconName [e]
     "son-building.png"))
+
+
+;; Nonsensical structure
+
+(defmixin NonSensicalElement []
+  SonElement)
+
+(defbean Some
+  [^String prop]
+  NonSensicalElement)
+
 
 (generate-beans)

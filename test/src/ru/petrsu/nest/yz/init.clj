@@ -91,6 +91,38 @@
 ;; MOM of the University model
 (def uni-mom (gen-mom uni-classes))
 
+;; Vector with all classes from extented SON model.
+(def ex-classes
+  [ru.petrsu.nest.yz.yz_son.SonElement 
+   ru.petrsu.nest.yz.yz_son.SON 
+   ru.petrsu.nest.yz.yz_son.Occupancy 
+   ru.petrsu.nest.yz.yz_son.NetworkElement 
+   ru.petrsu.nest.yz.yz_son.Device 
+   ru.petrsu.nest.yz.yz_son.LinkInterface 
+   ru.petrsu.nest.yz.yz_son.UnknownLinkInterface 
+   ru.petrsu.nest.yz.yz_son.EthernetInterface 
+   ru.petrsu.nest.yz.yz_son.VLANInterface 
+   ru.petrsu.nest.yz.yz_son.NetworkInterface 
+   ru.petrsu.nest.yz.yz_son.UnknownNetworkInterface 
+   ru.petrsu.nest.yz.yz_son.IPv4Interface 
+   ru.petrsu.nest.yz.yz_son.Network 
+   ru.petrsu.nest.yz.yz_son.UnknownNetwork 
+   ru.petrsu.nest.yz.yz_son.IPNetwork 
+   ru.petrsu.nest.yz.yz_son.OrganizationalElement 
+   ru.petrsu.nest.yz.yz_son.AbstractOU 
+   ru.petrsu.nest.yz.yz_son.SimpleOU 
+   ru.petrsu.nest.yz.yz_son.MiddleOU 
+   ru.petrsu.nest.yz.yz_son.CompositeOU 
+   ru.petrsu.nest.yz.yz_son.SpatialElement 
+   ru.petrsu.nest.yz.yz_son.Room 
+   ru.petrsu.nest.yz.yz_son.Floor 
+   ru.petrsu.nest.yz.yz_son.Building
+   ru.petrsu.nest.yz.yz_son.NonSensicalElement
+   ru.petrsu.nest.yz.yz_son.Some])
+
+;; MOM of the extented SON model.
+(def ex-mom (gen-mom ex-classes))
+
 ;; Vector with all classes from SON model (jpa version).
 (def jpa-classes
   [ru.petrsu.nest.son.jpa.Room 
