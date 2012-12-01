@@ -160,3 +160,46 @@
          (let [sou (doto (ru.petrsu.nest.son.SimpleOU.) (.setName "S_TE"))
                _ (.addOU bd/rootCompositeOU sou)]
            (is (tc/eq-colls (tc/rows-query "cou.parent.sou") [[sou] [sou]]))))
+
+
+(deftest abs-and-ints
+         ^{:doc "Tests queries with abstract or interface classes
+                (in fact paths to child)."}
+         (is (tc/eq-colls (tc/rows-query "oe (device)") 
+                          [[bd/sou1_d1 bd/d1]
+                           [bd/sou2_d1]
+                           [bd/sou1_d2]
+                           [bd/sou2_d2 bd/rootDevice]
+                           [bd/cou_d1 bd/d1]
+                           [bd/cou_d2 bd/rootDevice]
+                           [bd/rootCompositeOU]]
+                          ))
+         (is (tc/eq-colls (tc/rows-query "device (oe)") 
+                          [[bd/d1 bd/sou1_d1]
+                           [bd/rootDevice bd/sou2_d2]
+                           [bd/d1 bd/cou_d1]
+                           [bd/rootDevice bd/cou_d2]]
+                          ))
+         (is (tc/eq-colls (tc/rows-query "spatialelement (oe)") 
+                          [[bd/b1 bd/sou1_d1] 
+                           [bd/b1 bd/cou_d1]
+                           [bd/b2 bd/sou2_d2] 
+                           [bd/b2 bd/cou_d2]
+                           [bd/f1_b1 bd/sou1_d1]
+                           [bd/f1_b1 bd/cou_d1]
+                           [bd/f1_b2 bd/sou2_d2]
+                           [bd/f1_b2 bd/cou_d2]
+                           [bd/f2_b1]
+                           [bd/f3_b1]
+                           [bd/r1001_f1_b2 bd/sou2_d2]
+                           [bd/r1001_f1_b2 bd/cou_d2]
+                           [bd/r1002_f1_b2]
+                           [bd/r101_f1_b1]
+                           [bd/r201_f2_b1]
+                           [bd/r202_f2_b1]
+                           [bd/r102_f1_b1 bd/sou1_d1]
+                           [bd/r102_f1_b1 bd/cou_d1]]
+                          ))
+         )
+
+
