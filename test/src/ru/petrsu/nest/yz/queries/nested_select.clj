@@ -24,13 +24,15 @@
   (:use ru.petrsu.nest.yz.core 
         clojure.test)
   (:require [ru.petrsu.nest.yz.queries.core :as tc] 
+            [ru.petrsu.nest.yz.parsing :as p] 
             [ru.petrsu.nest.util.utils :as f]
-            [ru.petrsu.nest.yz.queries.bd :as bd])
+            [ru.petrsu.nest.yz.queries.bd :as bd]
+            [ru.petrsu.nest.yz.init :as init])
   (:import (ru.petrsu.nest.son 
              SON, Building, Room, Floor, Network,
              Device, IPNetwork, EthernetInterface, NetworkInterface,
              LinkInterface, IPv4Interface, UnknownLinkInterface)
-           (ru.petrsu.nest.yz NotFoundElementException)))
+           (ru.petrsu.nest.yz NotFoundElementException NotFoundPathException)))
 
 ;; Define entity manager.
 
@@ -203,3 +205,8 @@
          )
 
 
+(deftest not-found-paths
+         ^{:doc "Tests queries where path must be not found."}
+         (is (thrown? NotFoundPathException (tc/qparse "aou (son)")))
+         (is (thrown? NotFoundPathException (p/parse "room (nse)" init/ex-mom)))
+         )
