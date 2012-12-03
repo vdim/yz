@@ -1,787 +1,777 @@
-{ru.petrsu.nest.son.IPv4Interface
- {:superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  :dp :inetAddress,
-  ru.petrsu.nest.son.EthernetInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["linkInterface" "device" "occupancy" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy
-  [["linkInterface" "device" "occupancy"]],
-  :sn "ip4i",
-  ru.petrsu.nest.son.AbstractOU
-  [["linkInterface" "device" "occupancy" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor
-  [["linkInterface" "device" "occupancy" "room" "floor"]],
-  :p-properties
-  {:inetAddress
-   {:r-to-s #'ru.petrsu.nest.util.utils/ip,
-    :s-to-r #'ru.petrsu.nest.util.utils/ip2b}},
-  ru.petrsu.nest.son.CompositeOU
-  [["linkInterface" "device" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU
-  [["linkInterface" "device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device [["linkInterface" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["linkInterface" "networkInterfaces"]
-   ["network" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["network"] ["linkInterface" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["linkInterface" "networkInterfaces"]
-   ["network" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork
-  [["network"] ["linkInterface" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Room
-  [["linkInterface" "device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network
-  [["network"] ["linkInterface" "networkInterfaces" "network"]]},
- :children
+{:children
  {ru.petrsu.nest.son.Network
-  #{ru.petrsu.nest.son.IPNetwork ru.petrsu.nest.son.UnknownNetwork},
-  ru.petrsu.nest.son.AbstractOU
-  #{ru.petrsu.nest.son.CompositeOU ru.petrsu.nest.son.SimpleOU},
-  ru.petrsu.nest.son.OrganizationalElement
-  #{ru.petrsu.nest.son.AbstractOU ru.petrsu.nest.son.CompositeOU
-    ru.petrsu.nest.son.SimpleOU},
+  #{ru.petrsu.nest.son.UnknownNetwork ru.petrsu.nest.son.IPNetwork},
+  ru.petrsu.nest.son.NetworkInterface
+  #{ru.petrsu.nest.son.UnknownNetworkInterface
+    ru.petrsu.nest.son.IPv4Interface},
   ru.petrsu.nest.son.SpatialElement
-  #{ru.petrsu.nest.son.Building ru.petrsu.nest.son.Floor
-    ru.petrsu.nest.son.Room},
+  #{ru.petrsu.nest.son.Floor ru.petrsu.nest.son.Room
+    ru.petrsu.nest.son.Building},
+  ru.petrsu.nest.son.AbstractOU
+  #{ru.petrsu.nest.son.SimpleOU ru.petrsu.nest.son.CompositeOU},
+  ru.petrsu.nest.son.OrganizationalElement
+  #{ru.petrsu.nest.son.SimpleOU ru.petrsu.nest.son.CompositeOU
+    ru.petrsu.nest.son.AbstractOU},
   ru.petrsu.nest.son.LinkInterface
   #{ru.petrsu.nest.son.EthernetInterface
-    ru.petrsu.nest.son.UnknownLinkInterface
-    ru.petrsu.nest.son.VLANInterface},
-  ru.petrsu.nest.son.SonElement
-  #{ru.petrsu.nest.son.IPv4Interface ru.petrsu.nest.son.SpatialElement
-    ru.petrsu.nest.son.NetworkElement ru.petrsu.nest.son.LinkInterface
-    ru.petrsu.nest.son.EthernetInterface ru.petrsu.nest.son.Building
-    ru.petrsu.nest.son.SON ru.petrsu.nest.son.Occupancy
-    ru.petrsu.nest.son.AbstractOU ru.petrsu.nest.son.Floor
-    ru.petrsu.nest.son.OrganizationalElement
-    ru.petrsu.nest.son.CompositeOU ru.petrsu.nest.son.SimpleOU
-    ru.petrsu.nest.son.Device
-    ru.petrsu.nest.son.UnknownNetworkInterface
-    ru.petrsu.nest.son.IPNetwork
-    ru.petrsu.nest.son.UnknownLinkInterface
-    ru.petrsu.nest.son.NetworkInterface
-    ru.petrsu.nest.son.UnknownNetwork ru.petrsu.nest.son.VLANInterface
-    ru.petrsu.nest.son.Room ru.petrsu.nest.son.Network},
-  ru.petrsu.nest.son.NetworkInterface
-  #{ru.petrsu.nest.son.IPv4Interface
-    ru.petrsu.nest.son.UnknownNetworkInterface},
+    ru.petrsu.nest.son.VLANInterface
+    ru.petrsu.nest.son.UnknownLinkInterface},
   ru.petrsu.nest.son.NetworkElement
-  #{ru.petrsu.nest.son.IPv4Interface ru.petrsu.nest.son.LinkInterface
-    ru.petrsu.nest.son.EthernetInterface ru.petrsu.nest.son.Device
-    ru.petrsu.nest.son.UnknownNetworkInterface
-    ru.petrsu.nest.son.IPNetwork
+  #{ru.petrsu.nest.son.NetworkInterface
+    ru.petrsu.nest.son.EthernetInterface
+    ru.petrsu.nest.son.VLANInterface
     ru.petrsu.nest.son.UnknownLinkInterface
+    ru.petrsu.nest.son.LinkInterface
+    ru.petrsu.nest.son.UnknownNetworkInterface
+    ru.petrsu.nest.son.Network ru.petrsu.nest.son.UnknownNetwork
+    ru.petrsu.nest.son.Device ru.petrsu.nest.son.IPv4Interface
+    ru.petrsu.nest.son.IPNetwork},
+  ru.petrsu.nest.son.SonElement
+  #{ru.petrsu.nest.son.SpatialElement
+    ru.petrsu.nest.son.OrganizationalElement
     ru.petrsu.nest.son.NetworkInterface
-    ru.petrsu.nest.son.UnknownNetwork ru.petrsu.nest.son.VLANInterface
-    ru.petrsu.nest.son.Network}},
+    ru.petrsu.nest.son.EthernetInterface
+    ru.petrsu.nest.son.VLANInterface ru.petrsu.nest.son.SimpleOU
+    ru.petrsu.nest.son.CompositeOU ru.petrsu.nest.son.SON
+    ru.petrsu.nest.son.UnknownLinkInterface
+    ru.petrsu.nest.son.Occupancy ru.petrsu.nest.son.Floor
+    ru.petrsu.nest.son.LinkInterface
+    ru.petrsu.nest.son.UnknownNetworkInterface
+    ru.petrsu.nest.son.Network ru.petrsu.nest.son.UnknownNetwork
+    ru.petrsu.nest.son.Room ru.petrsu.nest.son.Building
+    ru.petrsu.nest.son.Device ru.petrsu.nest.son.IPv4Interface
+    ru.petrsu.nest.son.AbstractOU ru.petrsu.nest.son.IPNetwork
+    ru.petrsu.nest.son.NetworkElement}},
  ru.petrsu.nest.son.SpatialElement {:sn "se"},
- ru.petrsu.nest.son.NetworkElement {:dp :nil, :sn "ne"},
- :namespaces "(use 'ru.petrsu.nest.yz.utils)",
- ru.petrsu.nest.son.LinkInterface
- {ru.petrsu.nest.son.IPv4Interface
+ ru.petrsu.nest.son.OrganizationalElement {:sn "oe"},
+ ru.petrsu.nest.son.NetworkInterface
+ {ru.petrsu.nest.son.NetworkInterface
+  [["linkInterface" "networkInterfaces"]
+   ["network" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface [["linkInterface"]],
+  ru.petrsu.nest.son.VLANInterface [["linkInterface"]],
+  ru.petrsu.nest.son.SimpleOU
+  [["linkInterface" "device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["linkInterface" "device" "occupancy" "OU" "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface [["linkInterface"]],
+  ru.petrsu.nest.son.Occupancy
+  [["linkInterface" "device" "occupancy"]],
+  ru.petrsu.nest.son.Floor
+  [["linkInterface" "device" "occupancy" "room" "floor"]],
+  :sn "ni",
+  ru.petrsu.nest.son.LinkInterface [["linkInterface"]],
+  ru.petrsu.nest.son.Network [["network"]],
+  ru.petrsu.nest.son.UnknownNetwork [["network"]],
+  ru.petrsu.nest.son.Room
+  [["linkInterface" "device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["linkInterface" "device" "occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["linkInterface" "device"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["linkInterface" "device" "occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork [["network"]]},
+ ru.petrsu.nest.son.EthernetInterface
+ {ru.petrsu.nest.son.NetworkInterface
   [["networkInterfaces"] ["link" "networkInterfaces"]],
-  ru.petrsu.nest.son.LinkInterface
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
   [["link"]
    ["device" "linkInterfaces"]
    ["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["device" "occupancy" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy [["device" "occupancy"]],
-  :sn "li",
-  ru.petrsu.nest.son.AbstractOU
-  [["device" "occupancy" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["device" "occupancy" "room" "floor"]],
+  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
   ru.petrsu.nest.son.CompositeOU
   [["device" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device [["device"] ["link" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]]},
- ru.petrsu.nest.son.EthernetInterface
- {ru.petrsu.nest.son.IPv4Interface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
+  ru.petrsu.nest.son.UnknownLinkInterface
   [["link"]
    ["device" "linkInterfaces"]
    ["networkInterfaces" "linkInterface"]],
   :dp :MACAddress,
-  ru.petrsu.nest.son.Building
-  [["device" "occupancy" "room" "floor" "building"]],
   ru.petrsu.nest.son.Occupancy [["device" "occupancy"]],
-  :sn "ei",
-  ru.petrsu.nest.son.AbstractOU
-  [["device" "occupancy" "OU" "parent" "OUs"]],
   ru.petrsu.nest.son.Floor [["device" "occupancy" "room" "floor"]],
+  :sn "ei",
+  ru.petrsu.nest.son.LinkInterface
+  [["link"]
+   ["device" "linkInterfaces"]
+   ["networkInterfaces" "linkInterface"]],
   :p-properties
   {:MACAddress
-   {:r-to-s #'ru.petrsu.nest.util.utils/mac,
-    :s-to-r #'ru.petrsu.nest.util.utils/mac2b}},
+   {:s-to-r #'ru.petrsu.nest.util.utils/mac2b,
+    :r-to-s #'ru.petrsu.nest.util.utils/mac}},
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["device" "occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["device"] ["link" "device"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["device" "occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.VLANInterface
+ {ru.petrsu.nest.son.NetworkInterface
+  [["networkInterfaces"]
+   ["link" "networkInterfaces"]
+   ["linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["link"]
+   ["linkInterfaces"]
+   ["device" "linkInterfaces"]
+   ["networkInterfaces" "linkInterface"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
   ru.petrsu.nest.son.CompositeOU
   [["device" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device [["device"] ["link" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]],
   ru.petrsu.nest.son.UnknownLinkInterface
   [["link"]
+   ["linkInterfaces"]
    ["device" "linkInterfaces"]
    ["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["link"]
-   ["device" "linkInterfaces"]
-   ["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]]},
- ru.petrsu.nest.son.Building
- {ru.petrsu.nest.son.IPv4Interface
-  [["floors"
-    "rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
   :dp :name,
-  ru.petrsu.nest.son.EthernetInterface
-  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Building [["floors" "building"]],
-  ru.petrsu.nest.son.Occupancy [["floors" "rooms" "occupancies"]],
-  :sn "b",
-  ru.petrsu.nest.son.AbstractOU
-  [["floors" "rooms" "occupancies" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["floors"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["floors" "rooms" "occupancies" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["floors" "rooms" "occupancies" "OU"]],
-  ru.petrsu.nest.son.Device
-  [["floors" "rooms" "occupancies" "devices"]],
+  ru.petrsu.nest.son.Occupancy [["device" "occupancy"]],
+  ru.petrsu.nest.son.Floor [["device" "occupancy" "room" "floor"]],
+  :sn "vlani",
+  ru.petrsu.nest.son.LinkInterface
+  [["link"]
+   ["linkInterfaces"]
+   ["device" "linkInterfaces"]
+   ["networkInterfaces" "linkInterface"]],
   ru.petrsu.nest.son.UnknownNetworkInterface
-  [["floors"
-    "rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["floors"
-    "rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["floors"
-    "rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"]],
-  :sort {:self {:keyfn "#(.getName %)"}},
-  ru.petrsu.nest.son.UnknownNetwork
-  [["floors"
-    "rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
+  [["networkInterfaces"]
+   ["link" "networkInterfaces"]
+   ["linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["device" "occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device
+  [["device"] ["link" "device"] ["linkInterfaces" "device"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["networkInterfaces"]
+   ["link" "networkInterfaces"]
+   ["linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["device" "occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.SimpleOU
+ {ru.petrsu.nest.son.NetworkInterface
+  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["occupancies" "devices" "linkInterfaces"]],
+  :superclass java.lang.Object,
   ru.petrsu.nest.son.VLANInterface
-  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Room [["floors" "rooms"]],
+  [["occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.CompositeOU [["parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["occupancies" "devices" "linkInterfaces"]],
+  :dp :name,
+  ru.petrsu.nest.son.Occupancy [["occupancies"]],
+  ru.petrsu.nest.son.Floor [["occupancies" "room" "floor"]],
+  :sn "sou",
+  ru.petrsu.nest.son.LinkInterface
+  [["occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
   ru.petrsu.nest.son.Network
-  [["floors"
-    "rooms"
+  [["occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.Room [["occupancies" "room"]],
+  ru.petrsu.nest.son.Building
+  [["occupancies" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["occupancies" "devices"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU [["parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]]},
+ ru.petrsu.nest.son.CompositeOU
+ {ru.petrsu.nest.son.EthernetInterface
+  [["OUs" "occupancies" "devices" "linkInterfaces"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["OUs" "occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["OUs"]],
+  ru.petrsu.nest.son.CompositeOU [["parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["OUs" "occupancies" "devices" "linkInterfaces"]],
+  :dp :name,
+  ru.petrsu.nest.son.Occupancy [["OUs" "occupancies"]],
+  ru.petrsu.nest.son.Floor [["OUs" "occupancies" "room" "floor"]],
+  :sn "cou",
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["OUs"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["OUs"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.Room [["OUs" "occupancies" "room"]],
+  ru.petrsu.nest.son.Building
+  [["OUs" "occupancies" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["OUs" "occupancies" "devices"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["OUs"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU [["OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["OUs"
     "occupancies"
     "devices"
     "linkInterfaces"
     "networkInterfaces"
     "network"]]},
+ :namespaces "(use 'ru.petrsu.nest.yz.utils)",
  ru.petrsu.nest.son.SON
- {ru.petrsu.nest.son.IPv4Interface
+ {ru.petrsu.nest.son.NetworkInterface
   [["rootDevice" "linkInterfaces" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface [["rootDevice" "linkInterfaces"]],
   ru.petrsu.nest.son.EthernetInterface
   [["rootDevice" "linkInterfaces"]],
-  ru.petrsu.nest.son.Building
-  [["buildings"] ["rootDevice" "occupancy" "room" "floor" "building"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface [["rootDevice" "linkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["rootDevice" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["rootOU"] ["rootDevice" "occupancy" "OU" "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["rootDevice" "linkInterfaces"]],
   ru.petrsu.nest.son.Occupancy
   [["rootDevice" "occupancy"]
    ["buildings" "floors" "rooms" "occupancies"]],
-  :sn "son",
-  ru.petrsu.nest.son.AbstractOU [["rootOU" "OUs"]],
   ru.petrsu.nest.son.Floor
   [["buildings" "floors"] ["rootDevice" "occupancy" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["rootOU"] ["rootDevice" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["rootDevice" "occupancy" "OU"]],
+  :sn "son",
+  ru.petrsu.nest.son.LinkInterface [["rootDevice" "linkInterfaces"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["rootDevice" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network
+  [["rootDevice" "linkInterfaces" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["rootDevice" "linkInterfaces" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room
+  [["buildings" "floors" "rooms"] ["rootDevice" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["buildings"] ["rootDevice" "occupancy" "room" "floor" "building"]],
   ru.petrsu.nest.son.Device
   [["rootDevice"]
    ["buildings" "floors" "rooms" "occupancies" "devices"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
+  ru.petrsu.nest.son.IPv4Interface
   [["rootDevice" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU [["rootOU" "OUs"]],
   ru.petrsu.nest.son.IPNetwork
-  [["rootDevice" "linkInterfaces" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["rootDevice" "linkInterfaces"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["rootDevice" "linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork
-  [["rootDevice" "linkInterfaces" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface [["rootDevice" "linkInterfaces"]],
-  ru.petrsu.nest.son.Room
-  [["buildings" "floors" "rooms"] ["rootDevice" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network
   [["rootDevice" "linkInterfaces" "networkInterfaces" "network"]]},
- ru.petrsu.nest.son.Occupancy
- {ru.petrsu.nest.son.IPv4Interface
-  [["devices" "linkInterfaces" "networkInterfaces"]],
+ ru.petrsu.nest.son.UnknownLinkInterface
+ {ru.petrsu.nest.son.NetworkInterface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["link"]
+   ["device" "linkInterfaces"]
+   ["networkInterfaces" "linkInterface"]],
   :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface [["devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.VLANInterface
+  [["link"]
+   ["device" "linkInterfaces"]
+   ["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["device" "occupancy" "OU" "parent"]],
   :dp :name,
-  ru.petrsu.nest.son.EthernetInterface [["devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Building [["room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy
-  [["OU" "occupancies"]
-   ["devices" "occupancy"]
-   ["room" "occupancies"]],
-  :sn "o",
-  ru.petrsu.nest.son.AbstractOU [["OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU [["OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["OU"]],
-  ru.petrsu.nest.son.Device [["devices"]],
+  ru.petrsu.nest.son.Occupancy [["device" "occupancy"]],
+  ru.petrsu.nest.son.Floor [["device" "occupancy" "room" "floor"]],
+  :sn "uli",
+  ru.petrsu.nest.son.LinkInterface
+  [["link"]
+   ["device" "linkInterfaces"]
+   ["networkInterfaces" "linkInterface"]],
   ru.petrsu.nest.son.UnknownNetworkInterface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["device" "occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["device"] ["link" "device"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["device" "occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.Occupancy
+ {ru.petrsu.nest.son.NetworkInterface
   [["devices" "linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["devices" "linkInterfaces" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.EthernetInterface [["devices" "linkInterfaces"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface [["devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["OU"]],
+  ru.petrsu.nest.son.CompositeOU [["OU" "parent"]],
   ru.petrsu.nest.son.UnknownLinkInterface
   [["devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.NetworkInterface
+  :dp :name,
+  ru.petrsu.nest.son.Occupancy
+  [["OU" "occupancies"] ["room" "occupancies"]],
+  ru.petrsu.nest.son.Floor [["room" "floor"]],
+  :sn "o",
+  ru.petrsu.nest.son.LinkInterface [["devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface
   [["devices" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network
+  [["devices" "linkInterfaces" "networkInterfaces" "network"]],
   ru.petrsu.nest.son.UnknownNetwork
   [["devices" "linkInterfaces" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface [["devices" "linkInterfaces"]],
   ru.petrsu.nest.son.Room [["room"]],
-  ru.petrsu.nest.son.Network
+  ru.petrsu.nest.son.Building [["room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["devices"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["devices" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU [["OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
   [["devices" "linkInterfaces" "networkInterfaces" "network"]]},
- ru.petrsu.nest.son.AbstractOU
- {:dp :name, :sn "aou", ru.petrsu.nest.son.CompositeOU [["parent"]]},
  ru.petrsu.nest.son.Floor
- {ru.petrsu.nest.son.IPv4Interface
+ {ru.petrsu.nest.son.NetworkInterface
   [["rooms"
     "occupancies"
     "devices"
     "linkInterfaces"
     "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["rooms" "occupancies" "devices" "linkInterfaces"]],
-  :dp :number,
   ru.petrsu.nest.son.EthernetInterface
   [["rooms" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Building [["building"]],
-  ru.petrsu.nest.son.Occupancy [["rooms" "occupancies"]],
-  :sn "f",
-  ru.petrsu.nest.son.AbstractOU
-  [["rooms" "occupancies" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["building" "floors"] ["rooms" "floor"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["rooms" "occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["rooms" "occupancies" "OU"]],
   ru.petrsu.nest.son.CompositeOU
   [["rooms" "occupancies" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["rooms" "occupancies" "OU"]],
-  ru.petrsu.nest.son.Device [["rooms" "occupancies" "devices"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
   ru.petrsu.nest.son.UnknownLinkInterface
   [["rooms" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"]],
-  :sort {:self {:keyfn "#(.getNumber %)"}},
-  ru.petrsu.nest.son.UnknownNetwork
-  [["rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["rooms" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Room [["rooms"]],
-  ru.petrsu.nest.son.Network
-  [["rooms"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]]},
- ru.petrsu.nest.son.OrganizationalElement {:sn "oe"},
- ru.petrsu.nest.son.CompositeOU
- {ru.petrsu.nest.son.IPv4Interface
-  [["OUs"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"]],
-  :superclass java.lang.Object,
-  :dp :name,
-  ru.petrsu.nest.son.EthernetInterface
-  [["OUs" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Building
-  [["OUs" "occupancies" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy [["OUs" "occupancies"]],
-  :sn "cou",
-  ru.petrsu.nest.son.AbstractOU [["OUs"]],
-  ru.petrsu.nest.son.Floor [["OUs" "occupancies" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU [["parent"]],
-  ru.petrsu.nest.son.SimpleOU [["OUs"]],
-  ru.petrsu.nest.son.Device [["OUs" "occupancies" "devices"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["OUs"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["OUs"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["OUs" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork
-  [["OUs"
-    "occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["OUs" "occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Room [["OUs" "occupancies" "room"]]},
- ru.petrsu.nest.son.SimpleOU
- {ru.petrsu.nest.son.IPv4Interface
-  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["occupancies" "devices" "linkInterfaces"]],
-  :dp :name,
-  ru.petrsu.nest.son.EthernetInterface
-  [["occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Building
-  [["occupancies" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy [["occupancies"]],
-  :sn "sou",
-  ru.petrsu.nest.son.AbstractOU [["parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["occupancies" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU [["parent"]],
-  ru.petrsu.nest.son.SimpleOU [["occupancies" "OU"]],
-  ru.petrsu.nest.son.Device [["occupancies" "devices"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork
-  [["occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Room [["occupancies" "room"]],
-  ru.petrsu.nest.son.Network
-  [["occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]]},
- ru.petrsu.nest.son.Device
- {ru.petrsu.nest.son.IPv4Interface
-  [["linkInterfaces" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface [["linkInterfaces"]],
-  :dp :name,
-  ru.petrsu.nest.son.EthernetInterface [["linkInterfaces"]],
-  ru.petrsu.nest.son.Building
-  [["occupancy" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy [["occupancy"]],
-  :sn "d",
-  ru.petrsu.nest.son.AbstractOU [["occupancy" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["occupancy" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU [["occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["occupancy" "OU"]],
-  ru.petrsu.nest.son.Device
-  [["linkInterfaces" "device"] ["occupancy" "devices"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["linkInterfaces" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface [["linkInterfaces"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork
-  [["linkInterfaces" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface [["linkInterfaces"]],
-  ru.petrsu.nest.son.Room [["occupancy" "room"]],
-  ru.petrsu.nest.son.Network
-  [["linkInterfaces" "networkInterfaces" "network"]]},
- ru.petrsu.nest.son.UnknownNetworkInterface
- {ru.petrsu.nest.son.IPv4Interface
-  [["linkInterface" "networkInterfaces"]
-   ["network" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  :dp :inetAddress,
-  ru.petrsu.nest.son.EthernetInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["linkInterface" "device" "occupancy" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy
-  [["linkInterface" "device" "occupancy"]],
-  :sn "uni",
-  ru.petrsu.nest.son.AbstractOU
-  [["linkInterface" "device" "occupancy" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor
-  [["linkInterface" "device" "occupancy" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["linkInterface" "device" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU
-  [["linkInterface" "device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device [["linkInterface" "device"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["network"] ["linkInterface" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["linkInterface" "networkInterfaces"]
-   ["network" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork
-  [["network"] ["linkInterface" "networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Room
-  [["linkInterface" "device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network
-  [["network"] ["linkInterface" "networkInterfaces" "network"]]},
- ru.petrsu.nest.son.IPNetwork
- {ru.petrsu.nest.son.IPv4Interface [["networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["networkInterfaces" "linkInterface"]],
-  :dp :address,
-  ru.petrsu.nest.son.EthernetInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "room"
-    "floor"
-    "building"]],
-  ru.petrsu.nest.son.Occupancy
-  [["networkInterfaces" "linkInterface" "device" "occupancy"]],
-  :sn "ipn",
-  ru.petrsu.nest.son.AbstractOU
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "OU"
-    "parent"
-    "OUs"]],
-  ru.petrsu.nest.son.Floor
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "room"
-    "floor"]],
-  :p-properties
-  {:address
-   {:r-to-s #'ru.petrsu.nest.util.utils/ip,
-    :s-to-r #'ru.petrsu.nest.util.utils/ip2b}},
-  ru.petrsu.nest.son.CompositeOU
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "OU"
-    "parent"]],
-  ru.petrsu.nest.son.SimpleOU
-  [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device
-  [["networkInterfaces" "linkInterface" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface [["networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Room
-  [["networkInterfaces" "linkInterface" "device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]]},
- ru.petrsu.nest.son.UnknownLinkInterface
- {ru.petrsu.nest.son.IPv4Interface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["link"]
-   ["device" "linkInterfaces"]
-   ["networkInterfaces" "linkInterface"]],
-  :dp :name,
-  ru.petrsu.nest.son.EthernetInterface
-  [["link"]
-   ["device" "linkInterfaces"]
-   ["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["device" "occupancy" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy [["device" "occupancy"]],
-  :sn "uli",
-  ru.petrsu.nest.son.AbstractOU
-  [["device" "occupancy" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["device" "occupancy" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["device" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device [["device"] ["link" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["networkInterfaces"] ["link" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["link"]
-   ["device" "linkInterfaces"]
-   ["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]]},
- ru.petrsu.nest.son.NetworkInterface
- {ru.petrsu.nest.son.LinkInterface [["linkInterface"]],
-  ru.petrsu.nest.son.EthernetInterface [["linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["linkInterface" "device" "occupancy" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy
-  [["linkInterface" "device" "occupancy"]],
-  :sn "ni",
-  ru.petrsu.nest.son.AbstractOU
-  [["linkInterface" "device" "occupancy" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor
-  [["linkInterface" "device" "occupancy" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["linkInterface" "device" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU
-  [["linkInterface" "device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device [["linkInterface" "device"]],
-  ru.petrsu.nest.son.IPNetwork [["network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface [["linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["linkInterface" "networkInterfaces"]
-   ["network" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork [["network"]],
-  ru.petrsu.nest.son.VLANInterface [["linkInterface"]],
-  ru.petrsu.nest.son.Room
-  [["linkInterface" "device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["network"]]},
- ru.petrsu.nest.son.UnknownNetwork
- {ru.petrsu.nest.son.IPv4Interface [["networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["networkInterfaces" "linkInterface"]],
-  :dp :name,
-  ru.petrsu.nest.son.EthernetInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "room"
-    "floor"
-    "building"]],
-  ru.petrsu.nest.son.Occupancy
-  [["networkInterfaces" "linkInterface" "device" "occupancy"]],
-  :sn "un",
-  ru.petrsu.nest.son.AbstractOU
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "OU"
-    "parent"
-    "OUs"]],
-  ru.petrsu.nest.son.Floor
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "room"
-    "floor"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "OU"
-    "parent"]],
-  ru.petrsu.nest.son.SimpleOU
-  [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device
-  [["networkInterfaces" "linkInterface" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface [["networkInterfaces"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Room
-  [["networkInterfaces" "linkInterface" "device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]]},
- ru.petrsu.nest.son.VLANInterface
- {ru.petrsu.nest.son.IPv4Interface
-  [["networkInterfaces"]
-   ["link" "networkInterfaces"]
-   ["linkInterfaces" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["link"]
-   ["linkInterfaces"]
-   ["device" "linkInterfaces"]
-   ["networkInterfaces" "linkInterface"]],
-  :dp :name,
-  ru.petrsu.nest.son.EthernetInterface
-  [["link"]
-   ["linkInterfaces"]
-   ["device" "linkInterfaces"]
-   ["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Building
-  [["device" "occupancy" "room" "floor" "building"]],
-  ru.petrsu.nest.son.Occupancy [["device" "occupancy"]],
-  :sn "vlani",
-  ru.petrsu.nest.son.AbstractOU
-  [["device" "occupancy" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["device" "occupancy" "room" "floor"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["device" "occupancy" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device
-  [["device"] ["link" "device"] ["linkInterfaces" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface
-  [["networkInterfaces"]
-   ["link" "networkInterfaces"]
-   ["linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["link"]
-   ["linkInterfaces"]
-   ["device" "linkInterfaces"]
-   ["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["networkInterfaces"]
-   ["link" "networkInterfaces"]
-   ["linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
-  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]]},
- ru.petrsu.nest.son.Room
- {ru.petrsu.nest.son.IPv4Interface
-  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
-  :superclass java.lang.Object,
-  ru.petrsu.nest.son.LinkInterface
-  [["occupancies" "devices" "linkInterfaces"]],
   :dp :number,
-  ru.petrsu.nest.son.EthernetInterface
-  [["occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Building [["floor" "building"]],
-  ru.petrsu.nest.son.Occupancy [["occupancies"]],
-  :sn "r",
-  ru.petrsu.nest.son.AbstractOU [["occupancies" "OU" "parent" "OUs"]],
-  ru.petrsu.nest.son.Floor [["floor"]],
-  ru.petrsu.nest.son.CompositeOU [["occupancies" "OU" "parent"]],
-  ru.petrsu.nest.son.SimpleOU [["occupancies" "OU"]],
-  ru.petrsu.nest.son.Device [["occupancies" "devices"]],
+  ru.petrsu.nest.son.Occupancy [["rooms" "occupancies"]],
+  ru.petrsu.nest.son.Floor [["building" "floors"]],
+  :sn "f",
+  ru.petrsu.nest.son.LinkInterface
+  [["rooms" "occupancies" "devices" "linkInterfaces"]],
   ru.petrsu.nest.son.UnknownNetworkInterface
-  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.IPNetwork
-  [["occupancies"
+  [["rooms"
+    "occupancies"
     "devices"
     "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.NetworkInterface
-  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownNetwork
-  [["occupancies"
-    "devices"
-    "linkInterfaces"
-    "networkInterfaces"
-    "network"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["occupancies" "devices" "linkInterfaces"]],
-  ru.petrsu.nest.son.Room [["floor" "rooms"] ["occupancies" "room"]],
+    "networkInterfaces"]],
   ru.petrsu.nest.son.Network
-  [["occupancies"
+  [["rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.Room [["rooms"]],
+  ru.petrsu.nest.son.Building [["building"]],
+  :sort {:self {:keyfn "#(.getNumber %)"}},
+  ru.petrsu.nest.son.Device [["rooms" "occupancies" "devices"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["rooms" "occupancies" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["rooms"
+    "occupancies"
     "devices"
     "linkInterfaces"
     "networkInterfaces"
     "network"]]},
  ru.petrsu.nest.son.SonElement {:dp :name, :sn "se"},
+ ru.petrsu.nest.son.LinkInterface
+ {ru.petrsu.nest.son.NetworkInterface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["device" "occupancy" "OU" "parent"]],
+  ru.petrsu.nest.son.Occupancy [["device" "occupancy"]],
+  ru.petrsu.nest.son.Floor [["device" "occupancy" "room" "floor"]],
+  :sn "li",
+  ru.petrsu.nest.son.LinkInterface
+  [["link"]
+   ["device" "linkInterfaces"]
+   ["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room [["device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["device" "occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["device"] ["link" "device"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["networkInterfaces"] ["link" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["device" "occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.UnknownNetworkInterface
+ {ru.petrsu.nest.son.NetworkInterface
+  [["linkInterface" "networkInterfaces"]
+   ["network" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.SimpleOU
+  [["linkInterface" "device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["linkInterface" "device" "occupancy" "OU" "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  :dp :inetAddress,
+  ru.petrsu.nest.son.Occupancy
+  [["linkInterface" "device" "occupancy"]],
+  ru.petrsu.nest.son.Floor
+  [["linkInterface" "device" "occupancy" "room" "floor"]],
+  :sn "uni",
+  ru.petrsu.nest.son.LinkInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.Network
+  [["network"] ["linkInterface" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["network"] ["linkInterface" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room
+  [["linkInterface" "device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["linkInterface" "device" "occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["linkInterface" "device"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["linkInterface" "networkInterfaces"]
+   ["network" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["linkInterface" "device" "occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["network"] ["linkInterface" "networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.Network
+ {ru.petrsu.nest.son.NetworkInterface [["networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.VLANInterface
+  [["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.SimpleOU
+  [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "OU"
+    "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.Occupancy
+  [["networkInterfaces" "linkInterface" "device" "occupancy"]],
+  ru.petrsu.nest.son.Floor
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "room"
+    "floor"]],
+  :sn "n",
+  ru.petrsu.nest.son.LinkInterface
+  [["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
+  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room
+  [["networkInterfaces" "linkInterface" "device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "room"
+    "floor"
+    "building"]],
+  ru.petrsu.nest.son.Device
+  [["networkInterfaces" "linkInterface" "device"]],
+  ru.petrsu.nest.son.IPv4Interface [["networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "OU"
+    "parent"
+    "OUs"]]},
+ ru.petrsu.nest.son.UnknownNetwork
+ {ru.petrsu.nest.son.NetworkInterface [["networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["networkInterfaces" "linkInterface"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.SimpleOU
+  [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "OU"
+    "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["networkInterfaces" "linkInterface"]],
+  :dp :name,
+  ru.petrsu.nest.son.Occupancy
+  [["networkInterfaces" "linkInterface" "device" "occupancy"]],
+  ru.petrsu.nest.son.Floor
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "room"
+    "floor"]],
+  :sn "un",
+  ru.petrsu.nest.son.LinkInterface
+  [["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
+  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room
+  [["networkInterfaces" "linkInterface" "device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "room"
+    "floor"
+    "building"]],
+  ru.petrsu.nest.son.Device
+  [["networkInterfaces" "linkInterface" "device"]],
+  ru.petrsu.nest.son.IPv4Interface [["networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "OU"
+    "parent"
+    "OUs"]],
+  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.Room
+ {ru.petrsu.nest.son.NetworkInterface
+  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["occupancies" "devices" "linkInterfaces"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["occupancies" "OU"]],
+  ru.petrsu.nest.son.CompositeOU [["occupancies" "OU" "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["occupancies" "devices" "linkInterfaces"]],
+  :dp :number,
+  ru.petrsu.nest.son.Occupancy [["occupancies"]],
+  ru.petrsu.nest.son.Floor [["floor"]],
+  :sn "r",
+  ru.petrsu.nest.son.LinkInterface
+  [["occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network
+  [["occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.Room [["floor" "rooms"]],
+  ru.petrsu.nest.son.Building [["floor" "building"]],
+  ru.petrsu.nest.son.Device [["occupancies" "devices"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["occupancies" "devices" "linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU [["occupancies" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]]},
+ ru.petrsu.nest.son.Building
+ {ru.petrsu.nest.son.NetworkInterface
+  [["floors"
+    "rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["floors" "rooms" "occupancies" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["floors" "rooms" "occupancies" "OU" "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
+  :dp :name,
+  ru.petrsu.nest.son.Occupancy [["floors" "rooms" "occupancies"]],
+  ru.petrsu.nest.son.Floor [["floors"]],
+  :sn "b",
+  ru.petrsu.nest.son.LinkInterface
+  [["floors" "rooms" "occupancies" "devices" "linkInterfaces"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["floors"
+    "rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"]],
+  ru.petrsu.nest.son.Network
+  [["floors"
+    "rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["floors"
+    "rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]],
+  ru.petrsu.nest.son.Room [["floors" "rooms"]],
+  :sort {:self {:keyfn "#(.getName %)"}},
+  ru.petrsu.nest.son.Device
+  [["floors" "rooms" "occupancies" "devices"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["floors"
+    "rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["floors" "rooms" "occupancies" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["floors"
+    "rooms"
+    "occupancies"
+    "devices"
+    "linkInterfaces"
+    "networkInterfaces"
+    "network"]]},
+ ru.petrsu.nest.son.Device
+ {ru.petrsu.nest.son.NetworkInterface
+  [["linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface [["linkInterfaces"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface [["linkInterfaces"]],
+  ru.petrsu.nest.son.SimpleOU [["occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU [["occupancy" "OU" "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface [["linkInterfaces"]],
+  :dp :name,
+  ru.petrsu.nest.son.Occupancy [["occupancy"]],
+  ru.petrsu.nest.son.Floor [["occupancy" "room" "floor"]],
+  :sn "d",
+  ru.petrsu.nest.son.LinkInterface [["linkInterfaces"]],
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network
+  [["linkInterfaces" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["linkInterfaces" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room [["occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device
+  [["linkInterfaces" "device"] ["occupancy" "devices"]],
+  ru.petrsu.nest.son.IPv4Interface
+  [["linkInterfaces" "networkInterfaces"]],
+  ru.petrsu.nest.son.AbstractOU [["occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["linkInterfaces" "networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.IPv4Interface
+ {ru.petrsu.nest.son.NetworkInterface
+  [["linkInterface" "networkInterfaces"]
+   ["network" "networkInterfaces"]],
+  ru.petrsu.nest.son.EthernetInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.SimpleOU
+  [["linkInterface" "device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["linkInterface" "device" "occupancy" "OU" "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  :dp :inetAddress,
+  ru.petrsu.nest.son.Occupancy
+  [["linkInterface" "device" "occupancy"]],
+  ru.petrsu.nest.son.Floor
+  [["linkInterface" "device" "occupancy" "room" "floor"]],
+  :sn "ip4i",
+  ru.petrsu.nest.son.LinkInterface
+  [["linkInterface"] ["network" "networkInterfaces" "linkInterface"]],
+  :p-properties
+  {:inetAddress
+   {:s-to-r #'ru.petrsu.nest.util.utils/ip2b,
+    :r-to-s #'ru.petrsu.nest.util.utils/ip}},
+  ru.petrsu.nest.son.UnknownNetworkInterface
+  [["linkInterface" "networkInterfaces"]
+   ["network" "networkInterfaces"]],
+  ru.petrsu.nest.son.Network
+  [["network"] ["linkInterface" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork
+  [["network"] ["linkInterface" "networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room
+  [["linkInterface" "device" "occupancy" "room"]],
+  ru.petrsu.nest.son.Building
+  [["linkInterface" "device" "occupancy" "room" "floor" "building"]],
+  ru.petrsu.nest.son.Device [["linkInterface" "device"]],
+  ru.petrsu.nest.son.AbstractOU
+  [["linkInterface" "device" "occupancy" "OU" "parent" "OUs"]],
+  ru.petrsu.nest.son.IPNetwork
+  [["network"] ["linkInterface" "networkInterfaces" "network"]]},
+ ru.petrsu.nest.son.AbstractOU
+ {:dp :name, :sn "aou", ru.petrsu.nest.son.CompositeOU [["parent"]]},
  :names
  {"b" ru.petrsu.nest.son.Building,
   "ethernetinterface" ru.petrsu.nest.son.EthernetInterface,
@@ -858,12 +848,46 @@
   ru.petrsu.nest.son.EthernetInterface,
   "linkinterface" ru.petrsu.nest.son.LinkInterface,
   "ru.petrsu.nest.son.room" ru.petrsu.nest.son.Room},
- ru.petrsu.nest.son.Network
- {ru.petrsu.nest.son.IPv4Interface [["networkInterfaces"]],
-  ru.petrsu.nest.son.LinkInterface
-  [["networkInterfaces" "linkInterface"]],
+ ru.petrsu.nest.son.IPNetwork
+ {ru.petrsu.nest.son.NetworkInterface [["networkInterfaces"]],
   ru.petrsu.nest.son.EthernetInterface
   [["networkInterfaces" "linkInterface"]],
+  :superclass java.lang.Object,
+  ru.petrsu.nest.son.VLANInterface
+  [["networkInterfaces" "linkInterface"]],
+  ru.petrsu.nest.son.SimpleOU
+  [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],
+  ru.petrsu.nest.son.CompositeOU
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "OU"
+    "parent"]],
+  ru.petrsu.nest.son.UnknownLinkInterface
+  [["networkInterfaces" "linkInterface"]],
+  :dp :address,
+  ru.petrsu.nest.son.Occupancy
+  [["networkInterfaces" "linkInterface" "device" "occupancy"]],
+  ru.petrsu.nest.son.Floor
+  [["networkInterfaces"
+    "linkInterface"
+    "device"
+    "occupancy"
+    "room"
+    "floor"]],
+  :sn "ipn",
+  ru.petrsu.nest.son.LinkInterface
+  [["networkInterfaces" "linkInterface"]],
+  :p-properties
+  {:address
+   {:s-to-r #'ru.petrsu.nest.util.utils/ip2b,
+    :r-to-s #'ru.petrsu.nest.util.utils/ip}},
+  ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
+  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
+  ru.petrsu.nest.son.Room
+  [["networkInterfaces" "linkInterface" "device" "occupancy" "room"]],
   ru.petrsu.nest.son.Building
   [["networkInterfaces"
     "linkInterface"
@@ -872,9 +896,9 @@
     "room"
     "floor"
     "building"]],
-  ru.petrsu.nest.son.Occupancy
-  [["networkInterfaces" "linkInterface" "device" "occupancy"]],
-  :sn "n",
+  ru.petrsu.nest.son.Device
+  [["networkInterfaces" "linkInterface" "device"]],
+  ru.petrsu.nest.son.IPv4Interface [["networkInterfaces"]],
   ru.petrsu.nest.son.AbstractOU
   [["networkInterfaces"
     "linkInterface"
@@ -882,31 +906,5 @@
     "occupancy"
     "OU"
     "parent"
-    "OUs"]],
-  ru.petrsu.nest.son.Floor
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "room"
-    "floor"]],
-  ru.petrsu.nest.son.CompositeOU
-  [["networkInterfaces"
-    "linkInterface"
-    "device"
-    "occupancy"
-    "OU"
-    "parent"]],
-  ru.petrsu.nest.son.SimpleOU
-  [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],
-  ru.petrsu.nest.son.Device
-  [["networkInterfaces" "linkInterface" "device"]],
-  ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
-  ru.petrsu.nest.son.UnknownLinkInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.NetworkInterface [["networkInterfaces"]],
-  ru.petrsu.nest.son.VLANInterface
-  [["networkInterfaces" "linkInterface"]],
-  ru.petrsu.nest.son.Room
-  [["networkInterfaces" "linkInterface" "device" "occupancy" "room"]],
-  ru.petrsu.nest.son.Network [["networkInterfaces" "network"]]}}
+    "OUs"]]},
+ ru.petrsu.nest.son.NetworkElement {:dp :nil, :sn "ne"}}
