@@ -219,9 +219,16 @@
 
 
 (defn c-paths
-  "Counts path into specified MOM."
+  "Counts elements which have paths 
+  into specified MOM."
   [mom cl-cl]
   (reduce #(if (get-in mom %2) (inc %1) %1) 0 cl-cl))
+
+
+(defn c-all-paths
+  "Counts all paths into specified MOM."
+  [mom cl-cl]
+  (reduce #(if (get-in mom %2) (+ %1 (count (get-in mom %2))) %1) 0 cl-cl))
 
 
 (defn ints-not-ints
@@ -254,6 +261,66 @@
     (for [a classes b classes c classes :when (and (not= a b) (not= b c) (not= a c))] [a b c])))
 
 
+(defn un-path?
+  "Returns true in case path is 
+  unnecessary for specified class."
+  [cl path]
+  (let [o (.newInstance cl)
+        last-prop (last path)]
+    (loop [cl cl prop (first path) path (next path) object o]
+      (if (empty? path)
+        (let [pd (some #(if (= (.getName %) last-prop) %) (u/descriptors cl))
+              o1 (.invoke (.getReadMethod pd) object (into-array []))]
+          (identical? o o1))
+        (let [pd (some #(if (= (.getName %) prop) %) (u/descriptors cl))]
+          (if (nil? pd)
+            false
+            (let [; Type of property.
+                  pt (.getPropertyType pd)
+                  t (cond (contains? (ancestors pt) java.util.Collection)
+                          ((vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments)) 0)
+                  
+                          (.isArray pt) 
+                          (.getComponentType pt)
+    
+                          :else pt)
+                  new-o (.newInstance t)
+                  
+                  ; Create object for inserting to specified property description.
+                  o-for-in (cond (contains? (ancestors pt) java.util.Collection) 
+                                 [#{new-o}]
+                  
+                                 (.isArray pt) 
+                                 [(into-array [new-o])]
+    
+                                 :else [new-o])
+                  _ (.invoke (.getWriteMethod pd) object (into-array o-for-in))]
+              (recur t (first path) (next path) new-o))))))))
+
+
+(defn remove-paths
+  "Deletes unnecessary paths. A path is 
+  unnecessary if it always leads to the 
+  same element. Returns new mom."
+  [mom classes]
+  (reduce 
+    (fn [mom cl]
+      (if (u/int-or-abs? cl)
+        mom
+        (let [paths (get-in mom [cl cl])]
+          (if paths
+            (let [new-paths (remove #(try
+                                       (un-path? cl %)
+                                       (catch Exception e false)) 
+                                    paths)]
+              (if (empty? new-paths)
+                (assoc mom cl (dissoc (get mom cl) cl))
+                (assoc-in mom [cl cl] (vec new-paths))))
+            mom))))
+    mom
+    classes))
+
+
 (defn gen-mom
   "Generates mom from list of classes."
   ([classes]
@@ -274,7 +341,10 @@
          ; Copy paths.
          mom (copy-paths mom classes)
          ; Concats paths.
-         mom (concat-paths mom cl-cl-without-ints cls-without-ints)]
+         mom (concat-paths mom cl-cl-without-ints cls-without-ints)
+         ; Remove unnecessary paths. A path is unnecessary 
+         ; if it always leads to the same element.
+         mom (remove-paths mom classes)]
      mom)))
 
 
@@ -353,3 +423,13 @@
      (to-file mom f))))
 
 
+(defn diffs
+  "Returns difference between two moms."
+  [mom mom2 cl-cl]
+  (reduce
+    (fn [v cls]
+      (if (not= (get-in mom cls) (get-in mom2 cls))
+        (conj v (conj (conj cls (get-in mom cls)) (get-in mom2 cls)))
+        v))
+    []
+    cl-cl))
