@@ -265,35 +265,31 @@
   "Returns true in case path is 
   unnecessary for specified class."
   [cl path]
-  (let [o (.newInstance cl)
-        last-prop (last path)]
+  (let [o (.newInstance cl)]
     (loop [cl cl prop (first path) path (next path) object o]
-      (if (empty? path)
-        (let [pd (some #(if (= (.getName %) last-prop) %) (u/descriptors cl))
-              o1 (.invoke (.getReadMethod pd) object (into-array []))]
-          (identical? o o1))
-        (let [pd (some #(if (= (.getName %) prop) %) (u/descriptors cl))]
-          (if (nil? pd)
-            false
-            (let [; Type of property.
-                  pt (.getPropertyType pd)
-                  t (cond (contains? (ancestors pt) java.util.Collection)
-                          ((vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments)) 0)
+      (let [pd (some #(if (= (.getName %) prop) %) (u/descriptors cl))]
+        (if (nil? pd)
+          false
+          (if (empty? path)
+            (identical? o (.invoke (.getReadMethod pd) object (into-array [])))
+            (let [pt (.getPropertyType pd)
+
+                  ; t is type of property
+                  ; new-o is instance of t.
+                  ; o-for-in is object for write method.
+                  [t new-o o-for-in] 
+                  (cond (contains? (ancestors pt) java.util.Collection)
+                        (let [t ((vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments)) 0)
+                              new-o (.newInstance t)]
+                          [t new-o [#{new-o}]])
                   
-                          (.isArray pt) 
-                          (.getComponentType pt)
-    
-                          :else pt)
-                  new-o (.newInstance t)
-                  
-                  ; Create object for inserting to specified property description.
-                  o-for-in (cond (contains? (ancestors pt) java.util.Collection) 
-                                 [#{new-o}]
-                  
-                                 (.isArray pt) 
-                                 [(into-array [new-o])]
-    
-                                 :else [new-o])
+                        (.isArray pt) 
+                        (let [t (.getComponentType pt)
+                              new-o (.newInstance t)]
+                          [t new-o [(into-array [new-o])]])
+      
+                          :else (let [new-o (.newInstance pt)]
+                                  [pt new-o [new-o]]))
                   _ (.invoke (.getWriteMethod pd) object (into-array o-for-in))]
               (recur t (first path) (next path) new-o))))))))
 
