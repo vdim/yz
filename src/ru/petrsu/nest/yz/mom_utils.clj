@@ -270,7 +270,9 @@
                                                 count-min (apply min (map count ps))
                                                 ps (filter (fn [p] (= (count p) count-min)) ps)
                                                 ps (if (= %2 cl-source) (filter-paths %2 ps mom-) ps)]
-                                            (assoc %1 %2 ps))
+                                            (if (empty? ps)
+                                              (dissoc %1 %2) ; deletes all values.
+                                              (assoc %1 %2 ps)))
                                           %1))
                                      m-of-source classes)))
                     mom)))
