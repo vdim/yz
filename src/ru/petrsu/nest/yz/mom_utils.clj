@@ -29,8 +29,8 @@
 
 
 (defn sort-classes
-  "Sorts list of classes in the following order: firsts are parents, 
-  nexts are child."
+  "Sorts list of classes in the following 
+  order: firsts are parents, nexts are child."
   [classes]
   (sort (fn [cl1 cl2]
           (cond (contains? (-> cl1 ancestors set) cl2) 1 
@@ -54,6 +54,59 @@
             (let [t (.getComponentType pt)]
               (if (and (not (nil? t)) (contains? classes t))
                 [t, (.getName pd)]))))))
+
+
+(defn new-instance
+  "Returns new instance 
+  for specified class."
+  [cl mom]
+  (if (u/int-or-abs? cl)
+    (let [children (get-in mom [:children cl])
+          children (remove u/int-or-abs? children)]
+      (.newInstance (first children)))
+    (.newInstance cl)))
+
+
+(defn un-path?
+  "Returns true in case path is 
+  unnecessary for specified class."
+  [cl path mom]
+  (let [o (new-instance cl mom)]
+    (loop [cl cl prop (first path) path (next path) object o]
+      (let [pd (some #(if (= (.getName %) prop) %) (u/descriptors cl))]
+        (if (nil? pd)
+          false
+          (if (empty? path)
+            (identical? o (.invoke (.getReadMethod pd) object (into-array [])))
+            (let [pt (.getPropertyType pd)
+
+                  ; t is type of property
+                  ; new-o is instance of t.
+                  ; o-for-in is object for write method.
+                  [t new-o o-for-in] 
+                  (cond (contains? (ancestors pt) java.util.Collection)
+                        (let [t ((vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments)) 0)
+                              new-o (new-instance t mom)]
+                          [t new-o [#{new-o}]])
+                  
+                        (.isArray pt) 
+                        (let [t (.getComponentType pt)
+                              new-o (new-instance t mom)]
+                          [t new-o [(into-array [new-o])]])
+      
+                          :else (let [new-o (new-instance pt mom)]
+                                  [pt new-o [new-o]]))
+                  _ (.invoke (.getWriteMethod pd) object (into-array o-for-in))]
+              (recur t (first path) (next path) new-o))))))))
+
+
+(defn filter-paths
+  "Filters paths due to the un-path? function."
+  [cl paths mom]
+  (vec (remove #(try
+                  (un-path? cl % mom)
+                  (catch Exception e false)) 
+               paths)))
 
 
 (defn get-related
@@ -151,7 +204,10 @@
   (reduce (fn [m cl]
             (assoc m
                    cl
-                   (reduce #(let [paths (get-s-paths cl %2 (set classes))]
+                   (reduce #(let [paths (get-s-paths cl %2 (set classes))
+                                  paths (if (= %2 cl)
+                                          (filter-paths cl paths mom-old)
+                                          paths)]
                               (if (empty? paths)
                                 %1 
                                 (assoc %1 %2 paths)))
@@ -212,7 +268,8 @@
                                                 ps (for [a paths b to-t-paths] (vec (concat a b)))
                                                 ps (if old-paths (concat old-paths ps) ps)
                                                 count-min (apply min (map count ps))
-                                                ps (vec (filter (fn [p] (= (count p) count-min)) ps))]
+                                                ps (filter (fn [p] (= (count p) count-min)) ps)
+                                                ps (if (= %2 cl-source) (filter-paths %2 ps mom-) ps)]
                                             (assoc %1 %2 ps))
                                           %1))
                                      m-of-source classes)))
@@ -257,78 +314,11 @@
       (if (empty? (get-in mom [c b]))
         (let [children (set (get-in mom [:children a]))]
           (if (and (contains? children b) (not-empty (get-in mom [c a])))
-            (assoc-in mom  [c b] (get-in mom [c a]))
+            (assoc-in mom [c b] (get-in mom [c a]))
             mom))
         mom))
     mom
     (for [a classes b classes c classes :when (and (not= a b) (not= b c) (not= a c))] [a b c])))
-
-
-(defn new-instance
-  "Returns new instance 
-  for specified class."
-  [cl mom]
-  (if (u/int-or-abs? cl)
-    (let [children (get-in mom [:children cl])
-          children (remove u/int-or-abs? children)]
-      (.newInstance (first children)))
-    (.newInstance cl)))
-
-
-(defn un-path?
-  "Returns true in case path is 
-  unnecessary for specified class."
-  [cl path mom]
-  (let [o (.newInstance cl)]
-    (loop [cl cl prop (first path) path (next path) object o]
-      (let [pd (some #(if (= (.getName %) prop) %) (u/descriptors cl))]
-        (if (nil? pd)
-          false
-          (if (empty? path)
-            (identical? o (.invoke (.getReadMethod pd) object (into-array [])))
-            (let [pt (.getPropertyType pd)
-
-                  ; t is type of property
-                  ; new-o is instance of t.
-                  ; o-for-in is object for write method.
-                  [t new-o o-for-in] 
-                  (cond (contains? (ancestors pt) java.util.Collection)
-                        (let [t ((vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments)) 0)
-                              new-o (new-instance t mom)]
-                          [t new-o [#{new-o}]])
-                  
-                        (.isArray pt) 
-                        (let [t (.getComponentType pt)
-                              new-o (new-instance t mom)]
-                          [t new-o [(into-array [new-o])]])
-      
-                          :else (let [new-o (new-instance pt mom)]
-                                  [pt new-o [new-o]]))
-                  _ (.invoke (.getWriteMethod pd) object (into-array o-for-in))]
-              (recur t (first path) (next path) new-o))))))))
-
-
-(defn remove-paths
-  "Deletes unnecessary paths. A path is 
-  unnecessary if it always leads to the 
-  same element. Returns new mom."
-  [mom classes]
-  (reduce 
-    (fn [mom cl]
-      (if (u/int-or-abs? cl)
-        mom
-        (let [paths (get-in mom [cl cl])]
-          (if paths
-            (let [new-paths (remove #(try
-                                       (un-path? cl % mom)
-                                       (catch Exception e false)) 
-                                    paths)]
-              (if (empty? new-paths)
-                (assoc mom cl (dissoc (get mom cl) cl))
-                (assoc-in mom [cl cl] (vec new-paths))))
-            mom))))
-    mom
-    classes))
 
 
 (defn gen-mom
@@ -342,27 +332,18 @@
                                   cl-t (sort-classes cls-without-ints)] 
                               [cl-s cl-t])
          
+         mom-old (assoc mom-old :children (children classes))
          mom (dissoc-nil (gen-basic-mom (sort-classes classes) mom-old))
          mom (assoc mom 
                     :names (get-names mom (:names mom-old))
-                    :children (children classes)
+                    :children (:children mom-old)
                     :namespaces (get mom-old :namespaces))
 
          ; Copy paths.
          mom (copy-paths mom classes)
          
-         ; Remove unnecessary paths after copy stage. 
-         ; A path is unnecessary if it always leads 
-         ; to the same element.
-         mom (remove-paths mom classes)
-
          ; Concats paths.
          mom (concat-paths mom cl-cl-without-ints cls-without-ints)
-         
-         ; Remove unnecessary paths after concat stage. 
-         ; A path is unnecessary if it always leads 
-         ; to the same element.
-         mom (remove-paths mom classes)
          ]
      mom)))
 
