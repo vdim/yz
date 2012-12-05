@@ -199,22 +199,25 @@
   yet another class but there is not path from the one class to the 
   yet another class then we create path from the one class to the
   yet another class."
-  [mom cl-cl classes]
+  [mom- cl-cl classes]
   (reduce (fn [mom [cl-source cl-target]] 
             (let [paths (get-in mom [cl-source cl-target])]
-                  (if (not (and (empty? paths) (map? paths)))
+                  (if (not-empty paths)
                     (let [m-of-source (get mom cl-source)
                           m-of-target (get mom cl-target)]
                       (assoc mom cl-source
-                             (reduce #(if (or (= cl-source %2) (get m-of-source %2))
-                                        %
-                                        (let [ps (vec (for [a paths b (get m-of-target %2)] (vec (concat a b))))]
-                                          (if (not-empty ps)
-                                            (assoc %1 %2 ps)
-                                            %)))
+                             (reduce #(let [to-t-paths (get m-of-target %2)]
+                                        (if (and to-t-paths (not (get-in mom- [cl-source %2])))
+                                          (let [old-paths (get m-of-source %2)
+                                                ps (for [a paths b to-t-paths] (vec (concat a b)))
+                                                ps (if old-paths (concat old-paths ps) ps)
+                                                count-min (apply min (map count ps))
+                                                ps (vec (filter (fn [p] (= (count p) count-min)) ps))]
+                                            (assoc %1 %2 ps))
+                                          %1))
                                      m-of-source classes)))
                     mom)))
-          mom
+          mom-
           cl-cl))
 
 
@@ -261,10 +264,21 @@
     (for [a classes b classes c classes :when (and (not= a b) (not= b c) (not= a c))] [a b c])))
 
 
+(defn new-instance
+  "Returns new instance 
+  for specified class."
+  [cl mom]
+  (if (u/int-or-abs? cl)
+    (let [children (get-in mom [:children cl])
+          children (remove u/int-or-abs? children)]
+      (.newInstance (first children)))
+    (.newInstance cl)))
+
+
 (defn un-path?
   "Returns true in case path is 
   unnecessary for specified class."
-  [cl path]
+  [cl path mom]
   (let [o (.newInstance cl)]
     (loop [cl cl prop (first path) path (next path) object o]
       (let [pd (some #(if (= (.getName %) prop) %) (u/descriptors cl))]
@@ -280,15 +294,15 @@
                   [t new-o o-for-in] 
                   (cond (contains? (ancestors pt) java.util.Collection)
                         (let [t ((vec (.. pd getReadMethod getGenericReturnType getActualTypeArguments)) 0)
-                              new-o (.newInstance t)]
+                              new-o (new-instance t mom)]
                           [t new-o [#{new-o}]])
                   
                         (.isArray pt) 
                         (let [t (.getComponentType pt)
-                              new-o (.newInstance t)]
+                              new-o (new-instance t mom)]
                           [t new-o [(into-array [new-o])]])
       
-                          :else (let [new-o (.newInstance pt)]
+                          :else (let [new-o (new-instance pt mom)]
                                   [pt new-o [new-o]]))
                   _ (.invoke (.getWriteMethod pd) object (into-array o-for-in))]
               (recur t (first path) (next path) new-o))))))))
@@ -306,7 +320,7 @@
         (let [paths (get-in mom [cl cl])]
           (if paths
             (let [new-paths (remove #(try
-                                       (un-path? cl %)
+                                       (un-path? cl % mom)
                                        (catch Exception e false)) 
                                     paths)]
               (if (empty? new-paths)
@@ -336,11 +350,20 @@
 
          ; Copy paths.
          mom (copy-paths mom classes)
+         
+         ; Remove unnecessary paths after copy stage. 
+         ; A path is unnecessary if it always leads 
+         ; to the same element.
+         mom (remove-paths mom classes)
+
          ; Concats paths.
          mom (concat-paths mom cl-cl-without-ints cls-without-ints)
-         ; Remove unnecessary paths. A path is unnecessary 
-         ; if it always leads to the same element.
-         mom (remove-paths mom classes)]
+         
+         ; Remove unnecessary paths after concat stage. 
+         ; A path is unnecessary if it always leads 
+         ; to the same element.
+         mom (remove-paths mom classes)
+         ]
      mom)))
 
 
