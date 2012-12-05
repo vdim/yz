@@ -20,6 +20,7 @@
 (ns ru.petrsu.nest.util.utils
   ^{:author "Vyacheslav Dimitrov"
     :doc "Set of functions which is build-in YZ."}
+  (:use ru.petrsu.nest.yz.parsing)
   (:import (java.net InetAddress)
            (ru.petrsu.nest.yz YZUtils)))
 
@@ -96,3 +97,20 @@
   "Slow function for testing parallelism."
   [p]
   (dotimes [_ 1e7] (string? p)))
+
+
+(defn without-paths
+  "Returns pairs from elements which 
+  are caused NotFoundPathException."
+  [mom cl-cl]
+  (reduce 
+    (fn [v [cl1 cl2]] 
+      (let [sn1 (.getSimpleName cl1)
+            sn2 (.getSimpleName cl2)
+            v (try 
+                (parse  (str sn1" (" sn2 ")") mom)
+                v
+                (catch ru.petrsu.nest.yz.NotFoundPathException nfpe (conj v [sn1 sn2])))] 
+        v))
+    []
+    cl-cl))
