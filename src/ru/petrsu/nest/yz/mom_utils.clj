@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -211,15 +211,15 @@
                               (if (empty? paths)
                                 %1 
                                 (assoc %1 %2 paths)))
-                           (init-map-for-cl cl (get mom-old cl)) 
+                           (init-map-for-cl cl (get mom-old cl))
                            classes)))
           mom-old
           classes))
 
 
 (defn- dissoc-nil
-  "Returns new MOM where pairs with nil value are
-  removed."
+  "Returns new MOM where pairs 
+  with nil value are removed."
   [mom]
   (reduce 
     (fn [m, [k v]]
@@ -269,7 +269,7 @@
                                                 ps (if old-paths (concat old-paths ps) ps)
                                                 count-min (apply min (map count ps))
                                                 ps (filter (fn [p] (= (count p) count-min)) ps)
-                                                ps (if (= %2 cl-source) (filter-paths %2 ps mom-) ps)]
+                                                ps (if (= %2 cl-source) (filter-paths %2 ps mom-) (vec ps))]
                                             (if (empty? ps)
                                               (dissoc %1 %2) ; deletes all values.
                                               (assoc %1 %2 ps)))
@@ -343,7 +343,7 @@
 
          ; Copy paths.
          mom (copy-paths mom classes)
-         
+
          ; Concats paths.
          mom (concat-paths mom cl-cl-without-ints cls-without-ints)
          ]
