@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -22,7 +22,7 @@
     :doc "Tests utils functions."}
   (:use ru.petrsu.nest.yz.mom-utils clojure.test ru.petrsu.nest.yz.utils)
   (:require [ru.petrsu.nest.yz.init :as yzi])
-  (:import (ru.petrsu.nest.son Floor Room Building)))
+  (:import (ru.petrsu.nest.son Floor Room Building SimpleOU CompositeOU SON)))
 
 (def classes #{Floor, Room, Building})
 
@@ -166,3 +166,15 @@
                                  [2 [1 [4 [] 5 [6 [] 7 [9 []]]]]])))
          (is (= [1 []] (intersection [1 [] 2 [1 [4 [] 5 [6 [] 7 [8 []]]]]] 
                                      [2 [1 [4 [] 5 [6 [] 7 [9 []]]]] 1 []]))))
+
+
+(deftest t-gen-mom
+         ^{:doc "Tests generating of mom."}
+         (let [t-mom (gen-mom yzi/classes)
+               f #(= (get-in t-mom [%1 %2]) %3)]
+           (is (f SimpleOU SimpleOU [["parent" "OUs"]]))
+           (is (f CompositeOU SimpleOU [["OUs"]]))
+           (is (f CompositeOU Room [["OUs" "occupancies" "room"]]))
+           (is (f Building Building nil))
+           (is (f Building SON nil))
+           (is (f SON Room [["buildings" "floors" "rooms"] ["rootDevice" "occupancy" "room"]]))))
