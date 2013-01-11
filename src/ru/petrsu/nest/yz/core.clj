@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -549,33 +549,37 @@
 
 (defn- p-nest
   "Processes :nest value with some objects."
-  [^PersistentArrayMap nest objs rec]
-  (if (empty? objs)
-    []
-    (let [n (:nest nest)
-          f #(if (nil? n) [] (process-nests n (partial get-objs-by-path [%1] (:what nest))))]
-      (reduce #(if (:medium nest)
-                 (let [r (f (%2 0))]
-                   (if (empty? r)
-                     %1
-                     (apply conj %1 [(%2 1) r])))
-                 (apply conj %1
-                        (if rec
-                          [(-> (p-then [%2] nest) first second)
-                           (let [what (:what nest)
-                                 ; List of objects which is got due to recursive link.
-                                 objs- (remove nil? (mapcat (partial reduce get-objs [%2]) (get-in @a-mom [what what])))
-                                 newv (f %2)]
-                             (if (empty? objs-)
-                               newv
-                               (reduce (fn [a1 a2] 
-                                         (vec (concat a1 (p-nest nest [a2] rec)))) 
-                                       newv objs-)))]
-                          [(%2 1) (f (%2 0))])))
-              []
-              (if rec
-                objs
-                (p-then objs nest))))))
+  ([^PersistentArrayMap nest objs rec]
+   (p-nest nest objs rec #{}))
+  ([^PersistentArrayMap nest objs rec acc]
+   (if (empty? objs)
+     []
+     (let [n (:nest nest)
+           f #(if (nil? n) [] (process-nests n (partial get-objs-by-path [%1] (:what nest))))]
+       (reduce #(if (:medium nest)
+                  (let [r (f (%2 0))]
+                    (if (empty? r)
+                      %1
+                      (apply conj %1 [(%2 1) r])))
+                  (apply conj %1
+                         (if rec
+                           [(-> (p-then [%2] nest) first second)
+                            (let [what (:what nest)
+                                  ; List of objects which is got due to recursive link.
+                                  objs- (remove nil? (mapcat (partial reduce get-objs [%2]) (get-in @a-mom [what what])))
+                                  objs- (remove (partial = :not-found) objs-)
+                                  objs- (remove (partial contains? acc) objs-)
+                                  newv (f %2)]
+                              (if (empty? objs-)
+                                newv
+                                (reduce (fn [a1 a2] 
+                                          (vec (concat a1 (p-nest nest [a2] rec (set (concat acc objs-)))))) 
+                                        newv objs-)))]
+                           [(%2 1) (f (%2 0))])))
+               []
+               (if rec
+                 objs
+                 (p-then objs nest)))))))
 
 
 (defn- process-nests
