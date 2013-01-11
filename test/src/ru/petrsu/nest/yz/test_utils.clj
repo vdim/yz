@@ -29,13 +29,13 @@
 (deftest t-get-ps
          ^{:doc "Tests the get-ps function."}
           (is (= (first (get-ps Room Building classes))
-                 {:path [ru.petrsu.nest.son.Room ru.petrsu.nest.son.Floor ru.petrsu.nest.son.Building], 
+                 {:path [Room Floor Building], 
                   :ppath ["floor" "building"]}))
           (is (= (first (get-ps Floor Building classes))
-                 {:path [ru.petrsu.nest.son.Floor ru.petrsu.nest.son.Building], 
+                 {:path [Floor Building], 
                   :ppath ["building"]}))
           (is (= (first (get-ps Building Floor classes))
-                 {:path [ru.petrsu.nest.son.Building ru.petrsu.nest.son.Floor], 
+                 {:path [Building Floor], 
                   :ppath ["floors"]})))
 
 (deftest t-get-short-name
