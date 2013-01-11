@@ -320,7 +320,7 @@
             mom))
         mom))
     mom
-    (for [a classes b classes c classes :when (and (not= a b) (not= b c) (not= a c))] [a b c])))
+    (for [a classes b classes c classes] [a b c])))
 
 
 (defn gen-mom
