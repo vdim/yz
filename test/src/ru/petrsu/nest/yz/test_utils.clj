@@ -22,19 +22,20 @@
     :doc "Tests utils functions."}
   (:use ru.petrsu.nest.yz.mom-utils clojure.test ru.petrsu.nest.yz.utils)
   (:require [ru.petrsu.nest.yz.init :as yzi])
-  (:import (ru.petrsu.nest.son Floor Room Building SimpleOU CompositeOU SON)))
+  (:import (ru.petrsu.nest.son Floor Room Building SonElement
+                               SimpleOU CompositeOU SON)))
 
 (def classes #{Floor, Room, Building})
 
 (deftest t-get-ps
          ^{:doc "Tests the get-ps function."}
-          (is (= (first (get-ps Room Building classes))
+          (is (= (first (get-ps Room Building classes nil))
                  {:path [Room Floor Building], 
                   :ppath ["floor" "building"]}))
-          (is (= (first (get-ps Floor Building classes))
+          (is (= (first (get-ps Floor Building classes nil))
                  {:path [Floor Building], 
                   :ppath ["building"]}))
-          (is (= (first (get-ps Building Floor classes))
+          (is (= (first (get-ps Building Floor classes nil))
                  {:path [Building Floor], 
                   :ppath ["floors"]})))
 
@@ -181,4 +182,5 @@
            (is (f CompositeOU Room [["OUs" "occupancies" "room"]]))
            (is (f Building Building nil))
            (is (f Building SON nil))
-           (is (f SON Room [["buildings" "floors" "rooms"] ["rootDevice" "occupancy" "room"]]))))
+           (is (f SON Room [["buildings" "floors" "rooms"] ["rootDevice" "occupancy" "room"]]))
+           (is (every? true? (map #(f SonElement % nil) yzi/classes)))))

@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -156,6 +156,17 @@
                                    :where [["occupancies" "devices"]] 
                                    :nest [{:what ru.petrsu.nest.son.Network
                                            :where [["linkInterfaces" "networkInterfaces" "network"]]
+                                           :nest [{:what ru.petrsu.nest.son.Floor}]}]}]}]}]))
+
+         
+         (is (= (parse "building (room (device (ipnetwork (floor))))", mom-)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :where [["floors" "rooms"]]
+                           :nest [{:what ru.petrsu.nest.son.Device
+                                   :where [["occupancies" "devices"]] 
+                                   :nest [{:what ru.petrsu.nest.son.IPNetwork
+                                           :where [["linkInterfaces" "networkInterfaces" "network"]]
                                            :nest [{:what ru.petrsu.nest.son.Floor
                                                    :where [["networkInterfaces" 
                                                             "linkInterface" 
@@ -197,6 +208,23 @@
                                    :where [["devices"]]
                                    :nest [{:what ru.petrsu.nest.son.Network
                                            :where [["linkInterfaces" "networkInterfaces" "network"]]
+                                           :nest [{:what ru.petrsu.nest.son.Floor}]}]}
+                                  u/union
+                                  {:what ru.petrsu.nest.son.NetworkInterface
+                                   :where [["devices" "linkInterfaces" "networkInterfaces"]]}]}]}]))
+
+         
+           (is (= (parse "building (room, occupancy (device (ipnetwork (floor)), networkinterface))", mom-)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :nest [{:what ru.petrsu.nest.son.Room
+                           :where [["floors", "rooms"]]}
+                          u/union
+                          {:what ru.petrsu.nest.son.Occupancy
+                           :where [["floors" "rooms" "occupancies"]]
+                           :nest [{:what ru.petrsu.nest.son.Device
+                                   :where [["devices"]]
+                                   :nest [{:what ru.petrsu.nest.son.IPNetwork
+                                           :where [["linkInterfaces" "networkInterfaces" "network"]]
                                            :nest [{:what ru.petrsu.nest.son.Floor
                                                    :where [["networkInterfaces" 
                                                             "linkInterface" 
@@ -206,6 +234,7 @@
                                   u/union
                                   {:what ru.petrsu.nest.son.NetworkInterface
                                    :where [["devices" "linkInterfaces" "networkInterfaces"]]}]}]}]))
+
 
          (is (= (parse "building, room", mom-)
                  [{:what ru.petrsu.nest.son.Building}

@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -284,7 +284,10 @@
                         it_cou [] fin_cou [] man_cou [] 
                         web_cou [] net_cou [] bd_cou []
                                                  fee_cou [] insure_cou []]))
-         (is (f2 "*cou" [main_cou []
+         (let [mom (assoc-in bd/bd-mom [CompositeOU CompositeOU] [["parent"]])
+               em (tc/em-memory son)]
+           (is (:result (pquery "*cou" mom em) 
+                        [main_cou []
                          it_cou [main_cou []] 
                          fin_cou [main_cou []]
                          man_cou [main_cou []] 
@@ -292,7 +295,7 @@
                          net_cou [it_cou [main_cou []]]
                          bd_cou [it_cou [main_cou []]] 
                          fee_cou [fin_cou [main_cou []]]
-                         insure_cou [fin_cou [main_cou []]]])))
+                         insure_cou [fin_cou [main_cou []]]]))))
 
 (deftest mom-recur
          (let [mom (assoc-in bd/bd-mom [CompositeOU Room] [[[:rec "OUs"] "occupancies" "room"]])
