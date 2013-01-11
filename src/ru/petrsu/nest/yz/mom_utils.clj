@@ -112,33 +112,37 @@
 (defn get-related
   "Returns related classes for specified Class's instance.
   ('classes' must be set for correct working 'contains?' function."
-  [cl classes]
-  (remove nil? (map #(check-type % classes) (u/descriptors cl))))
+  [cl classes children]
+  (let [f (fn [descs] (remove nil? (map #(check-type % classes) descs)))
+        rels (f (u/descriptors cl)) ]
+    (if (empty? rels)
+      (f (mapcat #(u/descriptors %) (get children cl)))
+      rels)))
 
 
 (defn- adds-related
   "Adds related classes to last element of :path in map 'm'.
   ('classes' must be set for correct working 'contains?' function.
   and doesn't contains visited elements)."
-  [m classes]
-  (let [rels (get-related (last (:path m)) classes)]
+  [m classes children]
+  (let [rels (get-related (last (:path m)) classes children)]
     (if (empty? rels)
       m
-      (map (fn [[cl prop]] 
-             (assoc m :ppath (conj (:ppath m) prop) :path (conj (:path m) cl))) rels))))
+      (map (fn [[cl prop]] (assoc m :ppath (conj (:ppath m) prop) :path (conj (:path m) cl))) rels))))
 
 
 (defn- check-to
   "Splits vector with paths ('v') into to vectors:
   first vector contains maps where last element of :path key equals 'to',
   second vector otherwise."
-  [to v]
+  [to v children]
   (reduce 
     (fn [[to-t to-f] m]
-      (if (= (-> m :path last) to)
-        [(conj to-t m) to-f]
-        [to-t (conj to-f m)]))
-    [[] []]
+      (let [l (-> m :path last)]
+        (if (or (= l to) (contains? (set (get children l)) to))
+          [(conj to-t m) to-f]
+          [to-t (conj to-f m)])))
+      [[] []]
     v))
 
   
@@ -146,13 +150,13 @@
   "Returns sequence of maps. Each map contains following keys:
     :path path between \"from\" and \"to\" as classes
     :ppath path between \"from\" and \"to\" as properties"
-  [from to elems]
+  [from to elems children]
   (loop [all-paths [{:path [from] :ppath []}] 
          new-elems elems
          old-paths #{from}
          res ()]
-    (let [all-paths (flatten (map #(adds-related % new-elems) all-paths)) 
-          [to-t to-f] (check-to to all-paths)
+    (let [all-paths (flatten (map #(adds-related % new-elems children) all-paths)) 
+          [to-t to-f] (check-to to all-paths children)
           new-paths (set (flatten (map #(:path %) all-paths)))]
       (if (= old-paths new-paths) ; not new piece of path
         res
@@ -165,8 +169,8 @@
 (defn get-s-paths
   "Gets maps from get-ps and transforms value of :ppath key to
   one string. Returns sequence of this strings."
-  [from to classes]
-  (vec (map :ppath (get-ps from to classes))))
+  [from to classes children]
+  (vec (map :ppath (get-ps from to classes children))))
 
 
 (defn init-map-for-cl
@@ -204,15 +208,17 @@
   (reduce (fn [m cl]
             (assoc m
                    cl
-                   (reduce #(let [paths (get-s-paths cl %2 (set classes))
-                                  paths (if (= %2 cl)
-                                          (filter-paths cl paths mom-old)
-                                          paths)]
-                              (if (empty? paths)
-                                %1 
-                                (assoc %1 %2 paths)))
-                           (init-map-for-cl cl (get mom-old cl))
-                           classes)))
+                   (if (u/int-or-abs? cl) 
+                     (init-map-for-cl cl (get mom-old cl))
+                     (reduce #(let [paths (get-s-paths cl %2 (set classes) (:children mom-old))
+                                    paths (if (= %2 cl)
+                                            (filter-paths cl paths mom-old)
+                                            paths)]
+                                (if (empty? paths)
+                                  %1 
+                                  (assoc %1 %2 paths)))
+                             (init-map-for-cl cl (get mom-old cl))
+                             classes))))
           mom-old
           classes))
 
@@ -340,7 +346,7 @@
                     :names (get-names mom (:names mom-old))
                     :children (:children mom-old)
                     :namespaces (get mom-old :namespaces))
-
+         
          ; Copy paths.
          mom (copy-paths mom classes)
 
