@@ -172,6 +172,10 @@
          ^{:doc "Tests generating of mom."}
          (let [t-mom (gen-mom yzi/classes)
                f #(= (get-in t-mom [%1 %2]) %3)]
+           (is (f Room Floor [["floor"]]))
+           (is (f Floor Room [["rooms"]]))
+           (is (f Floor Floor [["building" "floors"]]))
+           (is (f Room Room [["floor" "rooms"]]))
            (is (f SimpleOU SimpleOU [["parent" "OUs"]]))
            (is (f CompositeOU SimpleOU [["OUs"]]))
            (is (f CompositeOU Room [["OUs" "occupancies" "room"]]))
