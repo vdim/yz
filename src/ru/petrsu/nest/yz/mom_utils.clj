@@ -256,36 +256,6 @@
       s-classes)))
 
 
-(defn concat-paths
-  "If there is path from one class to another and from another class to
-  yet another class but there is not path from the one class to the 
-  yet another class then we create path from the one class to the
-  yet another class."
-  [mom- cl-cl classes]
-  (reduce (fn [mom [cl-source cl-target]] 
-            (let [paths (get-in mom [cl-source cl-target])]
-                  (if (not-empty paths)
-                    (let [m-of-source (get mom cl-source)
-                          m-of-target (get mom cl-target)]
-                      (assoc mom cl-source
-                             (reduce #(let [to-t-paths (get m-of-target %2)]
-                                        (if (and to-t-paths (not (get-in mom- [cl-source %2])))
-                                          (let [old-paths (get m-of-source %2)
-                                                ps (for [a paths b to-t-paths] (vec (concat a b)))
-                                                ps (if old-paths (concat old-paths ps) ps)
-                                                count-min (apply min (map count ps))
-                                                ps (filter (fn [p] (= (count p) count-min)) ps)
-                                                ps (if (= %2 cl-source) (filter-paths %2 ps mom-) (vec ps))]
-                                            (if (empty? ps)
-                                              (dissoc %1 %2) ; deletes all values.
-                                              (assoc %1 %2 ps)))
-                                          %1))
-                                     m-of-source classes)))
-                    mom)))
-          mom-
-          cl-cl))
-
-
 (defn c-paths
   "Counts elements which have paths 
   into specified MOM."
@@ -349,9 +319,6 @@
          
          ; Copy paths.
          mom (copy-paths mom classes)
-
-         ; Concats paths.
-         mom (concat-paths mom cl-cl-without-ints cls-without-ints)
          ]
      mom)))
 
