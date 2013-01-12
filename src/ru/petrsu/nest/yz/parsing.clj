@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -268,9 +268,14 @@
       ;; [20.05.12] But now MOM contains information about
       ;; children of class, so if MOM is defined we can check
       ;; whether class or one of its children has the property.
-      (do 
-        (if cl-source (check-prop cl-source id))
-        [{:id [[id]] :cl cl-target}])
+      ;; [12.01.13] Also we can't throw exception in case
+      ;; cl-source and cl-target are defined because of
+      ;; cl-source also may be abstract class or interface so
+      ;; we must search paths in runtime (core.clj).
+      (if (and cl-source cl-target) 
+        [{:id nil :cl cl-target}]
+        (let [_ (check-prop cl-source id)]
+         [{:id [[id]] :cl cl-target}]))
       {:id paths :cl cl-target})))
 
 
