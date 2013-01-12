@@ -28,17 +28,6 @@
             [ru.petrsu.nest.yz.utils :as u]))
 
 
-(defn sort-classes
-  "Sorts list of classes in the following 
-  order: firsts are parents, nexts are child."
-  [classes]
-  (sort (fn [cl1 cl2]
-          (cond (contains? (-> cl1 ancestors set) cl2) 1 
-                (contains? (-> cl2 ancestors set) cl1) -1
-                :else 0))
-        classes))
-
-
 (defn- check-type
   "Defines whether type of pd (PropertyDescription) is contained in list of classes."
   [pd classes]
@@ -269,19 +258,6 @@
   (reduce #(if (get-in mom %2) (+ %1 (count (get-in mom %2))) %1) 0 cl-cl))
 
 
-(defn ints-not-ints
-  "Takes list of classes and returns vector
-  where first element is classes which are not
-  interface or abstract class and second element
-  is classes which are."
-  [classes]
-  (reduce (fn [[not-ins ins] cl] (if (u/int-or-abs? cl)
-                                   [not-ins (conj ins cl)]
-                                   [(conj not-ins cl) ins])) 
-          [[] []] 
-          classes))
-
-
 (defn copy-paths
   "Returns new mom. Let's we have three classes: a, b, c.
   The a is parent of the b, there is path between c and a, but
@@ -304,14 +280,10 @@
   ([classes]
    (gen-mom classes {}))
   ([classes, mom-old]
-   (let [cl-cl (for [cl-s (sort-classes classes) cl-t (sort-classes classes)] [cl-s cl-t])
-         [cls-without-ints interfaces] (ints-not-ints classes)
-         cl-cl-without-ints (for [cl-s (sort-classes cls-without-ints) 
-                                  cl-t (sort-classes cls-without-ints)] 
-                              [cl-s cl-t])
+   (let [cl-cl (for [cl-s classes cl-t classes] [cl-s cl-t])
          
          mom-old (assoc mom-old :children (children classes))
-         mom (dissoc-nil (gen-basic-mom (sort-classes classes) mom-old))
+         mom (dissoc-nil (gen-basic-mom classes mom-old))
          mom (assoc mom 
                     :names (get-names mom (:names mom-old))
                     :children (:children mom-old)
