@@ -21,9 +21,14 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "Tests utils functions."}
   (:use ru.petrsu.nest.yz.mom-utils clojure.test ru.petrsu.nest.yz.utils)
-  (:require [ru.petrsu.nest.yz.init :as yzi])
-  (:import (ru.petrsu.nest.son Floor Room Building SonElement
-                               SimpleOU CompositeOU SON)))
+  (:require [ru.petrsu.nest.yz.init :as yzi] 
+            [ru.petrsu.nest.yz.queries.bd :as bd] 
+            [ru.petrsu.nest.yz.core :as yz] [ru.petrsu.nest.yz.queries.core :as tc])
+  (:import (ru.petrsu.nest.son SonElement SON, SpatialElement, Building, Room, Floor,
+                               Device, Network, IPNetwork, UnknownNetwork,
+                               NetworkElement, NetworkInterface, IPv4Interface, UnknownNetworkInterface,
+                               EthernetInterface, LinkInterface, VLANInterface, UnknownLinkInterface,
+                               OrganizationalElement, AbstractOU, CompositeOU, SimpleOU, Occupancy)))
 
 (def classes #{Floor, Room, Building})
 
@@ -184,3 +189,40 @@
            (is (f Building SON nil))
            (is (f SON Room [["buildings" "floors" "rooms"] ["rootDevice" "occupancy" "room"]]))
            (is (every? true? (map #(f SonElement % nil) yzi/classes)))))
+
+
+(deftest t-gen-mom-without-paths
+         ^{:doc "Check elements without paths."}
+         (let [t-mom (gen-mom yzi/classes)
+               cl-cl (for [cl1 yzi/classes cl2 yzi/classes] [cl1 cl2])
+               r (filter (fn [[cl1 cl2]] (let [q (str (.getSimpleName cl1) " (" (.getSimpleName cl2) ")")
+                                               thr (:thrwable (yz/pquery q t-mom bd/mem))]
+                                           (instance? ru.petrsu.nest.yz.NotFoundPathException thr)))
+                         cl-cl)]
+           (is (tc/eq-colls r 
+                            [[SonElement SON] 
+                             [SON SON]
+                             [Occupancy SON]
+                             [SpatialElement SON]
+                             [Building SON]
+                             [Room SON]
+                             [Floor SON]
+                             [NetworkElement SON]
+                             [Device SON]
+                             [LinkInterface SON]
+                             [UnknownLinkInterface SON]
+                             [EthernetInterface SON]
+                             [VLANInterface SON]
+                             [NetworkInterface SON]
+                             [UnknownNetworkInterface SON]
+                             [IPv4Interface SON]
+                             [Network SON]
+                             [UnknownNetwork SON]
+                             [IPNetwork SON]
+                             [OrganizationalElement SON]
+                             [CompositeOU SON]
+                             [SimpleOU SON]
+                             [AbstractOU SON]
+                             [Building Building]]
+                            ))))
+
