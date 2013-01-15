@@ -159,7 +159,6 @@
     "room"
     "floor"
     "building"]],
-  ru.petrsu.nest.son.UnknownNetwork [["networkInterfaces" "network"]],
   ru.petrsu.nest.son.EthernetInterface
   [["networkInterfaces" "linkInterface"]],
   ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
@@ -377,7 +376,6 @@
   ru.petrsu.nest.son.UnknownNetworkInterface [["networkInterfaces"]],
   ru.petrsu.nest.son.Room
   [["networkInterfaces" "linkInterface" "device" "occupancy" "room"]],
-  ru.petrsu.nest.son.IPNetwork [["networkInterfaces" "network"]],
   ru.petrsu.nest.son.SimpleOU
   [["networkInterfaces" "linkInterface" "device" "occupancy" "OU"]],
   ru.petrsu.nest.son.Occupancy
