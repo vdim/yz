@@ -223,6 +223,6 @@
                              [CompositeOU SON]
                              [SimpleOU SON]
                              [AbstractOU SON]
-                             [Building Building]]
-                            ))))
-
+                             [Building Building]
+                             [IPNetwork IPNetwork]
+                             [UnknownNetwork UnknownNetwork]]))))
