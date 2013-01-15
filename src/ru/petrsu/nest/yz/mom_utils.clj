@@ -258,23 +258,6 @@
   (reduce #(if (get-in mom %2) (+ %1 (count (get-in mom %2))) %1) 0 cl-cl))
 
 
-(defn copy-paths
-  "Returns new mom. Let's we have three classes: a, b, c.
-  The a is parent of the b, there is path between c and a, but
-  there is no path between c and b, so we copy the path to c and b."
-  [mom classes]
-  (reduce
-    (fn [mom [a b c]]
-      (if (empty? (get-in mom [c b]))
-        (let [children (set (get-in mom [:children a]))]
-          (if (and (contains? children b) (not-empty (get-in mom [c a])))
-            (assoc-in mom [c b] (get-in mom [c a]))
-            mom))
-        mom))
-    mom
-    (for [a classes b classes c classes] [a b c])))
-
-
 (defn gen-mom
   "Generates mom from list of classes."
   ([classes]
@@ -287,11 +270,7 @@
          mom (assoc mom 
                     :names (get-names mom (:names mom-old))
                     :children (:children mom-old)
-                    :namespaces (get mom-old :namespaces))
-         
-         ; Copy paths.
-         mom (copy-paths mom classes)
-         ]
+                    :namespaces (get mom-old :namespaces))]
      mom)))
 
 
