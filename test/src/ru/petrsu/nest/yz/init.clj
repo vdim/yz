@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -46,7 +46,7 @@
                                NetworkElement, NetworkInterface, IPv4Interface, UnknownNetworkInterface,
                                EthernetInterface, LinkInterface, VLANInterface, UnknownLinkInterface,
                                OrganizationalElement, AbstractOU, CompositeOU, SimpleOU, Occupancy)
-           (university.model Course, Faculty, Student Company)))
+           (university.model Course, Faculty, Student Company Person)))
 
 ;; MOM of the SON model from the Nest project (lsm version).
 (def i-mom (mom-from-file "nest.mom"))
@@ -86,7 +86,7 @@
 
 ;; Vector with all classes from University model.
 (def uni-classes
-  [Course, Faculty, Student, Company])
+  [Course, Faculty, Student, Company, Person])
 
 ;; MOM of the University model
 (def uni-mom (gen-mom uni-classes))

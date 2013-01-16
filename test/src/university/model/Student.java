@@ -2,9 +2,8 @@ package university.model;
 
 import java.util.HashSet;
 
-public class Student {
+public class Student extends Person {
     private String ID;
-    private String name;
     private HashSet<Course> courses = new HashSet<Course>();
     
     public String getID() {
@@ -13,14 +12,6 @@ public class Student {
     
     public void setID(String ID) {
 	this.ID = ID;
-    }
-    
-    public String getName() {
-	return name;
-    }
-    
-    public void setName(String name) {
-	this.name = name;
     }
     
     public HashSet<Course> getCourses() {

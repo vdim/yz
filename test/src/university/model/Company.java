@@ -7,7 +7,7 @@ public class Company {
     @DefaultProperty
     private String name;
 
-    private HashSet<Faculty> staff = new HashSet<Faculty>();
+    private HashSet<Person> staff = new HashSet<Person>();
     
     
     public String getName() {
@@ -18,11 +18,11 @@ public class Company {
 	this.name = name;
     }
     
-    public HashSet<Faculty> getFaculties() {
+    public HashSet<Person> getFaculties() {
 	return staff;
     }
 
-    public void addFaculty(Faculty f) {
+    public void addFaculty(Person f) {
 	staff.add(f);
     }
 }

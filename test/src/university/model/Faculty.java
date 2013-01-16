@@ -2,9 +2,8 @@ package university.model;
 
 import java.util.HashSet;
 
-public class Faculty {
+public class Faculty extends Person {
     private String office;
-    private String name;
     private HashSet<Course> courses = new HashSet<Course>();
     private HashSet<Course> coursesCreated = new HashSet<Course>();
     private Company company;
@@ -15,14 +14,6 @@ public class Faculty {
     
     public void setOffice(String office) {
 	this.office = office;
-    }
-    
-    public String getName() {
-	return name;
-    }
-    
-    public void setName(String name) {
-	this.name = name;
     }
     
     public HashSet<Course> getCourses() {

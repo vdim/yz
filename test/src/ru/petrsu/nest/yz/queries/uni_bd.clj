@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2012-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -21,7 +21,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "University DB."}
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf])
-  (:import (university.model Student Course Faculty)))
+  (:import (university.model Student Course Faculty Person)))
 
 ;; Faculty
 (def marry (doto (Faculty.) (.setName "Marry") (.setOffice "101")))
@@ -66,6 +66,7 @@
 (def courses [alg geo rus ger])
 
 ;; MultiCollectionManager
-(def uni-em (yzf/mc-em {Course courses, Faculty faculty, Student students}
-                       [Course Student Faculty]))
+(def uni-em (yzf/mc-em {Course courses, Faculty faculty, 
+                        Student students, Person (vec (concat students faculty))}
+                       [Course Student Faculty Person]))
 
