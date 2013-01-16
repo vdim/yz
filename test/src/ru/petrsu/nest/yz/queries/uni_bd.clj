@@ -21,7 +21,7 @@
   ^{:author "Vyacheslav Dimitrov"
     :doc "University DB."}
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf])
-  (:import (university.model Student Course Faculty Person)))
+  (:import (university.model Student Course Faculty Person Address)))
 
 ;; Faculty
 (def marry (doto (Faculty.) (.setName "Marry") (.setOffice "101")))
@@ -68,5 +68,5 @@
 ;; MultiCollectionManager
 (def uni-em (yzf/mc-em {Course courses, Faculty faculty, 
                         Student students, Person (vec (concat students faculty))}
-                       [Course Student Faculty Person]))
+                       [Course Student Faculty Person Address]))
 

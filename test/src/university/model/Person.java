@@ -2,6 +2,7 @@ package university.model;
 
 public class Person {
     private String name;
+    private Address address;
     
     public String getName() {
 	return name;
@@ -11,4 +12,11 @@ public class Person {
 	this.name = name;
     }
     
+    public Address getAddress() {
+	return address;
+    }
+    
+    public void setAddress(Address address) {
+	this.address = address;
+    }
 }
