@@ -177,7 +177,9 @@
 (deftest t-gen-mom
          ^{:doc "Tests generating of mom."}
          (let [t-mom (gen-mom yzi/classes)
-               f #(= (get-in t-mom [%1 %2]) %3)]
+               f #(if (nil? %3)
+                    (= nil (get-in t-mom [%1 %2]))
+                    (tc/eq-colls (get-in t-mom [%1 %2]) %3))]
            (is (f Room Floor [["floor"]]))
            (is (f Floor Room [["rooms"]]))
            (is (f Floor Floor [["building" "floors"]]))
