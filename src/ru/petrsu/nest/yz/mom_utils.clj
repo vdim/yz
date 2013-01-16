@@ -103,7 +103,7 @@
   ('classes' must be set for correct working 'contains?' function."
   [cl classes children]
   (let [f (fn [descs] (remove nil? (map #(check-type % classes) descs)))
-        rels (f (u/descriptors cl)) ]
+        rels (f (u/descriptors cl))]
     (if (empty? rels)
       (f (mapcat #(u/descriptors %) (get children cl)))
       rels)))
@@ -148,7 +148,7 @@
           [to-t to-f] (check-to to all-paths children)
           new-paths (set (flatten (map #(:path %) all-paths)))]
       (if (= old-paths new-paths) ; not new piece of path
-        res
+        (-> res set vec)
         (recur to-f 
                (set (remove #(and (not= % to) (contains? new-paths %)) new-elems)) 
                new-paths 
