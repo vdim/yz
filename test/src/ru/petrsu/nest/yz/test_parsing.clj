@@ -2050,7 +2050,7 @@
    "floor.building->room (ni)"
    "building->u:room"
    "u:building->u:room"
-   "u:building->{a:number b:&.}u:room[name]"
+   "u:building->{a:number d:&.}u:room[name]"
    ])
 
 
