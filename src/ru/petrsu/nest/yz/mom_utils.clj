@@ -198,22 +198,24 @@
   "Generates mom from list of classes 
   (\"classes\" contains list with Class of name mom's classes.)"
   [classes, mom-old]
-  (reduce (fn [m cl]
-            (assoc m
-                   cl
-                   (if (u/int-or-abs? cl) 
-                     (init-map-for-cl cl (get mom-old cl))
-                     (reduce #(let [paths (get-s-paths cl %2 (set classes) (:children mom-old))
-                                    paths (if (= %2 cl)
-                                            (filter-paths cl paths mom-old)
-                                            paths)]
-                                (if (empty? paths)
-                                  %1 
-                                  (assoc %1 %2 paths)))
-                             (init-map-for-cl cl (get mom-old cl))
-                             classes))))
-          mom-old
-          classes))
+  (let [; List of classes without interface or abstract classes.
+        c-classes (remove u/int-or-abs? classes)]
+    (reduce (fn [m cl]
+              (assoc m
+                     cl
+                     (if (u/int-or-abs? cl) 
+                       (init-map-for-cl cl (get mom-old cl))
+                       (reduce #(let [paths (get-s-paths cl %2 (set classes) (:children mom-old))
+                                       paths (if (= %2 cl)
+                                               (filter-paths cl paths mom-old)
+                                               paths)]
+                                   (if (empty? paths)
+                                     %1 
+                                     (assoc %1 %2 paths)))
+                               (init-map-for-cl cl (get mom-old cl))
+                               c-classes))))
+            mom-old
+            classes)))
 
 
 (defn- dissoc-nil
@@ -274,7 +276,9 @@
          mom (assoc mom 
                     :names (get-names mom (:names mom-old))
                     :children (:children mom-old)
-                    :namespaces (get mom-old :namespaces))]
+                    :namespaces (get mom-old :namespaces))
+         ;_ (println "c-paths = " (c-paths mom cl-cl) ", c-all-paths = " (c-all-paths mom cl-cl))
+         ]
      mom)))
 
 
