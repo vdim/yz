@@ -148,7 +148,7 @@
           [to-t to-f] (check-to to all-paths children)
           new-paths (set (flatten (map #(:path %) all-paths)))]
       (if (= old-paths new-paths) ; not new piece of path
-        (-> res set vec)
+        res
         (recur to-f 
                (set (remove #(and (not= % to) (contains? new-paths %)) new-elems)) 
                new-paths 
@@ -158,8 +158,12 @@
 (defn get-s-paths
   "Gets maps from get-ps and transforms value of :ppath key to
   one string. Returns sequence of this strings."
-  [from to classes children]
-  (vec (map :ppath (get-ps from to classes children))))
+  [from to classes children] 
+  (let [res (vec (map :ppath (get-ps from to classes children)))]
+    (if (empty? res)
+      res
+      (let [min-count (apply min (map count res))]
+        (-> (filter #(= (count %) min-count) res) set vec)))))
 
 
 (defn init-map-for-cl
