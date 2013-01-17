@@ -596,9 +596,14 @@
       (let [; Define limit
             limit (if (or hb-range lb-range) [lb-range hb-range tail] nil)
             params {:exactly ex :unique unique :limit limit :recursive rec}
-            
+  
             ; Function for getting paths.
-            paths #(u/get-paths cl (get-in-nest-or-then res (dec nl) %1 :what) *mom*) 
+            paths #(u/get-paths cl 
+                                (let [w (get-in-nest-or-then res nl %1 :what)]
+                                  (if (nil? w)
+                                    (get-in-nest-or-then res (dec nl) %1 :what)
+                                    w))
+                                 *mom*) 
             
             ; Vector with type of sorting, comparator and keyfn.
             vsort #(transform-sort (get-in-nest-or-then res %1 %2 :sort) tsort cl)]
