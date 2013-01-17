@@ -130,6 +130,34 @@
                            :where [["floors" "rooms"]]}]}]))
 
 
+         (is (= (parse "building (floor.room)", mom-)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :nest [{:what ru.petrsu.nest.son.Floor
+                           :where [["floors"]]
+                           :then {:what ru.petrsu.nest.son.Room
+                                  :where [["rooms"]]}}]}]))
+
+
+         (is (= (parse "building (floor.room.building)", mom-)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :nest [{:what ru.petrsu.nest.son.Floor
+                           :where [["floors"]]
+                           :then {:what ru.petrsu.nest.son.Room
+                                  :where [["rooms"]]
+                                  :then {:what ru.petrsu.nest.son.Building
+                                         :where [["floor" "building"]]}}}]}]))
+
+
+         (is (= (parse "building (floor.room (building))", mom-)
+                 [{:what ru.petrsu.nest.son.Building 
+                   :nest [{:what ru.petrsu.nest.son.Floor
+                           :where [["floors"]] 
+                           :nest [{:what ru.petrsu.nest.son.Building
+                                   :where [["floor" "building"]]}]
+                           :then {:what ru.petrsu.nest.son.Room
+                                  :where [["rooms"]]}}]}]))
+
+
          (is (= (parse "building (room (device))", mom-)
                  [{:what ru.petrsu.nest.son.Building 
                    :nest [{:what ru.petrsu.nest.son.Room

@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -63,19 +63,19 @@
 
 (deftest select-bn-and-f
          ^{:doc "Selects all Building's name and its Floor objects."}
-         (let [q (flatten (tc/rows-query "building[name] (floor)"))
-               ]
+         (let [q (flatten (tc/rows-query "building[name] (floor)"))]
            (is (tc/eq-colls q ["MB" "MB" "MB" "TK" bd/f1_b1 bd/f2_b1 bd/f3_b1 bd/f1_b2]))))
 
 ;(deftest select-b-f-r
 ;         ^{:doc "Selects all Building, its Floor and its Room objects."}
 ;         (is (tc/qstruct? "building (floor (room))"
-;                          [[Building [[Floor [[Room []]]]]]])))
+;                          [Building [Floor [Room []]]])))
 
 (deftest select-b-r-f
          ^{:doc "Selects all Building, its Room and its Floor objects."}
          (is (tc/qstruct? "building (room (floor))"
                           [Building [Room [Floor []]]])))
+
 (comment
 (deftest select-empty-links
          ^{:doc "Tests emptiness links."}
@@ -209,4 +209,43 @@
          ^{:doc "Tests queries where path must be not found."}
          (is (thrown? NotFoundPathException (tc/qparse "aou (son)")))
          (is (thrown? NotFoundPathException (p/parse "room (nse)" init/ex-mom)))
+         (is (thrown? NotFoundPathException (p/parse "building (building)" init/ex-mom)))
+         )
+
+(deftest abs-and-ints
+         ^{:doc "Tests queries with abstract or interface classes
+                (in fact paths to child)."}
+         (is (tc/eq-colls (tc/rows-query "building (room.floor)") 
+                          [[bd/b1 bd/f1_b1]
+                           [bd/b1 bd/f1_b1]
+                           [bd/b1 bd/f2_b1]
+                           [bd/b1 bd/f2_b1]
+                           [bd/b2 bd/f1_b2]
+                           [bd/b2 bd/f1_b2]]))
+         (is (tc/eq-colls (tc/rows-query "building (room.floor (building))") 
+                          [[bd/b1 bd/f1_b1 bd/b1]
+                           [bd/b1 bd/f1_b1 bd/b1]
+                           [bd/b1 bd/f2_b1 bd/b1]
+                           [bd/b1 bd/f2_b1 bd/b1]
+                           [bd/b2 bd/f1_b2 bd/b2]
+                           [bd/b2 bd/f1_b2 bd/b2]]))
+         (let [old-rooms (.getRooms bd/f3_b1)
+               _ (.addRoom bd/f3_b1 (doto (Room.) (.setNumber "333")))
+               r (tc/eq-colls (tc/rows-query "building (room.floor)") 
+                              [[bd/b1 bd/f1_b1]
+                               [bd/b1 bd/f1_b1]
+                               [bd/b1 bd/f2_b1]
+                               [bd/b1 bd/f2_b1]
+                               [bd/b1 bd/f3_b1]
+                               [bd/b2 bd/f1_b2]
+                               [bd/b2 bd/f1_b2]])
+               _ (.setRooms bd/f3_b1 old-rooms)]
+           (is r))
+         (is (tc/eq-colls (tc/rows-query "building (room.floor)") 
+                          [[bd/b1 bd/f1_b1]
+                           [bd/b1 bd/f1_b1]
+                           [bd/b1 bd/f2_b1]
+                           [bd/b1 bd/f2_b1]
+                           [bd/b2 bd/f1_b2]
+                           [bd/b2 bd/f1_b2]]))
          )
