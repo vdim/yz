@@ -218,6 +218,7 @@
     (or (nil? *mom*) (= prop "&") (= prop "&.") 
         (map? prop) ; prop is calling of function: ip4i[@(ip &.inetAddress)]
         (keyword? cl) ; cl is keyword in case query is something like this: $1[name]
+        (nil? cl)
         (prop? cl)
         (some prop? (get-in *mom* [:children cl]))
         (throw (NotFoundPropertyException. (str "It seems " cl " doesn't have property " prop))))))
@@ -274,8 +275,9 @@
       ;; we must search paths in runtime (core.clj).
       (if (and cl-source cl-target) 
         [{:id nil :cl cl-target}]
+        ;(nil? cl-source) [{:id [[id]] :cl cl-target}];(check-prop cl-source id)
         (let [_ (check-prop cl-source id)]
-         [{:id [[id]] :cl cl-target}]))
+          [{:id [[id]] :cl cl-target}]))
       {:id paths :cl cl-target})))
 
 
