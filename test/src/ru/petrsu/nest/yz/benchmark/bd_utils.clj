@@ -285,13 +285,10 @@
 
 (defn gen-bd
   "Generates object graph of SON model due to specfied 
-  amount of elements and list of classes. If list of 
-  classes is not supplied then cls is used. Returns an instance of SON."
-  ([n]
-   (gen-bd n cls))
-  ([n cls]
-   (let [sm (init-model cls)
-         a-sm (atom sm)
-         lcls (classes cls) ; list with repeating classes (due to weights)
-         _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element lcls cls))))]
-     (:son @a-sm))))
+  amount of elements. Returns an instance of SON."
+  [n]
+  (let [sm (init-model cls)
+        a-sm (atom sm)
+        lcls (classes cls) ; list with repeating classes (due to weights)
+        _ (dorun (repeatedly n #(swap! a-sm change-model (gen-element lcls cls))))]
+    (:son @a-sm)))
