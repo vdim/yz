@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2011-2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2011-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -28,7 +28,8 @@
             [ru.petrsu.nest.yz.parsing :as p]
             [ru.petrsu.nest.yz.yz-factory :as yzf]
             [ru.petrsu.nest.son.local-sm :as lsm] 
-            [ru.petrsu.nest.yz.jpa-em.mom :as hmom])
+            [ru.petrsu.nest.yz.jpa-em.mom :as hmom]
+            [ru.petrsu.nest.yz.utils :as u])
   (:import (javax.persistence EntityManagerFactory Persistence EntityManager)
            (ru.petrsu.nest.son SonBeanUtils SON)
            (ru.petrsu.nest.yz.core ElementManager)))
@@ -296,3 +297,54 @@
     (and
       (check-map map1 map2)
       (check-map map2 map1))))
+
+
+(defn cgc
+  "Creates Concreate Graph Classes 
+  due to specified list of classes"
+  [classes]
+  (let [children (mu/children classes)
+        cl-cl (for [cl1 classes cl2 classes] [cl1 cl2])
+        f (fn [cl1 cl2]
+            (let [descs (u/descriptors cl1)
+                  descs-cl (map #(let [t (.getPropertyType %)]
+                                   (cond (contains? (ancestors t) java.util.Collection)
+                                         (let [t (vec (.. % getReadMethod getGenericReturnType getActualTypeArguments))]
+                                           (if (> (count t) 0) 
+                                             (t 0)))
+                                         (.isArray t) (.getComponentType t)
+                                         :else t))
+                                   descs)]
+              (contains? (set descs-cl) cl2)))]
+    (reduce
+      (fn [m [cl1 cl2]] 
+        (if (u/int-or-abs? cl1) m
+          (let [r (f cl1 cl2)]
+            (if r
+              (if (u/int-or-abs? cl2)
+                (reduce #(assoc-in %1 [cl1 %2] 1) m (get children cl2))
+                (assoc-in m [cl1 cl2] 1))
+              m))))
+      {}
+      cl-cl)))
+
+
+(defn check-cgc
+  "Checks whether object graph of son model
+  (son is SON object) is subgraph of cgc."
+  [son classes]
+  (let [cl-graph (cgc classes) 
+        re (seq (SonBeanUtils/relatedElements son))]
+    (loop [all #{son} nexts #{son}]
+      (let [cur (reduce #(assoc %1 %2 (remove (partial contains? all)
+                                              (seq (SonBeanUtils/relatedElements %2)))) {} nexts)
+            nexts (-> cur vals flatten set)]
+        (cond (empty? nexts) true
+              (every? true? (map (fn [[k v]] (every? #(let [r (= 1 (get-in cl-graph [(class k) (class %)]))
+                                                            _ (if (not r) 
+                                                                (println "class of k = " (class k) ", class of % = " (class %)))]
+                                                        r)
+                                                     v)) cur))
+              (recur (set (concat all nexts)) nexts)
+              :else false)))))
+
