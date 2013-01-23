@@ -276,9 +276,7 @@
          mom (assoc mom 
                     :names (get-names mom (:names mom-old))
                     :children (:children mom-old)
-                    :namespaces (get mom-old :namespaces))
-         ;_ (println "c-paths = " (c-paths mom cl-cl) ", c-all-paths = " (c-all-paths mom cl-cl))
-         ]
+                    :namespaces (get mom-old :namespaces))]
      mom)))
 
 
