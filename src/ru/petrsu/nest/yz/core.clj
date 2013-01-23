@@ -405,7 +405,7 @@
   ([sources m]
    (get-objs-by-path sources nil m))
   ([sources cl-of-prev m]
-   (let [{:keys [preds where ^Class what sort exactly unique limit medium]} m
+   (let [{:keys [preds where ^Class what sort exactly unique limit]} m
          f (cond exactly #(= (class %) what) 
                  :else #(instance? what %))
          elems (sort-rq (filter-by-preds 
@@ -512,7 +512,7 @@
   "Processes :then value of query structure.
   Returns sequence of objects.
   Recursive defines whether a link is recursive."
-  [objs, then, props, tsort, all-medium, pwhat]
+  [objs, then, props, tsort, pwhat]
   (loop [objs- objs, then- then, props- props, tsort tsort, pwhat pwhat]
     (if (or (nil? then-) (every? nil? objs-))
       (let [pp (remove #(let [v (% 1)]
@@ -547,7 +547,7 @@
   Takes list of object and next nest and calls process-then
   with appropriate parameters."
   [objs nest]
-  (apply process-then objs ((juxt :then :props :sort :all-medium :what) nest)))
+  (apply process-then objs ((juxt :then :props :sort :what) nest)))
 
 
 (defn- p-nest
