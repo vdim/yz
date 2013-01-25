@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2012-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -162,4 +162,19 @@
               [bd/r101_f1_b1 [] bd/r1001_f1_b2 []])))
 
 
+; Query with parameter and the "!=" function.
+(defq ^{:mom bd/bd-mom, :em bd/mem} q15 "floor#(number != $1)")
 
+(deftest t-q15
+         (let [f #(is (tc/eq-results? (:result (q15 %1)) %2))]
+           (f 1 [bd/f2_b1 [] bd/f3_b1 []])
+           (f 2 [bd/f1_b1 [] bd/f3_b1 [] bd/f1_b2 []])))
+
+
+; Query with parameter and the ">" function.
+(defq ^{:mom bd/bd-mom, :em bd/mem} q16 "floor#(number > $1)")
+
+(deftest t-q16
+         (let [f #(is (tc/eq-results? (:result (q16 %1)) %2))]
+           (f 1 [bd/f2_b1 [] bd/f3_b1 []])
+           (f 2 [bd/f3_b1 []])))
