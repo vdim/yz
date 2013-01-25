@@ -123,9 +123,12 @@
           (reduce (fn [s p]
                     (if (map? p) ; some predicate (another case is :or or :and binary operation.
                       (let [{:keys [all ids func value]} p
+                            ; This is needed because of func may be var in case
+                            ; != and compare functions are used.
+                            func (eval func)
                             [allA not-any value] 
 
-                            ; if value is vector so value is described 
+                            ; if value is vector so value describes
                             ; subquery: building#(name=floor.name)
                             (if (vector? value) 
                               (let [[allA not-any rp] value] ; rp - result of parsing subquery.

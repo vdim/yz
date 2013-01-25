@@ -420,10 +420,10 @@
                                              ;; Comparing functions (the yz-compare function can compare
                                              ;; all comparable objects (not only number))
                                              ;; At this moment tres will be >=, <=, < or >.
-                                             (partial ru.petrsu.nest.yz.utils/yz-compare tres))]
-                                     (if not?
-                                       (fn [v1 v2] (not (f v1 v2)))
-                                       f))
+                                             `(partial ru.petrsu.nest.yz.utils/yz-compare ~tres))]
+                                     f (if not?
+                                         `(fn [v1# v2#] (not (~f v1# v2#)))
+                                         f))
 
                                    ;; Strings, numbers are not needed in any processing.
                                    :else res-))))
