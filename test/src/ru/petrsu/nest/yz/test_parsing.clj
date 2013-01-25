@@ -2188,15 +2188,33 @@
 
 (deftype SType [property])
 
+
+(defmacro thr?
+  "Evaluates form and returns true 
+  in case form is throwned exception 
+  exp. False is otherwise."
+  [exp form]
+  `(try
+     (try
+       ~form
+       false
+       (catch ~exp e# true))
+     (catch Exception e# false)))
+
+
 (deftest neg-parse-tests
          ^{:doc "Contains tests which are thrown exceptions."}
          (let [f #(parse % mom-)]
-           (is (thrown? SyntaxException (f "building#")))
            (is (thrown? NullPointerException (f "(building)")))
            (is (thrown? NullPointerException (f ", building")))
-           (is (thrown? SyntaxException (f "building, ")))
-           (is (thrown? SyntaxException (f "building#(floor.∀room.number=1)")))
-           (is (thrown? SyntaxException (f "building#(name = room#(number=1)")))
+           (is (every? #(thr? SyntaxException (f %)) ["building (room, floor) ni"
+                                                      "building (room, floor) (ni)"
+                                                      "building (room, floor (ni) (li))"
+                                                      "building ni"
+                                                      "building#(name = room#(number=1)"
+                                                      "building#(floor.∀room.number=1)"
+                                                      "building, "
+                                                      "building#"]))
            (let [em (yzf/c-em [(->SType "P1")] [SType])]
              (is (thrown? ClassCastException (parse "a:stype" (.getMom em)))))))
 
