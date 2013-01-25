@@ -55,4 +55,15 @@
                            [bd/b2 bd/f1_b2 bd/r1001_f1_b2 bd/f1_b2]]))
          (is (tc/eq-colls (tc/rows-query "ni#(inetAddress=@(ip2b \"172.20.255.109\")).building->room")
                            [[bd/b2 bd/f1_b2 bd/r1001_f1_b2]
-                            [bd/b2 bd/f1_b2 bd/r1002_f1_b2]])))
+                            [bd/b2 bd/f1_b2 bd/r1002_f1_b2]]))
+         (is (tc/eq-colls (tc/rows-query "floor (building->room#(number=\"1001\"))")
+                           [[bd/f1_b1 bd/b1] 
+                            [bd/f2_b1 bd/b1]
+                            [bd/f3_b1 bd/b1]
+                            [bd/f1_b2 bd/b2 bd/f1_b2 bd/r1001_f1_b2]]))
+         (is (tc/eq-colls (tc/rows-query "floor.building->room#(number=\"1001\")")
+                           [[bd/b1] 
+                            [bd/b1]
+                            [bd/b1]
+                            [bd/b2 bd/f1_b2 bd/r1001_f1_b2]]))
+         )
