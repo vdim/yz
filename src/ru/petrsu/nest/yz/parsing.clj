@@ -362,7 +362,7 @@
              [value res-] (effects 
                             (cond (= value :number)
                                   [:not-value
-                                   (try (Integer/parseInt res-)
+                                   (try (Long/parseLong res-)
                                      (catch Exception e (Double/parseDouble res-)))]
                                   (= value :string) [:not-value (subs res- 1 (dec (count res-)))]
                                   :else [value res-]))
