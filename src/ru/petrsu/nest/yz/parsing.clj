@@ -608,7 +608,7 @@
             ; Vector with type of sorting, comparator and keyfn.
             vsort #(transform-sort (get-in-nest-or-then res %1 %2 :sort) tsort cl)]
         (if all-medium
-          (let [what (get-in-nest-or-then res (dec nl) tl :what)
+          (let [what (get-in-nest-or-then res nl tl :what)
                 path (-> tl paths first) 
                 
                 ; Vector with type of sorting, comparator and keyfn.
