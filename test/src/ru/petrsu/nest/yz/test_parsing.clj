@@ -26,7 +26,9 @@
         ru.petrsu.nest.yz.queries.bd)
   (:require [ru.petrsu.nest.yz.yz-factory :as yzf] 
             [ru.petrsu.nest.yz.parsing :as p] 
-            [ru.petrsu.nest.yz.utils :as u])
+            [ru.petrsu.nest.yz.utils :as u] 
+            [ru.petrsu.nest.yz.benchmark.bd-utils :as bu] 
+            [ru.petrsu.nest.yz.queries.core :as qc])
   (:import (ru.petrsu.nest.son 
              Building Room Floor 
 
@@ -2236,11 +2238,14 @@
          (let [mom- (assoc mom- Room
                              (assoc (get mom- Room) 
                                     :sort {:self {:keyfn "#(.getNumber %)"}}))
-               results (fn [l] 
-                         (some #(let [e (:error (pquery % mom- mem))]
+               results (fn [l em] 
+                         (some #(let [e (:error (pquery % mom- em))]
                                   (if e [e %]))
-                               l))]
-           (is (nil? (results clist)))
-           (is (nil? (results clist-subqueries)))
-           (is (nil? (results list-limit-sorting-unique)))))
+                               l))
+               ; big database
+               big-mem (qc/em-memory (bu/gen-bd 20000))]
+           (is (nil? (results clist big-mem)))
+           (is (nil? (results clist mem)))
+           (is (nil? (results clist-subqueries mem)))
+           (is (nil? (results list-limit-sorting-unique mem)))))
 
