@@ -989,7 +989,7 @@
   (complex [rm (get-info :remainder)
             res (get-info :result)
             nl (get-info :nest-level)
-            
+
             ; Define new remainder (before symbol ')' or || or && or "or" or "and").
             newrm (effects 
                     (loop [rm- (next rm), ch (first rm), brs 0, newrm [], st false]
@@ -1081,6 +1081,7 @@
               (alt (conc (opt (change-pred sign :func)) 
                          (alt (conc (not-followed-by limit)
                                     (change-pred number :value :number))
+                              ;; Value as parameter: floor#(name = $1)
                               (change-pred value-as-param :value :parameter)))
 
                    ;; Rule for RCP with string: room#(number=("200" || ~".*1$"))
@@ -1091,14 +1092,11 @@
                    ;; true, false, nil
                    keywords
 
-                   ;; Value as parameter: floor#(name = $1)
-                   (change-pred value-as-param :value :parameter) 
                    (pfunc-as-param :value)
                   
                    ;; Rule for subqueries into the right part of predicate.
                    ;; String before ')' or && or || char is taken and parsed due to the do-q function.
-                   (conc (opt (change-pred sign :func))
-                         value-as-subq))))
+                   (conc (opt (change-pred sign :func)) value-as-subq))))
 (def v-prime (alt (conc (sur-by-ws (add-pred (alt (lit-conc-seq "and") (lit-conc-seq "&&")) nil)) 
                         (invisi-conc v-f (add-op-to-preds :and))
                         v-prime) emptiness))
