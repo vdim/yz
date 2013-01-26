@@ -1,5 +1,5 @@
 ;;
-;; Copyright 2012 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
+;; Copyright 2012-2013 Vyacheslav Dimitrov <vyacheslav.dimitrov@gmail.com>
 ;;
 ;; This file is part of YZ.
 ;;
@@ -65,5 +65,4 @@
                            [[bd/b1] 
                             [bd/b1]
                             [bd/b1]
-                            [bd/b2 bd/f1_b2 bd/r1001_f1_b2]]))
-         )
+                            [bd/b2 bd/f1_b2 bd/r1001_f1_b2]])))
